@@ -1,0 +1,12 @@
+<h2 class="titlePage">
+  <span
+    [matTooltip]="'appWalk.customers.tazrim.bankmatch.pageTitle' | translate"
+    matTooltipPosition="after"
+  >
+    {{ 'menu.customers.tazrim.bankmatch' | translate }}</span
+  >
+
+  <!--<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/video.png" alt="video" class="videoIcon">-->
+</h2>
+
+<router-outlet (activate)="onActivate($event)"></router-outlet>

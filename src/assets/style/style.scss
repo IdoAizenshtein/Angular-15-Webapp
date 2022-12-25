@@ -1,0 +1,520 @@
+@import 'scrollbar';
+@import 'width-sizes';
+@import 'forms';
+@import 'checkbox';
+
+$lang: rtl !default;
+
+//noinspection CssRedundantUnit,CssInvalidPropertyValue,CssUnknownProperty
+@mixin mainLang($lang) {
+  direction: $lang;
+  $left: get-side($lang, left);
+  $right: get-side($lang, right);
+  .mat-h2, .mat-title, .mat-typography h2 {
+    font: 500 20px/32px Assistant;
+    margin: 0 0 16px;
+  }
+  .mat-h3, .mat-subheading-2, .mat-typography h3, .bank-credentials-update.ui-dialog .ui-dialog-content p, .bank-credentials-update.ui-dialog .ui-dialog-content p, .bank-credentials-update.ui-dialog .ui-dialog-content p, .bank-credentials-update.ui-dialog .ui-dialog-content p {
+    font: 400 16px/28px Assistant;
+    margin: 0 0 16px;
+  }
+  .exam {
+    border-#{$left}: 1em solid #000;
+    border-#{$right}: 3em solid #000;
+    float: $right;
+    #{$left}: 0;
+    text-align: $right;
+    direction: $lang;
+    padding: side-values($lang, 0 2em 0 1em);
+
+    > button {
+      @include padding-box-all($lang, 20px, 10px, 0px, 1px);
+    }
+  }
+
+  text-align: $right;
+
+  label {
+    text-align: $right;
+  }
+
+  .main-container {
+  }
+  @extend .font-normal;
+  .containerPage {
+    display: flex;
+    display: -ms-flexbox;
+    flex-direction: column;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    #{$left}: 0;
+    #{$right}: 0;
+
+    &.isAccountants {
+      #main {
+        #side-nav {
+          background: $bg-menu-accountants;
+
+          .icon-toggle-nav {
+            background: $bg-menu-accountants-arrow;
+          }
+
+          .mat-expansion-panel {
+            &:first-child {
+              background: #3584b2;
+              background: -moz-linear-gradient(
+                              top,
+                              #3584b2 6%,
+                              #3a90c2 99%
+              );
+              background: -webkit-linear-gradient(
+                              top,
+                              #3584b2 6%,
+                              #3a90c2 99%
+              );
+              background: linear-gradient(
+                              to bottom,
+                              #3584b2 6%,
+                              #3a90c2 99%
+              );
+              filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#3584b2', endColorstr='#3a90c2', GradientType=0);
+            }
+
+            &.mat-expanded:not(.panelClose) {
+              & + .mat-expansion-panel > .mat-expansion-panel-header {
+                border-top: 1px solid #75b2d4;
+              }
+            }
+          }
+
+          .mat-expansion-panel-header {
+            border-bottom: 1px solid #75b2d4;
+            box-sizing: border-box;
+            white-space: nowrap;
+
+            .mat-expansion-indicator {
+              margin-top: -3px;
+
+              &.ng-trigger-indicatorRotate {
+                margin-top: 0px;
+              }
+            }
+
+            &:hover {
+              background: #ffffff !important;
+
+              .mat-expansion-panel-header-title {
+                color: #3a90c2 !important;
+                @include font(bold, 16px);
+              }
+
+              .mat-expansion-indicator {
+                color: #3a90c2 !important;
+              }
+            }
+
+            &:active,
+            &.active {
+              background: #ffffff !important;
+
+              .mat-expansion-panel-header-title {
+                color: #3a90c2 !important;
+                @include font(bold, 16px);
+              }
+
+              .mat-expansion-indicator {
+                color: #3a90c2 !important;
+              }
+            }
+          }
+
+          .mat-list-item {
+            background: $bg-menu-accountants !important;
+            white-space: nowrap;
+
+            .mat-line {
+              background: $bg-menu-accountants !important;
+            }
+
+            .mat-line {
+              height: 40px;
+              padding-right: 47px;
+
+              &:active,
+              &.active,
+              &:hover {
+                background: #ffffff !important;
+                color: #3a90c2 !important;
+                @include font(bold, 16px);
+              }
+            }
+
+            &:hover {
+              .mat-line {
+                background: #ffffff;
+              }
+            }
+
+            &:active,
+            &.active {
+              .mat-line {
+                background: #ffffff;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  .isAccountants {
+    .toolbar {
+      .search {
+        border-top-#{$right}-radius: 0px;
+        border-bottom-#{$right}-radius: 0px;
+        border-#{$right}: none;
+        width: 250px;
+      }
+
+      .p-dropdown {
+        border-top-#{$left}-radius: 0px;
+        border-bottom-#{$left}-radius: 0px;
+        border-#{$left}: none;
+      }
+
+      .divider {
+        background: $border-gray;
+        height: 44px;
+        width: 1px;
+        margin: 0px 20px;
+      }
+
+      .progressBarContent {
+        text-align: center;
+        width: 224px;
+        height: $element-height-select-tab-input-search;
+
+        .titleText {
+          @include font(normal, 14px, 14px);
+          color: $def-blue;
+          text-align: $right;
+
+          &.loadActiveText {
+            color: #038ed6;
+          }
+        }
+
+        .count {
+          text-align: $left;
+
+          @include font(normal, 14px, 14px);
+          color: $def-blue;
+
+          i {
+            font-style: normal;
+          }
+
+          span {
+            font-weight: getFont(bold);
+          }
+        }
+
+        .progressBarBase {
+          margin-top: 2px;
+          background: $bg-table-title;
+          width: 100%;
+          height: 16px;
+          display: block;
+          position: relative;
+          border-radius: 40px;
+
+          .progressBar {
+            background: $bg-button-dark;
+            width: 0%;
+            height: 16px;
+            position: absolute;
+            #{$left}: 0px;
+            top: 0px;
+            border-radius: 40px;
+            border: 1px solid $bg-table-title;
+            box-sizing: border-box;
+          }
+
+          &.isLoad {
+            .progressBar {
+              -webkit-animation: spin 3s linear infinite;
+              animation: spin 3s linear infinite;
+              background: repeating-linear-gradient(
+                              135deg,
+                              #b3c1cc,
+                              #b3c1cc 2px,
+                              #2c546c 2px,
+                              #2c546c 4px
+              );
+              @-webkit-keyframes spin {
+                0% {
+                  width: 0%;
+                }
+                100% {
+                  width: 100%;
+                }
+              }
+
+              @keyframes spin {
+                0% {
+                  width: 0%;
+                }
+                100% {
+                  width: 100%;
+                }
+              }
+            }
+          }
+        }
+      }
+
+      .button-dark {
+        height: 33px !important;
+        font-weight: getFont(bold) !important;
+        @include padding-box(0, 15px, 0, 15px);
+        margin-#{$right}: 20px;
+
+        i {
+          margin-#{$right}: 24px;
+        }
+      }
+    }
+  }
+  .isCustomer {
+    .toolbar {
+      .search {
+        border-top-#{$right}-radius: 0px;
+        border-bottom-#{$right}-radius: 0px;
+        border-#{$right}: none;
+        width: 250px;
+      }
+
+      .p-dropdown {
+        border-top-#{$left}-radius: 0px;
+        border-bottom-#{$left}-radius: 0px;
+        border-#{$left}: none;
+      }
+    }
+  }
+  .toolbar {
+    height: $header-height;
+    background: $white;
+    //display: block;
+    //box-shadow: 0px 3px 12px 0px rgba(146, 146, 146, 0.5803921568627451);
+    box-shadow: 0 0 27px rgba(0, 0, 0, 0.18);
+    z-index: 9;
+    box-sizing: border-box;
+    padding: 0 16px;
+    width: 100%;
+    flex-direction: row;
+    align-items: center;
+    white-space: nowrap;
+
+    &.station_id {
+      padding: 0 23px;
+    }
+
+    .logo {
+      figure {
+        @include margin-box(6px, 6px, 0, 0);
+        position: relative;
+        padding: 0;
+        width: 122px;
+        height: 37px;
+
+        figcaption {
+          position: absolute;
+          bottom: 0px;
+          #{$left}: 44px;
+          color: #66bbec;
+          @include font(bold, 15.5px, 15.5px);
+        }
+      }
+    }
+
+    .select-companies {
+      > div {
+        color: $color-base-font-titles;
+        @include font(semi-bold, 16px, 32px);
+      }
+
+      .p-overlay {
+        //right: 0;
+      }
+
+      .p-dropdown {
+        width: auto !important;
+        border-bottom: none;
+        @include font(semi-bold, 16px, 32px);
+
+        .p-dropdown-panel {
+          min-width: 100%;
+          width: max-content;
+        }
+
+        .p-dropdown-label {
+          font-weight: getFont(semi-bold);
+          display: flex;
+          align-items: center;
+        }
+
+        .p-dropdown-trigger {
+          margin-right: 19px;
+        }
+      }
+    }
+
+    .ddMenu {
+      .mat-grid-tile-content {
+        justify-content: flex-end !important;
+      }
+
+      &.isCustomer {
+        .p-splitbutton {
+          min-width: 155px;
+        }
+      }
+    }
+
+    .alertsIcons {
+      .mat-grid-tile-content {
+        justify-content: center !important;
+      }
+    }
+
+    .typeOfCompany1 {
+      @include font(semi-bold, 16px, 32px);
+      color: $color-base-font-titles;
+      //@include border-radius(3px);
+      @include padding-box(0, 15px, 0, 15px);
+      @extend %box-sizing-border;
+      height: $element-height-select-tab-input-search;
+      background: $white;
+      //border: 2px solid $border-gray;
+      //border-top-#{$left}-radius: 0px;
+      //border-bottom-#{$left}-radius: 0px;
+      max-width: 30em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .help {
+      cursor: pointer;
+    }
+
+    .alert-count {
+      position: relative;
+      background: none;
+      outline: none;
+      border: none;
+      font-size: inherit;
+      line-height: inherit;
+
+      &:not([disabled]) {
+        cursor: pointer;
+      }
+
+      img {
+        width: auto;
+        height: 21px;
+      }
+
+      //img {
+      //  cursor: pointer;
+      //}
+      i:not(.fa-bell) {
+        position: absolute;
+        background: #44b7eb; // $base-yellow;
+        @include font(semi-bold, 12px, 17px);
+        letter-spacing: -1px;
+        font-style: normal !important;
+        @include border-radius(50%);
+        @extend %box-sizing-border;
+        color: $white; //$color-base-font-titles;
+        min-width: 18px;
+        max-width: 24px;
+        text-align: center;
+        vertical-align: middle;
+        #{$right}: 1.5ch;
+        top: -0.5em;
+      }
+    }
+
+    .select-user-to-admin {
+      display: flex;
+      display: -ms-flexbox;
+      align-items: baseline;
+      color: $color-base-font-titles;
+      @include font(semi-bold, 16px, 32px);
+      margin-#{$right}: 2ch;
+
+      .button-link {
+        padding: 0;
+        line-height: inherit;
+        font-size: inherit;
+        height: unset;
+      }
+
+      div + button {
+        margin-#{$right}: 2ch;
+      }
+    }
+
+    .p-splitbutton .p-button {
+      background: none !important;
+    }
+  }
+  .bank-credentials-update.p-dialog {
+    .p-dialog-content {
+      p {
+        @extend .mat-h3;
+        font-weight: getFont(semi-bold);
+
+        a.button-link {
+          padding: 0;
+          text-decoration: none;
+
+          &:hover {
+            text-decoration: underline;
+          }
+        }
+      }
+
+      .Signup__control .button-link {
+        padding: 0;
+        font-size: 16px;
+        text-decoration: underline;
+        font-weight: 700;
+      }
+    }
+  }
+
+}
+
+body {
+  &.isMobile {
+    background: #e7eef4;
+  }
+
+  &.isRTL,
+  .isRTL {
+    $lang: rtl;
+    @include mainLang($lang);
+  }
+
+  &.isLTR,
+  .isLTR {
+    $lang: ltr;
+    @include mainLang($lang);
+  }
+}
+
+.forceLTR {
+  direction: ltr !important;
+}

@@ -1,0 +1,438 @@
+<ng-container>
+	<div id="date-range-select">
+		<div class="headers">
+			<ng-container [ngSwitch]="selectionType">
+				<ng-container *ngSwitchCase="RangeSelectionType.DAYS">
+					<div>{{ 'מתאריך' }}</div>
+					<div>{{ 'עד תאריך' }}</div>
+				</ng-container>
+				<ng-container *ngSwitchCase="RangeSelectionType.MONTHS">
+					<div>{{ 'מחודש' }}</div>
+					<div>{{ 'עד חודש' }}</div>
+				</ng-container>
+			</ng-container>
+		</div>
+		
+		<!--<div>selection ==> {{selection| json}}</div>-->
+		<!--<div>current ==> {{current| json}}</div>-->
+		<!--<div>allowed ==> {{allowed| json}}</div>-->
+		<!--<div>currentDates ==> {{currentDates| json}}</div>-->
+		
+		<div class="scrollers">
+			<ng-container [ngSwitch]="selectionType">
+				<ng-container *ngSwitchCase="RangeSelectionType.DAYS">
+					<div class="scroller">
+						<button
+								[disabled]="
+                !mayNavigateTo(current.from.month, current.from.year - 1)
+              "
+								(click)="
+                current.from.year = current.from.year - 1;
+                currentDates.from = createMonth(current.from)
+              "
+						>
+							<i class="fas fa-angle-double-right"></i>
+						</button>
+						<button
+								[disabled]="
+                !mayNavigateTo(current.from.month - 1, current.from.year)
+              "
+								(click)="
+                stepMonth(current.from, -1);
+                currentDates.from = createMonth(current.from)
+              "
+						>
+							<i class="fas fa-angle-right"></i>
+						</button>
+						
+						<div>
+							{{ ('langCalendar.monthNames' | translate)[current.from.month] }}
+							{{ current?.from.year }}
+						</div>
+						
+						<button
+								[disabled]="
+                !mayNavigateTo(current.from.month + 1, current.from.year) ||
+                isEqual(current.from.month, current.from.year, current.till) ||
+                isAfter(
+                  current.from.month + 1,
+                  current.from.year,
+                  current.till
+                ) ||
+                (selection.till &&
+                  (isEqual(
+                    current.from.month,
+                    current.from.year,
+                    selection.till
+                  ) ||
+                    isAfter(
+                      current.from.month + 1,
+                      current.from.year,
+                      selection.till
+                    )))
+              "
+								(click)="
+                stepMonth(current.from, 1);
+                currentDates.from = createMonth(current.from)
+              "
+						>
+							<i class="fas fa-angle-left"></i>
+						</button>
+						<button
+								[disabled]="
+                !mayNavigateTo(current.from.month, current.from.year + 1) ||
+                isAfter(
+                  current.from.month,
+                  current.from.year + 1,
+                  current.till
+                ) ||
+                (selection.till &&
+                  isAfter(
+                    current.from.month,
+                    current.from.year + 1,
+                    selection.till
+                  ))
+              "
+								(click)="
+                current.from.year = current.from.year + 1;
+                currentDates.from = createMonth(current.from)
+              "
+						>
+							<i class="fas fa-angle-double-left"></i>
+						</button>
+					</div>
+					
+					<div class="scroller">
+						<button
+								[disabled]="
+                !mayNavigateTo(current.till.month, current.till.year - 1) ||
+                isBefore(
+                  current.till.month,
+                  current.till.year - 1,
+                  current.from
+                ) ||
+                (selection.from &&
+                  isBefore(
+                    current.till.month,
+                    current.till.year - 1,
+                    selection.from
+                  ))
+              "
+								(click)="
+                current.till.year = current.till.year - 1;
+                currentDates.till = createMonth(current.till)
+              "
+								[pTooltip]="
+                'till: year-back -> ' +
+                (selection.from &&
+                  isBefore(
+                    current.till.month,
+                    current.till.year - 1,
+                    selection.from
+                  ))
+              "
+						>
+							<i class="fas fa-angle-double-right"></i>
+						</button>
+						<button
+								[disabled]="
+                !mayNavigateTo(current.till.month - 1, current.till.year) ||
+                isEqual(current.till.month, current.till.year, current.from) ||
+                isBefore(
+                  current.till.month - 1,
+                  current.till.year,
+                  current.from
+                ) ||
+                (selection.from &&
+                  (isEqual(
+                    current.till.month,
+                    current.till.year,
+                    selection.from
+                  ) ||
+                    isBefore(
+                      current.till.month - 1,
+                      current.till.year,
+                      selection.from
+                    )))
+              "
+								(click)="
+                stepMonth(current.till, -1);
+                currentDates.till = createMonth(current.till)
+              "
+						>
+							<i class="fas fa-angle-right"></i>
+						</button>
+						
+						<div>
+							{{ ('langCalendar.monthNames' | translate)[current.till.month] }}
+							{{ current.till.year }}
+						</div>
+						
+						<button
+								[disabled]="
+                !mayNavigateTo(current.till.month + 1, current.till.year)
+              "
+								(click)="
+                stepMonth(current.till, 1);
+                currentDates.till = createMonth(current.till)
+              "
+						>
+							<i class="fas fa-angle-left"></i>
+						</button>
+						<button
+								[disabled]="
+                !mayNavigateTo(current.till.month, current.till.year + 1)
+              "
+								(click)="
+                current.till.year = current.till.year + 1;
+                currentDates.till = createMonth(current.till)
+              "
+						>
+							<i class="fas fa-angle-double-left"></i>
+						</button>
+					</div>
+				</ng-container>
+				
+				<ng-container *ngSwitchCase="RangeSelectionType.MONTHS">
+					<div class="scroller">
+						<button
+								[disabled]="!mayNavigateTo(null, current.from.year - 1)"
+								(click)="
+                current.from.year = current.from.year - 1;
+                currentDates.from = createMonth(current.from)
+              "
+						>
+							<i class="fas fa-angle-right"></i>
+						</button>
+						<div>{{ current?.from.year }}</div>
+						<button
+								[disabled]="
+                !mayNavigateTo(null, current.from.year + 1) ||
+                isAfter(null, current.from.year + 1, current.till) ||
+                (selection.till &&
+                  isAfter(null, current.from.year + 1, selection.till))
+              "
+								(click)="
+                current.from.year = current.from.year + 1;
+                currentDates.from = createMonth(current.from)
+              "
+						>
+							<i class="fas fa-angle-left"></i>
+						</button>
+					</div>
+					
+					<div class="scroller">
+						<button
+								[disabled]="
+                !mayNavigateTo(null, current.till.year - 1) ||
+                isBefore(null, current.till.year - 1, current.from) ||
+                (selection.from &&
+                  isBefore(null, current.till.year - 1, selection.from))
+              "
+								(click)="
+                current.till.year = current.till.year - 1;
+                currentDates.till = createMonth(current.till)
+              "
+						>
+							<i class="fas fa-angle-right"></i>
+						</button>
+						<div>{{ current?.till.year }}</div>
+						<button
+								[disabled]="!mayNavigateTo(null, current.till.year + 1)"
+								(click)="
+                current.till.year = current.till.year + 1;
+                currentDates.till = createMonth(current.till)
+              "
+						>
+							<i class="fas fa-angle-left"></i>
+						</button>
+					</div>
+				</ng-container>
+			</ng-container>
+		</div>
+		
+		<div class="bodies">
+			<ng-container [ngSwitch]="selectionType">
+				<ng-container *ngSwitchCase="RangeSelectionType.DAYS">
+					<div class="days">
+						<div
+								class="weekday"
+								*ngFor="
+                let weekday of 'langCalendar.dayNamesShort' | translate;
+                index as i
+              "
+						>
+							{{ weekday }}
+						</div>
+						<!--{{currentDates.from[0]| json}}-->
+						<ng-container *ngFor="let week of currentDates.from">
+							<div
+									*ngFor="let day of week; index as i"
+									[class.in-range]="
+                  isInsideSelectionRange(day.year, day.month, day.day)
+                "
+									[class.range-start]="
+                  selection.from &&
+                  selection.from.year === day.year &&
+                  selection.from.month === day.month &&
+                  selection.from.day === day.day
+                "
+									[style.visibility]="
+                  current.from.month !== day.month ? 'hidden' : 'visible'
+                "
+							>
+								<div
+										[class.disabled]="
+                    current.from.month !== day.month ||
+                    !day.selectable ||
+                    makesSelectionInvalid(day, selection.till)
+                  "
+										[class.selected]="
+                    selection.from &&
+                    selection.from.year === day.year &&
+                    selection.from.month === day.month &&
+                    selection.from.day === day.day
+                  "
+										(click)="
+                    selection.from.month = day.month;
+                    selection.from.year = day.year;
+                    selection.from.day = day.day
+                  "
+								>
+									{{ day.day }}
+								</div>
+							</div>
+						</ng-container>
+					</div>
+					<div class="days">
+						<div
+								class="weekday"
+								*ngFor="
+                let weekday of 'langCalendar.dayNamesShort' | translate;
+                index as i
+              "
+						>
+							{{ weekday }}
+						</div>
+						<ng-container *ngFor="let week of currentDates.till">
+							<div
+									*ngFor="let day of week; index as i"
+									[class.in-range]="
+                  isInsideSelectionRange(day.year, day.month, day.day)
+                "
+									[class.range-end]="
+                  selection.till &&
+                  selection.till.year === day.year &&
+                  selection.till.month === day.month &&
+                  selection.till.day === day.day
+                "
+									[style.visibility]="
+                  current.till.month !== day.month ? 'hidden' : 'visible'
+                "
+							>
+								<div
+										[class.disabled]="
+                    current.till.month !== day.month ||
+                    !day.selectable ||
+                    makesSelectionInvalid(selection.from, day)
+                  "
+										[class.selected]="
+                    selection.till &&
+                    selection.till.year === day.year &&
+                    selection.till.month === day.month &&
+                    selection.till.day === day.day
+                  "
+										(click)="
+                    selection.till.month = day.month;
+                    selection.till.year = day.year;
+                    selection.till.day = day.day
+                  "
+								>
+									{{ day.day }}
+								</div>
+							</div>
+						</ng-container>
+					</div>
+				</ng-container>
+				
+				<ng-container *ngSwitchCase="RangeSelectionType.MONTHS">
+					<div class="months">
+						<div
+								*ngFor="
+                let mon of 'langCalendar.monthNames' | translate;
+                index as i
+              "
+								[class.in-range]="isInsideSelectionRange(current.from.year, i, 0)"
+								[class.range-start]="
+                selection.from &&
+                selection.from.year === current.from.year &&
+                selection.from.month === i
+              "
+						>
+							<div
+									[class.selected]="
+                  selection.from &&
+                  selection.from &&
+                  selection.from.year === current.from.year &&
+                  selection.from.month === i
+                "
+									[class.disabled]="
+                  (current.from.year === allowed.from.year &&
+                    i < allowed.from.month) ||
+                  (selection.till &&
+                    current.from.year === selection.till.year &&
+                    i > selection.till.month)
+                "
+									(click)="
+                  select({
+                    from: { day: 0, month: i, year: current.from.year },
+                    till: selection.till
+                  })
+                "
+							>
+								{{ mon }}
+							</div>
+						</div>
+					</div>
+					<div class="months">
+						<div
+								*ngFor="
+                let mon of 'langCalendar.monthNames' | translate;
+                index as i
+              "
+								[class.in-range]="isInsideSelectionRange(current.till.year, i, 0)"
+								[class.range-end]="
+                selection.till &&
+                selection.till.year === current.till.year &&
+                selection.till.month === i
+              "
+						>
+							<div
+									[class.selected]="
+                  selection.till &&
+                  selection.till.year === current.till.year &&
+                  selection.till.month === i
+                "
+									[class.disabled]="
+                  (current.till.year === allowed.till.year &&
+                    i > allowed.till.month) ||
+                  (selection.from &&
+                    current.till.year === selection.from.year &&
+                    i < selection.from.month)
+                "
+									(click)="
+                  select({
+                    from: selection.from,
+                    till: { day: 0, month: i, year: current.till.year }
+                  })
+                "
+							>
+								{{ mon }}
+							</div>
+						</div>
+					</div>
+				</ng-container>
+			</ng-container>
+		</div>
+	</div>
+</ng-container>

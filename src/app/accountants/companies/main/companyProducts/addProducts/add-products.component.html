@@ -1,0 +1,1782 @@
+<div class="wizardAddProduct">
+	<div #header class="header">
+		<div (click)="goToCompanyProducts(true)" class="closeWizard">
+			<mat-icon
+					style="color: #022258; height: 15px; width: 15px"
+					svgIcon="closeIcon"
+			></mat-icon>
+		</div>
+		<h2 class="titlePage">
+			<i>{{ 'menu.accountants.companies.addProduct' | translate }}</i>
+		</h2>
+		
+		<ul class="wizardSteps">
+			<li [class.active]="step === 1 || step === 2" [class.passed]="step > 2">
+				<ng-container *ngIf="step === 1 || step === 2; else templateReg">
+					<svg
+							height="83"
+							style="position: absolute; top: 0; left: 0; right: 0; bottom: 0"
+							viewBox="0 0 255 83"
+							width="255"
+							xmlns="http://www.w3.org/2000/svg"
+					>
+						<polyline
+								points="41.5,0 255,0 255,41.5 255,83 20,83 0,41.5 20,0"
+								style="fill: #346a8a"
+						/>
+					</svg>
+				</ng-container>
+				
+				<ng-template #templateReg>
+					<svg
+							height="75"
+							style="position: absolute; top: 0; left: 0; right: 0; bottom: 0"
+							viewBox="0 0 255 75"
+							width="255"
+							xmlns="http://www.w3.org/2000/svg"
+					>
+						<polyline
+								points="37.5,0 255,0 255,37.5 255,75 20,75 0,37.5 20,0"
+								style="fill: #346a8a"
+						/>
+					</svg>
+				</ng-template>
+				<div class="textWizard">
+					<i>1</i>
+					פרטי החברה
+				</div>
+			</li>
+			
+			<ng-container
+					*ngIf="
+          !(
+            products &&
+            ((!products.supplierJournal &&
+              products.bankJournal &&
+              products.creditJournal) ||
+              (!products.supplierJournal &&
+                products.bankJournal &&
+                !products.creditJournal) ||
+              (!products.supplierJournal &&
+                !products.bankJournal &&
+                products.creditJournal))
+          )
+        "
+			>
+				<li [class.active]="step === 3" [class.passed]="step > 3">
+					<ng-container *ngIf="step === 3; else templateReg3">
+						<svg
+								height="83"
+								style="position: absolute; top: 0; left: 0; right: 0; bottom: 0"
+								viewBox="0 0 255 83"
+								width="255"
+								xmlns="http://www.w3.org/2000/svg"
+						>
+							<polyline
+									points="41.5,0 255,0 233,41.5 255,83 20,83 0,41.5 20,0"
+									style="fill: #207eb5"
+							></polyline>
+						</svg>
+					</ng-container>
+					
+					<ng-template #templateReg3>
+						<svg
+								height="75"
+								style="position: absolute; top: 0; left: 0; right: 0; bottom: 0"
+								viewBox="0 0 255 75"
+								width="255"
+								xmlns="http://www.w3.org/2000/svg"
+						>
+							<polyline
+									points="37.5,0 255,0 235,37.5 255,75 20,75 0,37.5 20,0"
+									style="fill: #207eb5"
+							></polyline>
+						</svg>
+					</ng-template>
+					
+					<div *ngIf="step !== 1" class="textWizard">
+						<i>2</i>
+						
+						{{
+						products &&
+						((products.supplierJournal &&
+										!products.bankJournal &&
+										!products.creditJournal) ||
+								(products.supplierJournal &&
+										products.bankJournal &&
+										!products.creditJournal) ||
+								(products.supplierJournal &&
+										products.bankJournal &&
+										products.creditJournal) ||
+								(products.supplierJournal &&
+										!products.bankJournal &&
+										products.creditJournal))
+								? 'כרטיסי הנה״ח'
+								: 'פקודות יומן'
+						}}
+					</div>
+				</li>
+			</ng-container>
+			
+			<!--            <ng-container *ngIf="step === 1 || (products && (!products.saved.creditJournal && products.creditJournal) && (!products.saved.bankJournal && products.bankJournal) && (!products.saved.supplierJournal && products.supplierJournal)); else anotherOptNav">-->
+			<!--              -->
+			<!--            </ng-container>-->
+			<!--            <ng-template #anotherOptNav>-->
+			<!--            </ng-template>-->
+			
+			<li
+					*ngIf="
+          step === 1 ||
+          (products &&
+            ((products.supplierJournal &&
+              !products.bankJournal &&
+              !products.creditJournal) ||
+              (products.bankJournal &&
+                !products.supplierJournal &&
+                !products.creditJournal) ||
+              (products.creditJournal &&
+                !products.bankJournal &&
+                !products.supplierJournal) ||
+              (products.bankJournal &&
+                products.creditJournal &&
+                !products.supplierJournal)))
+        "
+					[class.active]="step === 4"
+					[class.passed]="step > 4"
+			>
+				<ng-container *ngIf="step === 4; else templateReg4">
+					<svg
+							height="83"
+							style="position: absolute; top: 0; left: 0; right: 0; bottom: 0"
+							viewBox="0 0 255 83"
+							width="255"
+							xmlns="http://www.w3.org/2000/svg"
+					>
+						<polyline
+								points="41.5,0 255,0 233,41.5 255,83 20,83 0,41.5 20,0"
+								style="fill: #36a2e0"
+						></polyline>
+					</svg>
+				</ng-container>
+				
+				<ng-template #templateReg4>
+					<svg
+							height="75"
+							style="position: absolute; top: 0; left: 0; right: 0; bottom: 0"
+							viewBox="0 0 255 75"
+							width="255"
+							xmlns="http://www.w3.org/2000/svg"
+					>
+						<polyline
+								points="37.5,0 255,0 235,37.5 255,75 20,75 0,37.5 20,0"
+								style="fill: #36a2e0"
+						></polyline>
+					</svg>
+				</ng-template>
+				
+				<div *ngIf="step !== 1" class="textWizard">
+					<i>{{
+						products &&
+						((!products.supplierJournal &&
+										products.bankJournal &&
+										products.creditJournal) ||
+								(!products.supplierJournal &&
+										products.bankJournal &&
+										!products.creditJournal) ||
+								(!products.supplierJournal &&
+										!products.bankJournal &&
+										products.creditJournal))
+								? '2'
+								: '3'
+						}}</i>
+					פקודות יומן
+				</div>
+			</li>
+			<li
+					*ngIf="
+          step === 1 ||
+          (products &&
+            ((products.supplierJournal &&
+              products.bankJournal &&
+              !products.creditJournal) ||
+              (products.supplierJournal &&
+                products.bankJournal &&
+                products.creditJournal) ||
+              (products.supplierJournal &&
+                !products.bankJournal &&
+                products.creditJournal)))
+        "
+					[class.active]="step === 4"
+					[class.passed]="step > 4"
+					style="width: 300px"
+			>
+				<ng-container *ngIf="step === 4; else templateReg4">
+					<svg
+							height="83"
+							style="position: absolute; top: 0; left: 0; right: 0; bottom: 0"
+							viewBox="0 0 300 83"
+							width="300"
+							xmlns="http://www.w3.org/2000/svg"
+					>
+						<polyline
+								points="41.5,0 300,0 277,41.5 300,83 20,83 0,41.5 20,0"
+								style="fill: #6aa1c2"
+						></polyline>
+					</svg>
+				</ng-container>
+				
+				<ng-template #templateReg4>
+					<svg
+							height="75"
+							style="position: absolute; top: 0; left: 0; right: 0; bottom: 0"
+							viewBox="0 0 300 75"
+							width="300"
+							xmlns="http://www.w3.org/2000/svg"
+					>
+						<polyline
+								points="37.5,0 300,0 280,37.5 300,75 20,75 0,37.5 20,0"
+								style="fill: #6aa1c2"
+						></polyline>
+					</svg>
+				</ng-template>
+				
+				<div *ngIf="step !== 1" class="textWizard">
+					<i>3</i>
+					פ.יומן ספקים ולקוחות
+				</div>
+			</li>
+			
+			<li
+					*ngIf="
+          step === 1 ||
+          (products &&
+            ((products.supplierJournal &&
+              !products.creditJournal &&
+              products.bankJournal) ||
+              (products.supplierJournal &&
+                products.bankJournal &&
+                products.creditJournal) ||
+              (products.supplierJournal &&
+                !products.bankJournal &&
+                products.creditJournal)))
+        "
+					[class.active]="step === 5"
+					[class.passed]="step > 5"
+					style="width: 300px"
+			>
+				<ng-container *ngIf="step === 5; else templateReg5">
+					<svg
+							height="83"
+							style="position: absolute; top: 0; left: 0; right: 0; bottom: 0"
+							viewBox="0 0 300 83"
+							width="300"
+							xmlns="http://www.w3.org/2000/svg"
+					>
+						<polyline
+								points="41.5,0 300,0 277,41.5 300,83 20,83 0,41.5 20,0"
+								style="fill: #92bed9"
+						></polyline>
+					</svg>
+				</ng-container>
+				
+				<ng-template #templateReg5>
+					<svg
+							height="75"
+							style="position: absolute; top: 0; left: 0; right: 0; bottom: 0"
+							viewBox="0 0 300 75"
+							width="300"
+							xmlns="http://www.w3.org/2000/svg"
+					>
+						<polyline
+								points="37.5,0 300,0 280,37.5 300,75 20,75 0,37.5 20,0"
+								style="fill: #92bed9"
+						></polyline>
+					</svg>
+				</ng-template>
+				
+				<div *ngIf="step !== 1" class="textWizard">
+					<i>4</i>
+					פ.יומן בנק ואשראי
+				</div>
+			</li>
+		</ul>
+	</div>
+	<div
+			[appScrollHeight]="
+      header.getBoundingClientRect().bottom +
+      footer.getBoundingClientRect().height +
+      (step === 1 ? 200 : 50)
+    "
+			class="body scrollbar-dynamic containerList"
+			style="position: relative"
+	>
+		<ng-container [ngSwitch]="step">
+			<ng-container *ngSwitchCase="1">
+				<div class="step1">
+					<h2>איתור חברה ממאגר - השתמש במנוע החיפוש כדי לאתר את החברה</h2>
+					<p-autoComplete
+							#autoFilter
+							(completeMethod)="filterCompanies($event)"
+							(onSelect)="selectCompany()"
+							[(ngModel)]="selectedCompany"
+							[forceSelection]="false"
+							[minLength]="1"
+							[scrollHeight]="'320px'"
+							[size]="30"
+							[suggestions]="filteredCompanies"
+							appendTo="body"
+							field="companyName"
+							inputStyleClass="selectedCompany_input_autoComplete"
+							placeholder="הקלידו ח.פ (מומלץ) או שם חברה"
+							styleClass="selectedCompany_autoComplete"
+					>
+						<ng-template let-company pTemplate="item">
+							<!--                            [ngStyle]="company.supplierJournalItem ? {'opacity': '0.4', 'cursor': 'default'} : ''"-->
+							
+							<div (click)="onClickOptionDD(company.supplierJournalItem, $event)">
+								<div class="p-helper-clearfix" style="display: flex">
+									<div>
+										{{ company.companyName }}
+									</div>
+									<div>&nbsp;</div>
+									<div>
+										{{ company.companyHp }}
+									</div>
+								</div>
+							</div>
+						</ng-template>
+					</p-autoComplete>
+					
+					<div *ngIf="autoFilter.noResults && selectedCompany" class="noData">
+						<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/companiesSNotFound.png"/>
+						<h1>החברה שחיפשתם לא נמצאת במאגר</h1>
+						<p (click)="sharedComponent.showOpenTicket()" class="link">
+							פתחו קריאת שירות
+						</p>
+					</div>
+					<div
+							*ngIf="products && !autoFilter.noResults && selectedCompany"
+							class="products"
+					>
+						<h3>בחירת מוצרים</h3>
+						<div class="tableProducts">
+							<div class="header">
+								<div>
+									יצוא
+									<br/>
+									בנק
+								</div>
+								<div>
+									יצוא
+									<br/>
+									אשראי
+								</div>
+								<div>
+									פקודות יומן
+									<br/>
+									ספקים ולקוחות
+								</div>
+								<div>
+									פקודות יומן
+									<br/>
+									בנק
+								</div>
+								<div>
+									פקודות יומן
+									<br/>
+									אשראי
+								</div>
+							</div>
+							<div class="body">
+								<div>
+									<!--                                    <p-checkbox checkboxIcon="fa fa-check" [binary]="true"-->
+									<!--                                            *ngIf="!products.saved.bankExport"-->
+									<!--                                            [(ngModel)]="products.bankExport">-->
+									<!--                                    </p-checkbox>-->
+									
+									<mat-icon
+											*ngIf="products.saved.bankExport"
+											style="
+                      color: #11a388;
+                      height: 18px;
+                      width: 22px;
+                      margin-top: 5px;
+                    "
+											svgIcon="tick"
+									></mat-icon>
+									
+									<mat-icon
+											*ngIf="!products.saved.bankExport"
+											style="width: 17px; vertical-align: middle; color: #df0000"
+											svgIcon="closeIcon"
+									></mat-icon>
+								</div>
+								<div>
+									<!--                                    <p-checkbox checkboxIcon="fa fa-check" [binary]="true"-->
+									<!--                                                *ngIf="!products.saved.creditExport"-->
+									<!--                                                [(ngModel)]="products.creditExport">-->
+									<!--                                    </p-checkbox>-->
+									
+									<mat-icon
+											*ngIf="products.saved.creditExport"
+											style="
+                      color: #11a388;
+                      height: 18px;
+                      width: 22px;
+                      margin-top: 5px;
+                    "
+											svgIcon="tick"
+									></mat-icon>
+									
+									<mat-icon
+											*ngIf="!products.saved.creditExport"
+											style="width: 17px; vertical-align: middle; color: #df0000"
+											svgIcon="closeIcon"
+									></mat-icon>
+								</div>
+								<div>
+									<p-checkbox *ngIf="!products.saved.supplierJournal"
+									            [(ngModel)]="products.supplierJournal"
+									            [binary]="true"
+									            checkboxIcon="fa fa-check"
+									>
+									</p-checkbox>
+									
+									<mat-icon
+											*ngIf="products.saved.supplierJournal"
+											style="
+                      color: #11a388;
+                      height: 18px;
+                      width: 22px;
+                      margin-top: 5px;
+                    "
+											svgIcon="tick"
+									></mat-icon>
+								</div>
+								<div>
+									<p-checkbox (onChange)="
+                      products.bankJournal
+                        ? (products.creditJournal = false)
+                        : null
+                    "
+									            *ngIf="!products.saved.bankJournal"
+									            [(ngModel)]="products.bankJournal"
+									            [binary]="true"
+									            [disabled]="
+                      !userService?.appData?.isAdmin ||
+                      !products.saved.bankExport
+                    "
+									            checkboxIcon="fa fa-check"
+									>
+									</p-checkbox>
+									
+									<mat-icon
+											*ngIf="products.saved.bankJournal"
+											style="
+                      color: #11a388;
+                      height: 18px;
+                      width: 22px;
+                      margin-top: 5px;
+                    "
+											svgIcon="tick"
+									></mat-icon>
+								</div>
+								<div>
+									<p-checkbox *ngIf="!products.saved.creditJournal"
+									            [(ngModel)]="products.creditJournal"
+									            [binary]="true"
+									            [disabled]="
+                      !userService?.appData?.isAdmin ||
+                      !products.saved.creditExport ||
+                      !products.saved.bankExport ||
+                      (!products.saved.bankJournal && !products.bankJournal)
+                    "
+									            checkboxIcon="fa fa-check"
+									>
+									</p-checkbox>
+									
+									<mat-icon
+											*ngIf="products.saved.creditJournal"
+											style="
+                      color: #11a388;
+                      height: 18px;
+                      width: 22px;
+                      margin-top: 5px;
+                    "
+											svgIcon="tick"
+									></mat-icon>
+								</div>
+							</div>
+							<!--                            <div class="alertRed">-->
+							<!--                                <p *ngIf="products.creditJournal && (!products.bankJournal && !products.saved.bankJournal)">-->
+							<!--                                    בחירה במוצר זה מחייבת בחירה בפקודות יומן בנק וביצוא בנק ואשראי-->
+							<!--                                </p>-->
+							<!--                                <p *ngIf="!products.creditJournal && (products.creditExport || products.bankJournal)  && !products.bankExport">-->
+							<!--                                    {{(products.creditExport && products.bankJournal) ? 'בחירת מוצרים אלו מחייבת בחירה ביצוא בנק' : 'בחירה במוצר זה מחייבת בחירה ביצוא בנק'}}-->
+							<!--                                </p>-->
+							<!--                                <p *ngIf="products.creditJournal && (!products.bankExport || !products.creditExport)">-->
+							<!--                                    <ng-container *ngIf="(products.creditExport || products.bankJournal)">-->
+							<!--                                        {{!products.bankExport && !products.creditExport ? 'בחירת מוצרים אלו מחייבת בחירה ביצוא בנק ואשראי' : !products.bankExport ? 'בחירת מוצרים אלו מחייבת בחירה ביצוא בנק' : 'בחירת מוצרים אלו מחייבת בחירה ביצוא אשראי'-->
+							<!--                                        }}-->
+							<!--                                    </ng-container>-->
+							
+							<!--                                    <ng-container *ngIf="(!products.creditExport && !products.bankJournal)">-->
+							<!--                                        {{(!products.bankExport && !products.creditExport)-->
+							<!--                                        ? 'בחירה במוצר זה מחייבת בחירה ביצוא בנק ואשראי' :-->
+							<!--                                        (!products.bankExport ? 'בחירה במוצר זה מחייבת בחירה ביצוא בנק'-->
+							<!--                                            :-->
+							<!--                                            'בחירה במוצר זה מחייבת בחירה ביצוא אשראי')}}-->
+							<!--                                    </ng-container>-->
+							
+							<!--                                </p>-->
+							<!--                            </div>-->
+						</div>
+					</div>
+				</div>
+			</ng-container>
+			<ng-container *ngSwitchCase="2">
+				<div class="step2">
+					<h1 class="mainTitle">
+						<ng-container
+								*ngIf="
+                !products.creditJournal &&
+                !products.bankJournal &&
+                products.supplierJournal
+              "
+						>
+							הוספת מוצר פקודות יומן ספקים ולקוחות
+						</ng-container>
+						<ng-container
+								*ngIf="
+                !products.creditJournal &&
+                products.bankJournal &&
+                !products.supplierJournal
+              "
+						>
+							הוספת מוצר פ.יומן בנק
+						</ng-container>
+						<ng-container
+								*ngIf="
+                !products.creditJournal &&
+                products.bankJournal &&
+                products.supplierJournal
+              "
+						>
+							הוספת מוצר פקודות יומן ספקים ולקוחות ופ.בנק
+						</ng-container>
+						
+						<ng-container
+								*ngIf="
+                products.creditJournal &&
+                !products.bankJournal &&
+                !products.supplierJournal
+              "
+						>
+							הוספת מוצר פקודות יומן אשראי
+						</ng-container>
+						
+						<ng-container
+								*ngIf="
+                products.creditJournal &&
+                products.bankJournal &&
+                products.supplierJournal
+              "
+						>
+							הוספת מוצר פקודות יומן ספקים ולקוחות ופ.בנק ואשראי
+						</ng-container>
+						
+						<ng-container
+								*ngIf="
+                products.creditJournal &&
+                !products.bankJournal &&
+                products.supplierJournal
+              "
+						>
+							הוספת מוצר פקודות יומן ספקים ופ.אשראי
+						</ng-container>
+						<ng-container
+								*ngIf="
+                products.creditJournal &&
+                products.bankJournal &&
+                !products.supplierJournal
+              "
+						>
+							הוספת מוצר פקודות יומן בנק ואשראי
+						</ng-container>
+					</h1>
+					<h2>
+						חברת {{ selectedCompany.companyName }}, ח.פ
+						{{ selectedCompany.companyHp }}
+					</h2>
+					<p>
+						בסיס נתונים
+						{{ selectedCompany.dbName }}
+					</p>
+					<div class="comments">
+						<div>בסיס הנתונים לא נכון?</div>
+						<div (click)="sharedComponent.showOpenTicket()" class="link">
+							פתחו קריאת שירות
+						</div>
+					</div>
+					<div class="infoCompanyForm detailsForm" style="margin-top: 0px">
+						<div style="font-size: 14px; padding-bottom: 20px; color: #022258">
+							שדה חובה <i style="color: #df0000">*</i>
+						</div>
+						<form [formGroup]="info" novalidate>
+							<div class="columns" style="flex-wrap: wrap">
+								<div *ngIf="products.supplierJournal" class="sett-table">
+									<div style="margin-bottom: 40px">
+										<div>
+											<i style="color: #df0000">*</i>
+											דיווח למע"מ
+										</div>
+										
+										<div>
+											<div style="padding: 0px 10px; height: 30px">
+												<p-radioButton
+														(onClick)="updateValues('esderMaam', 'MONTH')"
+														[label]="'חודשי'"
+														formControlName="esderMaam"
+														inputId="radio11"
+														name="esderMaam"
+														value="MONTH"
+												>
+												</p-radioButton>
+												<span style="padding: 0px 8px"></span>
+												<p-radioButton
+														(onClick)="updateValues('esderMaam', 'TWO_MONTH')"
+														[label]="'דו חודשי'"
+														formControlName="esderMaam"
+														inputId="radio22"
+														name="esderMaam"
+														value="TWO_MONTH"
+												>
+												</p-radioButton>
+												<span style="padding: 0px 8px"></span>
+												<p-radioButton
+														(onClick)="updateValues('esderMaam', 'NONE')"
+														[label]="'ללא מע״מ'"
+														formControlName="esderMaam"
+														inputId="radio33"
+														name="esderMaam"
+														value="NONE"
+												>
+												</p-radioButton>
+											</div>
+										</div>
+									</div>
+								</div>
+								<div *ngIf="products.supplierJournal" class="sett-table">
+									<div style="margin-bottom: 40px">
+										<div
+												[matTooltip]="
+                        'PCN דיווח מפורט מקוון' +
+                        '\n' +
+                        'דיגיטלית - דיווח בשע״מ או באינטרנט' +
+                        '\n' +
+                        'שובר ידני - תשלום בשיק'
+                      "
+												matTooltipClass="allow-cr"
+												matTooltipPosition="above"
+												style="cursor: pointer"
+										>
+											<i style="color: #df0000">*</i>
+											שיטת הדיווח
+										</div>
+										<div>
+											<p-dropdown
+													#dd11
+													(onChange)="updateCompany(true)"
+													(onFocus)="clearFilter(dd11)"
+													[dropdownIcon]="'p-dropdown-icon'"
+													[options]="vatReportTypeArr"
+													[scrollHeight]="'135px'"
+													[style]="{ width: '80%' }"
+													appendTo="body"
+													formControlName="vatReportType"
+													
+													placeholder="בחירה"
+													styleClass="ddInfoCompanyForm"
+											>
+											</p-dropdown>
+										</div>
+									</div>
+								</div>
+								<div *ngIf="products.supplierJournal" class="sett-table">
+									<div>
+										<div
+												[matTooltip]="'הנה״ח נפרדת לכל שנה או מצטברת'"
+												matTooltipClass="allow-cr"
+												matTooltipPosition="above"
+												style="cursor: pointer"
+										>
+											רב שנתי/חד שנתי
+										</div>
+										<div>
+											<div style="padding: 0px 10px; height: 30px">
+												<p-radioButton
+														(onClick)="updateValues('yearlyProgram', false)"
+														[label]="'רב שנתי'"
+														[value]="false"
+														formControlName="yearlyProgram"
+														inputId="radio1"
+														name="yearlyProgram"
+												>
+												</p-radioButton>
+												<span style="padding: 0px 8px"></span>
+												<p-radioButton
+														(onClick)="updateValues('yearlyProgram', true)"
+														[label]="'חד שנתי'"
+														[value]="true"
+														formControlName="yearlyProgram"
+														inputId="radio1"
+														name="yearlyProgram"
+												>
+												</p-radioButton>
+											</div>
+										</div>
+									</div>
+									<div class="comments">
+										<div>רוצים לשנות?</div>
+										<div
+												(click)="sharedComponent.showOpenTicket()"
+												class="link"
+										>
+											פתחו קריאת שירות
+										</div>
+									</div>
+								</div>
+								
+								<div class="sett-table">
+									<div>
+										<div
+												[matTooltip]="'דיווח שנתי על ניכוי מס במקור לספקים'"
+												matTooltipClass="allow-cr"
+												matTooltipPosition="above"
+												style="cursor: pointer"
+										>
+											חובת דיווח 856
+										</div>
+										<div>
+											<div style="padding: 0px 10px; height: 30px">
+												<p-radioButton
+														(onClick)="updateValues('report856', true)"
+														[label]="'כן'"
+														[value]="true"
+														formControlName="report856"
+														inputId="radio1121"
+														name="report856"
+												>
+												</p-radioButton>
+												<span style="padding: 0px 8px"></span>
+												<p-radioButton
+														(onClick)="updateValues('report856', false)"
+														[label]="'לא'"
+														[value]="false"
+														formControlName="report856"
+														inputId="radio1113"
+														name="report856"
+												>
+												</p-radioButton>
+											</div>
+										</div>
+									</div>
+								</div>
+								<div class="sett-table">
+									<div
+											*ngIf="
+                      this.products &&
+                      !this.products.supplierJournal &&
+                      ((this.products.bankJournal &&
+                        !this.products.creditJournal) ||
+                        (!this.products.bankJournal &&
+                          this.products.creditJournal) ||
+                        (this.products.bankJournal &&
+                          this.products.creditJournal))
+                    "
+									>
+										<div>
+											<div>סוגי תנועה (לבנק ואשראי בלבד)</div>
+											<div>
+												<div style="padding: 0px; height: 30px; display: flex">
+													<p-radioButton
+															(onClick)="
+                              updateValues_interested(
+                                'bankProcessTransType',
+                                false
+                              )
+                            "
+															[label]="'ללא סוג תנועה'"
+															[value]="false"
+															formControlName="bankProcessTransType"
+															inputId="radio1225"
+															name="bankProcessTransType"
+													>
+													</p-radioButton>
+													<span style="padding: 0px 8px"></span>
+													<div>
+														<p-radioButton
+																(onClick)="
+                                updateValues_interested(
+                                  'bankProcessTransType',
+                                  true
+                                )
+                              "
+																[label]="'עם סוג תנועה'"
+																[value]="true"
+																formControlName="bankProcessTransType"
+																inputId="radio1226"
+																name="bankProcessTransType"
+														>
+														</p-radioButton>
+														<div
+																(click)="
+                                showModalScreenTransTypes_bankProcessTransType()
+                              "
+																[class.disabled]="
+                                !info.get('bankProcessTransType').value
+                              "
+																class="link"
+																style="
+                                font-size: 14px;
+                                margin-right: 24px;
+                                margin-top: -10px;
+                              "
+														>
+															עריכה
+														</div>
+													</div>
+												</div>
+											</div>
+										</div>
+										<!--                                        <div class="comments"-->
+										<!--                                             style="margin: 0;padding: 0;padding-right: 10px;width: auto;"-->
+										<!--                                             *ngIf="info && info.get('bankProcessTransType') && info.get('interested').value">-->
+										<!--                                            <div>-->
+										<!--                                                אפשר להגדיר סוגי תנועה במסך נתוני חברה-->
+										<!--                                            </div>-->
+										<!--                                        </div>-->
+									</div>
+									
+									<div *ngIf="products && products.supplierJournal">
+										<div>
+											<div>סוגי תנועה</div>
+											<div>
+												<div style="padding: 0px; height: 30px; display: flex">
+													<p-radioButton
+															(onClick)="
+                              updateValues_interested('interested', false)
+                            "
+															[label]="'ללא סוג תנועה'"
+															[value]="false"
+															formControlName="interested"
+															inputId="radio1221"
+															name="interested"
+													>
+													</p-radioButton>
+													<span style="padding: 0px 8px"></span>
+													<div>
+														<p-radioButton
+																(onClick)="
+                                updateValues_interested('interested', true)
+                              "
+																[label]="'עם סוג תנועה'"
+																[value]="true"
+																formControlName="interested"
+																inputId="radio1222"
+																name="interested"
+														>
+														</p-radioButton>
+														<div
+																(click)="showModalScreenTransTypes_interested()"
+																[class.disabled]="!info.get('interested').value"
+																class="link"
+																style="
+                                font-size: 14px;
+                                margin-right: 24px;
+                                margin-top: -10px;
+                              "
+														>
+															עריכה
+														</div>
+													</div>
+												</div>
+											</div>
+										</div>
+										<!--                                        <div class="comments"-->
+										<!--                                             style="margin: 0;padding: 0;padding-right: 10px;width: auto;"-->
+										<!--                                             *ngIf="info && info.get('interested') && info.get('interested').value">-->
+										<!--                                            <div>-->
+										<!--                                                אפשר להגדיר סוגי תנועה במסך נתוני חברה-->
+										<!--                                            </div>-->
+										<!--                                        </div>-->
+									</div>
+								</div>
+								<ng-container *ngIf="products.supplierJournal">
+									<ng-container
+											*ngFor="
+                      let item of otherOseknumArray.controls;
+                      let i = index
+                    "
+											formArrayName="otherOseknumArray"
+									>
+										<div class="sett-table">
+											<div>
+												<div
+														[matTooltip]="
+                            'לזיהוי תקין נדרש-\nמספר עוסק (ת.ז.) של בעל עסק שהפך לחברה\nאו ת.ז. של בעל/ת כרטיס/י האשראי שבשימוש העסק\nאו כל מספר ח.פ., עוסק, ת.ז. שיכול להופיע במסמכי הספקים\nבמידה ואין יש לרשום את אותו מספר עוסק'
+                          "
+														matTooltipClass="allow-cr"
+														matTooltipPosition="below"
+												>
+													<i *ngIf="i === 0" style="color: #df0000">*</i>
+													עוסקים קשורים/ ת.ז שיכולים להופיע במסמכים
+													<img
+															*ngIf="i === 0"
+															height="15"
+															src="/assets/images/infoTooltip.png"
+															style="
+                              margin-right: 10px;
+                              cursor: pointer;
+                              margin-top: 2px;
+                            "
+															width="15"
+													/>
+													{{ i > 0 ? i + 1 : '' }}
+												</div>
+												<!--                                            [tooltipDisabled]="i > 0"-->
+												<!--                                            appendTo="body"-->
+												<!--                                            [tooltipStyleClass]="'p-tooltip-one-line'"-->
+												<!--                                            [pTooltip]="'מס\' עוסק/ת.ז ישן/נוסף שלנו שמופיע בחשבוניות מספקים'"-->
+												<!--                                            tooltipPosition="top"-->
+												<div>
+													<input
+															[class.err]="
+                              item.invalid ||
+                              (item.value &&
+                                ((i === 0 &&
+                                  ((otherOseknumArray.controls.length === 3 &&
+                                    (item.value + '' ===
+                                      otherOseknumArray.controls[1].value +
+                                        '' ||
+                                      item.value + '' ===
+                                        otherOseknumArray.controls[2].value +
+                                          '')) ||
+                                    (otherOseknumArray.controls.length === 2 &&
+                                      item.value + '' ===
+                                        otherOseknumArray.controls[1].value +
+                                          ''))) ||
+                                  (i === 1 &&
+                                    ((otherOseknumArray.controls.length === 3 &&
+                                      (item.value + '' ===
+                                        otherOseknumArray.controls[0].value +
+                                          '' ||
+                                        item.value + '' ===
+                                          otherOseknumArray.controls[2].value +
+                                            '')) ||
+                                      (otherOseknumArray.controls.length ===
+                                        2 &&
+                                        item.value + '' ===
+                                          otherOseknumArray.controls[0].value +
+                                            ''))) ||
+                                  (i === 2 &&
+                                    (item.value + '' ===
+                                      otherOseknumArray.controls[0].value +
+                                        '' ||
+                                      item.value + '' ===
+                                        otherOseknumArray.controls[1].value +
+                                          ''))))
+                            "
+															[formControlName]="i"
+															appNumbersOnly="positiveInt"
+															type="text"
+													/>
+												</div>
+											</div>
+											<div
+													*ngIf="item.value && item.invalid"
+													class="invalidAlert"
+											>
+												המספר שהוקלד לא תקין
+											</div>
+											<div
+													*ngIf="
+                          item.value &&
+                          ((i === 0 &&
+                            ((otherOseknumArray.controls.length === 3 &&
+                              (item.value + '' ===
+                                otherOseknumArray.controls[1].value + '' ||
+                                item.value + '' ===
+                                  otherOseknumArray.controls[2].value + '')) ||
+                              (otherOseknumArray.controls.length === 2 &&
+                                item.value + '' ===
+                                  otherOseknumArray.controls[1].value + ''))) ||
+                            (i === 1 &&
+                              ((otherOseknumArray.controls.length === 3 &&
+                                (item.value + '' ===
+                                  otherOseknumArray.controls[0].value + '' ||
+                                  item.value + '' ===
+                                    otherOseknumArray.controls[2].value +
+                                      '')) ||
+                                (otherOseknumArray.controls.length === 2 &&
+                                  item.value + '' ===
+                                    otherOseknumArray.controls[0].value +
+                                      ''))) ||
+                            (i === 2 &&
+                              (item.value + '' ===
+                                otherOseknumArray.controls[0].value + '' ||
+                                item.value + '' ===
+                                  otherOseknumArray.controls[1].value + '')))
+                        "
+													class="invalidAlert"
+											>
+												המספר שהוקלד קיים כבר בשדה אחר
+											</div>
+											
+											<div
+													*ngIf="i === 0"
+													[class.withAlert]="
+                          (item.value && item.invalid) ||
+                          (item.value &&
+                            ((i === 0 &&
+                              ((otherOseknumArray.controls.length === 3 &&
+                                (item.value + '' ===
+                                  otherOseknumArray.controls[1].value + '' ||
+                                  item.value + '' ===
+                                    otherOseknumArray.controls[2].value +
+                                      '')) ||
+                                (otherOseknumArray.controls.length === 2 &&
+                                  item.value + '' ===
+                                    otherOseknumArray.controls[1].value +
+                                      ''))) ||
+                              (i === 1 &&
+                                ((otherOseknumArray.controls.length === 3 &&
+                                  (item.value + '' ===
+                                    otherOseknumArray.controls[0].value + '' ||
+                                    item.value + '' ===
+                                      otherOseknumArray.controls[2].value +
+                                        '')) ||
+                                  (otherOseknumArray.controls.length === 2 &&
+                                    item.value + '' ===
+                                      otherOseknumArray.controls[0].value +
+                                        ''))) ||
+                              (i === 2 &&
+                                (item.value + '' ===
+                                  otherOseknumArray.controls[0].value + '' ||
+                                  item.value + '' ===
+                                    otherOseknumArray.controls[1].value + ''))))
+                        "
+													class="comments"
+											>
+												<div
+														(click)="
+                            otherOseknumArray.controls.length === 3
+                              ? null
+                              : addOtherOsekNum()
+                          "
+														[ngStyle]="{
+                            opacity:
+                              otherOseknumArray.controls.length === 3 ? 0.6 : 1
+                          }"
+														class="link"
+														style="
+                            display: flex;
+                            color: #038ed6;
+                            font-size: 15px !important;
+                            font-weight: 400;
+                          "
+												>
+													<img
+															src="/assets/images/addFolder.png"
+															style="align-self: center; margin-left: 4px"
+													/>
+													הוספת עוסקים קשורים/ת.ז
+												</div>
+											</div>
+											<div
+													*ngIf="i > 0"
+													[class.withAlert]="
+                          (item.value && item.invalid) ||
+                          (item.value &&
+                            ((i === 0 &&
+                              ((otherOseknumArray.controls.length === 3 &&
+                                (item.value + '' ===
+                                  otherOseknumArray.controls[1].value + '' ||
+                                  item.value + '' ===
+                                    otherOseknumArray.controls[2].value +
+                                      '')) ||
+                                (otherOseknumArray.controls.length === 2 &&
+                                  item.value + '' ===
+                                    otherOseknumArray.controls[1].value +
+                                      ''))) ||
+                              (i === 1 &&
+                                ((otherOseknumArray.controls.length === 3 &&
+                                  (item.value + '' ===
+                                    otherOseknumArray.controls[0].value + '' ||
+                                    item.value + '' ===
+                                      otherOseknumArray.controls[2].value +
+                                        '')) ||
+                                  (otherOseknumArray.controls.length === 2 &&
+                                    item.value + '' ===
+                                      otherOseknumArray.controls[0].value +
+                                        ''))) ||
+                              (i === 2 &&
+                                (item.value + '' ===
+                                  otherOseknumArray.controls[0].value + '' ||
+                                  item.value + '' ===
+                                    otherOseknumArray.controls[1].value + ''))))
+                        "
+													class="comments"
+											>
+												<div
+														(click)="deleteItem(i)"
+														class="link"
+														style="
+                            display: flex;
+                            color: #038ed6;
+                            font-size: 15px !important;
+                            font-weight: 400;
+                          "
+												>
+													<img
+															src="/assets/images/trashCurr.png"
+															style="align-self: center; margin-left: 4px"
+													/>
+													מחיקת עוסקים קשורים/ת.ז
+												</div>
+											</div>
+										</div>
+									</ng-container>
+								</ng-container>
+							</div>
+						</form>
+					</div>
+					<div class="contact-title">
+						<h3>איש קשר בחברה</h3>
+						<p>
+							מומלץ למלא את כל הפרטים על מנת שתוכלו לשלוח הודעות ישירות מהמערכת.
+							<br/>
+							האפשרות של צירוף לקוח לאפליקציית הצילום תתאפשר רק כאשר כל השדות
+							מלאים
+							
+							<ng-container *ngIf="contactsList.length">
+								<br/>
+								לחברה זו מוגדרים
+								<span
+										#actualTarget
+										(mouseleave)="op.hide()"
+										(mouseover)="op.show($event, actualTarget)"
+										class="link"
+								>
+                  {{ contactsList.length }} אנשי קשר </span
+								>. ניתן להוסיף חדשים
+							</ng-container>
+						</p>
+						<p-overlayPanel
+								#op
+								[dismissable]="true"
+								[showCloseIcon]="true"
+								[style]="{       'margin-left': '-10px',
+              'margin-top': '0px' }"
+								appendTo="body"
+								styleClass="otpDet"
+						>
+							<ul *ngIf="contactsList && contactsList.length">
+								<li *ngFor="let det of contactsList">
+									<div class="regular" style="display: flex">
+										<p>
+											{{ det }}
+										</p>
+									</div>
+								</li>
+							</ul>
+						</p-overlayPanel>
+						
+						<app-contacts
+								[contactsInput]="contacts"
+								[isModal]="selectedCompany"
+						></app-contacts>
+					</div>
+				</div>
+			</ng-container>
+			<ng-container *ngSwitchCase="3">
+				<div class="step3">
+					<div class="cards-titles">
+						<h1 class="mainTitle">
+							<ng-container
+									*ngIf="
+                  !products.creditJournal &&
+                  !products.bankJournal &&
+                  products.supplierJournal
+                "
+							>
+								הוספת מוצר פקודות יומן ספקים ולקוחות
+							</ng-container>
+							<ng-container
+									*ngIf="
+                  !products.creditJournal &&
+                  products.bankJournal &&
+                  !products.supplierJournal
+                "
+							>
+								הוספת מוצר פ.יומן בנק
+							</ng-container>
+							<ng-container
+									*ngIf="
+                  !products.creditJournal &&
+                  products.bankJournal &&
+                  products.supplierJournal
+                "
+							>
+								הוספת מוצר פקודות יומן ספקים ולקוחות ופ.בנק
+							</ng-container>
+							
+							<ng-container
+									*ngIf="
+                  products.creditJournal &&
+                  !products.bankJournal &&
+                  !products.supplierJournal
+                "
+							>
+								הוספת מוצר פקודות יומן אשראי
+							</ng-container>
+							
+							<ng-container
+									*ngIf="
+                  products.creditJournal &&
+                  products.bankJournal &&
+                  products.supplierJournal
+                "
+							>
+								הוספת מוצר פקודות יומן ספקים ולקוחות ופ.בנק ואשראי
+							</ng-container>
+							
+							<ng-container
+									*ngIf="
+                  products.creditJournal &&
+                  !products.bankJournal &&
+                  products.supplierJournal
+                "
+							>
+								הוספת מוצר פקודות יומן ספקים ופ.אשראי
+							</ng-container>
+							<ng-container
+									*ngIf="
+                  products.creditJournal &&
+                  products.bankJournal &&
+                  !products.supplierJournal
+                "
+							>
+								הוספת מוצר פקודות יומן בנק ואשראי
+							</ng-container>
+						</h1>
+						
+						<h3>
+							הגדרת כרטיסי הנהלת חשבונות לחברת
+							{{ selectedCompany.companyName }}
+						</h3>
+						<p>
+							כדי שתהליך יצירת פקודת יומן יהיה אוטומטי, מומלץ למלא את הכרטיסים
+							הרלוונטים לחברה כבר עכשיו
+						</p>
+					</div>
+					
+					<app-accounting-cards
+							[infoAccountingCards]="infoAccountingCards"
+							[isModal]="selectedCompany"
+							[supplierTaxDeductionCustIdReq]="info.get('report856').value"
+					></app-accounting-cards>
+				</div>
+			</ng-container>
+			<ng-container *ngSwitchCase="4">
+				<div class="step4">
+					<div class="journal-vendor-and-customer-titles">
+						<h1 class="mainTitle">
+							<ng-container
+									*ngIf="
+                  !products.creditJournal &&
+                  !products.bankJournal &&
+                  products.supplierJournal
+                "
+							>
+								הוספת מוצר פקודות יומן ספקים ולקוחות
+							</ng-container>
+							<ng-container
+									*ngIf="
+                  !products.creditJournal &&
+                  products.bankJournal &&
+                  !products.supplierJournal
+                "
+							>
+								הוספת מוצר פ.יומן בנק
+							</ng-container>
+							<ng-container
+									*ngIf="
+                  !products.creditJournal &&
+                  products.bankJournal &&
+                  products.supplierJournal
+                "
+							>
+								הוספת מוצר פקודות יומן ספקים ולקוחות ופ.בנק
+							</ng-container>
+							
+							<ng-container
+									*ngIf="
+                  products.creditJournal &&
+                  !products.bankJournal &&
+                  !products.supplierJournal
+                "
+							>
+								הוספת מוצר פקודות יומן אשראי
+							</ng-container>
+							
+							<ng-container
+									*ngIf="
+                  products.creditJournal &&
+                  products.bankJournal &&
+                  products.supplierJournal
+                "
+							>
+								הוספת מוצר פקודות יומן ספקים ולקוחות ופ.בנק ואשראי
+							</ng-container>
+							
+							<ng-container
+									*ngIf="
+                  products.creditJournal &&
+                  !products.bankJournal &&
+                  products.supplierJournal
+                "
+							>
+								הוספת מוצר פקודות יומן ספקים ופ.אשראי
+							</ng-container>
+							<ng-container
+									*ngIf="
+                  products.creditJournal &&
+                  products.bankJournal &&
+                  !products.supplierJournal
+                "
+							>
+								הוספת מוצר פקודות יומן בנק ואשראי
+							</ng-container>
+						</h1>
+						
+						<h3>
+							הגדרות כלליות ליצירת פקודות יומן לחברת
+							{{ selectedCompany.companyName }}
+						</h3>
+					</div>
+					
+					<ng-container
+							*ngIf="
+              products &&
+                ((products.supplierJournal &&
+                  !products.bankJournal &&
+                  !products.creditJournal) ||
+                  (products.supplierJournal &&
+                    !products.creditJournal &&
+                    products.bankJournal) ||
+                  (products.supplierJournal &&
+                    products.bankJournal &&
+                    products.creditJournal) ||
+                  (products.supplierJournal &&
+                    !products.bankJournal &&
+                    products.creditJournal));
+              else anotherOpt
+            "
+					>
+						<app-journal-vendor-and-customer
+								[infoJournalVendorAndCustomerComponent]="
+                infoJournalVendorAndCustomerComponent
+              "
+								[isModal]="selectedCompany"
+						></app-journal-vendor-and-customer>
+					</ng-container>
+					
+					<ng-template #anotherOpt>
+						<app-journal-bank-and-credit
+								[hide_bankProcessTransType]="
+                this.products &&
+                !this.products.supplierJournal &&
+                ((this.products.bankJournal && !this.products.creditJournal) ||
+                  (!this.products.bankJournal && this.products.creditJournal) ||
+                  (this.products.bankJournal && this.products.creditJournal))
+              "
+								[infoJournalBankAndCreditComponent]="
+                infoJournalBankAndCreditComponent
+              "
+								[isModal]="selectedCompany"
+								[notExportIncomesInput]="notExportIncomesInput"
+								[report856]="info.get('report856').value"
+						></app-journal-bank-and-credit>
+					</ng-template>
+				</div>
+			</ng-container>
+			<ng-container *ngSwitchCase="5">
+				<div class="step5">
+					<div class="journal-vendor-and-customer-titles">
+						<h1 class="mainTitle">
+							<ng-container
+									*ngIf="
+                  !products.creditJournal &&
+                  !products.bankJournal &&
+                  products.supplierJournal
+                "
+							>
+								הוספת מוצר פקודות יומן ספקים ולקוחות
+							</ng-container>
+							<ng-container
+									*ngIf="
+                  !products.creditJournal &&
+                  products.bankJournal &&
+                  !products.supplierJournal
+                "
+							>
+								הוספת מוצר פ.יומן בנק
+							</ng-container>
+							<ng-container
+									*ngIf="
+                  !products.creditJournal &&
+                  products.bankJournal &&
+                  products.supplierJournal
+                "
+							>
+								הוספת מוצר פקודות יומן ספקים ולקוחות ופ.בנק
+							</ng-container>
+							
+							<ng-container
+									*ngIf="
+                  products.creditJournal &&
+                  !products.bankJournal &&
+                  !products.supplierJournal
+                "
+							>
+								הוספת מוצר פקודות יומן אשראי
+							</ng-container>
+							
+							<ng-container
+									*ngIf="
+                  products.creditJournal &&
+                  products.bankJournal &&
+                  products.supplierJournal
+                "
+							>
+								הוספת מוצר פקודות יומן ספקים ולקוחות ופ.בנק ואשראי
+							</ng-container>
+							
+							<ng-container
+									*ngIf="
+                  products.creditJournal &&
+                  !products.bankJournal &&
+                  products.supplierJournal
+                "
+							>
+								הוספת מוצר פקודות יומן ספקים ופ.אשראי
+							</ng-container>
+							<ng-container
+									*ngIf="
+                  products.creditJournal &&
+                  products.bankJournal &&
+                  !products.supplierJournal
+                "
+							>
+								הוספת מוצר פקודות יומן בנק ואשראי
+							</ng-container>
+						</h1>
+						
+						<h3>
+							הגדרות כלליות ליצירת פקודות יומן לחברת
+							{{ selectedCompany.companyName }}
+						</h3>
+					</div>
+					<app-journal-bank-and-credit
+							[hide_bankProcessTransType]="
+              this.products &&
+              !this.products.supplierJournal &&
+              ((this.products.bankJournal && !this.products.creditJournal) ||
+                (!this.products.bankJournal && this.products.creditJournal) ||
+                (this.products.bankJournal && this.products.creditJournal))
+            "
+							[infoJournalBankAndCreditComponent]="
+              infoJournalBankAndCreditComponent
+            "
+							[isModal]="selectedCompany"
+							[notExportIncomesInput]="notExportIncomesInput"
+					></app-journal-bank-and-credit>
+				</div>
+			</ng-container>
+		</ng-container>
+	</div>
+	
+	<div #footer class="footer stepFooter{{ step }}">
+		<ng-container [ngSwitch]="step">
+			<ng-container *ngSwitchCase="1">
+				<button
+						(click)="step = 2; getGeneral()"
+						[disabled]="
+            !(selectedCompany && selectedCompany.companyId) ||
+            (products &&
+              !products.creditJournal &&
+              !products.bankJournal &&
+              !products.supplierJournal)
+          "
+						class="next"
+				>
+					המשך
+				</button>
+			</ng-container>
+			<ng-container *ngSwitchCase="2">
+				<button (click)="processContacts(); step = 1" class="prev">חזרה</button>
+				<button
+						(click)="
+            processContacts();
+            supplierJournal_updateTransTypeStatus();
+            step =
+              products &&
+              ((products.supplierJournal &&
+                !products.creditJournal &&
+                !products.bankJournal) ||
+                (products.supplierJournal &&
+                  !products.creditJournal &&
+                  products.bankJournal) ||
+                (products.supplierJournal &&
+                  products.bankJournal &&
+                  products.creditJournal) ||
+                (products.supplierJournal &&
+                  !products.bankJournal &&
+                  products.creditJournal))
+                ? 3
+                : 4
+          "
+						[disabled]="info && info.invalid"
+						class="next"
+				>
+					המשך לשלב הבא
+				</button>
+			</ng-container>
+			<ng-container *ngSwitchCase="3">
+				<button
+						(click)="
+            infoAccountingCards = childAccountingCardsComponent.info; step = 2
+          "
+						class="prev"
+				>
+					חזרה
+				</button>
+				<button
+						(click)="
+            infoAccountingCards = childAccountingCardsComponent.info; step = 4
+          "
+						[disabled]="
+            childAccountingCardsComponent &&
+            (childAccountingCardsComponent?.loader ||
+              childAccountingCardsComponent?.info?.invalid)
+          "
+						class="next"
+				>
+					המשך לשלב הבא
+				</button>
+			</ng-container>
+			<ng-container *ngSwitchCase="4">
+				<button
+						(click)="
+            products &&
+            ((products.supplierJournal &&
+              !products.creditJournal &&
+              !products.bankJournal) ||
+              (products.supplierJournal &&
+                !products.creditJournal &&
+                products.bankJournal) ||
+              (products.supplierJournal &&
+                products.bankJournal &&
+                products.creditJournal) ||
+              (products.supplierJournal &&
+                !products.bankJournal &&
+                products.creditJournal))
+              ? (infoJournalVendorAndCustomerComponent =
+                  childJournalVendorAndCustomerComponent.info)
+              : saveParamsFromChildJournalBankAndCreditComponent();
+            step =
+              products &&
+              ((products.supplierJournal &&
+                !products.creditJournal &&
+                !products.bankJournal) ||
+                (products.supplierJournal &&
+                  !products.creditJournal &&
+                  products.bankJournal) ||
+                (products.supplierJournal &&
+                  products.bankJournal &&
+                  products.creditJournal) ||
+                (products.supplierJournal &&
+                  !products.bankJournal &&
+                  products.creditJournal))
+                ? 3
+                : 2
+          "
+						class="prev"
+				>
+					חזרה
+				</button>
+				<ng-container
+						*ngIf="
+            products &&
+              ((products.supplierJournal &&
+                !products.creditJournal &&
+                products.bankJournal) ||
+                (products.supplierJournal &&
+                  products.bankJournal &&
+                  products.creditJournal) ||
+                (products.supplierJournal &&
+                  !products.bankJournal &&
+                  products.creditJournal));
+            else anotherOptBtn
+          "
+				>
+					<button
+							(click)="
+              infoJournalVendorAndCustomerComponent =
+                childJournalVendorAndCustomerComponent.info;
+              step = 5
+            "
+							class="next"
+					>
+						המשך לשלב הבא
+					</button>
+				</ng-container>
+				<ng-template #anotherOptBtn>
+					<button
+							(click)="
+              products &&
+              ((products.supplierJournal &&
+                !products.creditJournal &&
+                !products.bankJournal) ||
+                (products.supplierJournal &&
+                  !products.creditJournal &&
+                  products.bankJournal) ||
+                (products.supplierJournal &&
+                  products.bankJournal &&
+                  products.creditJournal) ||
+                (products.supplierJournal &&
+                  !products.bankJournal &&
+                  products.creditJournal))
+                ? (infoJournalVendorAndCustomerComponent =
+                    childJournalVendorAndCustomerComponent.info)
+                : saveParamsFromChildJournalBankAndCreditComponent();
+              sendAll()
+            "
+							[disabled]="
+              childJournalBankAndCreditComponent &&
+              childJournalBankAndCreditComponent?.info?.invalid
+            "
+							class="next"
+					>
+						סיום
+					</button>
+				</ng-template>
+			</ng-container>
+			<ng-container *ngSwitchCase="5">
+				<button
+						(click)="saveParamsFromChildJournalBankAndCreditComponent(); step = 4"
+						class="prev"
+				>
+					חזרה
+				</button>
+				<button
+						(click)="
+            saveParamsFromChildJournalBankAndCreditComponent(); sendAll()
+          "
+						class="next"
+				>
+					סיום
+				</button>
+			</ng-container>
+		</ng-container>
+	</div>
+</div>
+
+<!--<ng-container *ngIf="showModalTransType">-->
+<!--    <p-dialog (visibleChange)="aaa = false" [visible]="showModalTransType"-->
+<!--                appendTo="body"-->
+<!--                [modal]="true"-->
+<!--                (onHide)="goToCompanyProducts()"-->
+<!--                [resizable]="false"-->
+<!--                styleClass="modalTransType">-->
+
+<!--        <h2>-->
+<!--            הגדרת-->
+<!--            סוגי תנועה-->
+<!--        </h2>-->
+
+<!--        <ul>-->
+<!--            <li>-->
+<!--                <p>-->
+<!--                    <strong>-->
+<!--                        בחרת-->
+<!--                    </strong>-->
+<!--                    להשתמש בסוגי תנועה לחברה זו-->
+<!--                </p>-->
+<!--            </li>-->
+<!--            <li>-->
+<!--                <p>-->
+<!--                    אנו מביאים-->
+<!--                    <strong>-->
+<!--                        אוטומטית-->
+<!--                    </strong>-->
+<!--                    את סוגי התנועה הכלליים של כל חברה-->
+<!--                </p>-->
+<!--            </li>-->
+<!--            <li>-->
+<!--                <p>-->
+<!--                    <strong>-->
+<!--                        ניתן להוסיף ולשנות-->
+<!--                    </strong>-->
+<!--                    את סוגי התנועה במערכת מתוך הסוגים שקיימים בהנה”ח-->
+<!--                </p>-->
+<!--            </li>-->
+<!--            <li>-->
+<!--                <p>-->
+<!--                    סוגי התנועה ניתנים להוספה ושינוי-->
+
+<!--                    <strong>-->
+<!--                        במסך נתוני חברה בטאב סוגי תנועה-->
+<!--                    </strong>-->
+<!--                </p>-->
+<!--            </li>-->
+
+<!--            <li class="tip">-->
+<!--                <p>-->
+<!--                    <strong>-->
+<!--                        יש לבדוק ולאשר את סוגי התנועה שזוהו אוטומטית ע”י המערכת-->
+<!--                    </strong>-->
+<!--                </p>-->
+<!--            </li>-->
+<!--        </ul>-->
+
+<!--        <div (click)="moveToTransType()"-->
+<!--             class="approve">-->
+<!--            <span>-->
+<!--                אשרו את סוגי התנועה-->
+<!--            </span>-->
+<!--        </div>-->
+
+<!--        <div (click)="updateTransTypeStatus()" class="updateTransTypeStatus">-->
+<!--           <span>-->
+<!--      לא כרגע, עד ההגדרה המערכת תעבוד ללא סוגי תנועה-->
+<!--           </span>-->
+<!--        </div>-->
+<!--    </p-dialog>-->
+<!--</ng-container>-->
+
+<ng-container *ngIf="showModalScreenTransTypes">
+	<p-dialog (visibleChange)="showModalScreenTransTypes = false"
+			(onHide)="showModalScreenTransTypes = false"
+			[visible]="(showModalScreenTransTypes)"
+			[modal]="true"
+			[resizable]="false"
+			appendTo="body"
+			styleClass="showModalScreenTransTypes"
+	>
+		<p-header> הגדרת סוגי תנועה</p-header>
+		
+		<app-trans-type [isModal]="selectedCompany"></app-trans-type>
+	</p-dialog>
+</ng-container>

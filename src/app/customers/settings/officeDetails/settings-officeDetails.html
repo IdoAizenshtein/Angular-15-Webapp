@@ -1,0 +1,224 @@
+<!--<div class="rowOfCompanies" *ngIf="(settingsComponent.arrCompanies$)| async as arrCompanies">-->
+<!--&lt;!&ndash;<ng-container *ngIf="(settingsComponent.selectedCompany$)| async as selectedCompany">&ndash;&gt;-->
+<!--<p-dropdown *ngIf="arrCompanies.length > 5"-->
+<!--[options]="arrCompanies"-->
+<!--[(ngModel)]="(settingsComponent.selectedCompany$)| async"-->
+<!--(onChange)="settingsComponent.selectedCompany$.next($event)"-->
+<!--[dropdownIcon]="'p-dropdown-icon'"-->
+<!--placeholder="{{'actions.company' | translate}}"-->
+<!--optionLabel="companyName">-->
+<!--<ng-template let-company pTemplate="item">-->
+<!--<div class="p-helper-clearfix">-->
+<!--<div>{{company.value.companyName}}</div>-->
+<!--</div>-->
+<!--</ng-template>-->
+<!--</p-dropdown>-->
+
+<!--<ul *ngIf="arrCompanies.length <= 5">-->
+<!--<li *ngFor="let item of arrCompanies" (click)="settingsComponent.selectedCompany$.next(item)"-->
+<!--[class.active]="item === ((settingsComponent.selectedCompany$)| async)">-->
+<!--{{item.companyName}}-->
+<!--</li>-->
+<!--</ul>-->
+<!--&lt;!&ndash;</ng-container>&ndash;&gt;-->
+<!--</div>-->
+
+<div [appScrollHeight]="250" class="scrollPage scrollbar-dynamic">
+  <!--<div>{{personalInfo.valid}}</div>-->
+  <div class="myaccSett">
+    <div style="width: 400px; flex: none">
+      <form
+        novalidate
+        [formGroup]="personalInfo"
+        (ngSubmit)="updateCompany()"
+        #personalInfoFrm
+      >
+        <button type="submit" style="display: none" #submitBtn></button>
+        <div class="sett-table">
+          <div>
+            <div>שם המשרד</div>
+            <div>
+              <input
+                type="text"
+                (paste)="handleKeyPress($event)"
+                (keypress)="handleKeyPress($event)"
+                id="officeName"
+                [ngClass]="{
+                  err:
+                    personalInfo.get('officeName').invalid && personalInfo.dirty
+                }"
+                formControlName="officeName"
+                (blur)="submitBtn.click()"
+              />
+            </div>
+          </div>
+          <div style="position: relative">
+            <div>ת.ז./ ח.פ.</div>
+            <div>
+              <input
+                type="text"
+                id="officeHp"
+                (paste)="handleKeyPress($event)"
+                (keypress)="handleKeyPress($event)"
+                class="ltr"
+                [ngClass]="{
+                  err:
+                    personalInfo.get('officeHp').invalid && personalInfo.dirty
+                }"
+                formControlName="officeHp"
+                (blur)="submitBtn.click()"
+              />
+            </div>
+
+            <div
+              *ngIf="
+                personalInfo.get('officeHp').value &&
+                personalInfo.get('officeHp').invalid
+              "
+              style="
+                position: absolute;
+                right: 415px;
+                top: 10px;
+                width: 300px;
+                color: #df0000;
+              "
+            >
+              המספר שהוקלד לא תקין
+            </div>
+          </div>
+
+          <div>
+            <div>עיר</div>
+            <div>
+              <p-dropdown
+                #dd
+                styleClass="listCities"
+                placeholder="בחר עיר"
+                [options]="sharedService.cities$ | async"
+                formControlName="officeCity"
+                [scrollHeight]="'135px'"
+                (onFocus)="clearFilter(dd)"
+                [dropdownIcon]="'p-dropdown-icon'"
+                optionLabel="cityName"
+                dataKey="cityId"
+                appendTo="body"
+
+                [style]="{ width: '100%' }"
+                [filter]="true"
+                (onChange)="submitBtn.click()"
+              >
+              </p-dropdown>
+            </div>
+          </div>
+          <div>
+            <div>כתובת</div>
+            <div>
+              <input
+                type="text"
+                id="officeAddress"
+                (paste)="handleKeyPress($event)"
+                (keypress)="handleKeyPress($event)"
+                [ngClass]="{
+                  err:
+                    personalInfo.get('officeAddress').invalid &&
+                    personalInfo.dirty
+                }"
+                formControlName="officeAddress"
+                (blur)="submitBtn.click()"
+              />
+            </div>
+          </div>
+          <div>
+            <div>שם איש קשר</div>
+            <div>
+              <input
+                type="text"
+                (paste)="handleKeyPress($event)"
+                (keypress)="handleKeyPress($event)"
+                id="officeContact"
+                [ngClass]="{
+                  err:
+                    personalInfo.get('officeContact').invalid &&
+                    personalInfo.dirty
+                }"
+                formControlName="officeContact"
+                (blur)="submitBtn.click()"
+              />
+            </div>
+          </div>
+
+          <div style="position: relative">
+            <div>מייל</div>
+            <div>
+              <input
+                type="text"
+                class="ltr"
+                [ngClass]="{
+                  err:
+                    personalInfo.get('officeMail').invalid && personalInfo.dirty
+                }"
+                formControlName="officeMail"
+                id="officeMail"
+                (paste)="handleKeyPress($event)"
+                (keypress)="handleKeyPress($event)"
+                autocomplete="mail"
+                (blur)="submitBtn.click()"
+              />
+            </div>
+            <div
+              *ngIf="
+                personalInfo.get('officeMail').value &&
+                personalInfo.get('officeMail').invalid
+              "
+              style="
+                position: absolute;
+                right: 415px;
+                top: 10px;
+                width: 300px;
+                color: #df0000;
+              "
+            >
+              כתובת המייל לא תקינה
+            </div>
+          </div>
+
+          <div style="position: relative">
+            <div>טלפון</div>
+            <div>
+              <input
+                type="text"
+                id="officePhone"
+                class="ltr"
+                [ngClass]="{
+                  err:
+                    personalInfo.get('officePhone').invalid &&
+                    personalInfo.dirty
+                }"
+                formControlName="officePhone"
+                (paste)="handleKeyPress($event)"
+                (keypress)="handleKeyPress($event)"
+                autocomplete="tel-national"
+                (blur)="submitBtn.click()"
+              />
+            </div>
+            <div
+              *ngIf="
+                personalInfo.get('officePhone').value &&
+                personalInfo.get('officePhone').invalid
+              "
+              style="
+                position: absolute;
+                right: 415px;
+                top: 10px;
+                width: 300px;
+                color: #df0000;
+              "
+            >
+              המספר שהוקלד לא תקין
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

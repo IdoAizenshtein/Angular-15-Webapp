@@ -1,0 +1,329 @@
+@import 'fonts';
+@import 'heights-sizes';
+@import 'colors';
+@import 'base';
+@import 'lang';
+
+@mixin panelDD(
+  $right,
+  $left,
+  $top: auto,
+  $righ: auto,
+  $bottom: auto,
+  $lef: auto,
+  $width: auto,
+  $height: auto,
+  $zIndex: 99999999
+) {
+  .menu-with-panel {
+    position: relative;
+    .panelDD {
+      position: absolute;
+      bottom: $bottom;
+      #{$right}: $righ;
+      top: $top;
+      #{$left}: $lef;
+      width: $width;
+      height: $height;
+      z-index: $zIndex;
+      text-align: right;
+      color: $color-base-font-titles;
+      background: $white;
+      //border: 1px solid $border-gray;
+      @include font(bold, 15px, 30px);
+      @include border-radius(4px);
+      @include padding-box(0px, 0px, 0px, 0px);
+      @extend %box-sizing-border;
+      margin-top: 2px;
+      //box-shadow: -2px 2px 4px 1px #cecece;
+      box-shadow: 0 -1px 2px 0 rgba(0, 0, 0, 0.12),
+        0 4px 8px 0 rgba(0, 0, 0, 0.12), 0 2px 4px 0 rgba(0, 0, 0, 0.08);
+    }
+
+    .trigger-disabled {
+      pointer-events: none;
+      opacity: 0.7;
+    }
+  }
+}
+
+@mixin dirMenu($lang) {
+  $left: get-side($lang, left);
+  $right: get-side($lang, right);
+
+  p-splitbutton {
+    display: block;
+  }
+
+  .menu-dd {
+    text-align: $left;
+
+    & > button.mat-button,
+    & > button.buttonDD {
+      color: $color-base-font-titles;
+      height: $element-height-select-tab-input-search;
+      background: $white;
+      //border: 2px solid $border-gray;
+      border-top: none !important;
+      border-left: none !important;
+      border-right: none !important;
+      border-bottom: none !important; // 1px solid #012157;
+      border-radius: 0 !important;
+      @include font(regular, 15px, 30px);
+      @include border-radius(3px);
+      @include padding-box(0, 12px, 0, 12px);
+      @extend %box-sizing-border;
+      &:not(.no-selection) {
+        cursor: pointer;
+        &:active,
+        &.opened {
+          //background: $bg-tab-selected;
+          //color: $white;
+        }
+        &:not(.opened):not(:active):hover {
+          //background: $bg-tab-hover;
+        }
+        &:after {
+          content: '\f107';
+          font-family: 'Font Awesome 5 Free';
+          font-weight: 900;
+          font-size: 120%;
+          -webkit-text-stroke: 1px white;
+          //content: '';
+          display: inline-block;
+          padding: 0;
+          vertical-align: middle;
+          //width: 0;
+          //height: 0;
+          //border-#{$left}: 5px solid transparent;
+          //border-#{$right}: 5px solid transparent;
+          //border-top: 5px solid $color-base-font-titles;
+
+          & {
+            margin-#{$right}: 10px; //auto;
+          }
+
+          //margin-right: 8px;
+        }
+      }
+    }
+
+    & > button.mat-button p,
+    & > button.buttonDD p {
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+    }
+  }
+
+  .mat-menu-panel.mat-menu-below {
+    .mat-menu-content {
+      padding: 0;
+    }
+    .mat-menu-item {
+      color: $color-base-font-titles;
+      height: $element-height-select-tab-input-search;
+      background: $white;
+      @include padding-box(0, 15px, 0, 15px);
+      @extend %box-sizing-border;
+      @include font(semi-bold, 16px, 30px);
+
+      &:hover {
+        background: $bg-tab-hover;
+      }
+    }
+  }
+
+  .p-splitbutton {
+    color: $color-base-font-titles;
+    width: 100%;
+    display: flex;
+    display: -ms-flexbox;
+    justify-content: space-between;
+    min-width: 110px;
+
+    .p-button {
+      @include font(semi-bold, 16px, 32px);
+      color: $color-base-font-titles !important;
+      //@include border-radius(3px);
+      @include padding-box(0);
+      @extend %box-sizing-border;
+      height: $element-height-select-tab-input-search;
+      background: $white !important;
+      //border: 2px solid $border-gray !important;
+      border: none;
+
+      .p-button-text {
+        padding: 0 !important;
+      }
+      &.p-splitbutton-menubutton {
+        border-top-#{$right}-radius: 0px !important;
+        border-bottom-#{$right}-radius: 0px !important;
+        border-#{$right}: none !important;
+
+        &:hover {
+          //background: $bg-tab-hover !important;
+        }
+        &:active {
+          background: $color-base-font; // $bg-tab-selected !important;
+          color: $white !important;
+        }
+      }
+      &.p-button-text-only {
+        border-top-#{$left}-radius: 0px !important;
+        border-bottom-#{$left}-radius: 0px !important;
+        border-#{$left}: none !important;
+        //cursor: auto !important;
+        //width: 85%;
+        .p-button-text {
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+      }
+    }
+    .p-button.p-splitbutton-menubutton {
+      //width: 15% !important;
+      overflow: hidden;
+      width: 2em;
+      vertical-align: top;
+      .p-button-icon{
+        font-size: 11px;
+        top: 50%;
+        left: 50%;
+        margin-top: -0.5em;
+        margin-left: -0.5em;
+        width: 1em;
+        height: 1em;
+        position: absolute;
+      }
+      .fa-caret-down {
+        @extend %caret-down-replacement;
+      }
+    }
+
+    .p-splitbutton-defaultbutton{
+      .p-button-label{
+        text-align: right;
+      }
+    }
+  }
+
+  .p-splitbutton-button {
+  }
+
+  .p-tieredmenu {
+    width: 100% !important;
+    padding: 0 !important;
+    //box-shadow: none !important;
+    border: 1px solid transparent;
+    //border: 2px solid $border-gray;
+    color: $font-select-color;
+    background: $white;
+
+    border-bottom-#{$left}-radius: 3px;
+    border-bottom-#{$right}-radius: 3px;
+
+    -webkit-border-bottom-#{$left}-radius: 3px;
+    -webkit-border-bottom-#{$right}-radius: 3px;
+
+    -moz-border-bottom-#{$left}-radius: 3px;
+    -moz-border-bottom-#{$right}-radius: 3px;
+
+    -ms-border-bottom-#{$left}-radius: 3px;
+    -ms-border-bottom-#{$right}-radius: 3px;
+
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.12), 0 2px 4px 0 rgba(0, 0, 0, 0.08), 0 0 4px 0 rgba(0, 0, 0, 0.08) !important;
+
+    .p-menuitem {
+      display: flex;
+      margin: 0 !important;
+      justify-content: flex-end;
+      align-items: center;
+
+      .p-menuitem-link {
+        color: $color-base-font-titles !important;
+        background: $white !important;
+        height: $row-select-option-height !important;
+        @extend %box-sizing-border;
+        @include font(semi-bold, 16px, 30px);
+        padding: 0;
+        vertical-align: middle;
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        align-content: flex-start;
+
+        flex: 1;
+        .p-menuitem-icon {
+          margin-right: 0.25em;
+          margin-left: 0.25em;
+        }
+
+        &:hover {
+          background: $color-base-font !important;
+          color: $white !important;
+          //background: $bg-tab-hover !important;
+        }
+      }
+    }
+  }
+
+  .p-dialog-content {
+    box-shadow: none !important;
+    //border: 2px solid $border-gray;
+    color: $color-base-font; // $font-select-color;
+    background: $white;
+
+    border-bottom-#{$left}-radius: 3px;
+    border-bottom-#{$right}-radius: 3px;
+
+    -webkit-border-bottom-#{$left}-radius: 3px;
+    -webkit-border-bottom-#{$right}-radius: 3px;
+
+    -moz-border-bottom-#{$left}-radius: 3px;
+    -moz-border-bottom-#{$right}-radius: 3px;
+
+    -ms-border-bottom-#{$left}-radius: 3px;
+    -ms-border-bottom-#{$right}-radius: 3px;
+    margin-top: -2px;
+  }
+
+  .p-dropdown-panel {
+    margin-top: 0px;
+    margin-#{$right}: -2px;
+    margin-#{$left}: -2px;
+  }
+
+  .btnDDArrow {
+    cursor: pointer;
+    &:after {
+      content: '\f107';
+      font-family: 'Font Awesome 5 Free';
+      font-weight: 900;
+      font-size: 120%;
+      -webkit-text-stroke: 1px white;
+      display: inline-block;
+      padding: 0;
+      vertical-align: middle;
+
+      & {
+        margin-#{$right}: 10px; //auto;
+      }
+    }
+  }
+}
+
+body {
+  &.isRTL,
+  .isRTL {
+    $lang: rtl;
+    @include dirMenu($lang);
+  }
+
+  &.isLTR,
+  .isLTR {
+    $lang: ltr;
+    @include dirMenu($lang);
+  }
+}

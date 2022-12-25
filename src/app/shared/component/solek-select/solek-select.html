@@ -1,0 +1,127 @@
+<div class="menu-dd menu-with-panel">
+	<button
+			class="buttonDD no-selection"
+			*ngIf="
+      userService.appData?.userData?.slika?.length === 1 &&
+        userService.appData.userData.slika[0].children.length === 1;
+      else selectionAvailable
+    "
+	>
+		<!--<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/bank{{userService.appData.userData.creditCards[0].children[0].creditCardTypeId}}.png" *ngIf="userService.appData.userData.creditCards[0].children[0].creditCardTypeId">-->
+		<p>
+			{{
+			userService.appData.userData.slika[0].children[0].solekDesc ||
+			('clearingAgencies.' +
+			userService.appData.userData.slika[0].children[0].solekBankId
+					| translate) +
+			' - ' +
+			userService.appData.userData.slika[0].children[0].solekNum
+			}}
+		</p>
+	</button>
+	
+	<ng-template #selectionAvailable>
+		<button
+				class="buttonDD"
+				(click)="showPanelDD = !showPanelDD"
+				[class.opened]="showPanelDD"
+				style="max-width: 40ch"
+				[matTooltip]="'appWalk.customers.solekSelect' | translate"
+				matTooltipPosition="above"
+		>
+			<p>
+				{{
+				checkAll ? ('filters.allClearingAgencies' | translate) : textSoleks
+				}}
+			</p>
+		</button>
+	</ng-template>
+	
+	<div class="panelDD accountsPanel" *ngIf="showPanelDD" [@slideInOutDD]>
+		<ul
+				class="scroll-chrome"
+				tabindex="-1"
+				(keydown.enter)="showPanelDD = false"
+		>
+			<li
+					*ngIf="
+          userService.appData.userData.slika?.length > 1 ||
+          (userService.appData.userData.slika?.length === 1 &&
+            userService.appData.userData.slika[0].children.length > 1)
+        "
+			>
+				<p-checkbox checkboxIcon="fa fa-check"
+				            [inputId]="'all'"
+				            [binary]="true"
+				            [ngModel]="checkAll"
+				            (onChange)="checkAll = !checkAll; changeAll()"
+				            [label]="'filters.allClearingAgencies' | translate"
+				>
+				</p-checkbox>
+			</li>
+			<li *ngFor="let solek of userService.appData.userData.slika">
+				<div>
+					<p-checkbox checkboxIcon="fa fa-check"
+					            [inputId]="solek?.companyAccountId"
+					            [binary]="true"
+					            [ngModel]="solek.check"
+					            (onChange)="
+              solek.check = !solek.check; changeSelectionAt(solek)
+            "
+					>
+					</p-checkbox>
+					<label [for]="solek?.companyAccountId">
+						<img
+								style="height: auto; width: auto; position: relative;" fill [ngSrc]="(solek?.bankId ? solek.bankId : '') | toIconSrc: 'bank'"
+								[alt]="solek.bankId"
+						/>
+						<p>{{ solek.accountNickname }}</p>
+					</label>
+				</div>
+				<ul>
+					<li *ngFor="let item of solek.children">
+						<div style="white-space: nowrap">
+							<p-checkbox checkboxIcon="fa fa-check"
+							            [inputId]="item.solekNum"
+							            [binary]="true"
+							            [ngModel]="item.check"
+							            (onChange)="
+                  item.check = !item.check; changeSelectionAt(item, solek)
+                "
+							            [label]="
+                  item.solekDesc ||
+                  ('clearingAgencies.' + item.solekBankId | translate) +
+                    ' ' +
+                    item.solekNum
+                "
+							>
+							</p-checkbox>
+							<!--<span *ngIf="!item.balanceIsUpToDate" class="outdated"-->
+							<!--[pTooltip]="(item.ballanceLastUpdatedDate| date:'dd/MM/yy') + ' ' + item.balanceOutdatedDays">-->
+							<span *ngIf="!item.balanceIsUpToDate" class="outdated">
+                <!--              <span *ngIf="!item.alertStatus && !item.balanceIsUpToDate" class="outdated">-->
+                &nbsp;<span style="color: #0f3860">-</span>&nbsp;{{
+								'filters.outdated' | translate
+								}}
+              </span>
+							<span
+									*ngIf="
+                  item.alertStatus | alertStatusHumanize as alertStatusHumanized
+                "
+									class="outdated"
+							>
+                &nbsp;<span style="color: #0f3860">-</span>&nbsp;{{
+								alertStatusHumanized
+								}}
+              </span>
+							<!--<label for="{{item?.solekNum}}">-->
+							<!--<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/bank{{item?.solekBankId}}.png" *ngIf="item?.solekBankId">-->
+							<!--<p>{{item.solekBankId}} {{item.solekNum}}</p>-->
+							<!--</label>-->
+						</div>
+					</li>
+				</ul>
+			</li>
+		</ul>
+	</div>
+</div>

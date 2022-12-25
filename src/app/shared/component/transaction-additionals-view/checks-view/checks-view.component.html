@@ -1,0 +1,415 @@
+<div
+		class="additional-details-container"
+		[style.width.px]="containerWidth"
+		[style.height.px]="containerHeight"
+		tabindex="-1"
+		(keydown.esc)="hideInfo()"
+>
+	<div class="arrow"></div>
+	
+	<ng-container
+			*ngIf="additionalDetails$ | async as additionalDetails; else loading"
+	>
+		<div *ngIf="!(additionalDetails?.length > 0)" class="no-rows-found">
+			{{ 'expressions.noDetailsForCheque' | translate }}
+		</div>
+		
+		<ng-container *ngIf="additionalDetails.length === 1">
+			<div
+					style="
+          display: flex;
+          flex-flow: row nowrap;
+          justify-content: flex-end;
+          margin-bottom: 0.4em;
+        "
+			>
+				<div style="display: flex; width: 90px; justify-content: space-between">
+					<img
+							class="button-link"
+						 ngSrc="/assets/images/to-printer-sm.png"
+							height="19"
+							width="20"
+							(click)="printAdditionalDetails()"
+					/>
+					<!--<span class="fa fa-print fa-fw button-link"></span>-->
+					<img
+							class="button-link"
+						 ngSrc="/assets/images/to-xls-sm.png"
+							height="19"
+							width="20"
+							(click)="exportAdditionalDetails('EXCEL')"
+					/>
+					<!--<span class="fa fa-file-excel fa-fw button-link"></span>-->
+					<span
+							class="fa fa-times fa-fw button-link"
+							(click)="closed.next(true)"
+					></span>
+				</div>
+			</div>
+			<div class="additional-details-check" style="display: flex">
+				<div class="header-container">
+					<div class="header-row">
+						<div class="cell-1">{{ 'titles.bank' | translate }}</div>
+						<div class="cell-2">{{ 'titles.branch' | translate }}</div>
+						<div class="cell-3">{{ 'titles.accountFull' | translate }}</div>
+						<div class="cell-4">{{ 'titles.checkNumber' | translate }}</div>
+						<div class="cell-5">{{ 'titles.depositDate' | translate }}</div>
+						<div class="cell-6">{{ 'titles.sum' | translate }}</div>
+					</div>
+				</div>
+				<div class="body-container" style="flex: 0 0 auto">
+					<div
+							class="body-row"
+							*ngFor="let adtnlRow of additionalDetails; index as i"
+							[tabindex]="i"
+					>
+						<div class="cell-1">
+							<app-bank-view
+									[bankNumber]="adtnlRow.chequeBankNumber"
+									[showName]="true"
+									style="align-self: center; flex: 0 0 auto"
+							></app-bank-view>
+							<!--<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/bank{{adtnlRow.chequeBankNumber}}.png"-->
+							<!--*ngIf="adtnlRow.chequeBankNumber"-->
+							<!--alt="{{adtnlRow.chequeBankNumber}}"-->
+							<!--style="align-self: center; flex: 0 0 auto; margin: 0 4px;">-->
+						</div>
+						<div class="cell-2">{{ adtnlRow.chequeBranchNumber }}</div>
+						<div class="cell-3">{{ adtnlRow.chequeAccountNumber }}</div>
+						<div class="cell-4">{{ adtnlRow.chequeNumber }}</div>
+						<div class="cell-5">
+							{{ adtnlRow.depositDate | date: 'dd/MM/yy' }}
+						</div>
+						<div
+								class="cell-6 ltrNum"
+								[ngClass]="transaction.hova ? 'sum-debit' : 'sum-credit'"
+						>
+							<app-sum-view [sum]="adtnlRow.chequeTotal"></app-sum-view>
+						</div>
+					</div>
+				</div>
+				<div class="image-container" style="flex: 0 1 100%; border: none">
+					<ng-container *ngIf="additionalDetails[0].image">
+						<img
+								style="height: auto; width: auto; position: relative;" [src]="checkImageSourceFrom(additionalDetails[0])"
+								alt="{{ additionalDetails[0].chequeBankNumber }}"
+						/>
+					</ng-container>
+					<div class="no-rows-found" *ngIf="!additionalDetails[0].image">
+						{{ 'expressions.noImageExistsForCheck' | translate }}
+					</div>
+				</div>
+			</div>
+		</ng-container>
+		<ng-container *ngIf="additionalDetails.length > 1">
+			<div
+					style="
+          display: flex;
+          flex-flow: row nowrap;
+          height: 100%;
+          overflow: hidden;
+        "
+			>
+				<div class="additional-details-checks" style="flex: 1 1 100%">
+					<div
+							style="
+              display: flex;
+              flex-flow: row nowrap;
+              justify-content: space-between;
+              margin-bottom: 0.4em;
+              flex: 0 0 auto;
+              align-items: center;
+              height: 2.4em;
+            "
+					>
+            <span style="font-size: 93%">
+              {{ 'expressions.traverseChecksMessage0' | translate }}
+	            &uarr;{{
+	            'expressions.traverseChecksMessageKeysConcat' | translate
+	            }}&darr; {{ 'expressions.traverseChecksMessage1' | translate }}
+            </span>
+						<!--                        <img class="button-link" style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/to-xls-sm.png" height="19" width="20"-->
+						<!--                             style="opacity: 0.4"/>-->
+						<!--<span class="fa fa-file-excel fa-fw button-link"></span>-->
+					</div>
+					<div
+							class="header-container"
+							[class.body-has-scroll]="additionalBodyHasScroll"
+							#tableHeader
+					>
+						<div class="header-row">
+							<div class="cell-1">
+								{{ 'titles.beneficiaryName' | translate }}
+							</div>
+							<div class="cell-2">{{ 'titles.bank' | translate }}</div>
+							<div class="cell-3">{{ 'titles.branch' | translate }}</div>
+							<div class="cell-4">{{ 'titles.accountFull' | translate }}</div>
+							<div class="cell-5" *ngIf="!isJournal">
+								{{ 'titles.category' | translate }}
+							</div>
+							<div class="cell-6">{{ 'titles.checkNumber' | translate }}</div>
+							<div class="cell-7">{{ 'titles.sum' | translate }}</div>
+							<div class="cell-isCustIdCards" *ngIf="isCustIdCards">
+								כרטיס נגדי
+							</div>
+							<div
+									class="cell-8"
+									[pTooltip]="'sumsTitles.match' | translate"
+									tooltipPosition="top"
+									appendTo="body"
+									[showDelay]="300"
+							>
+								<img
+										 ngSrc="/assets/images/matching.png"
+										*ngIf="!isJournal"
+										height="16"
+										width="16"
+								/>
+							</div>
+						</div>
+					</div>
+					<div
+							[appScrollHeight]="tableHeader.getBoundingClientRect().bottom"
+							class="scrollbar-dynamic"
+							style="position: relative"
+							#additionalBodyContainer
+					>
+						<div
+								class="body-row"
+								*ngFor="let adtnlRow of additionalDetails; index as i"
+								[tabindex]="i"
+								#checksChain
+								[class.body-row-selected]="selectedCheck === adtnlRow"
+								(click)="selectedCheck = adtnlRow"
+								(keydown.arrowup)="
+                stepAdditionalCheckRow(i - 1, additionalDetails)
+              "
+								(keydown.arrowdown)="
+                stepAdditionalCheckRow(i + 1, additionalDetails)
+              "
+						>
+							<div class="cell-1">{{ adtnlRow.accountMutavName }}</div>
+							<div class="cell-2">
+								<app-bank-view
+										[bankNumber]="adtnlRow.chequeBankNumber"
+										[showName]="true"
+										style="align-self: center; flex: 0 0 auto"
+								></app-bank-view>
+								<!--<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/bank{{adtnlRow.chequeBankNumber}}.png"-->
+								<!--*ngIf="adtnlRow.chequeBankNumber"-->
+								<!--alt="{{adtnlRow.chequeBankNumber}}"-->
+								<!--style="align-self: center; flex: 0 0 auto; margin: 0 4px;">-->
+							</div>
+							<div class="cell-3">{{ adtnlRow.chequeBranchNumber }}</div>
+							<div class="cell-4">{{ adtnlRow.chequeAccountNumber }}</div>
+							<div
+									class="cell-5"
+									style="overflow: visible; min-width: 0"
+									*ngIf="!isJournal"
+							>
+								<app-category-select
+										(changed)="adtnlRow.selectedTransType=$event.value; changeCategory(adtnlRow, $event)"
+										[ngModelVal]="adtnlRow.selectedTransType"
+										[autoDisplayFirst]="false"
+										[style]="{ width: '100%' }"
+										[categories]="
+                    userService.appData?.userData?.companySelect
+                      ?.companyTransTypes
+                  "
+										[companyId]="
+                    userService.appData?.userData?.companySelect?.companyId
+                  "
+										[filterBy]="'transTypeName'"
+										[filter]="false"
+										[inputId]="'transTypeId$' + i"
+										[placeholder]="('actions.select' | translate) + '...'"
+								>
+								</app-category-select>
+							</div>
+							<div class="cell-6">{{ adtnlRow.chequeNumber }}</div>
+							<div
+									class="cell-7 ltrNum"
+									[ngClass]="transaction.hova ? 'sum-debit' : 'sum-credit'"
+							>
+								<app-sum-view [sum]="adtnlRow.chequeTotal"></app-sum-view>
+							</div>
+							<div
+									class="cell-isCustIdCards btnDDArrow"
+									[pTooltip]="getCustName(adtnlRow.custId)"
+									tooltipPosition="top"
+									(click)="companyGetCustomerEmit(adtnlRow)"
+									*ngIf="isCustIdCards"
+							>
+								{{ adtnlRow.custId ? adtnlRow.custId : ' ' }}
+							</div>
+							<div class="cell-8" *ngIf="!isJournal">
+								<i
+										class="fas fa-fw"
+										style="cursor: pointer"
+										(click)="
+                    hideInfo();
+                    router.navigate(
+                      [
+                        !this.userService.appData.userData.accountant
+                          ? adtnlRow.matchPrc !== 100
+                            ? '/cfl/cash-flow/bankmatch/bank'
+                            : '/cfl/cash-flow/bankmatch/bank/matched'
+                          : adtnlRow.matchPrc !== 100
+                          ? '/accountants/companies/cash-flow/bankmatch/bank'
+                          : '/accountants/companies/cash-flow/bankmatch/bank/matched'
+                      ],
+                      { queryParamsHandling: 'preserve' }
+                    )
+                  "
+										[ngClass]="adtnlRow.matchPrc === 100 ? 'fa-check' : 'fa-ban'"
+										[matTooltip]="
+                    'appWalk.customers.financialManagement.bankAccount.details.' +
+                      (adtnlRow.matchPrc === 100
+                        ? 'matchHandle-matched'
+                        : 'matchHandle-notMatched') | translate
+                  "
+										matTooltipPosition="before"
+								></i>
+							</div>
+							<div class="cell-8" *ngIf="isJournal">
+								<ng-container *ngIf="adtnlRow.fileId === null; else fileId">
+									<mat-icon
+											svgIcon="doc"
+											(click)="
+                      showArchiveModalFromTransactionAdditional.emit(adtnlRow)
+                    "
+											style="
+                      width: 14px;
+                      vertical-align: middle;
+                      color: #141414;
+                      cursor: pointer;
+                    "
+									></mat-icon>
+								</ng-container>
+								
+								<ng-template #fileId>
+									<ng-container
+											*ngIf="
+                      (!adtnlRow.linkId ||
+                        (adtnlRow.linkId &&
+                          adtnlRow.linkId ===
+                            '00000000-0000-0000-0000-000000000000')) &&
+                      (!adtnlRow.pictureLink ||
+                        (adtnlRow.pictureLink &&
+                          adtnlRow.pictureLink ===
+                            '00000000-0000-0000-0000-000000000000'))
+                    "
+									>
+										<mat-icon
+												svgIcon="doc"
+												style="
+                        width: 14px;
+                        vertical-align: middle;
+                        color: #41aae0;
+                      "
+										></mat-icon>
+									</ng-container>
+								</ng-template>
+							</div>
+						</div>
+					</div>
+					<div
+							class="footer-container"
+							[class.body-has-scroll]="additionalBodyHasScroll"
+							[class.isCustIdCardsCheck]="isCustIdCards"
+							*ngIf="additionalDetails.length > 1"
+					>
+						<div>
+							{{ 'sumsTitles.total' | translate }}
+							{{ additionalDetails.length }}
+							{{ 'expressions.checks' | translate }}
+						</div>
+						<div
+								class="ltrNum"
+								style="flex: 0 0 130px; -ms-flex: 0 0 130px"
+								[ngClass]="transaction.hova ? 'sum-debit' : 'sum-credit'"
+						>
+							<app-sum-view
+									[sum]="transactionAdditionalDetailsSum"
+							></app-sum-view>
+						</div>
+					</div>
+				</div>
+				<div class="browser-view">
+					<div
+							style="
+              display: flex;
+              display: -ms-flex;
+              flex-flow: row nowrap;
+              justify-content: space-between;
+              margin-bottom: 0.4em;
+              align-items: center;
+              height: 2.4em;
+            "
+					>
+						<p-dropdown
+								class="printOptionSelected"
+								[(ngModel)]="printOptionStub"
+								[options]="printOptions"
+								[style]="{ width: '130px' }"
+								[placeholder]="'הדפסה'"
+								(onChange)="
+                printOptionSelected($event, printOpts, additionalDetails)
+              "
+								#printOpts
+						>
+							<ng-template let-item pTemplate="selectedItem">
+								<span style="vertical-align: middle">{{ item.label }}</span>
+							</ng-template>
+							<ng-template let-opt pTemplate="item">
+								<div
+										style="
+                    display: flex;
+                    display: -ms-flex;
+                    flex-flow: row nowrap;
+                    padding: 0px 8px;
+                  "
+								>
+									{{ opt.label }}
+								</div>
+							</ng-template>
+						</p-dropdown>
+						<!--                        <img class="button-link" style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/to-printer-sm.png" height="19" width="20"/>-->
+						
+						<!--<span class="fa fa-print fa-fw button-link"></span>-->
+						<!--<span class="fa fa-times fa-fw button-link"-->
+						<!--(click)="closed.next(true);">-->
+						<!--style="font-size: 150%; -webkit-text-stroke: 3px white;"></span>-->
+						<span
+								class="fa fa-times fa-fw button-link"
+								style="margin-right: auto"
+								(click)="closed.next(true)"
+						></span>
+					</div>
+					<div class="image-container">
+						<ng-container *ngIf="selectedCheck?.image">
+							<img
+							 [src]="checkImageSourceFrom(selectedCheck)"
+									[alt]="selectedCheck.chequeBankNumber"
+							/>
+						</ng-container>
+						<div
+								class="no-rows-found"
+								*ngIf="selectedCheck && !selectedCheck.image"
+						>
+							{{ 'expressions.noImageExistsForCheck' | translate }}
+						</div>
+						<!--<img *ngIf="selectedCheck"-->
+						<!--style="height: auto; width: auto; position: relative;" fill ngSrc="{{checkImageSourceFrom(selectedCheck)}}"-->
+						<!--alt="{{selectedCheck.chequeBankNumber}}">-->
+					</div>
+				</div>
+			</div>
+		</ng-container>
+	</ng-container>
+	<ng-template #loading>
+		<div class="loader">
+			<div class="circle"></div>
+		</div>
+	</ng-template>
+</div>

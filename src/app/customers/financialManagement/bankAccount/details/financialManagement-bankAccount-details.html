@@ -1,0 +1,1391 @@
+<div #containerHost id="bankAccountDetailsView" style="position: relative">
+	<div class="filterRow">
+		<app-acc-select
+				#accountSelector
+				(changedTrigger)="changeAcc($event)"
+				[accounts]="userService.appData.userData.accounts"
+		></app-acc-select>
+		<!--<app-acc-dates [option]="'days'" (changedTrigger)="filterDates($event)"></app-acc-dates>-->
+		<app-account-dates></app-account-dates>
+		<ul class="tabs" id="paymentTypesFilter">
+			<li
+					(click)="currentPage = 0; filterTypes('false')"
+					[class.active]="filterTypesVal === 'false'"
+					id="paymentTypesCredit"
+			>
+				{{ 'filters.credit' | translate }}
+			</li>
+			<li
+					(click)="currentPage = 0; filterTypes('true')"
+					[class.active]="filterTypesVal === 'true'"
+					id="paymentTypeDebit"
+			>
+				{{ 'filters.debit' | translate }}
+			</li>
+			<li
+					(click)="currentPage = 0; filterTypes(null)"
+					[class.active]="filterTypesVal === null"
+					id="paymentTypeBoth"
+			>
+				{{ 'filters.all' | translate }}
+			</li>
+		</ul>
+		<div class="search">
+			<input
+					[formControl]="filterInput"
+					[value]="queryString"
+					autocomplete="off"
+					id="containTextFilter"
+					placeholder="{{ 'filters.search' | translate }}"
+					type="text"
+			/>
+		</div>
+		<ul class="tabs navTabs">
+			<li
+					[matTooltip]="
+          'appWalk.customers.financialManagement.bankAccount.viewSwitchAggregate'
+            | translate
+        "
+					[routerLinkActiveOptions]="{ exact: false }"
+					id="navToAggregateView"
+					matTooltipPosition="above"
+					routerLink="../aggregate"
+					queryParamsHandling="preserve"
+					routerLinkActive="active"
+			>
+				{{ 'filters.consolidated' | translate }}
+			</li>
+			<li
+					[matTooltip]="
+          'appWalk.customers.financialManagement.bankAccount.viewSwitchDetails'
+            | translate
+        "
+					[routerLinkActiveOptions]="{ exact: false }"
+					id="navToDetailsView"
+					matTooltipPosition="above"
+					routerLink="../details"
+					queryParamsHandling="preserve"
+					routerLinkActive="active"
+			>
+				{{ 'filters.detailed' | translate }}
+			</li>
+			<li
+					[matTooltip]="
+          'appWalk.customers.financialManagement.bankAccount.viewSwitchChart'
+            | translate
+        "
+					[routerLinkActiveOptions]="{ exact: false }"
+					id="navToGraphView"
+					matTooltipPosition="above"
+					routerLink="../graph"
+					queryParamsHandling="preserve"
+					routerLinkActive="active"
+			>
+				<img height="13" ngSrc="/assets/images/chart.png" width="22"/>
+			</li>
+		</ul>
+	</div>
+	<div>
+		<div
+				[ngClass]="{
+        'sums-deviation':
+          0 > balanceUse ||
+          accountSelectOneNotUpdate ||
+          accountSelectInDeviation?.length
+      }"
+				class="sums"
+		>
+			<div
+					[matTooltip]="
+          'appWalk.customers.financialManagement.bankAccount.details.monthCashFlowState'
+            | translate
+        "
+					class="sum-data"
+					matTooltipPosition="above"
+			>
+				<h3
+						*ngIf="userService.appData.userData.accountSelect"
+						[translateParams]="{
+            upTo: userService.appData.userData.accountSelect?.length
+              ? (userService.appData.userData.accountSelect[0]
+                  .balanceLastUpdatedDate | todayRelativeHumanize: 'itraHeader')
+              : ''
+          }"
+						[translate]="
+            userService.appData.userData.accountSelect?.length &&
+            userService.appData.userData.accountSelect[0].isShowItrot
+              ? userService.appData.userData.accountSelect?.length > 1
+                ? 'sumsTitles.accountsBalanceOnDatePattern'
+                : 'sumsTitles.accountBalanceOnDatePattern'
+              : 'sumsTitles.accountBalanceOne'
+          "
+				></h3>
+				<p
+						*ngIf="
+            userService.appData.userData.accountSelect?.length > 0 &&
+              userService.appData.userData.accountSelect[0].isShowItrot &&
+              accountBalance !== null;
+            else accountBalanceNan
+          "
+						[class.red]="
+            accountBalance < (creditLimit !== null ? creditLimit : 0)
+          "
+						[id]="'selectedAccBalance'"
+				>
+					<span class="sum">{{ accountBalance | sum: true }}</span>
+					<span class="currency">{{
+						userService.appData.userData.accountSelect[0].currency
+								| currencySymbol
+						}}</span>
+				</p>
+				<ng-template #accountBalanceNan>
+					<p [id]="'selectedAccBalance'" class="sum-nan"></p>
+				</ng-template>
+			</div>
+			<div class="operator">+</div>
+			<div class="sum-data">
+				<h3
+						*ngIf="userService.appData.userData.accountSelect"
+						[translate]="
+            userService.appData.userData.accountSelect?.length > 1
+              ? 'sumsTitles.creditLimit'
+              : 'sumsTitles.creditLimitOne'
+          "
+				></h3>
+				<p
+						*ngIf="
+            userService.appData.userData.accountSelect?.length > 0 &&
+              creditLimit !== null;
+            else creditLimitNan
+          "
+						[id]="'selectedAccCreditLimit'"
+				>
+					<span class="sum">{{ creditLimitAbs | sum: true }}</span>
+					<span class="currency">{{
+						userService.appData.userData.accountSelect[0].currency
+								| currencySymbol
+						}}</span>
+				</p>
+				<ng-template #creditLimitNan>
+					<p [id]="'selectedAccCreditLimit'" class="sum-nan"></p>
+				</ng-template>
+			</div>
+			<div class="operator">=</div>
+			<div class="sum-data">
+				<h3>{{ 'sumsTitles.balanceUse' | translate }}</h3>
+				
+				<p
+						*ngIf="
+            userService.appData.userData.accountSelect?.length > 0 &&
+              userService.appData.userData.accountSelect[0].isShowItrot &&
+              balanceUse !== null;
+            else balanceUseNan
+          "
+						[class.red]="balanceUse < (creditLimit !== null ? creditLimit : 0)"
+						[id]="'selectedAccBalanceUse'"
+				>
+					<span class="sum">{{ balanceUse | sum: true }}</span>
+					<span class="currency">{{
+						userService.appData.userData.accountSelect[0].currency
+								| currencySymbol
+						}}</span>
+				</p>
+				<ng-template #balanceUseNan>
+					<p [id]="'selectedAccBalanceUse'" class="sum-nan"></p>
+				</ng-template>
+			</div>
+			<div class="operator">&nbsp;</div>
+			<!--<div class="sum-data">-->
+			<!--<h3>-->
+			<!--{{'sumsTitles.totalIncomes'|translate}}-->
+			<!--</h3>-->
+			
+			<!--<p *ngIf="totals?.totalIncomes !== null && userService.appData.userData.accountSelect.length; else totalIncomesNan" class="green"-->
+			<!--[id]="'totalIncomes'">-->
+			<!--<span class="sum">{{totals.totalIncomes | sum:true}}</span>-->
+			<!--<span class="currency">{{userService.appData.userData.accountSelect[0].currency| currencySymbol}}</span>-->
+			<!--</p>-->
+			<!--<ng-template #totalIncomesNan>-->
+			<!--<p class="sum-nan" [id]="'totalIncomes'"></p>-->
+			<!--</ng-template>-->
+			<!--</div>-->
+			<!--<div class="sum-data">-->
+			<!--<h3>-->
+			<!--{{'sumsTitles.totalExpenses'|translate}}-->
+			<!--</h3>-->
+			
+			<!--<p *ngIf="totals?.totalExpenses !== null && userService.appData.userData.accountSelect.length; else totalExpensesNan" class="red"-->
+			<!--[id]="'totalExpenses'">-->
+			<!--<span class="sum">{{totals?.totalExpenses | sum:true}}</span>-->
+			<!--<span class="currency">{{userService.appData.userData.accountSelect[0].currency| currencySymbol}}</span>-->
+			<!--</p>-->
+			<!--<ng-template #totalExpensesNan>-->
+			<!--<p class="sum-nan" [id]="'totalExpenses'"></p>-->
+			<!--</ng-template>-->
+			<!--</div>-->
+			<div class="separator"></div>
+			<div
+					*ngIf="
+          userService.appData.userData.accountSelect &&
+          userService.appData.userData.accountSelect.length === 1 &&
+          !accountSelectOneNotUpdate &&
+          balanceUse < 0
+        "
+					class="alert-deviation"
+			>
+				<i class="fas fa-exclamation-triangle"></i>
+				<div>{{ 'sumsTitles.accountExceeded' | translate }}</div>
+			</div>
+			<div
+					*ngIf="
+          !accountSelectOneNotUpdate &&
+          accountSelectInDeviation &&
+          accountSelectInDeviation.length === 1
+        "
+					class="alert-deviation-one"
+			>
+				<i class="fas fa-exclamation-triangle"></i>
+				<div>
+					{{ 'sumsTitles.account' | translate }}
+					{{ accountSelectInDeviation[0].accountNickname }}
+					{{ 'sumsTitles.exceeding' | translate }}
+				</div>
+				<div class="separatorInsider"></div>
+				<div
+						(click)="
+            selectAccountInDeviation(
+              accountSelector,
+              accountSelectInDeviation[0]
+            )
+          "
+						class="link"
+				>
+					{{ 'sumsTitles.forDetails' | translate }}
+				</div>
+			</div>
+			<div
+					*ngIf="accountSelectInDeviation && accountSelectInDeviation.length > 1"
+					class="alert-deviation-multi"
+			>
+				<i class="fas fa-exclamation-triangle"></i>
+				<div>
+					{{ accountSelectInDeviation.length }}
+					{{ 'sumsTitles.accountsExceeded' | translate }}
+				</div>
+				<div class="separatorInsider"></div>
+				<div (click)="tooltipAccDeviation.toggle($event)" class="link">
+					{{ 'sumsTitles.forDetails' | translate }}
+					<p-overlayPanel
+							#tooltipAccDeviation
+							[style]="{ transform: 'translate(-50%, 10px)', width: 'auto' }"
+							appendTo="body"
+							styleClass="tooltip-bottom tooltip-acc-deviation"
+					>
+						<ul class="scroll-chrome">
+							<li
+									(click)="
+                  selectAccountInDeviation(accountSelector, acc);
+                  tooltipAccDeviation.hide()
+                "
+									*ngFor="let acc of accountSelectInDeviation"
+							>
+                <span>{{ acc.accountNickname }}</span
+                >&nbsp;<span class="sum-debit"
+							>(
+                  <p style="direction: ltr; display: inline-block">
+                    {{ acc.balanceUse | sum }}
+                  </p>
+								{{ acc.currency | currencySymbol }} )</span
+							>
+							</li>
+						</ul>
+					</p-overlayPanel>
+				</div>
+			</div>
+			<div *ngIf="accountSelectExchange?.length > 0" class="exchange">
+				<img
+						alt="global"
+						height="22"
+						src="/assets/images/global.png"
+						width="22"
+				/>
+				<div *ngIf="accountSelectExchange?.length === 1; else multiEx">
+					{{ 'sumsTitles.account' | translate }}
+					{{ 'sumsTitles.forex' | translate }} ({{
+					accountSelectExchange[0].currency | currencySymbol
+					}})
+				</div>
+				<ng-template #multiEx>
+					{{ 'sumsTitles.accounts' | translate }}
+					{{ 'sumsTitles.forex' | translate }}
+				</ng-template>
+			</div>
+			
+			<div *ngIf="accountSelectOneNotUpdate">
+				<app-account-outdated-view
+						[account]="userService.appData.userData.accountSelect[0]"
+				></app-account-outdated-view>
+				<!--<app-token-credentials-update-button-->
+				<!--[balanceLastUpdatedDate]="userService.appData.userData.accountSelect[0].balanceLastUpdatedDate"-->
+				<!--[tokenData]="{-->
+				<!--companyId: userService.appData.userData.companySelect.companyId,-->
+				<!--tokenId: userService.appData.userData.accountSelect[0].token-->
+				<!--}">-->
+				<!--</app-token-credentials-update-button>-->
+			</div>
+			<div class="exports">
+				<button
+						(click)="printTransactions()"
+						[matTooltip]="'appWalk.customers.report.printBtn' | translate"
+						matTooltipPosition="above"
+				>
+					<img height="21"  ngSrc="/assets/images/to-printer.png" width="24"/>
+				</button>
+				<button
+						(click)="reportMailSubmitterToggle = true"
+						[matTooltip]="'appWalk.customers.report.mailBtn' | translate"
+						matTooltipPosition="above"
+				>
+					<img height="21"  ngSrc="/assets/images/to-mail.png" width="24"/>
+					<app-report-mail-scheduler
+							(recipientApproved)="sendTransactions($event)"
+							[visible]="(reportMailSubmitterToggle)"
+					></app-report-mail-scheduler>
+				</button>
+				<button
+						(click)="exportTransactions('PDF')"
+						[matTooltip]="'appWalk.customers.report.pdfBtn' | translate"
+						matTooltipPosition="above"
+				>
+					<img height="21" ngSrc="/assets/images/to-pdf.png" width="24"/>
+				</button>
+				<button
+						(click)="exportTransactions('EXCEL')"
+						[matTooltip]="'appWalk.customers.report.excelBtn' | translate"
+						matTooltipPosition="above"
+				>
+					<img height="21" ngSrc="/assets/images/to-excel.png" width="24"/>
+				</button>
+			</div>
+		</div>
+	</div>
+	
+	<div class="bank-acc-details-table-container" style="position: relative">
+		<div #tableHeader class="bank-acc-details-table-header">
+			<ng-template #sortAvailableForColumn>
+				<i
+						class="fas fa-sm fa-rotate-270 fa-exchange-alt"
+						style="cursor: pointer"
+				></i>
+			</ng-template>
+			
+			<div
+					(click)="sortPipeFilter('transDate')"
+					class="bank-acc-details-column-1"
+			>
+				{{ 'titles.date' | translate }}
+				<ng-container
+						*ngIf="sortColumn === 'transDate'; else sortAvailableForColumn"
+				>
+					<img
+							style="height: auto; width: auto; position: relative;margin: 0 3px -3px 0; cursor: pointer" fill [ngSrc]="
+              '/assets/images/sort-' +
+              (sortPipeDir === 'smaller' ? 'asc' : 'desc') +
+              '.png'
+            "
+						
+					/>
+				</ng-container>
+				<!--                <img style="height: auto; width: auto; position: relative;" fill [ngSrc]="'/assets/images/sort-' + (sortPipeDir === 'smaller' ? 'asc' : 'desc') +'.png'"-->
+				<!--                     style="margin: 0 3px -3px 0;"/>-->
+			</div>
+			<div class="bank-acc-details-column-2">
+				<div style="padding: 0 4px">{{ 'titles.account' | translate }}</div>
+			</div>
+			<div
+					class="bank-acc-details-column-beneficiary"
+					style="overflow: visible"
+			>
+				<app-tooltip-category
+						(changed)="filterCategory($event)"
+						[data]="beneficiaryFilterOptions"
+						[filter]="true"
+						[type]="'biziboxMutavId'"
+				>
+					<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/beneficiary-header-icon.png"/>
+				</app-tooltip-category>
+			</div>
+			<div
+					(click)="sortPipeFilter('description')"
+					class="bank-acc-details-column-3"
+			>
+				<div class="seamless-edit-prepare" style="padding-right: 24px">
+					{{ 'titles.description' | translate }}
+				</div>
+				<ng-container
+						*ngIf="sortColumn === 'description'; else sortAvailableForColumn"
+				>
+					<img
+							style="height: auto; width: auto; position: relative;margin: 0 3px -3px 0; cursor: pointer"  [src]="
+              '/assets/images/sort-' +
+              (sortPipeDir === 'smaller' ? 'desc' : 'asc') +
+              '.png'
+            "
+							
+					/>
+				</ng-container>
+			</div>
+			<div class="bank-acc-details-column-4" style="overflow: visible">
+				<app-tooltip-category
+						(changed)="filterCategory($event)"
+						[data]="paymentTypesArr"
+						[title]="'titles.typeOfPayment' | translate"
+						[translateEnum]="sharedService.paymentTypesTranslate$"
+						[type]="'payment'"
+				></app-tooltip-category>
+			</div>
+			<div class="bank-acc-details-column-5" style="overflow: visible">
+				<div class="seamless-edit-prepare">
+					<app-tooltip-category
+							(changed)="filterCategory($event)"
+							[data]="transTypesArr"
+							[title]="'titles.category' | translate"
+							[type]="'transType'"
+					></app-tooltip-category>
+				</div>
+			</div>
+			<div class="bank-acc-details-column-6">
+				{{ 'titles.reference' | translate }}
+			</div>
+			<div class="bank-acc-details-column-7">
+				{{ 'titles.income' | translate }}
+			</div>
+			<div class="bank-acc-details-column-8">
+				{{ 'titles.expense' | translate }}
+			</div>
+			<div class="bank-acc-details-column-9">
+				{{ 'titles.balance' | translate }}
+			</div>
+			<div
+					*ngIf="!userService?.appData?.userData?.companySelect?.lite"
+					class="bank-acc-details-column-10"
+			>
+				<img height="16"
+				     [pTooltip]="'sumsTitles.match' | translate"
+				     [showDelay]="300"
+				     appendTo="body"
+				     tooltipPosition="top"
+				     ngSrc="/assets/images/matching.png" width="16"/>
+			</div>
+			<!--<div style="flex: 0 0 0.8em" *ngIf="scrollContainerHasScroll"></div>-->
+		</div>
+		<div
+				#scrollContainer
+				[appScrollHeight]="
+        tableHeader.getBoundingClientRect().bottom +
+        tableFooter.getBoundingClientRect().height +
+        (paginator?.pageLinks?.length > 1 ? 45 : 10)
+      "
+				class="scrollbar-dynamic bank-acc-details-table-body"
+				style="position: relative"
+		>
+			<div *ngIf="loader" class="loader">
+				<div class="circle"></div>
+			</div>
+			<div
+					*ngIf="dataTableToday?.length > 0 && tablePristine && currentPage === 0"
+					[ngStyle]="questionableExpanded && { 'border-bottom': 'none' }"
+					class="bank-acc-details-questionable-header"
+					style="position: relative"
+			>
+				<div class="bank-acc-details-column-1">
+					<div class="message-container">
+            <span (click)="questionableExpanded = !questionableExpanded">
+              <i
+		              [ngClass]="{
+                  'fa-caret-down': !questionableExpanded,
+                  'fa-caret-up': questionableExpanded
+                }"
+		              class="fa fa-fw"
+		              style="font-size: 0.75em; vertical-align: middle"
+              ></i>
+	            {{ 'expressions.questionableTransactions' | translate }}&nbsp;
+              <i
+		              [matTooltip]="
+                  'appWalk.customers.financialManagement.bankAccount.questionableDisclaimer'
+                    | translate
+                "
+		              class="fas fa-fw fa-info-circle"
+		              matTooltipPosition="after"
+              ></i>
+            </span>
+						<span
+						>{{ 'sumsTitles.lastUpdated' | translate }}&nbsp;{{
+							dataTableToday[0].balanceLastUpdatedDate | date: 'HH:mm'
+							}}
+							<span *ngIf="updatePermitted">&#124;</span>
+              <span
+		              (click)="updateQuestionable()"
+		              *ngIf="updatePermitted"
+		              style="cursor: pointer; color: #038ed6"
+              >
+                &nbsp;{{ 'actions.updateData' | translate }}
+              </span>
+            </span>
+					</div>
+				</div>
+				<div class="bank-acc-details-column-2"></div>
+				<div class="bank-acc-details-column-3"></div>
+				<div class="bank-acc-details-column-4"></div>
+				<div class="bank-acc-details-column-5"></div>
+				<div class="bank-acc-details-column-6"></div>
+				<div class="bank-acc-details-column-7 sum-credit">
+					<app-sum-view
+							[sum]="dataTableToday[0].total"
+							style="font-weight: bold"
+					></app-sum-view>
+				</div>
+				<div class="bank-acc-details-column-8 sum-debit">
+					<app-sum-view
+							[sum]="dataTableToday[0].totalHova"
+							style="font-weight: bold"
+					></app-sum-view>
+				</div>
+				<div class="bank-acc-details-column-9"></div>
+				<div
+						*ngIf="!userService?.appData?.userData?.companySelect?.lite"
+						class="bank-acc-details-column-10"
+				></div>
+			</div>
+			<ng-container
+					*ngIf="questionableExpanded && tablePristine && currentPage === 0"
+			>
+				<ng-container
+						*ngFor="
+            let item of dataTableToday;
+            first as isFirst;
+            last as isLast;
+            trackBy: trackById
+          "
+				>
+					<div
+							*ngIf="
+              !isFirst &&
+              (!filterTypesVal ||
+                (filterTypesVal === 'true' && item.hova) ||
+                (filterTypesVal === 'false' && !item.hova))
+            "
+							[ngStyle]="isLast && { 'border-bottom': '2px solid #ced7e0' }"
+							class="bank-acc-details-row bank-acc-details-row-questionable"
+					>
+						<div class="bank-acc-details-column-1">
+							{{ 'expressions.todayQuestionable' | translate }}
+						</div>
+						<div class="bank-acc-details-column-2" style="display: flex">
+							<img
+									[alt]="item.accountNickname"
+								 fill [ngSrc]="
+                  item.account?.bankId
+                    ? (item.account?.bankId | toIconSrc: 'bank')
+                    : ''
+                "
+									style="
+									height: auto; width: auto; position: relative;
+                  align-self: center;
+                  flex: 0 0 auto;
+                  -ms-flex: 0 0 auto;
+                  margin: 0 4px;
+                "
+							/>
+							<!--<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/bank{{item?.account?.bankId}}.png" *ngIf="item?.account?.bankId"-->
+							<!--alt="{{item.account?.accountNickname}}"-->
+							<!--style="align-self: center; flex: 0 0 auto; margin: 0 4px;">-->
+							<p
+									style="
+                  overflow: hidden;
+                  white-space: nowrap;
+                  text-overflow: ellipsis;
+                "
+							>
+								{{ item.account?.accountNickname }}
+							</p>
+							<!--{{ item.companyAccountId }}-->
+						</div>
+						<div class="bank-acc-details-column-beneficiary">
+							<ng-container *ngIf="item.mutavNames?.length">
+								<img
+										[pTooltip]="item.mutavNames.join(', ')"
+										src="/assets/images/beneficiary-row-icon.png"
+										tooltipPosition="top"
+								/>
+							</ng-container>
+							<!--                            <ng-container *ngIf="item.beneficiary">-->
+							<!--                                <img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/beneficiary-row-icon.png"/>-->
+							<!--                            </ng-container>-->
+						</div>
+						<div class="bank-acc-details-column-3">
+							<div
+									[pTooltip]="item.mainDesc"
+									[showDelay]="300"
+									appendTo="body"
+									class="text-ellipsis seamless-edit-prepare"
+									style="display: block !important; padding-right: 24px"
+									tooltipPosition="top"
+							>
+								{{ item.mainDesc }}
+							</div>
+						</div>
+						<div class="bank-acc-details-column-4">
+							<ng-container
+									*ngIf="
+                  item.linkId ||
+                    item.pictureLink ||
+                    item.paymentDesc === 'cash';
+                  else oldOne
+                "
+							>
+								<div
+										(refresh)="handler($event)"
+										*ngIf="item.linkId || item.pictureLink"
+										[appTransactionAdditionalTrigger]="item"
+										[innerHTML]="
+                    item.paymentDescTranslate | highlight: queryString
+                  "
+										[pTooltip]="item.paymentDescTranslate"
+										class="text-ellipsis bank-acc-details-link"
+										style="min-width: 0"
+										tooltipPosition="top"
+								></div>
+								
+								<div
+										(click)="openCashSplit(item, $event)"
+										*ngIf="item.paymentDesc === 'cash'"
+										[innerHTML]="
+                    item.paymentDescTranslate | highlight: queryString
+                  "
+										[pTooltip]="item.paymentDescTranslate"
+										class="text-ellipsis bank-acc-details-link"
+										style="min-width: 0"
+										tooltipPosition="top"
+								></div>
+								
+								<!--<div [appTransactionAdditionalTrigger]="item"-->
+								<!--class="text-ellipsis bank-acc-details-link" style=" min-width: 0;"-->
+								<!--[pTooltip]="item.paymentDescTranslate" tooltipPosition="top"-->
+								<!--[innerHTML]="item.paymentDescTranslate | highlight: queryString"></div>-->
+							</ng-container>
+							<ng-template #oldOne>
+								<div
+										[innerHTML]="
+                    item.paymentDescTranslate | highlight: queryString
+                  "
+										[pTooltip]="item.paymentDescTranslate"
+										class="text-ellipsis"
+										style="min-width: 0"
+										tooltipPosition="top"
+								></div>
+							</ng-template>
+							<!--<div class="text-ellipsis" [class.bank-acc-details-link]="item.linkId || item.pictureLink"-->
+							<!--[id]="'details-row-' + item.bankTransId + 'link-additional-by-payment'"-->
+							<!--style=" min-width: 0;"-->
+							<!--[innerHTML]="item.paymentDescTranslate | highlight: queryString"-->
+							<!--(click)="(item.linkId || item.pictureLink) && showAdditionalAt(item, $event.target)">-->
+							<!--</div>-->
+							<div
+									*ngIf="item.kvua"
+									style="flex: 0 0 auto; -ms-flex: 0 0 auto; margin: 0"
+							>
+								<img
+										src="/assets/images/periodic-trans.png"
+										style="width: 12px"
+								/>
+							</div>
+						</div>
+						<div class="bank-acc-details-column-5">
+							<div
+									[pTooltip]="item.transTypeName"
+									class="text-ellipsis seamless-edit-prepare"
+									style="display: block !important"
+									tooltipPosition="top"
+							>
+								{{
+								item.transTypeName || ('expressions.noTransType' | translate)
+								}}
+							</div>
+						</div>
+						<div class="bank-acc-details-column-6">
+							<div
+									[innerHTML]="item.asmachta | highlight: queryString"
+									[pTooltip]="item.asmachta"
+									class="text-ellipsis"
+									tooltipPosition="top"
+							></div>
+						</div>
+						<div class="bank-acc-details-column-7 sum-credit">
+							<ng-container *ngIf="!item.hova">
+								<app-sum-view [sum]="item.total"></app-sum-view>
+							</ng-container>
+						</div>
+						<div class="bank-acc-details-column-8 sum-debit">
+							<ng-container *ngIf="item.hova">
+								<app-sum-view [sum]="item.total"></app-sum-view>
+							</ng-container>
+						</div>
+						<div class="bank-acc-details-column-9">
+							<app-sum-view [sum]="item.itra"></app-sum-view>
+						</div>
+						<div
+								*ngIf="!userService?.appData?.userData?.companySelect?.lite"
+								class="bank-acc-details-column-10"
+						></div>
+					</div>
+				</ng-container>
+			</ng-container>
+			<ng-container
+					*ngFor="
+          let item of dataTable
+            | slice
+              : currentPage * entryLimit
+              : currentPage * entryLimit + entryLimit;
+          trackBy: trackById
+        "
+			>
+				<div
+						(click)="selectedTransaction = item; showCategoryDropDown = false"
+						(focus)="selectedTransaction = item; showCategoryDropDown = false"
+						*ngIf="!item?.rowSum"
+						[class.bank-acc-details-row-selected]="selectedTransaction === item"
+						class="bank-acc-details-row"
+						tabindex="1"
+				>
+					<div
+							[innerHTML]="item.transDateHumanizedStr | highlight: queryString"
+							class="bank-acc-details-column-1"
+							style="direction: ltr; display: block"
+					></div>
+					<div class="bank-acc-details-column-2" style="display: flex">
+						<img
+								style="height: auto; width: auto; position: relative;" fill [ngSrc]="
+                item.account?.bankId
+                  ? (item.account?.bankId | toIconSrc: 'bank')
+                  : ''
+              "
+								alt="{{ item.accountNickname }}"
+						/>
+						<div
+								[pTooltip]="item.accountNickname"
+								class="text-ellipsis"
+								tooltipPosition="top"
+						>
+							{{ item.accountNickname }}
+						</div>
+					</div>
+					<div class="bank-acc-details-column-beneficiary">
+						<ng-container *ngIf="item.mutavNames?.length">
+							<img
+									[pTooltip]="item.mutavNames.join(', ')"
+									src="/assets/images/beneficiary-row-icon.png"
+									tooltipPosition="top"
+							/>
+						</ng-container>
+						<!--                        <ng-container *ngIf="item.beneficiary">-->
+						<!--                            <img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/beneficiary-row-icon.png" [pTooltip]="item.beneficiary.accountMutavName" tooltipPosition="top"/>-->
+						<!--                        </ng-container>-->
+					</div>
+					<div
+							class="bank-acc-details-column-3"
+							style="display: flex; align-items: center"
+					>
+						<!--<div class="bank-acc-details-column-3" style="display: flex; align-items: center;"-->
+						<!--[pTooltip]="item.mainDesc" tooltipPosition="top" appendTo="body" [showDelay]="300"-->
+						<!--[tooltipDisabled]="descInputRef.clientWidth >= descInputRef.scrollWidth">-->
+						<i
+								[class.fa-info-circle]="
+                item.secondDesc && item.secondDesc !== item.mainDesc
+              "
+								[escape]="false"
+								[pTooltip]="appearsInBankTooltip(item)"
+								class="fa fa-fw"
+								style="
+                flex: 0 0 16px;
+                -ms-flex: 0 0 16px;
+                color: #5c728c;
+                font-size: 80%;
+              "
+								tooltipPosition="bottom"
+						></i>
+						<div
+								#transDesc
+								[innerHTML]="item.mainDesc | highlight: queryString"
+								[pTooltip]="item.mainDesc"
+								class="seamless-edit-prepare text-ellipsis"
+								style="flex: 1"
+								tooltipPosition="top"
+						></div>
+						<input
+								#descInputRef
+								(blur)="submitChanges($event)"
+								(focus)="startDescriptionEditAt(item, descInputRef)"
+								(keyup.enter)="submitChanges($event)"
+								(keyup.esc)="cancelChanges(); descInputRef.blur()"
+								[(ngModel)]="item.mainDesc"
+								[pTooltip]="item.mainDesc"
+								[showDelay]="300"
+								appendTo="body"
+								placeholder="{{
+                'expressions.transactionDescription' | translate
+              }}"
+								style="flex: 1"
+								tooltipPosition="top"
+								type="text"
+						/>
+					</div>
+					<div
+							class="bank-acc-details-column-4"
+							style="display: flex; justify-content: space-between"
+					>
+						<ng-container
+								*ngIf="
+                item.linkId || item.pictureLink || item.paymentDesc === 'cash';
+                else oldOne
+              "
+						>
+							<!--<div [appTransactionAdditionalTrigger]="item" class="text-ellipsis bank-acc-details-link"-->
+							<!--style=" min-width: 0;"-->
+							<!--[pTooltip]="item.paymentDescTranslate" tooltipPosition="top"-->
+							<!--[innerHTML]="item.paymentDescTranslate | highlight: queryString"></div>-->
+							<div
+									(refresh)="handler($event)"
+									*ngIf="item.linkId || item.pictureLink"
+									[appTransactionAdditionalTrigger]="item"
+									[innerHTML]="item.paymentDescTranslate | highlight: queryString"
+									[pTooltip]="item.paymentDescTranslate"
+									class="text-ellipsis bank-acc-details-link"
+									style="min-width: 0"
+									tooltipPosition="top"
+							></div>
+							
+							<div
+									(click)="openCashSplit(item, $event)"
+									*ngIf="item.paymentDesc === 'cash'"
+									[innerHTML]="item.paymentDescTranslate | highlight: queryString"
+									[pTooltip]="item.paymentDescTranslate"
+									class="text-ellipsis bank-acc-details-link"
+									style="min-width: 0"
+									tooltipPosition="top"
+							></div>
+						</ng-container>
+						<ng-template #oldOne>
+							<div
+									[innerHTML]="item.paymentDescTranslate | highlight: queryString"
+									[pTooltip]="item.paymentDescTranslate"
+									class="text-ellipsis"
+									style="min-width: 0"
+									tooltipPosition="top"
+							></div>
+						</ng-template>
+						<div
+								*ngIf="item.kvua"
+								style="flex: 0 0 auto; -ms-flex: 0 0 auto; margin: 0"
+						>
+							<img
+									src="/assets/images/periodic-trans.png"
+									style="width: 12px"
+							/>
+						</div>
+					</div>
+					<div
+							#categoryContainer
+							[ngStyle]="
+              editingTransaction === item && {
+                overflow: 'visible',
+                'min-width': '0'
+              }
+            "
+							class="bank-acc-details-column-5"
+					>
+						<ng-container *ngIf="!item.mayEditTransType">
+							<div
+									[innerHTML]="
+                  item.transTypeName || ('expressions.noTransType' | translate)
+                    | highlight: queryString
+                "
+									[pTooltip]="
+                  item.transTypeName || ('expressions.noTransType' | translate)
+                "
+									[showDelay]="300"
+									appendTo="body"
+									class="text-item text-ellipsis"
+									style="opacity: 0.7"
+									tooltipPosition="top"
+							></div>
+						</ng-container>
+						<ng-container *ngIf="item.mayEditTransType">
+							<div
+									#catDesc
+									[innerHTML]="
+                  item.transTypeName || ('expressions.noTransType' | translate)
+                    | highlight: queryString
+                "
+									[pTooltip]="
+                  item.transTypeName || ('expressions.noTransType' | translate)
+                "
+									[showDelay]="300"
+									appendTo="body"
+									class="seamless-edit-prepare text-ellipsis"
+									tooltipPosition="top"
+							></div>
+							<div
+									(click)="startCategoryEditAt(item, $event, categorySelector)"
+									*ngIf="!(editingTransaction === item && showCategoryDropDown)"
+									[pTooltip]="
+                  item.transTypeName || ('expressions.noTransType' | translate)
+                "
+									[showDelay]="300"
+									appendTo="body"
+									class="dropdown-stub"
+									tooltipPosition="top"
+							>
+								<span class="text-ellipsis">{{ item.transTypeName }}</span>
+								<!--<i class="fa fa-fw fa-caret-down"></i>-->
+								<i class="fas fa-fw fa-angle-down"></i>
+							</div>
+							<ng-container
+									*ngIf="editingTransaction === item && showCategoryDropDown"
+							>
+								<app-category-select
+										#categorySelector
+										(cancelChanges)="cancelChanges()"
+										(changed)="item.selectedTransType = $event.value; submitChanges($event)"
+										[categories]="companyTransTypes"
+										[companyId]="companyId"
+										[ngModelVal]="item.selectedTransType"
+										[showAuto]="true"
+										[style]="{ width: '100%' }"
+								>
+								</app-category-select>
+								<!--                                (onChange)="item.transTypePopup === true ? promptForTransTypeChangeApply(item, $event)-->
+								<!--                                : (submitChanges($event))"-->
+								<!--                                (!!item.biziboxMutavId ? promptForBeneficiaryTransTypeChangeApply(item, $event) : submitChanges($event))-->
+							</ng-container>
+						
+						
+						</ng-container>
+						<!--<div style="overflow: visible; width: 100%;">-->
+						<!--</div>-->
+					</div>
+					<div class="bank-acc-details-column-6">
+						<div
+								[innerHTML]="item.asmachta | highlight: queryString"
+								[pTooltip]="item.asmachta"
+								class="text-ellipsis"
+								tooltipPosition="top"
+						></div>
+					</div>
+					<div class="bank-acc-details-column-7 sum-credit">
+						<app-sum-view
+								*ngIf="!item.hova"
+								[highlight]="queryString"
+								[sum]="item.total"
+						></app-sum-view>
+					</div>
+					<div class="bank-acc-details-column-8 sum-debit">
+						<app-sum-view
+								*ngIf="item.hova"
+								[highlight]="queryString"
+								[sum]="item.total"
+						></app-sum-view>
+					</div>
+					<div
+							[ngClass]="creditLimit > item.itra ? 'sum-debit' : 'default-text'"
+							class="bank-acc-details-column-9"
+					>
+						<app-sum-view
+								[highlight]="queryString"
+								[sum]="item.itra"
+						></app-sum-view>
+					</div>
+					<div
+							(click)="navigateToMatchView(item)"
+							*ngIf="!userService?.appData?.userData?.companySelect?.lite"
+							[ngStyle]="
+              item.matchPermitted === true || item.matchPrc === 100
+                ? { 'pointer-events': 'auto', cursor: 'pointer' }
+                : { 'pointer-events': 'none', opacity: '.3' }
+            "
+							class="bank-acc-details-column-10"
+					>
+						<i
+								*ngIf="!item.hathamaHelkit"
+								[matTooltip]="
+                'appWalk.customers.financialManagement.bankAccount.details.' +
+                  (item.matchPrc === 100
+                    ? 'matchHandle-matched'
+                    : 'matchHandle-notMatched') | translate
+              "
+								[ngClass]="item.matchPrc === 100 ? 'fa-check' : 'fa-ban'"
+								class="fas fa-fw"
+								matTooltipPosition="before"
+						></i>
+						<img
+								*ngIf="item.hathamaHelkit"
+								src="/assets/images/match-partial.png"
+						/>
+					</div>
+				</div>
+				
+				<!--<app-bank-acc-details-row *ngIf="!item?.rowSum"-->
+				<!--[item]="item" [transTypes]="companyTransTypes" [companyId]="companyId" [highlightInRow]="queryString"-->
+				<!--(onSelected)="onRowSelected($event)"-->
+				<!--(onShowAdditional)="onRowShowAdditional($event)"></app-bank-acc-details-row>-->
+				
+				<div
+						*ngIf="item?.rowSum"
+						class="bank-acc-details-row-sum"
+						style="position: relative"
+				>
+					<div class="bank-acc-details-column-1" style="overflow: visible">
+						{{ 'sumsTitles.total' | translate }} {{ item.date | monthYear }}
+					</div>
+					<div class="bank-acc-details-column-2"></div>
+					<div class="bank-acc-details-column-beneficiary"></div>
+					<div class="bank-acc-details-column-3"></div>
+					<div class="bank-acc-details-column-4"></div>
+					<div class="bank-acc-details-column-5"></div>
+					<div class="bank-acc-details-column-6"></div>
+					<div class="bank-acc-details-column-7 sum-credit">
+						<app-sum-view [sum]="item.total"></app-sum-view>
+					</div>
+					<div class="bank-acc-details-column-8 sum-debit">
+						<app-sum-view [sum]="item.totalHova"></app-sum-view>
+					</div>
+					<div class="bank-acc-details-column-9"></div>
+					<div
+							*ngIf="!userService?.appData?.userData?.companySelect?.lite"
+							class="bank-acc-details-column-10"
+					></div>
+				</div>
+			</ng-container>
+			
+			<ng-container
+					*ngIf="
+          !loader &&
+          !dataTable?.length &&
+          (!tablePristine || !dataTableToday?.length)
+        "
+			>
+				<div class="no-rows-found">
+					<ng-container
+							*ngIf="
+              !dataTableAll.length &&
+              !userService.appData.userData.accountSelect?.length
+            "
+					>
+						{{ 'expressions.selectAccount' | translate }}
+					</ng-container>
+					<ng-container
+							*ngIf="userService.appData.userData.accountSelect?.length"
+					>
+						<!--{{'expressions.noDataFound'| translate}}-->
+						<!--</ng-container>-->
+						<!--<ng-container *ngIf="dataTableAll.length">-->
+						{{ 'expressions.noDataFoundForCriteria' | translate }},
+						{{ 'expressions.changeCriteria' | translate }}
+						<!--<span style="font-size: 97%;">{{'expressions.changeCriteria'| translate}}</span>-->
+						<!--<span class="button-link" style="font-size: 97%;" (click)="clearFilter()">{{'expressions.changeCriteria'| translate}}</span>-->
+					</ng-container>
+				</div>
+			</ng-container>
+		</div>
+		<div #tableFooter class="bank-acc-details-table-footer">
+			<ng-container *ngIf="dataTable?.length">
+				<div class="bank-acc-details-column-1" style="overflow: visible">
+					<div>{{ 'sumsTitles.total' | translate }}</div>
+				</div>
+				<div class="bank-acc-details-column-2"></div>
+				<div class="bank-acc-details-column-beneficiary"></div>
+				<div class="bank-acc-details-column-3"></div>
+				<div class="bank-acc-details-column-4"></div>
+				<div class="bank-acc-details-column-5"></div>
+				<div class="bank-acc-details-column-6"></div>
+				<div class="bank-acc-details-column-7 sum-credit">
+					<app-sum-view [sum]="summarizePresented.total"></app-sum-view>
+				</div>
+				<div class="bank-acc-details-column-8 sum-debit">
+					<app-sum-view [sum]="summarizePresented.totalHova"></app-sum-view>
+				</div>
+				<div class="bank-acc-details-column-9"></div>
+				<div
+						*ngIf="!userService?.appData?.userData?.companySelect?.lite"
+						class="bank-acc-details-column-10"
+				></div>
+			</ng-container>
+		</div>
+		
+		<app-paginator
+				#paginator
+				(onPageChange)="paginate($event)"
+				[alwaysShow]="false"
+				[rowsPerPageOptions]="[50, 100, 200]"
+				[rows]="entryLimit"
+				[totalRecords]="dataTable.length"
+		>
+		</app-paginator>
+	</div>
+</div>
+
+<app-category-change-prompt
+		(approved)="transTypeChangePrompt.apply()"
+		(hidden)="transTypeChangePrompt = null"
+		(searchkeyDefined)="
+    filterDates(childDates.selectedPreset.selectedPeriod(userService))
+  "
+		*ngIf="transTypeChangePrompt"
+		[data]="transTypeChangePrompt?.data"
+></app-category-change-prompt>
+
+<app-beneficiary-category-change-prompt
+		(approved)="beneficiaryTransTypeChangePrompt.apply()"
+		(beneficiaryCategoryUpdated)="
+    filterDates(childDates.selectedPreset.selectedPeriod(userService))
+  "
+		(hidden)="beneficiaryTransTypeChangePrompt = null"
+		*ngIf="beneficiaryTransTypeChangePrompt"
+		[data]="beneficiaryTransTypeChangePrompt.data"
+></app-beneficiary-category-change-prompt>
+
+<!--<p-overlayPanel styleClass="tooltip-top"-->
+<!--[style]="{'transform': 'translate(-20%, -180%)', 'width': 'auto'}"-->
+<!--#rowHandleOvp appendTo="body" (onBeforeHide)="handlerShownAt = null;">-->
+<!--<ul>-->
+<!--<li (click)="navigateToMatchView(handlerShownAt); rowHandleOvp.hide()" class="link">-->
+<!--{{'sumsTitles.match' | translate}}-->
+<!--</li>-->
+<!--</ul>-->
+<!--</p-overlayPanel>-->
+
+<p-dialog (visibleChange)="cashSplitPopupOpen = false"
+          *ngIf="cashSplitPopupOpen"
+          [draggable]="false"
+          [modal]="false"
+          position="top"
+          [resizable]="false"
+          [style]="{width: 514 + 'px',height: 315 + 'px', 'margin-top':cashSplitPopupOpen?.offsetTop+'px'}"
+          [visible]="(cashSplitPopupOpen)"
+          appendTo="body"
+          styleClass="cashSplitPopup"
+>
+	<p-header>
+		{{ 'ניתן לחלק את הסכום ולבחור תיאור וקטגוריה מתאימים' }}
+	</p-header>
+	
+	<div *ngIf="!cashSplitPopupOpen.table" class="tableSplit">
+		<div class="loader">
+			<div class="circle"></div>
+		</div>
+	</div>
+	
+	<form *ngIf="cashSplitPopupOpen.table" [formGroup]="cashSplitPopupOpen.table">
+		<div class="tableSplit">
+			<div class="header">
+				<div>{{ 'titles.description' | translate }}</div>
+				<div>{{ 'titles.category' | translate }}</div>
+				<div>{{ 'titles.sum' | translate }}</div>
+				<div
+						*ngIf="scrollContainerInsideHasScroll"
+						style="
+            flex: 0 0 0.8em;
+            -ms-flex: 0 0 0.8em;
+            padding: 0;
+            margin-left: 0;
+          "
+				>
+					&nbsp;
+				</div>
+			</div>
+			
+			<ul
+					#scrollContainerInside
+					class="scroll-chrome table"
+					formArrayName="arr"
+			>
+				<li
+						*ngFor="let item of arr.controls; let i = index"
+						[formGroupName]="i"
+				>
+					<div>
+						<input
+								(keyup.enter)="arr.controls[i].valid && addSplit(true)"
+								formControlName="cashCatDesc"
+								type="text"
+						/>
+					</div>
+					<div style="overflow: visible">
+						<app-category-select
+								(changed)="arr.controls[i].get('transTypeId').patchValue($event.value);"
+								[autoDisplayFirst]="false"
+								[disabled]="arr.controls[i].get('transTypeId').disabled"
+								
+								[categories]="companyTransTypes"
+								[companyId]="
+                userService.appData?.userData?.companySelect?.companyId
+              "
+								[filterBy]="'transTypeName'"
+								[filter]="false"
+								[inputId]="'transTypeId$' + i"
+								[ngModelVal]="arr.controls[i].get('transTypeId').value"
+								[placeholder]="('actions.select' | translate) + '...'"
+								[style]="{ width: '100%' }"
+						>
+						</app-category-select>
+					</div>
+					<div
+							[class.validation-error]="
+              (arr.controls.length > 1 &&
+                cashSplitPopupOpen?.sumTotals !== cashSplitPopupOpen?.total &&
+                ((cashSplitPopupOpen?.sumTotals > cashSplitPopupOpen?.total &&
+                  cashSplitPopupOpen?.sumTotals - cashSplitPopupOpen?.total >=
+                    0.01) ||
+                  (cashSplitPopupOpen?.sumTotals < cashSplitPopupOpen?.total &&
+                    cashSplitPopupOpen?.total - cashSplitPopupOpen?.sumTotals >=
+                      0.01))) ||
+              (arr.controls[i].get('total').dirty &&
+                arr.controls[i].get('total').invalid)
+            "
+					>
+						<input
+								#totalFields
+								(keyup)="calcSumTotals()"
+								(keyup.enter)="arr.controls[i].valid && addSplit(true)"
+								appNumbersOnly
+								formControlName="total"
+								required
+								type="text"
+						/>
+					</div>
+					<div style="flex: 0 0 16px; margin-left: 0">
+						<img
+								(click)="removeItem(i)"
+								*ngIf="arr.controls.length > 1"
+								alt="trash"
+								src="/assets/images/trash.png"
+								style="cursor: pointer"
+						/>
+					</div>
+				</li>
+			</ul>
+			
+			<div class="add">
+				<img
+						(click)="addSplit()"
+						src="/assets/images/add.png"
+						style="
+            align-self: center;
+            flex: 0 0 auto;
+            -ms-flex: 0 0 auto;
+            margin: 0 0px 0px 4px;
+          "
+				/>
+				<span (click)="addSplit()"> הוספת שורה </span>
+			</div>
+			<div class="footer">
+				<div>{{ 'sumsTitles.total' | translate }}</div>
+				<div>&nbsp;</div>
+				<div
+						[class.sum-debit]="
+            arr.controls.length > 1 &&
+            cashSplitPopupOpen?.sumTotals !== cashSplitPopupOpen?.total &&
+            ((cashSplitPopupOpen?.sumTotals > cashSplitPopupOpen?.total &&
+              cashSplitPopupOpen?.sumTotals - cashSplitPopupOpen?.total >=
+                0.01) ||
+              (cashSplitPopupOpen?.sumTotals < cashSplitPopupOpen?.total &&
+                cashSplitPopupOpen?.total - cashSplitPopupOpen?.sumTotals >=
+                  0.01))
+          "
+				>
+					<app-sum-view [sum]="cashSplitPopupOpen?.sumTotals"></app-sum-view>
+				</div>
+				<div
+						*ngIf="scrollContainerInsideHasScroll"
+						style="
+            flex: 0 0 0.8em;
+            -ms-flex: 0 0 0.8em;
+            padding: 0;
+            margin-left: 0;
+          "
+				>
+					&nbsp;
+				</div>
+			</div>
+		</div>
+	</form>
+	
+	<p-footer *ngIf="cashSplitPopupOpen.table">
+		<div
+				style="
+        width: 100%;
+        display: flex;
+        display: -ms-flexbox;
+        justify-content: flex-end;
+      "
+		>
+			<ng-container
+					*ngIf="
+          arr.controls.length > 1 &&
+          cashSplitPopupOpen?.sumTotals !== cashSplitPopupOpen?.total &&
+          ((cashSplitPopupOpen?.sumTotals > cashSplitPopupOpen?.total &&
+            cashSplitPopupOpen?.sumTotals - cashSplitPopupOpen?.total >=
+              0.01) ||
+            (cashSplitPopupOpen?.sumTotals < cashSplitPopupOpen?.total &&
+              cashSplitPopupOpen?.total - cashSplitPopupOpen?.sumTotals >=
+                0.01))
+        "
+			>
+				<div
+						*ngIf="cashSplitPopupOpen?.sumTotals > cashSplitPopupOpen?.total"
+						class="alertSumRed"
+				>
+					שימו לב, הסכום הכולל גבוה ב
+					{{ cashSplitPopupOpen?.sumTotals - cashSplitPopupOpen?.total | sum }}
+					ש"ח
+					<br/>
+					מהסכום בבנק
+				</div>
+				<div
+						*ngIf="cashSplitPopupOpen?.sumTotals < cashSplitPopupOpen?.total"
+						class="alertSumRed"
+				>
+					שימו לב, הסכום הכולל קטן ב
+					{{ cashSplitPopupOpen?.total - cashSplitPopupOpen?.sumTotals | sum }}
+					ש"ח
+					<br/>
+					מהסכום בבנק
+				</div>
+			</ng-container>
+			<button
+					(click)="cashSplitPopupOpen = false"
+					class="button-white button-link"
+			>
+				{{ 'actions.cancellation' | translate }}
+			</button>
+			<button
+					(click)="
+          arr.controls.length > 1 &&
+          cashSplitPopupOpen?.sumTotals !== cashSplitPopupOpen?.total &&
+          ((cashSplitPopupOpen?.sumTotals > cashSplitPopupOpen?.total &&
+            cashSplitPopupOpen?.sumTotals - cashSplitPopupOpen?.total >=
+              0.01) ||
+            (cashSplitPopupOpen?.sumTotals < cashSplitPopupOpen?.total &&
+              cashSplitPopupOpen?.total - cashSplitPopupOpen?.sumTotals >=
+                0.01))
+            ? null
+            : submitData()
+        "
+					class="button-dark"
+					type="submit"
+			>
+				{{ 'actions.save' | translate }}
+			</button>
+		</div>
+	</p-footer>
+</p-dialog>

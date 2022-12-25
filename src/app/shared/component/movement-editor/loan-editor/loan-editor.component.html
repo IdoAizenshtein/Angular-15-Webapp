@@ -1,0 +1,180 @@
+<ng-template #nonEditable>
+	<div class="mat-h3" style="text-align: center; margin-bottom: 0">
+		{{ 'לא ניתן לערוך תנועה בודדת מסוג הלוואות' }}
+	</div>
+</ng-template>
+
+<ng-container *ngIf="mode !== EditingType.Single; else nonEditable">
+	<div
+			*ngFor="let fld of fields"
+			[formGroup]="form"
+			class="HorizontalForm__group"
+			[class.has-errors]="form.get(fld.name).invalid && form.get(fld.name).dirty"
+	>
+		<ng-container [ngSwitch]="fld.name">
+			<ng-container *ngSwitchCase="'companyAccountId'">
+				<label [for]="fld.name">{{
+					'formFixedMovement.field.' + fld.name | translate
+					}}</label>
+				<p-dropdown
+						[options]="userService.appData.userData.accounts"
+						[formControlName]="fld.name"
+						dataKey="companyAccountId"
+						optionLabel="accountNickname"
+						[inputId]="fld.name"
+						[placeholder]="('actions.select' | translate) + '...'"
+						[dropdownIcon]="'p-dropdown-icon'"
+						[autoDisplayFirst]="false"
+				>
+					<ng-template let-item pTemplate="selectedItem">
+						<div
+								style="display: flex; display: -ms-flexbox; align-items: center"
+						>
+							<img
+									style="height: auto; width: 24px; position: relative;"  [src]="
+                  !item.bankId
+                    ? ''
+                    : (item.bankId | toIconSrc: 'bank')
+                "
+							/>&nbsp;
+							<div class="text-ellipsis">{{ item?.accountNickname }}</div>
+							<div>
+								&nbsp;&#40;{{ item.currency | currencySymbol }}&#41;
+							</div>
+						</div>
+					</ng-template>
+					<ng-template let-option pTemplate="item">
+						<div
+								style="
+                position: relative;
+                display: flex;
+                display: -ms-flexbox;
+                align-items: center;
+              "
+						>
+							<img
+									style="height: auto; width: 24px; position: relative;" fill [ngSrc]="
+                  (!option.bankId ? '' : option.bankId)
+                    | toIconSrc: 'bank'
+                "
+							/>&nbsp;
+							<div class="text-ellipsis">{{ option.accountNickname }}</div>
+							<div>
+								&nbsp;&#40;{{ option.currency | currencySymbol }}&#41;
+							</div>
+						</div>
+					</ng-template>
+				</p-dropdown>
+				<!--<pre>{{form.get(fld.name).value| json}}</pre>-->
+			</ng-container>
+			
+			<ng-container *ngSwitchCase="'transTypeId'">
+				<label [for]="fld.name">{{
+					'formFixedMovement.field.' + fld.name | translate
+					}}</label>
+				<app-category-select
+						[categories]="companyTransTypes"
+						[companyId]="companyId"
+						[ngModelVal]="form.get(fld.name).value"
+						[disabled]="form.get(fld.name).disabled"
+						(changed)="form.get(fld.name).patchValue($event.value);"
+						[inputId]="fld.name"
+						[autoDisplayFirst]="false"
+						[filter]="false"
+						[filterBy]="'transTypeName'"
+						
+						[placeholder]="('actions.select' | translate) + '...'"
+				>
+				</app-category-select>
+			</ng-container>
+			
+			<ng-container *ngSwitchCase="'paymentDesc'">
+				<label [for]="fld.name">{{
+					'formFixedMovement.field.' + fld.name | translate
+					}}</label>
+				<p-dropdown
+						[options]="fld.options"
+						[formControlName]="fld.name"
+						[inputId]="fld.name"
+						[dropdownIcon]="'p-dropdown-icon'"
+						[autoDisplayFirst]="false"
+						[placeholder]="('actions.select' | translate) + '...'"
+				>
+				</p-dropdown>
+				<!--<pre>{{form.get(fld.name).value| json}}</pre>-->
+			</ng-container>
+			
+			<ng-container *ngSwitchCase="'transFrequencyName'">
+				<label [for]="fld.name">{{
+					'formFixedMovement.field.' + fld.name | translate
+					}}</label>
+				<p-dropdown
+						[options]="fld.options"
+						[formControlName]="fld.name"
+						[inputId]="fld.name"
+						[dropdownIcon]="'p-dropdown-icon'"
+						[autoDisplayFirst]="false"
+				>
+				</p-dropdown>
+				<!--<pre>{{form.get(fld.name).value}}</pre>-->
+			</ng-container>
+			
+			<ng-container *ngSwitchCase="'transDate'">
+				<label>{{ 'יום בחודש' }}</label>
+				<div>{{ source.frequencyDay }}</div>
+				<!--<div>{{source.frequencyDay || form.get(fld.name).value| date:'d'}}</div>-->
+				<!--<label [for]="fld.name">{{('formFixedMovement.field.' + fld.name)| translate}}</label>-->
+				<!--<p-calendar [formControlName]="fld.name" [inputId]="fld.name" [inputStyle]="{'max-width': '121px'}"-->
+				<!--[locale]="'langCalendar'| translate" dateFormat="dd/mm/y"-->
+				<!--[minDate]="today" [readonlyInput]="true"></p-calendar>-->
+				<!--<pre>{{form.get(fld.name).value}}</pre>-->
+			</ng-container>
+			
+			<ng-container *ngSwitchCase="'expirationDate'">
+				<label [for]="fld.name">{{
+					'formFixedMovement.field.endDate' | translate
+					}}</label>
+				<span *ngIf="form.get(fld.name).value === null"> ללא </span>
+				<span *ngIf="form.get(fld.name).value">
+          {{ form.get(fld.name).value | date: 'dd/MM/yy' }}
+        </span>
+				<!--<pre>{{form.get(fld.name).value| json}}</pre>-->
+			</ng-container>
+			
+			<ng-container *ngSwitchCase="'total'">
+				<label [for]="fld.name">{{
+					'formFixedMovement.field.autoUpdateTypeName' | translate
+					}}</label>
+				<div
+						style="
+            display: flex;
+            display: -ms-flexbox;
+            align-items: baseline;
+            align-content: baseline;
+          "
+				>
+					<div class="ltrNum">{{ form.get(fld.name).value | sum }}</div>
+					<!--<span class="currency">&nbsp;{{'ILS'| currencySymbol}}</span>-->
+				</div>
+				<!--<input type="text" [id]="fld.name" [name]="fld.name" [formControlName]="fld.name"-->
+				<!--[style.max-width]="fld.name === 'total' ? '18ch' : '100%'"-->
+				<!--(keypress)="fld.name !== 'total' || validateSum($event)"-->
+				<!--[disabled]="fld.name === 'total'">-->
+			</ng-container>
+			
+			<ng-container *ngSwitchCase="'transName'">
+				<label [for]="fld.name">{{
+					'formFixedMovement.field.' + fld.name | translate
+					}}</label>
+				<input
+						type="text"
+						[id]="fld.name"
+						[name]="fld.name"
+						[formControlName]="fld.name"
+						[style.max-width]="'100%'"
+						autocomplete="off"
+				/>
+			</ng-container>
+		</ng-container>
+	</div>
+</ng-container>

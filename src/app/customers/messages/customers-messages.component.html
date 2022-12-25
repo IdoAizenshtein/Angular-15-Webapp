@@ -1,0 +1,35 @@
+<div class="messages-page">
+  <div class="titlePage">
+    <i>
+      {{ 'עדכונים והתראות' }}
+    </i>
+    &nbsp;&nbsp;<i class="far fa-sm fa-bell"></i>
+    <button
+      class="button-link"
+      [routerLink]="
+        !userService.appData.userData.accountant
+          ? '/cfl/settings/alerts'
+          : '/accountants/companies/settings/alerts'
+      "
+      queryParamsHandling="preserve"
+    >
+      <i class="fas fa-cog"></i>
+    </button>
+    <button
+      class="button-link"
+      (click)="location.back()"
+      [matTooltip]="'חזרה למסך'"
+      matTooltipPosition="below"
+    >
+      <img ngSrc="/assets/images/back-arrow-rect.png"
+           style="height: auto; width: 22px; position: relative;" fill
+      width="22"
+      />
+    </button>
+  </div>
+
+  <app-messages-list
+    [messages$]="selectedCompanyFullMessages$"
+    mode="messages"
+  ></app-messages-list>
+</div>

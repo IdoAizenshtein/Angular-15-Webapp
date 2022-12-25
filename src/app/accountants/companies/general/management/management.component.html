@@ -1,0 +1,201 @@
+<div [appScrollHeight]="280" class="scrollPage scrollbar-dynamic">
+	<ng-container *ngIf="getExporterFileStatus; else loading">
+		<div class="editUUID">
+			<p>exporter token:</p>
+			<div>
+				<input
+						[(ngModel)]="getExporterFileStatus.exporterTokenId"
+						[class.error]="
+            !validUUID(getExporterFileStatus.exporterTokenId) ||
+            error_exporterTokenId
+          "
+						type="text"
+				/>
+			</div>
+			<div>
+				<button
+						(click)="updateValues('exporterTokenId')"
+						[disabled]="!validUUID(getExporterFileStatus.exporterTokenId)"
+						class="button-dark"
+						style="margin-left: 5px"
+				>
+					עדכן
+				</button>
+				<!--                <button-->
+				<!--                        class="button-dark"-->
+				<!--                        (click)="openPopUpSession()">-->
+				<!--                    הקם חדש-->
+				<!--                </button>-->
+			</div>
+		</div>
+		<div class="editUUID">
+			<p>API token:</p>
+			<div>
+				<!--                !validUUID(getExporterFileStatus.apiImportToken) ||-->
+				<input
+						[(ngModel)]="getExporterFileStatus.apiImportToken"
+						[class.error]="error_apiImportToken"
+						type="text"
+				/>
+			</div>
+			<div>
+				<!--                [disabled]="!validUUID(getExporterFileStatus.apiImportToken)"-->
+				<button
+						(click)="updateValues('apiImportToken')"
+						class="button-dark"
+						style="margin-left: 5px"
+				>
+					עדכן
+				</button>
+				<button (click)="openPopUpSession()" class="button-dark">
+					הקם חדש
+				</button>
+			</div>
+		</div>
+		
+		<div class="table-fileData">
+			<div class="header">
+				<div>מספר הקובץ</div>
+				<div>שם הקובץ</div>
+				<div>תאריך טעינה אחרונה</div>
+				<div>תאריך שינוי אחרון</div>
+				<div>סמן להפעלה</div>
+			</div>
+			<div [appScrollHeight]="480" class="body scroll-chrome">
+				<div
+						*ngFor="
+            let row of getExporterFileStatus.fileData;
+            let i = index;
+            trackBy: trackById
+          "
+						class="row"
+				>
+					<div>
+						{{ row.fileNumber }}
+					</div>
+					<div>
+						{{ row.fileName }}
+					</div>
+					<div>
+						{{ row.dataReceiveDate | date: 'dd/MM/yy HH:mm' }}
+					</div>
+					<div>
+						{{ row.lastDeltaDate | date: 'dd/MM/yy HH:mm' }}
+					</div>
+					<div>
+						<button
+								(click)="updateExporterFileStatus(row.exporterFileStatusId)"
+								[disabled]="!row.show"
+								class="button-dark"
+						>
+							{{ row.show ? 'הפעל' : 'בתהליך' }}
+						</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</ng-container>
+	
+	<ng-template #loading>
+		<div class="loader" style="justify-content: center">
+			<div class="circle"></div>
+		</div>
+	</ng-template>
+</div>
+
+<ng-container *ngIf="session">
+	<p-dialog (visibleChange)="session = false"
+			(onHide)="session = false"
+			[visible]="(session)"
+			
+			[modal]="true"
+			[resizable]="false"
+			appendTo="body"
+			styleClass="session"
+	>
+		<p-header>
+			<h1>הקם חדש</h1>
+		</p-header>
+		<div class="sessionModal">
+			<div class="header">
+				<div>מפתח</div>
+				<div>תחילית של DB</div>
+			</div>
+			<div class="body">
+				<div>
+					<input
+							[(ngModel)]="session.apiToken"
+							[class.error]="session.error"
+							type="text"
+					/>
+				</div>
+				<div>
+					<input
+							[(ngModel)]="session.dbStart"
+							[class.error]="session.error"
+							type="text"
+					/>
+				</div>
+			</div>
+		</div>
+		<p-footer style="justify-content: center">
+			<button (click)="session = false" class="button-link">
+				{{ 'actions.cancellation' | translate }}
+			</button>
+			<button
+					(click)="validationSession()"
+					class="button-dark"
+					style="width: 171px; height: 35px !important; padding: 0"
+			>
+				{{ 'actions.save' | translate }}
+			</button>
+		</p-footer>
+	</p-dialog>
+</ng-container>
+
+<ng-container *ngIf="companyList">
+	<p-dialog (visibleChange)="companyList = false"
+			(onHide)="companyList = false"
+			[visible]="(companyList)"
+			
+			[modal]="true"
+			[resizable]="false"
+			appendTo="body"
+			styleClass="session"
+	>
+		<p-header>
+			<h1>בחירת חברה</h1>
+		</p-header>
+		
+		<div style="height: 45px; margin: 10px 0px">
+			<p-dropdown
+					[(ngModel)]="companyList.companySelected"
+					[dropdownIcon]="'p-dropdown-icon'"
+					[filter]="true"
+					[options]="companyList.data"
+					[scrollHeight]="'135px'"
+					[style]="{ width: '275px' }"
+					appendTo="body"
+					
+					optionLabel="companyName"
+					placeholder="בחירה"
+					styleClass="ddInfoCompanyForm"
+			>
+			</p-dropdown>
+		</div>
+		
+		<p-footer style="justify-content: center">
+			<button (click)="companyList = false" class="button-link">
+				{{ 'actions.cancellation' | translate }}
+			</button>
+			<button
+					(click)="updateValuesModal()"
+					[disabled]="!companyList.companySelected"
+					class="button-dark"
+					style="width: 171px; height: 35px !important; padding: 0"
+			>
+				{{ 'actions.save' | translate }}
+			</button>
+		</p-footer>
+	</p-dialog>
+</ng-container>

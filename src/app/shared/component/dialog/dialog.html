@@ -1,0 +1,75 @@
+<!-- <div -->
+<!--   #container -->
+<!--   [ngClass]="{ -->
+<!--     'p-dialog p-widget p-dialog-content p-corner-all p-shadow': true, -->
+<!--     'p-dialog-rtl': rtl, -->
+<!--     'p-dialog-draggable': draggable -->
+<!--   }" -->
+<!--   [style.display]="visible ? 'block' : 'none'" -->
+<!--   [ngStyle]="style" -->
+<!--   [class]="styleClass" -->
+<!--   [style.width.px]="width" -->
+<!--   [style.height.px]="height" -->
+<!--   [style.minWidth.px]="minWidth" -->
+<!--   (mousedown)="moveOnTop()" -->
+<!--   [@dialogState]="visible ? 'visible' : 'hidden'" -->
+<!--   role="dialog" -->
+<!--   [attr.aria-labelledby]="id + '-label'" -->
+<!--   dir="rtl" -->
+<!-- > -->
+<!--   <div -->
+<!--     #titlebar -->
+<!--     class="p-dialog-header p-widget-header p-helper-clearfix p-corner-top" -->
+<!--     (mousedown)="initDrag($event)" -->
+<!--     (mouseup)="endDrag($event)" -->
+<!--     *ngIf="showHeader" -->
+<!--   > -->
+<!--     <span [attr.id]="id + '-label'" class="p-dialog-title" *ngIf="header">{{ -->
+<!--       header -->
+<!--     }}</span> -->
+<!--     <span -->
+<!--       [attr.id]="id + '-label'" -->
+<!--       class="p-dialog-title" -->
+<!--       *ngIf="headerFacet && headerFacet.first" -->
+<!--     > -->
+<!--       <ng-content select="p-header"></ng-content> -->
+<!--     </span> -->
+<!--     <a -->
+<!--       *ngIf="closable" -->
+<!--       [ngClass]="{ -->
+<!--         'p-dialog-header-icon p-dialog-header-close p-corner-all': true -->
+<!--       }" -->
+<!--       [class.closeOut]="closeOut" -->
+<!--       href="#" -->
+<!--       role="button" -->
+<!--       (click)="close($event)" -->
+<!--       (mousedown)="onCloseMouseDown($event)" -->
+<!--     > -->
+<!--       <span *ngIf="!closeOut" class="fa fa-fw fa-times"></span> -->
+<!--       <mat-icon -->
+<!--         *ngIf="closeOut" -->
+<!--         svgIcon="closeIcon" -->
+<!--         style="color: #ffffff; height: 16px" -->
+<!--       ></mat-icon> -->
+<!--     </a> -->
+<!--   </div> -->
+<!--   <div -->
+<!--     #content -->
+<!--     class="p-dialog-content p-dialog-content" -->
+<!--     [ngStyle]="contentStyle" -->
+<!--   > -->
+<!--     <ng-content></ng-content> -->
+<!--   </div> -->
+<!--   <div -->
+<!--     class="p-dialog-footer p-dialog-content" -->
+<!--     *ngIf="footerFacet && footerFacet.first" -->
+<!--   > -->
+<!--     <ng-content select="p-footer"></ng-content> -->
+<!--   </div> -->
+<!--   <div -->
+<!--     *ngIf="resizable" -->
+<!--     class="p-resizable-handle p-resizable-se p-icon p-icon-gripsmall-diagonal-se" -->
+<!--     style="z-index: 90" -->
+<!--     (mousedown)="initResize($event)" -->
+<!--   ></div> -->
+<!-- </div> -->

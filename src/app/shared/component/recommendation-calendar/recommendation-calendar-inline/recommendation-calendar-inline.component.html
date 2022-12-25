@@ -1,0 +1,151 @@
+<app-calendar-wrap
+		#calendar
+		(onMonthChange)="calendar.updateModel(null); loadRecommendations($event)"
+		[(ngModel)]="selectedDate"
+		[inline]="true"
+		[defaultDate]="defaultDate"
+		[locale]="'langCalendar' | translate"
+		[maxDate]="maxDate"
+		[minDate]="minDate"
+		[showOtherMonths]="false"
+		styleClass="recommendation-calendar"
+>
+	<ng-template let-date pTemplate="date">
+		<!--<span [ngStyle]="{backgroundColor: (date.day < 21 && date.day > 1) ? '#7cc67c' : 'inherit'}"-->
+		<!--style="border-radius:50%">{{date.day}}</span>-->
+		<!--<span>{{date.day}}</span>-->
+		
+		<ng-container *ngIf="recommendations$ | async as rcmndts; else noop">
+			<ng-container
+					*ngIf="
+          rcmndts.daysMap[date.day + '-' + date.month] as dayData;
+          else noop
+        "
+			>
+				<span
+						[class.recommended]="
+            rcmndts.recommendedDateDt &&
+            rcmndts.recommendedDateDt.getDate() === date.day &&
+            rcmndts.recommendedDateDt.getMonth() === date.month
+          "
+				>
+          <span [class.holiday]="dayData.holiday" class="forceLTR">
+            {{ date.day }}
+	          <span
+			          *ngIf="dayData.holiday"
+			          [pTooltip]="dayData.holiday"
+			          tooltipPosition="bottom"
+	          >&#10033;</span
+	          >
+          </span>
+					<span
+							[class.sum-credit]="date.selectable && dayData.color === 'red'"
+							[class.sum-debit]="date.selectable && dayData.color === 'green'"
+							class="itra"
+					>
+            {{ dayData.itra | sum: true }}
+						<!--{{1234566.78| sum:true}}-->
+          </span>
+				</span>
+			</ng-container>
+		</ng-container>
+		<ng-template #noop>
+			<span>
+					<span>{{ date.day }}</span>
+			<span *ngIf="date.selectable && !date.otherMonth" class="itra">
+        <i class="fas fa-ellipsis-h"></i>
+      </span>
+			</span>
+		</ng-template>
+	</ng-template>
+</app-calendar-wrap>
+<div id="selectionSummary">
+	<ng-container *ngIf="selectedDate">
+		<ng-container *ngIf="recommendations$ | async as rcmndts">
+			<ng-container
+					*ngIf="
+          rcmndts.daysMap[
+            selectedDate.getDate() + '-' + selectedDate.getMonth()
+          ] as selectedDayData
+        "
+			>
+				<!--<ng-container *ngIf="!selectedDayData.harigaDate && !selectedDayData.growHarigaDate">-->
+				<div>
+					<i class="fas fa-check"></i>&nbsp;
+					<!--<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/vSign.png"/>&nbsp;-->
+					{{
+					'recommendationCalendar.selectedDatePtrn'
+							| translate
+							: {
+								selectionType:
+										('recommendationCalendar.' +
+										(selectedDayData.transDate === rcmndts.recommendedDate
+												? 'aRecommended'
+												: 'aSelected') | translate)
+							}
+					}}
+					{{ selectedDate | date: 'dd/MM/yy' }}
+				</div>
+				<div>
+					<div>
+						{{ 'recommendationCalendar.expectedBalanceIs' | translate }}&nbsp;
+					</div>
+					<div class="forceLTR sum">{{ selectedDayData.itra | sum: true }}</div>
+					<div class="currency">
+						{{ presetData?.account?.currency | currencySymbol }}
+					</div>
+				</div>
+				<!--</ng-container>-->
+				
+				<ng-container *ngIf="selectedDayData.harigaDate">
+					<div class="alert">
+						{{
+						'recommendationCalendar.aboutToExceedPtn'
+								| translate
+								: {
+									dt:
+											selectedDayData.harigaDate === selectedDayData.transDate
+													? ('recommendationCalendar.aSelected' | translate)
+													: (selectedDayData.harigaDate | date: 'dd/MM/yy')
+								}
+						}}
+					</div>
+					<ng-container *ngIf="selectedDayData.growHarigaDate">
+						<div class="alert">
+							{{
+							'recommendationCalendar.increaseExceedAttachedPtn'
+									| translate
+									: {
+										dt:
+												selectedDayData.growHarigaDate ===
+												selectedDayData.transDate
+														? ('recommendationCalendar.aSelected' | translate)
+														: (selectedDayData.growHarigaDate
+																| date: 'dd/MM/yy')
+									}
+							}}
+						</div>
+					</ng-container>
+				</ng-container>
+				
+				<ng-container
+						*ngIf="selectedDayData.growHarigaDate && !selectedDayData.harigaDate"
+				>
+					<div class="alert">
+						{{
+						'recommendationCalendar.increaseExceedPtn'
+								| translate
+								: {
+									dt:
+											selectedDayData.growHarigaDate ===
+											selectedDayData.transDate
+													? ('recommendationCalendar.aSelected' | translate)
+													: (selectedDayData.growHarigaDate | date: 'dd/MM/yy')
+								}
+						}}
+					</div>
+				</ng-container>
+			</ng-container>
+		</ng-container>
+	</ng-container>
+</div>

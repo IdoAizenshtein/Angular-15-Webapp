@@ -1,0 +1,599 @@
+<h2 class="titlePage">
+  {{ 'menu.customers.accountancy.profitAndLoss' | translate }}
+</h2>
+<div class="filterRow">
+  <app-acc-dates
+    [option]="'profitAndLoss'"
+    (changedTrigger)="filterDates($event)"
+  ></app-acc-dates>
+</div>
+<div #headerLastRow>
+  <div class="sums sumsProfitAndLoss">
+    <div class="sum-data">
+      <h3>
+        סה״כ
+        <span *ngIf="revahHefsed?.summary?.sum >= 0"> רווח </span>
+        <span *ngIf="revahHefsed?.summary?.sum < 0"> הפסד </span>
+        לדו״ח
+      </h3>
+      <p *ngIf="revahHefsed?.data.length; else summary">
+        <span class="sum" style="color: #aeaeae">{{
+          revahHefsed.summary.sum | sum: true
+        }}</span>
+      </p>
+      <ng-template #summary>
+        <p class="sum-nan"></p>
+      </ng-template>
+    </div>
+    <div class="separator"></div>
+    <div
+      class="sum-data"
+      *ngIf="
+        revahHefsed?.data[revahHefsed?.data.length - 2].data[0]
+          .hacnasotCurrPrcVal !== null
+      "
+    >
+      <h3>אחוז מהמחזור</h3>
+      <p *ngIf="revahHefsed?.data.length; else hacnasotCurrPrcVal">
+        <span class="sum" style="color: #1387a9"
+          >{{
+            revahHefsed?.data[revahHefsed?.data.length - 2].data[0]
+              .hacnasotCurrPrcVal
+          }}
+          %</span
+        >
+      </p>
+      <ng-template #hacnasotCurrPrcVal>
+        <p class="sum-nan"></p>
+      </ng-template>
+    </div>
+    <div
+      class="separator"
+      *ngIf="
+        revahHefsed?.data[revahHefsed?.data.length - 2].data[0]
+          .hacnasotCurrPrcVal !== null
+      "
+    ></div>
+    <div
+      class="sum-data"
+      *ngIf="
+        revahHefsed?.data[revahHefsed?.data.length - 2].data[0]
+          .hacnasotCurrPrcVal !== null &&
+        revahHefsed?.data[revahHefsed?.data.length - 1].smallData[0]
+          .hacnasotCurrPrcVal !== null
+      "
+    >
+      <h3>שינוי מתקופה קודמת</h3>
+      <p *ngIf="revahHefsed?.data.length; else smallData">
+        <span
+          class="sum"
+          [ngClass]="{
+            red:
+              revahHefsed?.data[revahHefsed?.data.length - 2].data[0]
+                .hacnasotCurrPrcVal -
+                revahHefsed?.data[revahHefsed?.data.length - 1].smallData[0]
+                  .hacnasotCurrPrcVal <
+              0,
+            green:
+              revahHefsed?.data[revahHefsed?.data.length - 2].data[0]
+                .hacnasotCurrPrcVal -
+                revahHefsed?.data[revahHefsed?.data.length - 1].smallData[0]
+                  .hacnasotCurrPrcVal >
+              0,
+            gray:
+              revahHefsed?.data[revahHefsed?.data.length - 2].data[0]
+                .hacnasotCurrPrcVal -
+                revahHefsed?.data[revahHefsed?.data.length - 1].smallData[0]
+                  .hacnasotCurrPrcVal ===
+              0
+          }"
+        >
+          {{
+            revahHefsed?.data[revahHefsed?.data.length - 2].data[0]
+              ?.hacnasotCurrPrcVal -
+              revahHefsed?.data[revahHefsed?.data.length - 1]?.smallData[0]
+                .hacnasotCurrPrcVal
+          }}
+          %
+        </span>
+      </p>
+      <ng-template #smallData>
+        <p class="sum-nan"></p>
+      </ng-template>
+    </div>
+    <div
+      class="separator"
+      *ngIf="
+        revahHefsed?.data[revahHefsed?.data.length - 2].data[0]
+          .hacnasotCurrPrcVal !== null &&
+        revahHefsed?.data[revahHefsed?.data.length - 1].smallData[0]
+          .hacnasotCurrPrcVal !== null
+      "
+    ></div>
+    <div class="sum-data">
+      <h3>
+        <span *ngIf="revahHefsed?.summary?.prevNum >= 0"> רווח </span>
+        <span *ngIf="revahHefsed?.summary?.prevNum < 0"> הפסד </span>
+        אשתקד
+      </h3>
+      <p *ngIf="revahHefsed?.data.length; else prevNum">
+        <span class="sum">{{ revahHefsed.summary.prevNum | sum: true }}</span>
+      </p>
+      <ng-template #prevNum>
+        <p class="sum-nan"></p>
+      </ng-template>
+    </div>
+    <!--<div class="separator"></div>-->
+    <!--<div class="sum-data">-->
+    <!--<h3>אחוז מהמחזור אשתקד</h3>-->
+    <!--<p *ngIf="revahHefsed?.data.length; else hacnasotCurrPrcValsmallData">-->
+    <!--<span class="sum">{{revahHefsed?.data[revahHefsed?.data.length - 1].smallData[0].hacnasotCurrPrcVal}}%</span>-->
+    <!--</p>-->
+    <!--<ng-template #hacnasotCurrPrcValsmallData>-->
+    <!--<p class="sum-nan"></p>-->
+    <!--</ng-template>-->
+    <!--</div>-->
+
+    <div class="exports">
+      <button
+        (click)="reportMailSubmitterToggle = true"
+        [matTooltip]="'appWalk.customers.report.mailBtn' | translate"
+        matTooltipPosition="above"
+      >
+        <img  ngSrc="/assets/images/to-mail.png" height="21" width="24" />
+        <app-report-mail-scheduler
+         [visible]="(reportMailSubmitterToggle)"
+
+          (recipientApproved)="sendTransactions($event)"
+        ></app-report-mail-scheduler>
+      </button>
+      <!--<button (click)="exportTransactions('PDF')" [matTooltip]="('appWalk.customers.report.pdfBtn'| translate)"-->
+      <!--matTooltipPosition="above">-->
+      <!--<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/to-pdf.png" height="21" width="24"/>-->
+      <!--</button>-->
+      <button
+        (click)="exportTransactions('EXCEL')"
+        [matTooltip]="'appWalk.customers.report.excelBtn' | translate"
+        matTooltipPosition="above"
+      >
+        <img ngSrc="/assets/images/to-excel.png" height="21" width="24" />
+      </button>
+    </div>
+  </div>
+</div>
+
+<ng-container *ngIf="userService.appData.userData?.companySelect">
+  <div
+    [appScrollHeight]="headerLastRow.getBoundingClientRect().bottom + 8"
+    class="scrollPage scrollbar-dynamic"
+  >
+    <div class="filterRow rowFilterProfitAndLoss">
+      <ul class="valueRadioPrev">
+        <li>השווה לתקופה קודמת</li>
+        <li>
+          <p-radioButton
+            name="valueRadioPrev"
+            value="yes"
+            label="כן"
+            [(ngModel)]="valueRadioPrev"
+            (onClick)="resetArr()"
+            inputId="yes"
+          ></p-radioButton>
+        </li>
+        <li>
+          <p-radioButton
+            name="valueRadioPrev"
+            value="no"
+            label="לא"
+            [(ngModel)]="valueRadioPrev"
+            (onClick)="resetArr()"
+            inputId="no"
+          ></p-radioButton>
+        </li>
+      </ul>
+      <ul class="radioGroupChangePre">
+        <li>
+          <p-radioButton
+            name="radioGroupChangePre"
+            value="radio1"
+            label="ללא אחוזים"
+            [(ngModel)]="radioGroupChangePre"
+            inputId="radio1"
+          ></p-radioButton>
+        </li>
+        <li>
+          <p-radioButton
+            name="radioGroupChangePre"
+            value="radio2"
+            label="אחוז משנה קודמת"
+            [(ngModel)]="radioGroupChangePre"
+            inputId="radio2"
+          ></p-radioButton>
+        </li>
+        <li>
+          <p-radioButton
+            name="radioGroupChangePre"
+            value="radio3"
+            label="אחוז מההכנסות"
+            [(ngModel)]="radioGroupChangePre"
+            inputId="radio3"
+          ></p-radioButton>
+        </li>
+      </ul>
+
+      <div class="menu-dd menu-with-panel">
+        <button
+          id="account-dates-selector"
+          class="buttonDD"
+          (click)="showPanelDD = !showPanelDD"
+          [class.opened]="showPanelDD"
+        >
+          הגדרת מלאי
+        </button>
+        <div
+          id="account-dates-panel"
+          class="panelDD datesPanel dataProfitAndLoss"
+          *ngIf="showPanelDD"
+          [@slideInOutDD]
+          appClickDocument
+          (closed)="onCloseDD()"
+        >
+          <div class="inputsProfitAndLoss">
+            <div>
+              <input
+                type="text"
+                appNumbersOnly
+                [(ngModel)]="stockEnterance"
+                placeholder="מלאי פתיחה לדוח"
+              />
+            </div>
+            <div>
+              <input
+                type="text"
+                appNumbersOnly
+                [(ngModel)]="stockExit"
+                placeholder="מלאי סגירה לדוח"
+              />
+            </div>
+          </div>
+          <div class="inputsProfitAndLoss">
+            <div>
+              <input
+                type="text"
+                appNumbersOnly
+                [(ngModel)]="stockEnterancePrev"
+                placeholder="מלאי פתיחה קודם"
+              />
+            </div>
+            <div>
+              <input
+                type="text"
+                appNumbersOnly
+                [(ngModel)]="stockExitPrev"
+                placeholder="מלאי סגירה קודם"
+              />
+            </div>
+          </div>
+
+          <hr />
+          <div
+            style="
+              display: flex;
+              flex-flow: row nowrap;
+              margin-left: 1px;
+              justify-content: flex-end;
+            "
+          >
+            <button
+              (click)="getRevachHefsed()"
+              class="filterBtn"
+              [disabled]="selectedValue === 1 && !hasValidRange"
+              id="applySelectionBtn"
+            >
+              {{ 'filters.filter' | translate }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="profitAndLoss">
+      <div class="header">
+        <div class="separator">&nbsp;</div>
+        <div></div>
+        <div class="separator">&nbsp;</div>
+        <div>תאור</div>
+        <div class="separator">&nbsp;</div>
+        <div>סה״כ</div>
+        <div class="separator">&nbsp;</div>
+
+        <ng-container *ngFor="let a of revahHefsed?.dates">
+          <div>
+            <strong>
+              {{
+                translate.translations[translate.currentLang].langCalendar
+                  .monthNamesShort[
+                  parseIntNum(a.toString().substring(4, 6)) - 1
+                ]
+              }}
+            </strong>
+            <p>{{ a.toString().substring(0, 4) }}</p>
+          </div>
+          <div class="separator">&nbsp;</div>
+        </ng-container>
+      </div>
+      <div style="position: relative">
+        <div *ngIf="loader" class="loader">
+          <div class="circle"></div>
+        </div>
+
+        <div
+          *ngFor="
+            let val of revahHefsed?.data;
+            let i = index;
+            let odd = odd;
+            let even = even
+          "
+        >
+          <div
+            [class.opened]="val.opened"
+            class="rowTitle"
+            [class.odd]="odd"
+            [class.even]="even"
+            [class.pointer]="
+              val.rowsAsList.length > 0 &&
+              (valueRadioPrev === 'yes' ||
+                (valueRadioPrev === 'no' && !val.rowZero))
+            "
+            [class.radio2]="radioGroupChangePre === 'radio2' && val?.data"
+            *ngIf="(valueRadioPrev === 'yes' && odd) || even"
+            (click)="val.opened = !val.opened"
+          >
+            <div class="separator">&nbsp;</div>
+            <div style="text-align: center">
+              <i
+                *ngIf="
+                  val.rowsAsList.length > 0 &&
+                  (valueRadioPrev === 'yes' ||
+                    (valueRadioPrev === 'no' && !val.rowZero))
+                "
+                class="fa fa-fw"
+                [ngClass]="val.opened ? 'fa-caret-up' : 'fa-caret-down'"
+              ></i>
+            </div>
+            <div class="separator">&nbsp;</div>
+            <div class="title">
+              {{ val.title }}
+              <span *ngIf="odd"> אשתקד </span>
+            </div>
+            <div class="separator">&nbsp;</div>
+            <ng-container *ngFor="let a of val?.data; let first1 = first">
+              <div
+                *ngIf="radioGroupChangePre !== 'radio3'; else radio3"
+                [ngClass]="{ first: first1 }"
+              >
+                <div>{{ a.sum | sum: true }}</div>
+
+                <div
+                  class="{{ a.colorType }}"
+                  title="מול שנה שעברה"
+                  *ngIf="radioGroupChangePre === 'radio2'"
+                >
+                  <span *ngIf="a.numChange !== null"> {{ a.numChange }}% </span>
+                  <span *ngIf="a.numChange === null"> 0% </span>
+                </div>
+              </div>
+              <ng-template #radio3>
+                <div title="אחוז מסך ההכנסות" [ngClass]="{ first: first1 }">
+                  <span *ngIf="a.hacnasotCurrPrcVal !== null">
+                    {{ a.hacnasotCurrPrcVal }}%
+                  </span>
+                  <span *ngIf="a.hacnasotCurrPrcVal === null"> 0% </span>
+                </div>
+              </ng-template>
+              <div class="separator">&nbsp;</div>
+            </ng-container>
+            <ng-container *ngFor="let a of val?.smallData; let first1 = first">
+              <div
+                *ngIf="radioGroupChangePre !== 'radio3'; else radio3"
+                [ngClass]="{ first: first1 }"
+              >
+                <div>{{ a.sum | sum: true }}</div>
+              </div>
+              <ng-template #radio3>
+                <div title="אחוז מסך ההכנסות" [ngClass]="{ first: first1 }">
+                  <span *ngIf="a.hacnasotCurrPrcVal !== null">
+                    {{ a.hacnasotCurrPrcVal }}%
+                  </span>
+                  <span *ngIf="a.hacnasotCurrPrcVal === null"> 0% </span>
+                </div>
+              </ng-template>
+              <div class="separator">&nbsp;</div>
+            </ng-container>
+          </div>
+          <div *ngIf="val.opened">
+            <div *ngFor="let a of val?.rowsAsList; let i1 = index">
+              <div
+                [class.opened]="val.opened"
+                class="row"
+                [class.pointer]="a.rowsAsList.length"
+                [class.radio2]="radioGroupChangePre === 'radio2' && a?.data"
+                *ngIf="
+                  (valueRadioPrev === 'yes' && val.opened) ||
+                  (valueRadioPrev === 'no' &&
+                    val.opened &&
+                    !val.rowZero &&
+                    !a.rowZero)
+                "
+                (click)="a.opened = !a.opened"
+              >
+                <div class="separator">&nbsp;</div>
+                <div></div>
+                <div class="separator">&nbsp;</div>
+                <div style="display: flex; direction: rtl">
+                  <div style="flex: 10">
+                    <i
+                      *ngIf="a.rowsAsList.length"
+                      class="fa fa-fw"
+                      [ngClass]="a.opened ? 'fa-caret-up' : 'fa-caret-down'"
+                    ></i>
+                  </div>
+                  <div style="flex: 80" class="title">{{ a.title }}</div>
+                </div>
+                <div class="separator">&nbsp;</div>
+                <ng-container *ngFor="let b of a?.data; let first2 = first">
+                  <div
+                    *ngIf="radioGroupChangePre !== 'radio3'; else radio3"
+                    [ngClass]="{ first: first2 }"
+                  >
+                    <div>{{ b.sum | sum: true }}</div>
+
+                    <div
+                      class="{{ b.colorType }}"
+                      title="מול שנה שעברה"
+                      *ngIf="radioGroupChangePre === 'radio2'"
+                    >
+                      <span *ngIf="b.numChange !== null">
+                        {{ b.numChange }}%
+                      </span>
+                      <span *ngIf="b.numChange === null"> 0% </span>
+                    </div>
+                  </div>
+                  <ng-template #radio3>
+                    <div title="אחוז מסך ההכנסות" [ngClass]="{ first: first2 }">
+                      <span *ngIf="b.hacnasotCurrPrcVal !== null">
+                        {{ b.hacnasotCurrPrcVal }}%
+                      </span>
+                      <span *ngIf="b.hacnasotCurrPrcVal === null"> 0% </span>
+                    </div>
+                  </ng-template>
+                  <div class="separator">&nbsp;</div>
+                </ng-container>
+                <ng-container
+                  *ngFor="let b of a?.smallData; let first2 = first"
+                >
+                  <div
+                    *ngIf="radioGroupChangePre !== 'radio3'; else radio3"
+                    [ngClass]="{ first: first2 }"
+                  >
+                    <div>{{ b.sum | sum: true }}</div>
+                  </div>
+                  <ng-template #radio3>
+                    <div title="אחוז מסך ההכנסות" [ngClass]="{ first: first2 }">
+                      <span *ngIf="b.hacnasotCurrPrcVal !== null">
+                        {{ b.hacnasotCurrPrcVal }}%
+                      </span>
+                      <span *ngIf="b.hacnasotCurrPrcVal === null"> 0% </span>
+                    </div>
+                  </ng-template>
+                  <div class="separator">&nbsp;</div>
+                </ng-container>
+              </div>
+              <div *ngIf="a.opened">
+                <div *ngFor="let b of a?.rowsAsList">
+                  <div
+                    *ngIf="
+                      (valueRadioPrev === 'yes' && val.opened && a.opened) ||
+                      (valueRadioPrev === 'no' &&
+                        val.opened &&
+                        a.opened &&
+                        !b.rowZero)
+                    "
+                    [class.radio2]="radioGroupChangePre === 'radio2' && b?.data"
+                    tabindex="-1"
+                    class="row rowLast"
+                  >
+                    <div class="separator">&nbsp;</div>
+                    <div></div>
+                    <div class="separator">&nbsp;</div>
+                    <div style="display: flex; direction: rtl">
+                      <div style="flex: 10"></div>
+                      <div style="flex: 80" class="title">{{ b.title }}</div>
+                    </div>
+                    <div class="separator">&nbsp;</div>
+
+                    <ng-container *ngFor="let c of b?.data; let first3 = first">
+                      <div
+                        *ngIf="radioGroupChangePre !== 'radio3'; else radio3"
+                        [ngClass]="{ first: first3 }"
+                      >
+                        <div>{{ c.sum | sum: true }}</div>
+
+                        <div
+                          class="{{ c.colorType }}"
+                          title="מול שנה שעברה"
+                          *ngIf="radioGroupChangePre === 'radio2'"
+                        >
+                          <span *ngIf="c.numChange !== null">
+                            {{ c.numChange }}%
+                          </span>
+                          <span *ngIf="c.numChange === null"> 0% </span>
+                        </div>
+                      </div>
+                      <ng-template #radio3>
+                        <div
+                          title="אחוז מסך ההכנסות"
+                          [ngClass]="{ first: first3 }"
+                        >
+                          <span *ngIf="c.hacnasotCurrPrcVal !== null">
+                            {{ c.hacnasotCurrPrcVal }}%
+                          </span>
+                          <span *ngIf="c.hacnasotCurrPrcVal === null">
+                            0%
+                          </span>
+                        </div>
+                      </ng-template>
+                      <div class="separator">&nbsp;</div>
+                    </ng-container>
+                    <ng-container
+                      *ngFor="let c of b?.smallData; let first3 = first"
+                    >
+                      <div
+                        *ngIf="radioGroupChangePre !== 'radio3'; else radio3"
+                        [ngClass]="{ first: first3 }"
+                      >
+                        <div>{{ c.sum | sum: true }}</div>
+                      </div>
+                      <ng-template #radio3>
+                        <div
+                          title="אחוז מסך ההכנסות"
+                          [ngClass]="{ first: first3 }"
+                        >
+                          <span *ngIf="c.hacnasotCurrPrcVal !== null">
+                            {{ c.hacnasotCurrPrcVal }}%
+                          </span>
+                          <span *ngIf="c.hacnasotCurrPrcVal === null">
+                            0%
+                          </span>
+                        </div>
+                      </ng-template>
+                      <div class="separator">&nbsp;</div>
+                    </ng-container>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bgSelectGraph" *ngIf="revahHefsed?.data.length">
+      <p-dropdown
+        [options]="selectRevah"
+        [(ngModel)]="selectRevahSet"
+
+        (onChange)="setGraph()"
+        [dropdownIcon]="'p-dropdown-icon'"
+        optionLabel="name"
+      >
+      </p-dropdown>
+    </div>
+    <div *ngIf="revahHefsed?.data.length" style="border: 1px solid #e1e1e1">
+      <app-charts
+        [chartData]="chartData"
+        [scrollHeight]="{ height: 415 }"
+      ></app-charts>
+    </div>
+  </div>
+</ng-container>

@@ -1,0 +1,725 @@
+<div [appScrollHeight]="200" class="scrollPage scrollbar-dynamic">
+  <div class="myaccSett">
+    <div>
+      <div class="title">פרטים אישיים</div>
+      <div class="sett-table">
+        <div>
+          <div>שם פרטי</div>
+          <div>
+            <input
+              type="text"
+              [(ngModel)]="data.firstName"
+              (blur)="updateUser()"
+              (keydown.enter)="updateUser()"
+            />
+          </div>
+        </div>
+        <div>
+          <div>שם משפחה</div>
+          <div>
+            <input
+              type="text"
+              [(ngModel)]="data.lastName"
+              (blur)="updateUser()"
+              (keydown.enter)="updateUser()"
+            />
+          </div>
+        </div>
+        <div>
+          <div>טלפון נייד</div>
+          <div>
+            <div>{{ data?.cellPhone }}</div>
+          </div>
+        </div>
+        <div>
+          <div>מייל</div>
+          <div>
+            <div class="flex">
+              <div>{{ data?.mail }}</div>
+              <div
+                style="
+                  display: flex;
+                  display: -ms-flexbox;
+                  justify-content: center;
+                  align-items: center;
+                "
+              >
+                <div class="link" (click)="openPopReplaceMail()">
+                  החלפת מייל
+                </div>
+                &nbsp;
+                <img
+                 ngSrc="/assets/images/alertIc.png"
+                  *ngIf="!data?.activated"
+                  [pTooltip]="'יש לאמת כתובת מייל'"
+                  [tooltipStyleClass]="'infoEmail'"
+                  [escape]="false"
+                  tooltipPosition="bottom"
+                  width="15"
+                  height="13"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <span class="link" (click)="changePasswordPrompt.visible = true">
+          החלפת סיסמה
+        </span>
+      </div>
+    </div>
+    <div>
+      <div class="title">בינלאומי</div>
+      <div class="sett-table">
+        <div>
+          <div>שפת הממשק</div>
+          <div>
+            <div>{{ 'lang.' + data?.language | translate }}</div>
+          </div>
+        </div>
+        <div>
+          <div>אזור זמן</div>
+          <div>
+            <div>UTC+02:00 Jerusalem</div>
+          </div>
+        </div>
+        <div>
+          <div>מטבע מוביל</div>
+          <div>
+            <div>ש"ח (₪)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="title">
+        כניסה למערכת
+
+        <img
+          style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/infoEnter.png"
+          [pTooltip]="tooltip"
+          [tooltipStyleClass]="'infoEnter'"
+          width="18"
+          height="18"
+          [escape]="false"
+          tooltipPosition="bottom"
+        />
+      </div>
+      <div class="enter">
+        סוג כניסה:
+
+        <span *ngIf="data && data.authenticationType === 'REGULAR'">
+          רגילה
+        </span>
+        <span *ngIf="data && data.authenticationType !== 'REGULAR'">
+          מחמירה
+        </span>
+      </div>
+      <div class="enterBtn">
+        <button
+          *ngIf="data && data?.authenticationType === 'REGULAR'"
+          (click)="openEditAuthenticationType()"
+        >
+          הפעלת כניסה מחמירה
+        </button>
+        <button
+          *ngIf="data && data?.authenticationType !== 'REGULAR'"
+          (click)="openEditAuthenticationType()"
+        >
+          ביטול כניסה מחמירה
+        </button>
+      </div>
+    </div>
+  </div>
+  <div
+    class="links-agreements"
+    [class.isTopNav]="userService.appData?.userData?.topSideMesagges"
+  >
+    <ul
+      *ngIf="
+        (userService.appData?.userData?.companySelect &&
+          !userService.appData?.userData?.accountant &&
+          userService.appData?.userData?.companySelect?.hesderId !== 11) ||
+        (!userService.appData?.userData?.companySelect &&
+          !userService.appData?.userData?.accountant)
+      "
+    >
+      <li>
+        <a href="https://bizibox.biz/terms-of-use-bizibox/" target="_blank">
+          תנאי שימוש
+        </a>
+      </li>
+      <li>|</li>
+      <li>
+        <a href="https://bizibox.biz/privacy-policy-bizibox/" target="_blank">
+          מדיניות פרטיות
+        </a>
+      </li>
+    </ul>
+
+    <ul *ngIf="userService.appData?.userData?.accountant">
+      <li>
+        <a
+          href="https://bizibox.biz/license-agreement-to-accountants-and-tax-consultants/"
+          target="_blank"
+        >
+          תנאי שימוש
+        </a>
+      </li>
+      <li>|</li>
+      <li>
+        <a href="https://bizibox.biz/privacy-policy-bizibox/" target="_blank">
+          מדיניות פרטיות
+        </a>
+      </li>
+    </ul>
+
+    <ul
+      *ngIf="
+        userService.appData?.userData?.companySelect &&
+        !userService.appData?.userData?.accountant &&
+        userService.appData?.userData?.companySelect?.hesderId === 11
+      "
+    >
+      <li>
+        <a href="https://bizibox.biz/terms-of-use-isracard/" target="_blank">
+          תנאי שימוש
+        </a>
+      </li>
+      <li>|</li>
+      <li>
+        <a href="https://bizibox.biz/privacy-policy-isracard/" target="_blank">
+          מדיניות פרטיות
+        </a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<p-dialog (visibleChange)="popUpAuthenticationShow = false"
+  *ngIf="popUpAuthenticationShow"
+  [visible]="(popUpAuthenticationShow)"
+
+  appendTo="body"
+  [modal]="true"
+  [styleClass]="popUpAuthenticationShow.styleClass"
+  [style]="{width: popUpAuthenticationShow.width + 'px'}"
+  (onHide)="popUpAuthenticationShow = false"
+>
+  <p-header>
+    <div *ngIf="popUpAuthenticationShow.type === 'REGULAR'">
+      הפעלת כניסה מחמירה
+    </div>
+    <div *ngIf="popUpAuthenticationShow.type !== 'REGULAR'">
+      ביטול כניסה מחמירה
+    </div>
+  </p-header>
+
+  <div class="bodyPopUp">
+    <div *ngIf="popUpAuthenticationShow.step === 1" class="step1">
+      <div *ngIf="popUpAuthenticationShow.type === 'REGULAR'">
+        <div style="margin-bottom: 13px">
+          <p>
+            <strong> שימו לב, </strong>
+          </p>
+          <p>בכל כניסה לbizibox תתבקשו להזין קוד בן 4 ספרות שישלח</p>
+          <p>לטלפון הנייד.</p>
+        </div>
+        <div>
+          <p>להפעלה הזינו את הקוד שישלח לנייד המקושר למערכת,</p>
+          <p>ניתן לבטל את הכניסה המחמירה בכל זמן דרך מסך ההגדרות.</p>
+        </div>
+      </div>
+      <div *ngIf="popUpAuthenticationShow.type !== 'REGULAR'">
+        <div style="margin-bottom: 13px">
+          <p>
+            <strong> שימו לב, </strong>
+          </p>
+          <p>ביטול כניסה מחמירה יאפשר כניסה למערכת עם מייל</p>
+          <p>וסיסמה בלבד.</p>
+        </div>
+        <div>
+          <p>לביטול כניסה מחמירה לחשבון הזינו את הקוד שישלח לנייד.</p>
+          <p>ניתן להפעיל כניסה מחמירה בכל זמן, דרך מסך הגדרות.</p>
+        </div>
+      </div>
+    </div>
+    <div *ngIf="popUpAuthenticationShow.step === 2 && dataAuth" class="step2">
+      <div class="text">
+        <span *ngIf="popUpAuthenticationShow.type === 'REGULAR'"> להפעלה </span>
+        <span *ngIf="popUpAuthenticationShow.type !== 'REGULAR'"> לביטול </span>
+        הזינו את הקוד שנשלח לנייד {{ dataAuth?.maskedPhoneNumber }}
+      </div>
+      <div [class.err]="!popUpAuthenticationShow.valid" class="inputCode">
+        <input
+          [type]="hide ? 'password' : 'text'"
+          class="forceLTR"
+          [(ngModel)]="dataAuth.otpCode"
+          autocomplete="off"
+        />
+        <i
+          (click)="hide = !hide"
+          [ngClass]="{ fa: true, 'fa-eye': hide, 'fa-eye-slash': !hide }"
+        ></i>
+      </div>
+      <div *ngIf="!popUpAuthenticationShow.valid" class="alertErr">
+        הקוד לא תואם לקוד שנשלח, אנא בדקו ונסו שוב
+      </div>
+    </div>
+    <div *ngIf="popUpAuthenticationShow.step === 3" class="step3">
+      כניסה מחמירה
+      <span *ngIf="popUpAuthenticationShow.type === 'REGULAR'"> הופעלה </span>
+      <span *ngIf="popUpAuthenticationShow.type !== 'REGULAR'"> בוטלה </span>
+    </div>
+    <div *ngIf="popUpAuthenticationShow.step === 4" class="step4">
+      כניסה מחמירה
+      <span *ngIf="popUpAuthenticationShow.type === 'REGULAR'">
+        לא הופעלה
+      </span>
+      <span *ngIf="popUpAuthenticationShow.type !== 'REGULAR'">
+        עדיין פעילה
+      </span>
+    </div>
+  </div>
+
+  <p-footer
+    *ngIf="popUpAuthenticationShow.footer && popUpAuthenticationShow.step !== 4"
+  >
+    <a
+      href="javascript:void(0)"
+      role="button"
+      class="button-white button-link"
+      style="color: #337dba !important"
+      (click)="cancelAuth()"
+    >
+      ביטול
+    </a>
+    <button
+      class="button-dark"
+      type="button"
+      (click)="nextStep()"
+      [disabled]="popUpAuthenticationShow.processing$ | async"
+    >
+      <div *ngIf="popUpAuthenticationShow.step === 1">שליחת קוד אימות</div>
+      <div *ngIf="popUpAuthenticationShow.step === 2">
+        <div *ngIf="popUpAuthenticationShow.type === 'REGULAR'">
+          הפעלת הזדהות מחמירה
+        </div>
+        <div *ngIf="popUpAuthenticationShow.type !== 'REGULAR'">
+          ביטול הזדהות מחמירה
+        </div>
+      </div>
+    </button>
+  </p-footer>
+</p-dialog>
+
+<p-dialog (visibleChange)="popUpReplaceMailShow = false"
+  *ngIf="popUpReplaceMailShow"
+  [visible]="(popUpReplaceMailShow)"
+
+  appendTo="body"
+  [header]="'החלפת מייל'"
+  [modal]="true"
+  [styleClass]="'userMailEditDialog'"
+  (onHide)="popUpReplaceMailShow = false"
+>
+  <app-user-mail-edit
+    (changeApplied)="changeApplied($event)"
+  ></app-user-mail-edit>
+  <!--<div class="bodyPopUp">-->
+  <!--<div *ngIf="popUpReplaceMailShow.step === 1" class="step1">-->
+  <!--<div>-->
+  <!--<div style="margin-bottom: 13px;">-->
+  <!--<p>-->
+  <!--<strong>-->
+  <!--שימו לב,-->
+  <!--</strong>-->
+  <!--</p>-->
+  <!--<p>-->
+  <!--עדכון כתובת המייל תשנה את פרטי הכניסה למערכת bizibox-->
+  <!--</p>-->
+  <!--<p>-->
+  <!--והכניסה תתבצע בעזרת המייל החדש והסיסמה.-->
+  <!--</p>-->
+  <!--</div>-->
+  <!--<div>-->
+  <!--<p>-->
+  <!--לאישור החלפת כתובת המייל אנא הזינו את הסיסמה למערכת-->
+  <!--</p>-->
+  <!--<p>-->
+  <!--ואת המייל החדש-->
+  <!--</p>-->
+  <!--</div>-->
+  <!--</div>-->
+
+  <!--<form [formGroup]="formMail" novalidate class="Form" autocomplete="nope">-->
+  <!--<div class="Login__control" formGroupName="form">-->
+  <!--<label>-->
+  <!--מייל-->
+  <!--</label>-->
+  <!--<div [ngClass]="{'Form__group': true, 'Form__group&#45;&#45;err': formMail.get('form')['controls'].mail?.invalid && formMail.get('form')['controls'].mail.touched}">-->
+  <!--<input id="mail__"-->
+  <!--name="mail__"-->
+  <!--style="display: none;"-->
+  <!--value=""-->
+  <!--autocomplete="off">-->
+  <!--<input type="text" class="forceLTR"-->
+  <!--formControlName="mail"-->
+  <!--autocomplete="off"-->
+  <!--(focus)="handleFocusUsername()"-->
+  <!--(blur)="checkMailExists()">-->
+  <!--<div class="Form__feedback">{{'validation.emailError' | translate}}</div>-->
+  <!--</div>-->
+  <!--</div>-->
+
+  <!--<div class="Login__control" formGroupName="form">-->
+  <!--<label>-->
+  <!--סיסמת כניסה ל bizibox-->
+  <!--</label>-->
+  <!--<div [ngClass]="{'Form__group Form__group&#45;&#45;icon Form__group&#45;&#45;password': true, 'Form__group&#45;&#45;err': (formMail.get('form.password').invalid && formMail.get('form.password').touched) || formMail.get('form').errors?.incorrectPass}">-->
+  <!--<i (click)="hideMail = !hideMail"-->
+  <!--[ngClass]="{'fa': true, 'fa-eye': hideMail, 'fa-eye-slash': !hideMail}"></i>-->
+  <!--<input id="password__"-->
+  <!--name="password__"-->
+  <!--style="display: none;"-->
+  <!--value=""-->
+  <!--autocomplete="off">-->
+  <!--<input [type]="hideMail ? 'password' : 'text'"-->
+  <!--class="forceLTR"-->
+  <!--autocomplete="off"-->
+  <!--formControlName="password">-->
+  <!--<div class="Form__feedback"-->
+  <!--*ngIf="(formMail.get('form.password').invalid && formMail.get('form.password').touched)">-->
+  <!--{{'formLogin.password' | translate}} <strong>{{'validation.required' | translate}}</strong>-->
+  <!--</div>-->
+  <!--</div>-->
+  <!--</div>-->
+
+  <!--<div class="Login__submit" style="width: 100%; margin-top: 1em;">-->
+  <!--<div class="Form__feedback Form__feedback&#45;&#45;err" *ngIf="formMail.get('form').errors?.incorrect">-->
+  <!--<div>-->
+  <!--<img  ngSrc="/assets/images/alertIc.png"-->
+  <!--width="15"-->
+  <!--height="13">-->
+  <!--</div>-->
+  <!--<div>-->
+  <!--<p>-->
+  <!--כתובת מייל זו כבר משויכת למשתמש במערכת bizibox-->
+  <!--</p>-->
+  <!--<div>-->
+  <!--זה המייל שלי! פתיחת קריאת שירות-->
+  <!--</div>-->
+  <!--</div>-->
+  <!--</div>-->
+  <!--<div class="Form__feedback Form__feedback&#45;&#45;err" *ngIf="formMail.get('form').errors?.incorrectPass">-->
+  <!--<div>-->
+  <!--<img  ngSrc="/assets/images/alertIc.png"-->
+  <!--width="15"-->
+  <!--height="13">-->
+  <!--</div>-->
+  <!--<div>-->
+  <!--<p>-->
+  <!--סיסמא לא תואמת, אנא נסו שוב-->
+  <!--</p>-->
+  <!--</div>-->
+  <!--</div>-->
+  <!--</div>-->
+  <!--</form>-->
+  <!--</div>-->
+  <!--<div *ngIf="popUpReplaceMailShow.step === 2" class="step2">-->
+  <!--<h2>-->
+  <!--<img  ngSrc="/assets/images/vSign.png"-->
+  <!--width="29"-->
+  <!--height="22">-->
+
+  <!--מצויין!-->
+  <!--</h2>-->
+  <!--<div>-->
+  <!--המייל הוחלף בהצלחה.-->
+  <!--<br>-->
+  <!--מייל אימות נשלח לכתובת-->
+  <!--{{formMail.get('form')['controls'].mail.value}}-->
+  <!--</div>-->
+  <!--<p>-->
+  <!--להזכירך יש לאמת את כתובת המייל תוך 24 שעות-->
+  <!--<br>-->
+  <!--על מנת שהמערכת לא תיחסם.-->
+  <!--</p>-->
+  <!--<button (click)="popUpReplaceMailShow = false;" class="button-dark">-->
+  <!--סגירה-->
+  <!--</button>-->
+  <!--</div>-->
+  <!--</div>-->
+
+  <!--<p-footer *ngIf="popUpReplaceMailShow.footer && popUpReplaceMailShow.step === 1">-->
+  <!--<a href="javascript:void(0)" role="button" class="button-white button-link" style="color: #337dba !important"-->
+  <!--(click)="popUpReplaceMailShow = false;">-->
+  <!--ביטול-->
+  <!--</a>-->
+  <!--<button class="button-dark" type="submit" [disabled]="!formMail.valid" (click)="nextStepMail(formMail.value)">-->
+  <!--עדכון כתובת המייל-->
+  <!--</button>-->
+  <!--</p-footer>-->
+</p-dialog>
+
+<p-dialog (visibleChange)="changePasswordPrompt.visible = false"
+		[visible]="(changePasswordPrompt.visible)"
+		
+  (onHide)="changePasswordPrompt.reset()"
+  appendTo="body"
+  [modal]="true"
+  styleClass="changePasswordDialog"
+>
+  <p-header>
+    <div>החלפת סיסמה</div>
+  </p-header>
+  <form
+    novalidate
+    [formGroup]="changePasswordPrompt.form"
+    (ngSubmit)="changePasswordPrompt.submit()"
+    class="Signup__control"
+  >
+    <div class="Form__group">
+      <div
+        class="Form__group"
+        [ngClass]="{
+          'Form__group--err':
+            changePasswordPrompt.form.get('currPassword').invalid &&
+            (changePasswordPrompt.form.get('currPassword').dirty ||
+              changePasswordPrompt.form.get('newPassword').valid)
+        }"
+      >
+        <label for="currPassword">{{
+          'foreignCredentialsUpdate.currentPassword' | translate
+        }}</label>
+        <div class="Form__group Form__group--icon">
+          <!--<i (click)="changePasswordPrompt.passwordHide = !changePasswordPrompt.passwordHide"-->
+          <!--[ngClass]="{'fa': true, 'fa-eye': changePasswordPrompt.passwordHide, 'fa-eye-slash': !changePasswordPrompt.passwordHide}"></i>-->
+          <img
+            (click)="
+              changePasswordPrompt.passwordHide =
+                !changePasswordPrompt.passwordHide
+            "
+           [src]="
+              '/assets/images/' +
+              (changePasswordPrompt.passwordHide
+                ? 'visibility_off'
+                : 'visibility') +
+              '.svg'
+            "
+          />
+          <input
+            [type]="changePasswordPrompt.passwordHide ? 'password' : 'text'"
+            formControlName="currPassword"
+            autocomplete="off"
+            id="currPassword"
+            #pwdInpCurr
+            name="currPassword"
+            (keypress)="changePasswordPrompt.handleKeyPress($event)"
+          />
+        </div>
+      </div>
+
+      <div
+        class="Form__group"
+        [ngClass]="{
+          'Form__group--err':
+            (changePasswordPrompt.form.get('newPassword').invalid &&
+              changePasswordPrompt.form.get('newPassword').dirty) ||
+            changePasswordPrompt.form.hasError('passwordNotMatch')
+        }"
+      >
+        <label for="newPassword">{{
+          'foreignCredentialsUpdate.newPassword' | translate
+        }}</label>
+        <div class="Form__group Form__group--icon">
+          <!--<i (click)="changePasswordPrompt.passwordHide = !changePasswordPrompt.passwordHide"-->
+          <!--[ngClass]="{'fa': true, 'fa-eye': changePasswordPrompt.passwordHide, 'fa-eye-slash': !changePasswordPrompt.passwordHide}"></i>-->
+          <img
+            (click)="
+              changePasswordPrompt.passwordHide =
+                !changePasswordPrompt.passwordHide
+            "
+           [src]="
+              '/assets/images/' +
+              (changePasswordPrompt.passwordHide
+                ? 'visibility_off'
+                : 'visibility') +
+              '.svg'
+            "
+          />
+          <input
+            [type]="changePasswordPrompt.passwordHide ? 'password' : 'text'"
+            formControlName="newPassword"
+            autocomplete="off"
+            id="newPassword"
+            #pwdInpNew
+            name="newPassword"
+            (keypress)="changePasswordPrompt.handleKeyPress($event)"
+          />
+
+          <div
+            class="Form__feedback Form__feedback--err Form__feedback--warning--block"
+            *ngIf="
+              changePasswordPrompt.form
+                .get('newPassword')
+                .hasError('sameAsUsername')
+            "
+          >
+            <i class="fa fa-fw fa-exclamation-triangle"></i>
+            {{ 'validation.passwordEqualsUsername' | translate }}
+          </div>
+          <div class="Form__feedback Form__feedback--status">
+            <i
+              class="fa"
+              [ngClass]="
+                changePasswordPrompt.form
+                  .get('newPassword')
+                  .hasError('minlength') ||
+                changePasswordPrompt.form
+                  .get('newPassword')
+                  .hasError('maxlength') ||
+                changePasswordPrompt.form
+                  .get('newPassword')
+                  .hasError('required')
+                  ? 'fa-ban'
+                  : 'fa-check'
+              "
+            ></i>
+            {{ 'validation.passwordLength' | translate }}
+          </div>
+          <div class="Form__feedback Form__feedback--status">
+            <i
+              class="fa"
+              [ngClass]="
+                changePasswordPrompt.form
+                  .get('newPassword')
+                  .hasError('required') ||
+                changePasswordPrompt.form.get('newPassword').hasError('nodigit')
+                  ? 'fa-ban'
+                  : 'fa-check'
+              "
+            ></i>
+            {{ 'validation.oneDigit' | translate }}
+          </div>
+          <div class="Form__feedback Form__feedback--status">
+            <i
+              class="fa"
+              [ngClass]="
+                changePasswordPrompt.form
+                  .get('newPassword')
+                  .hasError('noletter') ||
+                changePasswordPrompt.form
+                  .get('newPassword')
+                  .hasError('required')
+                  ? 'fa-ban'
+                  : 'fa-check'
+              "
+            ></i>
+            {{ 'validation.oneLetter' | translate }}
+          </div>
+        </div>
+      </div>
+
+      <div
+        class="Form__group"
+        [ngClass]="{
+          'Form__group--err':
+            (changePasswordPrompt.form.get('newPasswordCnfrm').invalid &&
+              changePasswordPrompt.form.get('newPasswordCnfrm').dirty) ||
+            changePasswordPrompt.form.hasError('passwordNotMatch')
+        }"
+      >
+        <label for="newPasswordCnfrm">{{
+          'validation.enterPasswordAgain' | translate
+        }}</label>
+        <div class="Form__group Form__group--icon">
+          <!--<i (click)="changePasswordPrompt.passwordHide = !changePasswordPrompt.passwordHide"-->
+          <!--[ngClass]="{'fa': true, 'fa-eye': changePasswordPrompt.passwordHide, 'fa-eye-slash': !changePasswordPrompt.passwordHide}"></i>-->
+          <img
+            (click)="
+              changePasswordPrompt.passwordHide =
+                !changePasswordPrompt.passwordHide
+            "
+         [src]="
+              '/assets/images/' +
+              (changePasswordPrompt.passwordHide
+                ? 'visibility_off'
+                : 'visibility') +
+              '.svg'
+            "
+          />
+          <input
+            [type]="changePasswordPrompt.passwordHide ? 'password' : 'text'"
+            formControlName="newPasswordCnfrm"
+            autocomplete="off"
+            id="newPasswordCnfrm"
+            #newPasswordCnfrm
+            name="newPasswordCnfrm"
+            (keypress)="changePasswordPrompt.handleKeyPress($event)"
+          />
+        </div>
+      </div>
+
+      <div
+        class="Form__feedback Form__feedback--warning Form__feedback--warning--block"
+        [style.visibility]="
+          changePasswordPrompt.isHebrew ? 'visible' : 'hidden'
+        "
+        style="text-align: center"
+      >
+        <i class="fa fa-exclamation-triangle"></i>
+        {{ 'validation.isHebrew' | translate }}
+      </div>
+      <div
+        class="Form__feedback Form__feedback--err Form__feedback--warning--block"
+        style="text-align: center"
+        [style.visibility]="
+          changePasswordPrompt.form.get('newPassword').valid &&
+          changePasswordPrompt.form.get('newPasswordCnfrm').valid &&
+          changePasswordPrompt.form.hasError('passwordNotMatch')
+            ? 'visible'
+            : 'hidden'
+        "
+      >
+        <i class="fa fa-fw fa-exclamation-triangle"></i>
+        {{ 'validation.passwordNotEqual' | translate }}
+      </div>
+      <div
+        class="Form__feedback Form__feedback--err Form__feedback--warning--block"
+        style="text-align: center"
+        *ngIf="changePasswordPrompt.form.hasError('decline')"
+      >
+        <i class="fa fa-fw fa-exclamation-triangle"></i>
+        {{ 'הסיסמה הנוכחית איננה
+        מדוייקת' }}
+      </div>
+    </div>
+  </form>
+  <p-footer>
+    <div style="width: 100%; display: flex; justify-content: center">
+      <a
+        href="#"
+        role="button"
+        class="button-white button-link"
+        (click)="changePasswordPrompt.visible = false"
+      >
+        {{ 'actions.cancellation' | translate }}
+      </a>
+      <button
+        class="button-dark"
+        (click)="changePasswordPrompt.submit()"
+        [disabled]="
+          changePasswordPrompt.form.invalid || changePasswordPrompt.processing
+        "
+      >
+        <i
+          class="fas fa-fw fa-circle-notch fa-spin"
+          *ngIf="changePasswordPrompt.processing"
+        ></i>
+        {{ 'foreignCredentialsUpdate.expressions.updatePassword' | translate }}
+      </button>
+    </div>
+  </p-footer>
+</p-dialog>

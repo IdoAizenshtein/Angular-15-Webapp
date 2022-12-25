@@ -1,0 +1,453 @@
+<script src="settings-user-details.component.ts"></script>
+<div id="userDetails">
+  <ng-container *ngIf="userId$ | async as userId">
+    <div class="title" #pageHeader>
+      {{ userId === 'new' ? 'הוספת משתמש' : 'עריכת משתמש' }}
+    </div>
+
+    <div
+      *ngIf="selectedUser$ | async as selectedUser; else loader"
+      #mainScrollContainer
+      [appScrollHeight]="pageHeader.getBoundingClientRect().bottom + 10"
+      class="scrollbar-dynamic"
+    >
+      <form [formGroup]="userDataForm" novalidate id="userDataForm">
+        <div
+          [class.error]="
+            userDataForm.get('firstName').invalid &&
+            userDataForm.get('firstName').dirty
+          "
+        >
+          <label [for]="'firstName'">{{ 'שם פרטי' }}</label>
+          <input
+            type="text"
+            [formControl]="userDataForm.get('firstName')"
+            [id]="'firstName'"
+            name="fname"
+            autocomplete="given-name"
+          />
+        </div>
+        <div
+          [class.error]="
+            userDataForm.get('lastName').invalid &&
+            userDataForm.get('lastName').dirty
+          "
+        >
+          <label [for]="'lastName'">{{ 'שם משפחה' }}</label>
+          <input
+            type="text"
+            [formControl]="userDataForm.get('lastName')"
+            [id]="'lastName'"
+            name="lname"
+            autocomplete="family-name"
+          />
+        </div>
+        <div
+          [class.error]="
+            userDataForm.get('cellPhone').invalid &&
+            userDataForm.get('cellPhone').dirty
+          "
+        >
+          <label [for]="'cellPhone'">{{ 'טלפון נייד' }}</label>
+          <input
+            type="text"
+            [formControl]="userDataForm.get('cellPhone')"
+            [id]="'cellPhone'"
+            name="mobile"
+            autocomplete="cell"
+            appNumbersOnly="phoneNo"
+            #cellPhone
+          />
+        </div>
+        <div
+          [class.error]="
+            userDataForm.get('mail').invalid && userDataForm.get('mail').dirty
+          "
+        >
+          <label [for]="'mail'">{{ 'מייל' }}</label>
+          <input
+            type="text"
+            [formControl]="userDataForm.get('mail')"
+            [id]="'mail'"
+            name="mail"
+            autocomplete="mail"
+            appNoNationalCharacters
+            #mail
+          />
+        </div>
+      </form>
+
+      <div style="min-height: 2.3em">
+        <div
+          class="error-message"
+          *ngIf="
+            userDataForm.get('cellPhone').invalid &&
+            userDataForm.get('cellPhone').dirty
+          "
+        >
+          {{ 'אנא בדקו את מספר הטלפון שהוקלד' }}
+        </div>
+        <div
+          class="error-message"
+          *ngIf="
+            userDataForm.get('mail').invalid && userDataForm.get('mail').dirty
+          "
+        >
+          {{ 'נראה שנפלה טעות במייל, אנא בדקו שוב' }}
+        </div>
+      </div>
+
+      <div class="title" style="margin-top: 1em">
+        {{ 'הרשאות' }}
+        <div class="actions">
+          <button
+            class="button-link"
+            (click)="usersAvailableForPrivsCopyPrompt.show()"
+          >
+            {{ 'העתקת הרשאות' }}
+          </button>
+          <button class="button-link" (click)="markAllPrivileges()">
+            {{ 'כל ההרשאות' }}
+          </button>
+          <button class="button-link" (click)="unmarkAllPrivileges()">
+            {{ 'איפוס ההרשאות' }}
+          </button>
+        </div>
+      </div>
+      <div class="columns header" #header>
+        <div>{{ 'גישה לחברות' }}</div>
+        <div>{{ 'גישה למודולים' }}</div>
+        <div>{{ 'צפיה בחשבונות' }}</div>
+        <div>{{ 'משתמש ראשי' }}</div>
+      </div>
+      <div
+        *ngIf="selectedUserPrivs$ | async as selectedUserPrivs; else loader"
+        style="min-height: 14em"
+      >
+        <div class="columns row" *ngFor="let priv of selectedUserPrivs">
+          <div>
+            <p-checkbox checkboxIcon="fa fa-check"
+              [binary]="true"
+              [label]="priv.companyName"
+              [ngModel]="
+                priv.form.controls.ksafim.value ||
+                priv.form.controls.anhash.value
+              "
+              [disabled]="!priv.editKsafim && !priv.editAnhash"
+              (ngModelChange)="toggleCompanyPrivOverall(priv, $event)"
+            ></p-checkbox>
+            <!--            {{priv.form.controls.ksafim.value || priv.form.controls.anhash.value}}-->
+            <!--            {{priv.form.value | json}}-->
+            <!--            {{priv.companyName}}-->
+          </div>
+          <div>
+            <ul>
+              <li>
+                <p-checkbox checkboxIcon="fa fa-check"
+                  [binary]="true"
+                  [formControl]="priv.form.controls.ksafim"
+                  [label]="'modulesByPriviledge.ksafim' | translate"
+                ></p-checkbox>
+              </li>
+              <li>
+                <p-checkbox checkboxIcon="fa fa-check"
+                  [binary]="true"
+                  [formControl]="priv.form.controls.anhash"
+                  [label]="'modulesByPriviledge.anhash' | translate"
+                ></p-checkbox>
+                <ng-container *ngIf="priv.modelButton">
+                  &nbsp;<button
+                    class="button-link"
+                    (click)="openAccountancyModuleFor(priv.companyId)"
+                  >
+                    {{ '(לפתיחת מודול)' }}
+                  </button>
+                </ng-container>
+              </li>
+            </ul>
+          </div>
+          <div>
+            <ng-container
+              *ngIf="priv.tokenAndAccountPrivsSummary.overallAccounts > 0"
+            >
+              <button
+                class="button-link"
+                (click)="tokenAndAccountPrivsPrompt.show(priv)"
+                [disabled]="
+                  !(
+                    priv.form.controls.ksafim.value ||
+                    priv.form.controls.anhash.value
+                  )
+                "
+              >
+                {{ priv.tokenAndAccountPrivsSummary.overallAccounts }}
+                /
+                {{ priv.tokenAndAccountPrivsSummary.permittedAcounts }}
+              </button>
+            </ng-container>
+          </div>
+          <div>
+            <p-checkbox checkboxIcon="fa fa-check"
+              [binary]="true"
+              [formControl]="priv.form.controls.admin"
+            ></p-checkbox>
+          </div>
+        </div>
+
+        <ng-container
+          *ngIf="
+            companiesWithPrivsRemoved$ | async as companiesWithPrivsRemoved
+          "
+        >
+          <div
+            *ngIf="companiesWithPrivsRemoved.length"
+            id="companiesWithPrivsRemoved"
+            [innerHTML]="
+              'expressions.privsRemoveDisclaimerPtrn'
+                | translate: { companies: companiesWithPrivsRemoved.join(', ') }
+            "
+          ></div>
+        </ng-container>
+        <ng-container *ngIf="shouldSelectAlLeastOneCompanyOrAccount">
+          <div
+            id="shouldSelectAlLeastOneCompanyOrAccount"
+            [innerHTML]="
+              'expressions.shouldSelectAlLeastOneCompanyOrAccount' | translate
+            "
+          ></div>
+        </ng-container>
+      </div>
+
+      <div class="footer">
+        <ng-container *ngIf="userId === 'new'; else updateActions">
+          <button
+            class="button-link"
+            routerLink="../"
+            queryParamsHandling="preserve"
+          >
+            {{ 'actions.cancellation' | translate }}
+          </button>
+          <button class="button-dark" (click)="commitChanges()">
+            {{ 'הוספת משתמש' | translate }}
+          </button>
+        </ng-container>
+        <ng-template #updateActions>
+          <button
+            class="button-link"
+            routerLink="../"
+            queryParamsHandling="preserve"
+          >
+            {{ 'actions.cancellation' | translate }}
+          </button>
+          <button class="button-dark" (click)="commitChanges()">
+            {{ 'actions.approve' | translate }}
+          </button>
+        </ng-template>
+      </div>
+    </div>
+  </ng-container>
+</div>
+
+<ng-template #loader>
+  <div class="loader">
+    <div class="circle"></div>
+  </div>
+</ng-template>
+
+<p-dialog (visibleChange)="tokenAndAccountPrivsPrompt.visible = false"
+		[visible]="(tokenAndAccountPrivsPrompt.visible)"
+		styleClass="tokenAndAccountPrivsPrompt"
+  appendTo="body"
+  [modal]="true"
+  (onHide)="tokenAndAccountPrivsPrompt.tokenAndAccountPrivs = null"
+>
+  <p-header>{{ 'actions.tokenAndAccountPrivs.title' | translate }}</p-header>
+
+  <ng-container *ngIf="tokenAndAccountPrivsPrompt.tokenAndAccountPrivs">
+    <div
+      class="mat-h3"
+      [innerHTML]="
+        'actions.tokenAndAccountPrivs.body.content'
+          | translate
+            : {
+                companyName: (settingsComponent.selectedCompany$ | async)
+                  .companyName,
+                userName: tokenAndAccountPrivsPrompt.username,
+                accCount: tokenAndAccountPrivsPrompt.accCount
+              }
+      "
+    ></div>
+
+    <div class="columns header">
+      <div>{{ 'שם החשבון' }}</div>
+      <div>{{ 'titles.accountNumber' | translate }}</div>
+      <div>{{ 'הרשאת צפיה בחשבון' }}</div>
+      <div>{{ 'הרשאה לעדכן סיסמה' }}</div>
+    </div>
+	  <ng-scrollbar
+			  [ngStyle]="{'height': '500px'}"
+			  class="custom-scrollbar"
+			  thumbClass="scrollbar-thumb"
+			  trackClass="scrollbar">
+		  <ng-container
+				  *ngFor="let tokenPriv of tokenAndAccountPrivsPrompt.tokenAndAccountPrivs">
+			  <div class="columns row title">
+				  <div>
+					  <ng-container *ngIf="tokenPriv.accounts?.length">
+						  <app-bank-view
+								  [bankNumber]="tokenPriv.accounts[0].bankId"
+								  [showName]="true"
+						  ></app-bank-view>
+					  </ng-container>
+				  </div>
+				  <div></div>
+				  <div></div>
+				  <div>
+					  <p-checkbox checkboxIcon="fa fa-check"
+					              [binary]="true"
+					              [formControl]="
+                tokenAndAccountPrivsPrompt.form.get(
+                  tokenPriv.token + '.tokenPrivValue'
+                )
+              "
+					  ></p-checkbox>
+				  </div>
+			  </div>
+			  <ng-container *ngIf="tokenPriv.accounts.length">
+				  <div class="columns row" *ngFor="let tokenAcc of tokenPriv.accounts">
+					  <div>
+						  {{ tokenAcc.accountNickname }}&nbsp;({{
+						  tokenAcc.currencyId | currencySymbol
+						  }})
+					  </div>
+					  <div>{{ tokenAcc.bankAccountId }}</div>
+					  <div>
+						  <p-checkbox checkboxIcon="fa fa-check"
+						              [binary]="true"
+						              [formControl]="
+                  tokenAndAccountPrivsPrompt.form.get(
+                    tokenPriv.token +
+                      '.accounts.' +
+                      tokenAcc.companyAccountId +
+                      '.accountPrivValue'
+                  )
+                "
+						  ></p-checkbox>
+					  </div>
+					  <div></div>
+				  </div>
+			  </ng-container>
+		  </ng-container>
+	  </ng-scrollbar>
+  
+  </ng-container>
+
+  <p-footer>
+    <ng-container *ngIf="tokenAndAccountPrivsPrompt.tokenAndAccountPrivs">
+      <button
+        class="button-white button-link"
+        (click)="tokenAndAccountPrivsPrompt.visible = false"
+      >
+        {{ 'actions.cancellation' | translate }}
+      </button>
+      <button
+        class="button-dark"
+        (click)="tokenAndAccountPrivsPrompt.approve()"
+      >
+        {{ 'actions.approve' | translate }}
+      </button>
+    </ng-container>
+  </p-footer>
+</p-dialog>
+
+<p-dialog (visibleChange)="usersAvailableForPrivsCopyPrompt.visible = false"
+		[visible]="(usersAvailableForPrivsCopyPrompt.visible)"
+		styleClass="usersAvailableForPrivsCopyPrompt"
+  appendTo="body"
+  [modal]="true"
+>
+  <p-header
+    >{{ 'actions.usersAvailableForPrivsCopy.title' | translate }}
+    <i
+      class="fas fa-info-circle"
+      style="cursor: pointer"
+      [matTooltip]="'actions.usersAvailableForPrivsCopy.tooltip' | translate"
+      matTooltipPosition="after"
+    ></i>
+  </p-header>
+
+  <ng-container *ngIf="usersAvailableForPrivsCopyPrompt.visible">
+    <ng-container
+      *ngIf="
+        usersAvailableForPrivsCopyPrompt.availableUsers$
+          | async as availableUsers;
+        else loader
+      "
+    >
+      <div
+        class="mat-h3"
+        style="margin: 1em 4em"
+        [innerHTML]="
+          'actions.usersAvailableForPrivsCopy.body.content0' | translate
+        "
+      ></div>
+      <div
+        class="mat-h4"
+        style="margin: 1em 0 0"
+        [innerHTML]="
+          'actions.usersAvailableForPrivsCopy.body.content1' | translate
+        "
+      ></div>
+
+      <div class="columns header">
+        <div>{{ 'שם המשתמש' }}</div>
+        <div></div>
+      </div>
+      <div class="scrollbar-dynamic" [appScrollHeight]="220" appendTo="parent">
+        <ng-container
+          *ngFor="let user of availableUsers; let i = index; let even = even"
+        >
+          <div class="columns row" *ngIf="even">
+            <div>
+              <p-radioButton
+                name="groupname"
+                [value]="user.userId"
+                [label]="user.name"
+                [formControl]="usersAvailableForPrivsCopyPrompt.selectedUserId"
+              ></p-radioButton>
+            </div>
+            <div>
+              <ng-container *ngIf="i + 1 < availableUsers.length">
+                <p-radioButton
+                  name="groupname"
+                  [value]="availableUsers[i + 1].userId"
+                  [label]="availableUsers[i + 1].name"
+                  [formControl]="
+                    usersAvailableForPrivsCopyPrompt.selectedUserId
+                  "
+                ></p-radioButton>
+              </ng-container>
+            </div>
+          </div>
+        </ng-container>
+      </div>
+    </ng-container>
+  </ng-container>
+
+  <p-footer>
+    <ng-container *ngIf="usersAvailableForPrivsCopyPrompt.visible">
+      <button
+        class="button-white button-link"
+        (click)="usersAvailableForPrivsCopyPrompt.visible = false"
+      >
+        {{ 'actions.cancellation' | translate }}
+      </button>
+      <button
+        class="button-dark"
+        (click)="usersAvailableForPrivsCopyPrompt.approve()"
+      >
+        {{ 'actions.approve' | translate }}
+      </button>
+    </ng-container>
+  </p-footer>
+</p-dialog>

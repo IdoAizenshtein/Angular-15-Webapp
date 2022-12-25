@@ -1,0 +1,324 @@
+<div
+		style="
+    margin-bottom: 0.5em;
+    display: flex;
+    display: -ms-flexbox;
+    justify-content: center;
+    justify-items: center;
+  "
+		*ngIf="mode === EditingType.Series"
+>
+	<ul class="tabs" style="height: auto">
+		<li
+				[class.active]="form.get('autoUpdateTypeName').value === 'AVG_3_MONTHS'"
+				(click)="autoUpdateTypeNameUserChange('AVG_3_MONTHS')"
+				[title]="'הגדרות מומלצות'"
+				[innerText]="'הגדרות מומלצות'"
+		></li>
+		<li
+				[class.active]="
+        form.get('autoUpdateTypeName').value === 'USER_DEFINED_TOTAL'
+      "
+				(click)="autoUpdateTypeNameUserChange('USER_DEFINED_TOTAL')"
+				[title]="'ברצוני להגדיר בעצמי'"
+				[innerText]="'ברצוני להגדיר בעצמי'"
+		></li>
+	</ul>
+</div>
+<div
+		*ngFor="let fld of fields"
+		[formGroup]="form"
+		class="HorizontalForm__group"
+		[class.has-errors]="form.get(fld.name).invalid && form.get(fld.name).dirty"
+		[style.display]="!shouldDisplay(fld) ? 'none' : ''"
+		[style.align-items]="fld.name === 'expirationDate' ? 'baseline' : null"
+>
+	<ng-container [ngSwitch]="fld.name">
+		<ng-container *ngSwitchCase="'companyAccountId'">
+			<label [for]="fld.name">{{
+				'formFixedMovement.field.' + fld.name | translate
+				}}</label>
+			<p-dropdown
+					[options]="userService.appData.userData.accounts"
+					[formControlName]="fld.name"
+					dataKey="companyAccountId"
+					optionLabel="accountNickname"
+					[inputId]="fld.name"
+					[placeholder]="('actions.select' | translate) + '...'"
+					[dropdownIcon]="'p-dropdown-icon'"
+					[autoDisplayFirst]="false"
+			>
+				<ng-template let-item pTemplate="selectedItem">
+					<div style="display: flex; display: -ms-flexbox; align-items: center">
+						<img
+								style="height: auto; width: 24px; position: relative;"  [src]="
+                !item.bankId
+                  ? ''
+                  : (item.bankId | toIconSrc: 'bank')
+              "
+						/>&nbsp;
+						<div class="text-ellipsis">{{ item?.accountNickname }}</div>
+						<div>
+							&nbsp;&#40;{{ item.currency | currencySymbol }}&#41;
+						</div>
+					</div>
+				</ng-template>
+				<ng-template let-option pTemplate="item">
+					<div
+							style="
+              position: relative;
+              display: flex;
+              display: -ms-flexbox;
+              align-items: center;
+            "
+					>
+						<img
+								style="height: auto; width: 24px; position: relative;" fill [ngSrc]="
+                (!option.bankId ? '' : option.bankId)
+                  | toIconSrc: 'bank'
+              "
+						/>&nbsp;
+						<div class="text-ellipsis">{{ option.accountNickname }}</div>
+						<div>
+							&nbsp;&#40;{{ option.currency | currencySymbol }}&#41;
+						</div>
+					</div>
+				</ng-template>
+			</p-dropdown>
+			<!--<pre>{{form.get(fld.name).value| json}}</pre>-->
+		</ng-container>
+		
+		<ng-container *ngSwitchCase="'transName'">
+			<label [for]="fld.name">{{
+				'formFixedMovement.field.' + fld.name | translate
+				}}</label>
+			<input
+					type="text"
+					[id]="fld.name"
+					[name]="fld.name"
+					[formControlName]="fld.name"
+					[style.max-width]="'100%'"
+					autocomplete="off"
+			/>
+		</ng-container>
+		
+		<ng-container *ngSwitchCase="'transTypeId'">
+			<label [for]="fld.name">{{
+				'formFixedMovement.field.' + fld.name | translate
+				}}</label>
+			<app-category-select
+					[disabled]="form.get(fld.name).disabled"
+					[categories]="companyTransTypes"
+					[companyId]="companyId"
+					[ngModelVal]="form.get(fld.name).value"
+					(changed)="form.get(fld.name).patchValue($event.value);"
+					[inputId]="fld.name"
+					[autoDisplayFirst]="false"
+					[filter]="false"
+					[filterBy]="'transTypeName'"
+					
+					[placeholder]="('actions.select' | translate) + '...'"
+			>
+			</app-category-select>
+		</ng-container>
+		
+		<ng-container *ngSwitchCase="'paymentDesc'">
+			<label [for]="fld.name">{{
+				'formFixedMovement.field.' + fld.name | translate
+				}}</label>
+			<p-dropdown
+					[options]="fld.options"
+					[formControlName]="fld.name"
+					[inputId]="fld.name"
+					[dropdownIcon]="'p-dropdown-icon'"
+					[autoDisplayFirst]="false"
+					[placeholder]="('actions.select' | translate) + '...'"
+			>
+			</p-dropdown>
+			<!--<pre>{{form.get(fld.name).value| json}}</pre>-->
+		</ng-container>
+		
+		<ng-container *ngSwitchCase="'transFrequencyName'">
+			<label [for]="fld.name">{{
+				'formFixedMovement.field.' + fld.name | translate
+				}}</label>
+			<ng-container
+					*ngIf="
+          mode === EditingType.Series &&
+            form.get('autoUpdateTypeName').value === 'AVG_3_MONTHS';
+          else editableTransFrequency
+        "
+			>
+				<p>{{ 'חישוב אוטומטי' }}</p>
+			</ng-container>
+			<ng-template #editableTransFrequency>
+				<p-dropdown
+						[options]="fld.options"
+						[formControlName]="fld.name"
+						[inputId]="fld.name"
+						[dropdownIcon]="'p-dropdown-icon'"
+						[autoDisplayFirst]="false"
+				>
+				</p-dropdown>
+			</ng-template>
+			<!--<pre>{{form.get(fld.name).value}}</pre>-->
+		</ng-container>
+		
+		<ng-container *ngSwitchCase="'transDate'">
+			<label [for]="fld.name">{{
+				'formFixedMovement.field.' + fld.name | translate
+				}}</label>
+			<ng-container
+					*ngIf="
+          mode === EditingType.Series &&
+            form.get('autoUpdateTypeName').value === 'AVG_3_MONTHS';
+          else singleDateEdit
+        "
+			>
+				<div>{{ form.get(fld.name).value | date: 'dd/MM/yy' }}</div>
+			</ng-container>
+			<ng-template #singleDateEdit>
+				<p-calendar
+						[formControlName]="fld.name"
+						[inputId]="fld.name"
+						[inputStyle]="{ 'max-width': '121px' }"
+						[locale]="'langCalendar' | translate"
+						dateFormat="dd/mm/y"
+						[minDate]="today"
+						[readonlyInput]="true"
+						(onFocus)="scrollTillSelectable()"
+						#transDateSelector
+				></p-calendar>
+			</ng-template>
+			<!--<pre>{{form.get(fld.name).value}}</pre>-->
+		</ng-container>
+		
+		<ng-container *ngSwitchCase="'total'">
+			<label [for]="fld.name">{{
+				'formFixedMovement.field.' + fld.name | translate
+				}}</label>
+			<ng-container
+					*ngIf="
+          mode === EditingType.Series &&
+            form.get('autoUpdateTypeName').value === 'AVG_3_MONTHS';
+          else totalSumEdit
+        "
+			>
+				<p>
+					{{ 'לפי ממוצע' }}<br/><small style="font-size: 0.78em">{{
+					'הממוצע מתעדכן אוטומטית בהתאם להיסטוריית התנועה'
+					}}</small>
+				</p>
+			</ng-container>
+			<ng-template #totalSumEdit>
+				<input
+						type="text"
+						[id]="fld.name"
+						[name]="fld.name"
+						[formControlName]="fld.name"
+						style="max-width: 18ch"
+						appNumbersOnly
+				/>
+			</ng-template>
+		</ng-container>
+		
+		<!--<ng-container *ngSwitchCase="'autoUpdateTypeName'">-->
+		<!--<label [for]="fld.name">{{('formFixedMovement.field.' + fld.name)| translate}}</label>-->
+		<!--<div style="display: flex; display: -ms-flexbox; flex-flow: column nowrap;">-->
+		<!--<ul>-->
+		<!--<li *ngFor="let opt of fld.options"-->
+		<!--[class.has-errors]="(opt.value === 'USER_DEFINED_TOTAL' && form.get('total').invalid)">-->
+		<!--<p-radioButton name="autoUpdateWithTotalSelectionGroup" [formControlName]="fld.name"-->
+		<!--[value]="opt.value" [label]="opt.label"-->
+		<!--[inputId]="opt.value"></p-radioButton>-->
+		<!--<ng-container *ngIf="opt.value === 'USER_DEFINED_TOTAL'">-->
+		<!--&nbsp;<input type="text" [id]="'total'" [name]="'total'"-->
+		<!--formControlName="total"-->
+		<!--[style.max-width]="'12ch'" [required]="form.get(fld.name).value === opt.value"-->
+		<!--(focus)="form.get(fld.name).setValue(opt.value)" appNumbersOnly autocomplete="off">-->
+		<!--&lt;!&ndash;<span>{{'ILS'|currencySymbol}}</span>&ndash;&gt;-->
+		<!--</ng-container>-->
+		<!--</li>-->
+		<!--</ul>-->
+		<!--</div>-->
+		<!--</ng-container>-->
+		
+		<ng-container *ngSwitchCase="'expirationDate'">
+			<label [for]="fld.name">{{
+				'formFixedMovement.field.endDate' | translate
+				}}</label>
+			<ng-container
+					*ngIf="
+          mode === EditingType.Series &&
+            form.get('autoUpdateTypeName').value === 'USER_DEFINED_TOTAL';
+          else nonEditableExpirationDate
+        "
+			>
+				<div
+						style="display: flex; display: -ms-flexbox; flex-flow: column nowrap"
+				>
+					<ul>
+						<li
+								*ngFor="let opt of fld.options"
+								[class.has-errors]="
+                (opt.value === 'times' && form.get('endDateTimes').invalid) ||
+                (opt.value === 'on' && form.get('endDateOn').invalid)
+              "
+						>
+							<p-radioButton
+									[name]="fld.name"
+									[formControlName]="fld.name"
+									[value]="opt.value"
+									[label]="'formFixedMovement.field.' + opt.label | translate"
+									[inputId]="opt.label"
+									[labelStyleClass]="'cyclic-end-date-label'"
+									[style]="{ 'font-weight': 'bold' }"
+							></p-radioButton>
+							<ng-container [ngSwitch]="opt.value">
+								<ng-container *ngSwitchCase="'times'">
+									&nbsp;<input
+										type="text"
+										class="input-sm"
+										[id]="'endDate-' + opt.value"
+										[name]="'endDate-' + opt.value"
+										formControlName="endDateTimes"
+										[style.max-width]="'8ch'"
+										[required]="form.get(fld.name).value === opt.value"
+										(focus)="form.get(fld.name).setValue(opt.value)"
+										appNumbersOnly="positiveInt"
+										autocomplete="off"
+								/>
+									<span> פעמים </span>
+									<!--{{form.get('endDateTimes').valid}}-->
+								</ng-container>
+								<ng-container *ngSwitchCase="'on'">
+									&nbsp;<p-calendar
+										formControlName="endDateOn"
+										[inputId]="'endDate-' + opt.value"
+										[inputStyle]="{ 'max-width': '121px' }"
+										[required]="form.get(fld.name).value === opt.value"
+										[locale]="'langCalendar' | translate"
+										dateFormat="dd/mm/y"
+										[minDate]="today"
+										[readonlyInput]="true"
+										(onFocus)="form.get(fld.name).setValue(opt.value)"
+								></p-calendar>
+									<!--{{form.get('endDateOn').valid}}-->
+								</ng-container>
+							</ng-container>
+						</li>
+					</ul>
+				</div>
+			</ng-container>
+			<ng-template #nonEditableExpirationDate>
+				<!--<span *ngIf="form.get(fld.name).value === null">-->
+				<!--ללא סיום-->
+				<!--</span>-->
+				<!--<span *ngIf="form.get(fld.name).value">-->
+				<!--{{form.get(fld.name).value| date:'dd/MM/yy'}}-->
+				<!--</span>-->
+			</ng-template>
+			<!--<pre>{{form.get(fld.name).value| json}}</pre>-->
+		</ng-container>
+	</ng-container>
+</div>

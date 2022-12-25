@@ -1,0 +1,927 @@
+<div
+		*ngIf="translate.get('signup') | async"
+		class="Signup container"
+		style="min-height: 100vh; padding: 1em 0; overflow-y: auto; height: unset"
+>
+	<div class="Signup__card">
+		<div class="Signup__card-header">
+			<div
+					style="
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          align-content: center;
+        "
+			>
+				<img
+						*ngIf="agreementId === '11'"
+						alt="IsraCard" fill
+						ngSrc="/assets/images/isracard.png"
+						style="
+            align-self: center;
+            display: block;
+            margin-top: 6px;
+            margin-left: 60px;
+            height: auto; width: auto; position: relative;
+          "
+				/>
+				
+				<img alt="bizibox" src="/assets/images/logo-big.png"
+			/>
+			</div>
+			
+			<h1>
+				{{
+				(!lite
+								? agreementId === '11'
+										? 'signup.mainTitleIsracard'
+										: 'signup.mainTitle'
+								: 'signup.mainTitleLite'
+				) | translate
+				}}
+				<ng-container
+						*ngIf="
+            currentStepIdx < 3 && agreementId !== '11';
+            else backToMainAfterLogin
+          "
+				>
+					<small
+					><a [routerLink]="['/login']">{{
+						'expressions.backToMainPage' | translate
+						}}</a></small
+					>
+				</ng-container>
+			</h1>
+			<ng-template #backToMainAfterLogin>
+				<small *ngIf="agreementId !== '11'"
+				><a (click)="authService.logout()" href="javascript:void(0)">{{
+					'expressions.backToMainPage' | translate
+					}}</a></small
+				>
+			</ng-template>
+		</div>
+		
+		<div class="Signup__card-body">
+			<div class="Signup__card-steps">
+				<router-outlet (activate)="stepChangedTo($event)"></router-outlet>
+				<!--<div class="Signup__card-steps" [ngSwitch]="currentStep">-->
+				<!--<div *ngSwitchCase="personal">-->
+				<!--<h1 class="mat-h1">{{'signup.personalInfoStep.title'| translate}}&nbsp;-->
+				<!--<small class="mat-body">{{'signup.personalInfoStep.subtitle'| translate}}</small>-->
+				<!--</h1>-->
+				<!--<form novalidate [formGroup]="personal" (ngSubmit)="onSubmit(personal)">-->
+				<!--<div class="Signup__control">-->
+				<!--<mat-form-field hideRequiredMarker="true">-->
+				<!--<mat-label>{{'signup.personalInfoStep.firstName' | translate}}</mat-label>-->
+				<!--<input matInput type="text" id="firstName" name="firstName" formControlName="firstName"-->
+				<!--autocomplete="given-name">-->
+				<!--</mat-form-field>-->
+				
+				<!--&lt;!&ndash;<label for="firstName">{{'signup.personalInfoStep.firstName'| translate}}</label>&ndash;&gt;-->
+				<!--&lt;!&ndash;<div&ndash;&gt;-->
+				<!--&lt;!&ndash;[ngClass]="{'Form__group': true, 'Form__group&#45;&#45;err': (!personal.get('firstName').valid && personal.get('firstName').dirty)}">&ndash;&gt;-->
+				<!--&lt;!&ndash;<input type="text" id="firstName" name="firstName" formControlName="firstName"&ndash;&gt;-->
+				<!--&lt;!&ndash;autocomplete="given-name">&ndash;&gt;-->
+				<!--&lt;!&ndash;</div>&ndash;&gt;-->
+				<!--</div>-->
+				<!--<div class="Signup__control">-->
+				<!--<mat-form-field hideRequiredMarker="true">-->
+				<!--<mat-label>{{'signup.personalInfoStep.lastName' | translate}}</mat-label>-->
+				<!--<input matInput type="text" id="lastName" name="lastName" formControlName="lastName"-->
+				<!--autocomplete="family-name">-->
+				<!--</mat-form-field>-->
+				
+				<!--&lt;!&ndash;<label for="lastName">{{'signup.personalInfoStep.lastName'| translate}}</label>&ndash;&gt;-->
+				<!--&lt;!&ndash;<div&ndash;&gt;-->
+				<!--&lt;!&ndash;[ngClass]="{'Form__group': true, 'Form__group&#45;&#45;err': (!personal.get('lastName').valid && personal.get('lastName').dirty)}">&ndash;&gt;-->
+				<!--&lt;!&ndash;<input type="text" id="lastName" name="lastName" formControlName="lastName"&ndash;&gt;-->
+				<!--&lt;!&ndash;autocomplete="family-name">&ndash;&gt;-->
+				<!--&lt;!&ndash;</div>&ndash;&gt;-->
+				<!--</div>-->
+				<!--<div class="Signup__control">-->
+				<!--<mat-form-field hideRequiredMarker="true">-->
+				<!--<mat-label>{{('signup.personalInfoStep.cell' | translate) + ' (' + ('signup.personalInfoStep.cell-placeholder'| translate) + ')'}}</mat-label>-->
+				<!--<input matInput type="text" id="cell" name="cell" formControlName="cell" (keypress)="handleKeyPress($event)" #cellInp-->
+				<!--autocomplete="tel-national">-->
+				<!--<mat-hint *ngIf="!isValidCellPart && cellInp.ownerDocument.activeElement === cellInp">-->
+				<!--<i class="fa fa-exclamation-triangle"></i> {{'signup.businessInfoStep.idPatternError' | translate}}-->
+				<!--</mat-hint>-->
+				<!--</mat-form-field>-->
+				
+				<!--&lt;!&ndash;<label for="cell">{{'signup.personalInfoStep.cell'| translate}}</label>&ndash;&gt;-->
+				<!--&lt;!&ndash;<div&ndash;&gt;-->
+				<!--&lt;!&ndash;[ngClass]="{'Form__group': true, 'Form__group&#45;&#45;err': (!personal.get('cell').valid && personal.get('cell').dirty)}">&ndash;&gt;-->
+				<!--&lt;!&ndash;<input type="text" id="cell" name="cell" formControlName="cell" (keypress)="handleKeyPress($event)" #cellInp&ndash;&gt;-->
+				<!--&lt;!&ndash;[placeholder]="'signup.personalInfoStep.cell-placeholder'| translate"&ndash;&gt;-->
+				<!--&lt;!&ndash;autocomplete="tel-national">&ndash;&gt;-->
+				<!--&lt;!&ndash;<div class="Form__feedback Form__feedback&#45;&#45;warning Form__feedback&#45;&#45;warning&#45;&#45;block"&ndash;&gt;-->
+				<!--&lt;!&ndash;*ngIf="!isValidCellPart && cellInp.ownerDocument.activeElement === cellInp">&ndash;&gt;-->
+				<!--&lt;!&ndash;<i class="fa fa-exclamation-triangle"></i> {{'signup.businessInfoStep.idPatternError' | translate}}&ndash;&gt;-->
+				<!--&lt;!&ndash;</div>&ndash;&gt;-->
+				<!--&lt;!&ndash;</div>&ndash;&gt;-->
+				<!--</div>-->
+				<!--<div class="Signup__control">-->
+				<!--<mat-form-field hideRequiredMarker="true">-->
+				<!--<mat-label>{{'signup.personalInfoStep.email' | translate}}</mat-label>-->
+				<!--<input matInput type="text" id="mail" name="mail" formControlName="mail"  (keypress)="handleKeyPress($event)" #mailInp-->
+				<!--autocomplete="mail">-->
+				<!--<mat-hint *ngIf="isHebrew && mailInp.ownerDocument.activeElement === mailInp">-->
+				<!--<i class="fa fa-exclamation-triangle"></i> {{'validation.isHebrew' | translate}}-->
+				<!--</mat-hint>-->
+				<!--<mat-error *ngIf="personal.get('mail').hasError('emailExists')">-->
+				<!--<i class="fa fa-ban"></i> {{'מייל זה קיים במערכת, עבור ל-'}}<a href="/">{{'מסך כניסה'}}</a>-->
+				<!--</mat-error>-->
+				<!--</mat-form-field>-->
+				
+				<!--&lt;!&ndash;<label for="mail">{{'signup.personalInfoStep.email'| translate}}</label>&ndash;&gt;-->
+				<!--&lt;!&ndash;<div&ndash;&gt;-->
+				<!--&lt;!&ndash;[ngClass]="{'Form__group': true, 'Form__group&#45;&#45;err': ((personal.get('mail').invalid && personal.get('mail').dirty) || personal.hasError('emailExists'))}">&ndash;&gt;-->
+				<!--&lt;!&ndash;<input type="text" id="mail" name="mail" formControlName="mail"  (keypress)="handleKeyPress($event)" #mailInp&ndash;&gt;-->
+				<!--&lt;!&ndash;autocomplete="mail">&ndash;&gt;-->
+				<!--&lt;!&ndash;<div class="Form__feedback Form__feedback&#45;&#45;status" *ngIf="personal.get('mail').hasError('emailExists')">&ndash;&gt;-->
+				<!--&lt;!&ndash;<i class="fa fa-ban"></i> {{'מייל זה קיים במערכת, עבור ל-'}}<a href="/">{{'מסך כניסה'}}</a>&ndash;&gt;-->
+				<!--&lt;!&ndash;</div>&ndash;&gt;-->
+				<!--&lt;!&ndash;<div class="Form__feedback Form__feedback&#45;&#45;warning Form__feedback&#45;&#45;warning&#45;&#45;block"&ndash;&gt;-->
+				<!--&lt;!&ndash;*ngIf="personal.get('mail').hasError('email') && isHebrew && mailInp.ownerDocument.activeElement === mailInp">&ndash;&gt;-->
+				<!--&lt;!&ndash;<i class="fa fa-exclamation-triangle"></i> {{'validation.isHebrew' | translate}}&ndash;&gt;-->
+				<!--&lt;!&ndash;</div>&ndash;&gt;-->
+				<!--&lt;!&ndash;</div>&ndash;&gt;-->
+				<!--</div>-->
+				<!--<div class="Signup__control Signup__control&#45;&#45;status">-->
+				<!--<mat-form-field hideRequiredMarker="true">-->
+				<!--<mat-label>{{'formLogin.password' | translate}}</mat-label>-->
+				<!--<input matInput [type]="passwordHide ? 'password' : 'text'" formControlName="password" id="password" #pwdInp-->
+				<!--name="password"-->
+				<!--(keypress)="handleKeyPress($event)" (keydown)="handleKeyDown($event)"-->
+				<!--autocomplete="new-password">-->
+				<!--<mat-icon matSuffix (click)="passwordHide = !passwordHide">{{passwordHide ? 'visibility_off' : 'visibility'}}</mat-icon>-->
+				<!--<mat-hint *ngIf="isHebrew && pwdInp.ownerDocument.activeElement === pwdInp">-->
+				<!--<i class="fa fa-exclamation-triangle"></i> {{'signup.businessInfoStep.idPatternError' | translate}}-->
+				<!--</mat-hint>-->
+				<!--</mat-form-field>-->
+				<!--<div class="Form__feedback Form__feedback&#45;&#45;status">-->
+				<!--<i class="fa"-->
+				<!--[ngClass]="(personal.get('password').hasError('minlength') || personal.get('password').hasError('maxlength') || personal.get('password').hasError('required'))  ? 'fa-ban' : 'fa-check'"></i>-->
+				<!--{{'validation.passwordLength' | translate}}-->
+				<!--</div>-->
+				<!--<div class="Form__feedback Form__feedback&#45;&#45;status">-->
+				<!--<i class="fa"-->
+				<!--[ngClass]="personal.get('password').hasError('nodigit') ? 'fa-ban' : 'fa-check'"></i>-->
+				<!--{{'validation.oneDigit' | translate}}-->
+				<!--</div>-->
+				<!--<div class="Form__feedback Form__feedback&#45;&#45;status">-->
+				<!--<i class="fa"-->
+				<!--[ngClass]="personal.get('password').hasError('noletter') ? 'fa-ban' : 'fa-check'"></i>-->
+				<!--{{'validation.oneLetter' | translate}}-->
+				<!--</div>-->
+				
+				<!--&lt;!&ndash;<label for="password">{{'formLogin.password' | translate}}</label>&ndash;&gt;-->
+				<!--&lt;!&ndash;<div class="Form__group Form__group&#45;&#45;icon">&ndash;&gt;-->
+				<!--&lt;!&ndash;<i (click)="passwordHide = !passwordHide"&ndash;&gt;-->
+				<!--&lt;!&ndash;[ngClass]="{'fa': true, 'fa-eye': passwordHide, 'fa-eye-slash': !passwordHide}"></i>&ndash;&gt;-->
+				<!--&lt;!&ndash;<input [type]="passwordHide ? 'password' : 'text'" formControlName="password" id="password" #pwdInp&ndash;&gt;-->
+				<!--&lt;!&ndash;name="password"&ndash;&gt;-->
+				<!--&lt;!&ndash;(keypress)="handleKeyPress($event)" (keydown)="handleKeyDown($event)"&ndash;&gt;-->
+				<!--&lt;!&ndash;autocomplete="new-password">&ndash;&gt;-->
+				
+				<!--&lt;!&ndash;<div class="Form__feedback Form__feedback&#45;&#45;warning Form__feedback&#45;&#45;warning&#45;&#45;block"&ndash;&gt;-->
+				<!--&lt;!&ndash;*ngIf="isHebrew && pwdInp.ownerDocument.activeElement === pwdInp">&ndash;&gt;-->
+				<!--&lt;!&ndash;<i class="fa fa-exclamation-triangle"></i> {{'validation.isHebrew' | translate}}&ndash;&gt;-->
+				<!--&lt;!&ndash;</div>&ndash;&gt;-->
+				<!--&lt;!&ndash;<div class="Form__feedback Form__feedback&#45;&#45;status">&ndash;&gt;-->
+				<!--&lt;!&ndash;<i class="fa"&ndash;&gt;-->
+				<!--&lt;!&ndash;[ngClass]="(personal.get('password').hasError('minlength') || personal.get('password').hasError('maxlength') || personal.get('password').hasError('required'))  ? 'fa-ban' : 'fa-check'"></i>&ndash;&gt;-->
+				<!--&lt;!&ndash;{{'validation.passwordLength' | translate}}&ndash;&gt;-->
+				<!--&lt;!&ndash;</div>&ndash;&gt;-->
+				<!--&lt;!&ndash;<div class="Form__feedback Form__feedback&#45;&#45;status">&ndash;&gt;-->
+				<!--&lt;!&ndash;<i class="fa"&ndash;&gt;-->
+				<!--&lt;!&ndash;[ngClass]="personal.get('password').hasError('nodigit') ? 'fa-ban' : 'fa-check'"></i>&ndash;&gt;-->
+				<!--&lt;!&ndash;{{'validation.oneDigit' | translate}}&ndash;&gt;-->
+				<!--&lt;!&ndash;</div>&ndash;&gt;-->
+				<!--&lt;!&ndash;<div class="Form__feedback Form__feedback&#45;&#45;status">&ndash;&gt;-->
+				<!--&lt;!&ndash;<i class="fa"&ndash;&gt;-->
+				<!--&lt;!&ndash;[ngClass]="personal.get('password').hasError('noletter') ? 'fa-ban' : 'fa-check'"></i>&ndash;&gt;-->
+				<!--&lt;!&ndash;{{'validation.oneLetter' | translate}}&ndash;&gt;-->
+				<!--&lt;!&ndash;</div>&ndash;&gt;-->
+				<!--&lt;!&ndash;</div>&ndash;&gt;-->
+				<!--</div>-->
+				<!--<div class="Signup__control" style="text-align: start;">-->
+				<!--<mat-checkbox formControlName="agreementConfirm" color="primary">{{'קראתי ואני מסכים ל'}}-->
+				<!--<a href="https://bizibox.biz/terms-of-use-portal-app" target="bizibox-marketing">{{'תנאי שימוש'}}</a>{{' ו'}}-->
+				<!--<a href="https://bizibox.biz/privacy-policy-portal-app" target="bizibox-marketing">{{'מדיניות הפרטיות'}}</a></mat-checkbox>-->
+				<!--&lt;!&ndash;<div style="display: flex; display: -ms-flexbox; align-items: baseline;">&ndash;&gt;-->
+				<!--&lt;!&ndash;<p-checkbox checkboxIcon="fa fa-check" [formControl]="personal.controls['agreementConfirm']"&ndash;&gt;-->
+				<!--&lt;!&ndash;[style]="{'width': '1.6em'}"></p-checkbox>&ndash;&gt;-->
+				<!--&lt;!&ndash;<label>{{'קראתי ואני מסכים ל'}}<a>{{'תנאי שימוש ומדיניות הפרטיות'}}</a>&ndash;&gt;-->
+				<!--&lt;!&ndash;</label>&ndash;&gt;-->
+				<!--&lt;!&ndash;</div>&ndash;&gt;-->
+				
+				<!--&lt;!&ndash;<mat-checkbox formControlName="marketingMessagesAgreed" color="primary">{{'הנני מסכים/ה לקבל דיוור שיווקי לתיבת המייל'}}</mat-checkbox>&ndash;&gt;-->
+				<!--&lt;!&ndash;<div style="display: flex; display: -ms-flexbox; align-items: baseline;">&ndash;&gt;-->
+				<!--&lt;!&ndash;<p-checkbox checkboxIcon="fa fa-check" [formControl]="personal.get('marketingMessagesAgreed')" [binary]="true"&ndash;&gt;-->
+				<!--&lt;!&ndash;[style]="{'width': '1.6em'}"></p-checkbox>&ndash;&gt;-->
+				<!--&lt;!&ndash;<label>{{'הנני מסכים/ה לקבל דיוור שיווקי לתיבת המייל'}}</label>&ndash;&gt;-->
+				<!--&lt;!&ndash;</div>&ndash;&gt;-->
+				<!--</div>-->
+				<!--<div class="Login__submit">-->
+				<!--<button mat-raised-button-->
+				<!--color="primary"-->
+				<!--type="submit"-->
+				<!--[id]="'submitStep'"-->
+				<!--[disabled]="!personal.valid">-->
+				<!--{{'formLogin.continue' | translate}}-->
+				<!--</button>-->
+				<!--</div>-->
+				<!--&lt;!&ndash;<p>Form value: {{ personal.value | json }}</p>&ndash;&gt;-->
+				<!--</form>-->
+				<!--</div>-->
+				
+				<!--<div *ngSwitchCase="business">-->
+				<!--<h1 class="mat-h1">{{'signup.businessInfoStep.title'| translate}}-->
+				<!--<small class="mat-body">{{'signup.businessInfoStep.subtitle'| translate}}</small>-->
+				<!--</h1>-->
+				<!--<form novalidate [formGroup]="business" (ngSubmit)="onSubmit(business)">-->
+				<!--<div class="Signup__control">-->
+				<!--<mat-form-field hideRequiredMarker="true">-->
+				<!--<mat-label>{{'signup.businessInfoStep.name' | translate}}</mat-label>-->
+				<!--<input matInput type="text" formControlName="name" name="name" id="name" autocomplete="off">-->
+				<!--</mat-form-field>-->
+				<!--&lt;!&ndash;<label for="name">{{'signup.businessInfoStep.name'| translate}}</label>&ndash;&gt;-->
+				<!--&lt;!&ndash;<div&ndash;&gt;-->
+				<!--&lt;!&ndash;[ngClass]="{'Form__group': true, 'Form__group&#45;&#45;err': (!business.get('name').valid && business.get('name').dirty)}">&ndash;&gt;-->
+				<!--&lt;!&ndash;<input type="text" formControlName="name" name="name" id="name" autocomplete="off">&ndash;&gt;-->
+				<!--&lt;!&ndash;</div>&ndash;&gt;-->
+				<!--</div>-->
+				<!--<div class="Signup__control">-->
+				<!--<mat-form-field hideRequiredMarker="true">-->
+				<!--<mat-label>{{'signup.businessInfoStep.id' | translate}}</mat-label>-->
+				<!--<input matInput type="text" formControlName="id" name="id" id="id" autocomplete="off">-->
+				<!--<mat-error *ngIf="business.get('id').hasError('idExists')">-->
+				<!--<i class="fa fa-ban"></i> {{'signup.businessInfoStep.idAlreadyRegistered'| translate}}-->
+				<!--</mat-error>-->
+				<!--<mat-error *ngIf="business.get('id').hasError('pattern')">-->
+				<!--<i class="fa fa-exclamation-triangle"></i> {{'signup.businessInfoStep.idPatternError'| translate}}-->
+				<!--</mat-error>-->
+				<!--</mat-form-field>-->
+				<!--&lt;!&ndash;<label for="id">{{'signup.businessInfoStep.id'| translate}}</label>&ndash;&gt;-->
+				<!--&lt;!&ndash;<div&ndash;&gt;-->
+				<!--&lt;!&ndash;[ngClass]="{'Form__group': true, 'Form__group&#45;&#45;err': (business.get('id').invalid && business.get('id').dirty)}">&ndash;&gt;-->
+				<!--&lt;!&ndash;<input type="text" formControlName="id" name="id" id="id" autocomplete="off">&ndash;&gt;-->
+				<!--&lt;!&ndash;<div class="Form__feedback Form__feedback&#45;&#45;status" *ngIf="business.get('id').hasError('idExists')">&ndash;&gt;-->
+				<!--&lt;!&ndash;<i class="fa fa-ban"></i> {{'signup.businessInfoStep.idAlreadyRegistered'| translate}}&ndash;&gt;-->
+				<!--&lt;!&ndash;</div>&ndash;&gt;-->
+				<!--&lt;!&ndash;<div class="Form__feedback Form__feedback&#45;&#45;status" *ngIf="business.get('id').hasError('pattern')">&ndash;&gt;-->
+				<!--&lt;!&ndash;<i class="fa fa-exclamation-triangle"></i> {{'signup.businessInfoStep.idPatternError'| translate}}&ndash;&gt;-->
+				<!--&lt;!&ndash;</div>&ndash;&gt;-->
+				<!--&lt;!&ndash;</div>&ndash;&gt;-->
+				<!--</div>-->
+				<!--<div class="Signup__control Signup__control&#45;&#45;status">-->
+				<!--<mat-form-field hideRequiredMarker="true">-->
+				<!--<mat-label>{{('signup.businessInfoStep.profile' | translate) + ' (' + ('signup.businessInfoStep.profile-placeholder'| translate)+ ')'}}</mat-label>-->
+				<!--<input matInput type="text" formControlName="profile" id="profile" name="profile">-->
+				<!--<mat-hint>{{'* ' + ('expressions.optionalField'| translate)}}</mat-hint>-->
+				<!--</mat-form-field>-->
+				<!--&lt;!&ndash;<label for="profile">{{'signup.businessInfoStep.profile'| translate}}</label>&ndash;&gt;-->
+				<!--&lt;!&ndash;<div&ndash;&gt;-->
+				<!--&lt;!&ndash;[ngClass]="{'Form__group': true, 'Form__group&#45;&#45;err': (!business.get('profile').valid && business.get('profile').dirty)}">&ndash;&gt;-->
+				<!--&lt;!&ndash;<input type="text" formControlName="profile" id="profile" name="profile" [placeholder]="'signup.businessInfoStep.profile-placeholder'| translate">&ndash;&gt;-->
+				<!--&lt;!&ndash;</div>&ndash;&gt;-->
+				<!--&lt;!&ndash;<div class="Form__feedback Form__feedback&#45;&#45;status">&ndash;&gt;-->
+				<!--&lt;!&ndash;{{'* ' + ('expressions.optionalField'| translate)}}&ndash;&gt;-->
+				<!--&lt;!&ndash;</div>&ndash;&gt;-->
+				<!--</div>-->
+				<!--<div class="Signup__control" style="display: flex; display: -ms-flexbox; flex-flow: column; margin-top: 3em;">-->
+				<!--<button mat-raised-button-->
+				<!--color="primary"-->
+				<!--type="submit"-->
+				<!--[id]="'submitStep'"-->
+				<!--[disabled]="!business.valid || formInProgress">-->
+				<!--<mat-spinner diameter="20" color="accent" *ngIf="formInProgress"></mat-spinner>-->
+				<!--<span *ngIf="!formInProgress">{{'formLogin.continue' | translate}}</span>-->
+				<!--</button>-->
+				<!--<a mat-button style="font-size: 17px; margin-top: 1em;"-->
+				<!--color="primary"-->
+				<!--type="button"-->
+				<!--[id]="'stepBack'"-->
+				<!--[disabled]="formInProgress" (click)="onBack(business)">-->
+				<!--<i class="fa fa-sm fa-chevron-right"></i>&nbsp;{{'expressions.goBack'| translate}}-->
+				<!--</a>-->
+				<!--</div>-->
+				<!--&lt;!&ndash;<p>Form value: {{ business.value | json }}</p>&ndash;&gt;-->
+				<!--</form>-->
+				<!--</div>-->
+				
+				<!--<div *ngSwitchCase="account">-->
+				<!--<div class="mat-typography">-->
+				<!--<h1>{{'signup.accountLinkStep.title'| translate}}</h1>-->
+				<!--<p class="mat-caption">{{'signup.accountLinkStep.subtitle'| translate}}</p>-->
+				<!--<p class="mat-caption">{{'signup.accountLinkStep.subtitle2'| translate}}</p>-->
+				<!--</div>-->
+				
+				<!--<form novalidate [formGroup]="account" (ngSubmit)="onSubmit(account)">-->
+				<!--<div style="min-height: 20em;">-->
+				<!--<app-bank-foreign-credentials [bankCredentialsGroup]="account" [useMaterialComponents]="true"-->
+				<!--[settings]="banksCredentialSettings"></app-bank-foreign-credentials>-->
+				<!--</div>-->
+				<!--<div class="Form__feedback Form__feedback&#45;&#45;warning Form__feedback&#45;&#45;warning&#45;&#45;block" [style.visibility]="account.invalid ? 'hidden' : 'visible'">-->
+				<!--<i class="fa fa-fw fa-exclamation-triangle"></i>  {{'foreignCredentialsUpdate.expressions.disconnectBankSiteWarn'| translate}}-->
+				<!--</div>-->
+				<!--<div class="Signup__control" [style.margin-top.em]="account.invalid ? 0 : 0.5">-->
+				
+				<!--<button mat-raised-button style="width: 100%;"-->
+				<!--color="primary"-->
+				<!--type="submit"-->
+				<!--[id]="'submitStep'"-->
+				<!--[disabled]="!account.get('bank')?.value || account.get('bank')?.value < 0 || !account.valid || formInProgress">-->
+				<!--<mat-spinner diameter="20" color="accent" *ngIf="formInProgress"></mat-spinner>-->
+				<!--<span *ngIf="!formInProgress">-->
+				<!--&lt;!&ndash;{{'signup.startFreeTrial'| translate}}&ndash;&gt;-->
+				<!--{{'לחודש התנסות בחינם'}}-->
+				<!--</span>-->
+				<!--</button>-->
+				<!--</div>-->
+				<!--</form>-->
+				
+				<!--<div style="display: flex; display: -ms-flexbox; align-items: center; flex-flow: wrap; align-content: space-between; width: 100%; margin-top: .4em; font-size: 18px;">-->
+				<!--<hr style="flex: 1 1 auto;">-->
+				<!--<div style="flex: 0 0 8ch; -ms-flex:0 0 8ch; text-align: center; font-weight: 600;">{{'expressions.or'| translate}}</div>-->
+				<!--<hr style="flex: 1 1 auto;-ms-flex:1 1 auto;">-->
+				<!--<a mat-button style="flex: 2 1 100%;-ms-flex:2 1 100%; padding: 0 0.5em; min-height: 2.35em; font-size: 1em;"-->
+				<!--color="primary" (click)="onSkipToDemoCompanyClick()">-->
+				<!--<mat-spinner diameter="20" color="accent" *ngIf="formInProgress"></mat-spinner>-->
+				<!--<span *ngIf="!formInProgress">-->
+				<!--{{'signup.accountLinkStep.skipToDemoBusiness'| translate}} <i class="fa fa-fw fa-chevron-left"></i>-->
+				<!--</span>-->
+				<!--</a>-->
+				<!--</div>-->
+				
+				<!--<div>{{'signup.accountLinkStep.disclaimerRegistrationCancelForBankAccounts'| translate}}</div>-->
+				
+				<!--</div>-->
+				
+				<!--<ng-container *ngSwitchCase="tokenTrack">-->
+				<!--<div *ngIf="tokenStatus| async as tokenStatus; else loading" class="polling-section">-->
+				<!--&lt;!&ndash;{{tokenStatus| json}}&ndash;&gt;-->
+				<!--<form novalidate [formGroup]="tokenTrack" (ngSubmit)="onSubmit(tokenTrack)">-->
+				<!--<ng-container [ngSwitch]="tokenStatus.uiStatus">-->
+				<!--<ng-container *ngSwitchCase="'SUCCESS'">-->
+				<!--<h1><i class="fas fa-check-circle"></i>&nbsp;{{'signup.tokenTrackStep.tokenSuccess.title'| translate}}</h1>-->
+				<!--<p [innerHTML]="'signup.tokenTrackStep.tokenSuccess.subtitle'| translate"></p>-->
+				<!--<button mat-raised-button style="width: 100%; padding: 0 0.5em; min-height: 2.35em;"-->
+				<!--color="primary"-->
+				<!--type="submit"-->
+				<!--[id]="'submitStep'"-->
+				<!--[disabled]="formInProgress">-->
+				<!--<mat-spinner diameter="20" color="accent" *ngIf="formInProgress"></mat-spinner>-->
+				<!--<span *ngIf="!formInProgress">{{'formLogin.login'| translate}}</span>-->
+				<!--</button>-->
+				<!--</ng-container>-->
+				<!--<ng-container *ngSwitchCase="'FAILURE'">-->
+				<!--<h1><i class="fas fa-ban"></i>&nbsp;{{'signup.tokenTrackStep.tokenFailed.title'| translate}}</h1>-->
+				<!--<p [innerHTML]="'signup.tokenTrackStep.tokenFailed.subtitle'| translate"></p>-->
+				<!--<button mat-raised-button style="width: 100%; padding: 0 0.5em; min-height: 2.35em;"-->
+				<!--color="primary"-->
+				<!--type="submit"-->
+				<!--[id]="'submitStep'"-->
+				<!--[disabled]="formInProgress">-->
+				<!--<mat-spinner diameter="20" color="accent" *ngIf="formInProgress"></mat-spinner>-->
+				<!--<span *ngIf="!formInProgress">{{'signup.accountLinkStep.skipToDemoBusiness'| translate}}</span>-->
+				<!--</button>-->
+				<!--</ng-container>-->
+				<!--<ng-container *ngSwitchCase="'UPDATE_AND_RETRY'">-->
+				<!--<h2><i class="fas fa-exclamation-triangle"></i>&nbsp;{{'signup.tokenTrackStep.tokenUpdateAndRetry.title'|-->
+				<!--translate}}</h2>-->
+				<!--<p [innerHTML]="'signup.tokenTrackStep.tokenUpdateAndRetry.subtitle'| translate"></p>-->
+				<!--<button mat-raised-button style="width: 100%; padding: 0 0.5em; min-height: 2.35em;"-->
+				<!--color="primary"-->
+				<!--type="button" (click)="currentStep = account"-->
+				<!--[id]="'submitStep'"-->
+				<!--[disabled]="formInProgress">-->
+				<!--<mat-spinner diameter="20" color="accent" *ngIf="formInProgress"></mat-spinner>-->
+				<!--<span *ngIf="!formInProgress">{{'formLogin.tryAgain'| translate}}</span>-->
+				<!--</button>-->
+				<!--</ng-container>-->
+				<!--<ng-container *ngSwitchCase="'TIMED_OUT'">-->
+				<!--<h2><i class="fas fa-exclamation-triangle"></i>&nbsp;{{'signup.tokenTrackStep.tokenTimedOut.title'|-->
+				<!--translate}}</h2>-->
+				<!--<p [innerHTML]="'signup.tokenTrackStep.tokenTimedOut.subtitle'| translate"></p>-->
+				<!--<button mat-raised-button style="width: 100%; padding: 0 0.5em; min-height: 2.35em;"-->
+				<!--color="primary"-->
+				<!--type="button" (click)="startTokenStatusPolling()"-->
+				<!--[id]="'retryStep'"-->
+				<!--[disabled]="formInProgress">-->
+				<!--<mat-spinner diameter="20" color="accent" *ngIf="formInProgress"></mat-spinner>-->
+				<!--<span-->
+				<!--*ngIf="!formInProgress">{{'signup.tokenTrackStep.tokenTimedOut.keepWaiting'| translate}}</span>-->
+				<!--</button>-->
+				<!--<button mat-raised-button style="width: 100%; padding: 0 0.5em; min-height: 2.35em;"-->
+				<!--color="primary"-->
+				<!--type="submit"-->
+				<!--[id]="'submitStep'"-->
+				<!--[disabled]="formInProgress">-->
+				<!--<mat-spinner diameter="20" color="accent" *ngIf="formInProgress"></mat-spinner>-->
+				<!--<span-->
+				<!--*ngIf="!formInProgress">{{'signup.tokenTrackStep.tokenTimedOut.stopWaiting'| translate}}</span>-->
+				<!--</button>-->
+				<!--</ng-container>-->
+				<!--<ng-container *ngSwitchDefault>-->
+				<!--<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/bizb-loading.gif" height="74" width="107"/>-->
+				<!--<h2>{{'signup.tokenTrackStep.waitingMessage'| translate}}</h2>-->
+				<!--&lt;!&ndash;{{tokenStatus.extractdate| date: 'HH:mm:ss'}}&ndash;&gt;-->
+				<!--</ng-container>-->
+				<!--</ng-container>-->
+				<!--</form>-->
+				<!--</div>-->
+				<!--<ng-template #loading>-->
+				<!--<div class="polling-section">-->
+				<!--<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/bizb-loading.gif" height="74" width="107"/>-->
+				<!--<h2>{{'signup.tokenTrackStep.waitingMessage'| translate}}</h2>-->
+				<!--</div>-->
+				<!--</ng-template>-->
+				<!--</ng-container>-->
+			</div>
+			
+			<div class="Signup__card-info">
+				<div *ngIf="currentStepIdx > 1" id="steps-nav">
+					<div [class.active]="currentStepIdx === 1">
+						<span class="step-num">1</span>
+						{{ 'signup.personalInfoStep.title' | translate }}
+					</div>
+					<div *ngIf="lite" [class.active]="currentStepIdx === 2">
+						<span class="step-num">2</span> {{ 'פרטים נוספים' }}
+					</div>
+					<div *ngIf="!lite" [class.active]="currentStepIdx === 2">
+						<span class="step-num">2</span>
+						{{ 'signup.businessInfoStep.title' | translate }}
+					</div>
+					<div [class.active]="currentStepIdx > 2">
+						<span class="step-num">3</span>
+						{{ 'signup.accountLinkStep.title' | translate }}
+					</div>
+				</div>
+				
+				<ul *ngIf="currentStepIdx === 1" class="fa-ul">
+					<li
+							*ngFor="
+              let wwd of translate.translations[translate.currentLang].signup
+                .whatWeDo;
+              index as i
+            "
+					>
+            <span class="fa-li"><i class="fas fa-check"></i></span
+            >{{
+						i === 1 && lite
+								? 'ניהול תקציב וניהול
+								קטגוריות'
+								: wwd
+						}}
+					</li>
+				</ul>
+				
+				<div
+						(mouseleave)="pauseHoveringAutomation = false"
+						(mouseover)="pauseHoveringAutomation = true"
+						*ngIf="currentStepIdx < 3; else showupEyal"
+						style="margin-top: 0.5em"
+				>
+					<div
+							[style.visibility]="hoveredReferent != null ? 'visible' : 'hidden'"
+							class="quote"
+					>
+						<img fill ngSrc="/assets/images/open-quote.png"
+						     style="height: auto; width: auto; position: relative;"/>
+						<h4>{{ hoveredReferent?.quote }}</h4>
+						<caption>
+							<div class="referent-name">
+								{{ hoveredReferent?.name }}, {{ hoveredReferent?.occupation }}
+							</div>
+							<!--<i class="fa fa-4x fa-quote-right"></i>-->
+							<!--<div>-->
+							<!--<div class="referent-name">{{hoveredReferent?.name}}</div>-->
+							<!--<div class="referent-occupation">{{hoveredReferent?.occupation}}</div>-->
+							<!--</div>-->
+							<img fill ngSrc="/assets/images/close-quote.png"
+							     style="height: auto; width: auto; position: relative;"/>
+						</caption>
+					</div>
+					<div class="referents">
+						<div
+								(mouseover)="hoveredReferent = rfrnt"
+								*ngFor="
+                let rfrnt of translate.translations[translate.currentLang]
+                  .signup[lite ? 'referentsLight' : 'referents']
+              "
+								[class.active]="rfrnt === hoveredReferent"
+						>
+							<img [ngSrc]="'/assets/images/' + rfrnt.picture" fill
+							     style="height: auto; width: auto; position: relative;"/>
+						</div>
+					</div>
+				</div>
+				
+				<ng-template #showupEyal>
+					<hr/>
+					<p
+							style="
+              font-size: 1.1em !important;
+              line-height: 1.3em;
+              margin-bottom: 1em;
+            "
+					>
+						{{ 'signup.accountLinkStep.marketingMessage1' | translate }}
+					</p>
+					<hr/>
+					<div class="quote-with-picture" style="margin-bottom: 1em">
+						<p style="font-size: 1.1em !important; line-height: 1.3em">
+							{{ 'signup.accountLinkStep.quote' | translate }}
+						</p>
+						<div class="quoted">
+							<img fill ngSrc="/assets/images/Eyal.png"
+							     style="height: auto; width: auto; position: relative;"/>
+							<p>
+								{{ 'signup.accountLinkStep.quoted' | translate }}
+							</p>
+						</div>
+					</div>
+				</ng-template>
+				
+				<hr/>
+				<ng-container *ngIf="currentStepIdx < 3">
+					<div class="disclaimer">
+						{{ 'signup.disclaimerRegistrationCancel' | translate }}
+					</div>
+					<div class="disclaimer small">
+						{{ 'signup.disclaimerSecure' | translate }}
+					</div>
+				</ng-container>
+				<div class="sec-logos">
+					<img alt="Fortinet" fill
+					     ngSrc="/assets/images/fortinet-logo.png" style="height: auto; width: auto; position: relative;"/>
+					<img alt="Verisign" fill
+					     ngSrc="/assets/images/verisign-logo.png" style="height: auto; width: auto; position: relative;"/>
+					<img alt="128bit" fill
+					     ngSrc="/assets/images/128bit-logo.png" style="height: auto; width: auto; position: relative;"/>
+				</div>
+				<hr/>
+				<ng-container *ngIf="currentStepIdx < 3">
+					<div class="disclaimer">
+						{{ 'signup.disclaimerHelp' | translate }}
+					</div>
+					<div
+							*ngIf="!lite"
+							[innerHTML]="'signup.disclaimerSupport' | translate"
+							class="disclaimer small"
+					></div>
+					<a
+							*ngIf="lite"
+							class="disclaimer small"
+							href="https://bizibox.biz/contact-us/"
+							target="_blank"
+					>{{ 'signup.disclaimerSupportLight' | translate }}</a
+					>
+				</ng-container>
+				<ng-container *ngIf="currentStepIdx === 3">
+					<div class="disclaimer" style="text-align: center">
+						{{ 'signup.disclaimerHelp' | translate }}
+						<span
+								*ngIf="!lite"
+								[innerHTML]="'signup.disclaimerSupport' | translate"
+								class="disclaimer small"
+								style="font-weight: 500"
+						></span>
+						<a
+								*ngIf="lite"
+								class="disclaimer small"
+								href="https://bizibox.biz/contact-us/"
+								target="_blank"
+						>{{ 'signup.disclaimerSupportLight' | translate }}</a
+						>
+					</div>
+				</ng-container>
+				<!--<div class="disclaimer small">{{'signup.disclaimerSupport'| translate}}</div>-->
+			</div>
+		</div>
+	</div>
+</div>
+
+<ng-container *ngIf="showPopUpPreSighUp">
+	<p-dialog #dialogSign
+	          (onShow)="dialogSign.maximize()"
+	          (visibleChange)="showPopUpPreSighUp = false"
+	          [modal]="true"
+	          [resizable]="false"
+	          [visible]="(showPopUpPreSighUp)"
+	          appendTo="body"
+	          styleClass="packagesPreSignUp"
+	>
+		<div id="logoPreSignUp">
+			<img alt="bizibox"  src="/assets/images/logo-big.png"
+			   />
+		</div>
+		
+		<h1>בחרו את ה- bizibox המתאים לכם ביותר!</h1>
+		
+		<p class="navLinks"><a [routerLink]="['/login']">חזרה לדף הכניסה</a></p>
+		
+		<ul class="packages">
+			<!--            <li>-->
+			<!--                <div class="title">-->
+			<!--                    bizibox ניהול תקציב-->
+			<!--                </div>-->
+			<!--                <div class="secondTitle">-->
+			<!--                    ניהול תקציב בצורה פשוטה וקלה-->
+			<!--                </div>-->
+			<!--                <div class="titlesSums">-->
+			<!--                    <h1><small>₪</small>19</h1>-->
+			<!--                    <div class="infoSums">-->
+			<!--                        <h2>-->
+			<!--                            לחשבון אחד *-->
+			<!--                        </h2>-->
+			<!--                        <p>-->
+			<!--                            לחודש כולל מע"מ-->
+			<!--                        </p>-->
+			<!--                    </div>-->
+			<!--                </div>-->
+			
+			<!--                <ul class="list">-->
+			<!--                    <li>-->
+			<!--                        <p>-->
+			<!--                            ריכוז נתונים פיננסים-->
+			<!--                        </p>-->
+			<!--                    </li>-->
+			
+			<!--                    <li>-->
+			<!--                        <p>-->
+			<!--                            ניתוח נתוני חשבונות בנק-->
+			<!--                        </p>-->
+			<!--                    </li>-->
+			<!--                    <li>-->
+			<!--                        <p>-->
+			<!--                            ניתוח נתוני כרטיסי אשראי וסליקה-->
+			<!--                        </p>-->
+			<!--                    </li>-->
+			<!--                    <li>-->
+			<!--                        <p>-->
+			<!--                            ניתוח צ'קים-->
+			<!--                        </p>-->
+			<!--                    </li>-->
+			<!--                    <li>-->
+			<!--                        <p>-->
+			<!--                            שמירת היסטוריית נתונים-->
+			<!--                        </p>-->
+			<!--                    </li>-->
+			<!--                    <li>-->
+			<!--                        <p>-->
+			<!--                            הודעות והתראות-->
+			<!--                        </p>-->
+			<!--                    </li>-->
+			<!--                    <li>-->
+			<!--                        <p>-->
+			<!--                            ניהול תקציב-->
+			<!--                        </p>-->
+			<!--                    </li>-->
+			<!--                    <li>-->
+			<!--                        <p>-->
+			<!--                            מייל יומי-->
+			<!--                        </p>-->
+			<!--                    </li>-->
+			<!--                    <li>-->
+			<!--                        <p>-->
+			<!--                            אפליקציה סלולרית-->
+			<!--                        </p>-->
+			<!--                    </li>-->
+			<!--                </ul>-->
+			
+			<!--                <small>* למספר חשבונות - 49 ₪</small>-->
+			<!--                <button (click)="lite = true; showPopUpPreSighUp= false;" style="margin-top: 5px;">-->
+			<!--                    <p>-->
+			<!--                        לחצו כאן לחודש ניסיון-->
+			<!--                    </p>-->
+			<!--                    <img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/arrowBtnPackages.png"/>-->
+			<!--                </button>-->
+			<!--            </li>-->
+			<li>
+				<div class="title">bizibox לעסקים</div>
+				<div class="secondTitle">לראות את העתיד של העסק שלך</div>
+				<div class="titlesSums">
+					<h1><small>₪</small>174</h1>
+					<div class="infoSums">
+						<h2>לחודש</h2>
+						<p>כולל מע"מ</p>
+					</div>
+				</div>
+				
+				<ul class="list">
+					<li>
+						<p>ריכוז נתונים פיננסים</p>
+					</li>
+					
+					<li>
+						<p>ניתוח נתוני חשבונות בנק</p>
+					</li>
+					<li>
+						<p>ניתוח נתוני כרטיסי אשראי וסליקה</p>
+					</li>
+					<li>
+						<p>ניתוח צ'קים</p>
+					</li>
+					<li>
+						<p>שמירת היסטוריית נתונים</p>
+					</li>
+					<li>
+						<p>הודעות והתראות</p>
+					</li>
+					<li>
+						<p>ניהול תקציב</p>
+					</li>
+					<li>
+						<p>מייל יומי</p>
+					</li>
+					<li>
+						<p>אפליקציה סלולרית</p>
+					</li>
+					<li class="strong">
+						<p>מוקד תמיכה ושירות</p>
+					</li>
+					<li class="strong">
+						<p>מייל ריכוז חיובי אשראי שבועי</p>
+					</li>
+					<li class="strong">
+						<p>דו״ח תזרים מזומנים</p>
+					</li>
+					<li class="strong">
+						<p>התאמות אוטומטיות</p>
+					</li>
+					<li class="strong">
+						<p>ניהול תנועות קבועות</p>
+					</li>
+					<li class="strong">
+						<p>מחשבון המלצה לתשלום</p>
+					</li>
+				</ul>
+				
+				<button (click)="lite = false; showPopUpPreSighUp = false">
+					<p>לחצו כאן לחודש ניסיון</p>
+					<img fill ngSrc="/assets/images/arrowBtnPackages.png"
+					     style="height: auto; width: auto; position: relative;"/>
+				</button>
+			</li>
+			<li>
+				<div class="title">bizibox לעסקים +</div>
+				<div class="secondTitle">לנתח גם את הנהלת החשבונות</div>
+				<div class="titlesSums">
+					<h1><small>₪</small>233</h1>
+					<div class="infoSums">
+						<h2>לחודש</h2>
+						<p>כולל מע"מ</p>
+					</div>
+				</div>
+				
+				<ul class="list">
+					<li>
+						<p>ריכוז נתונים פיננסים</p>
+					</li>
+					
+					<li>
+						<p>ניתוח נתוני חשבונות בנק</p>
+					</li>
+					<li>
+						<p>ניתוח נתוני כרטיסי אשראי וסליקה</p>
+					</li>
+					<li>
+						<p>ניתוח צ'קים</p>
+					</li>
+					<li>
+						<p>שמירת היסטוריית נתונים</p>
+					</li>
+					<li>
+						<p>הודעות והתראות</p>
+					</li>
+					<li>
+						<p>ניהול תקציב</p>
+					</li>
+					<li>
+						<p>מייל יומי</p>
+					</li>
+					<li>
+						<p>אפליקציה סלולרית</p>
+					</li>
+					<li>
+						<p>מוקד תמיכה ושירות</p>
+					</li>
+					<li>
+						<p>מייל ריכוז חיובי אשראי שבועי</p>
+					</li>
+					<li>
+						<p>דו״ח תזרים מזומנים</p>
+					</li>
+					<li>
+						<p>התאמות אוטומטיות</p>
+					</li>
+					<li>
+						<p>ניהול תנועות קבועות</p>
+					</li>
+					<li>
+						<p>מחשבון המלצה לתשלום</p>
+					</li>
+					<li class="strong">
+						<p>ניתוח מגמות נתוני הנה"ח</p>
+					</li>
+					<li class="strong">
+						<p>דו"ח רווח והפסד</p>
+					</li>
+					<li class="strong">
+						<p>מאזן בוחן חכם</p>
+					</li>
+				</ul>
+				
+				<button (click)="lite = false; showPopUpPreSighUp = false">
+					<p>לחצו כאן לחודש ניסיון</p>
+					<img fill ngSrc="/assets/images/arrowBtnPackages.png"
+					     style="height: auto; width: auto; position: relative;"/>
+				</button>
+			</li>
+			<li>
+				<div class="title">bizibox PRO</div>
+				<div class="secondTitle">לקחת שליטה פיננסית מוחלטת</div>
+				<div class="titlesSums">
+					<h1><small>₪</small>291</h1>
+					<div class="infoSums">
+						<h2>לחודש</h2>
+						<p>כולל מע"מ</p>
+					</div>
+				</div>
+				
+				<ul class="list">
+					<li>
+						<p>ריכוז נתונים פיננסים</p>
+					</li>
+					
+					<li>
+						<p>ניתוח נתוני חשבונות בנק</p>
+					</li>
+					<li>
+						<p>ניתוח נתוני כרטיסי אשראי וסליקה</p>
+					</li>
+					<li>
+						<p>ניתוח צ'קים</p>
+					</li>
+					<li>
+						<p>שמירת היסטוריית נתונים</p>
+					</li>
+					<li>
+						<p>הודעות והתראות</p>
+					</li>
+					<li>
+						<p>ניהול תקציב</p>
+					</li>
+					<li>
+						<p>מייל יומי</p>
+					</li>
+					<li>
+						<p>אפליקציה סלולרית</p>
+					</li>
+					<li>
+						<p>מוקד תמיכה ושירות</p>
+					</li>
+					<li>
+						<p>מייל ריכוז חיובי אשראי שבועי</p>
+					</li>
+					<li>
+						<p>דו״ח תזרים מזומנים</p>
+					</li>
+					<li>
+						<p>התאמות אוטומטיות</p>
+					</li>
+					<li>
+						<p>ניהול תנועות קבועות</p>
+					</li>
+					<li>
+						<p>מחשבון המלצה לתשלום</p>
+					</li>
+					<li>
+						<p>ניתוח מגמות נתוני הנה"ח</p>
+					</li>
+					<li>
+						<p>דו"ח רווח והפסד</p>
+					</li>
+					<li>
+						<p>מאזן בוחן חכם</p>
+					</li>
+					<li class="strong">
+						<p>משיכת צ’קים מתוכנת הנה"ח</p>
+					</li>
+				</ul>
+				
+				<button (click)="lite = false; showPopUpPreSighUp = false">
+					<p>לחצו כאן לחודש ניסיון</p>
+					<img fill ngSrc="/assets/images/arrowBtnPackages.png"
+					     style="height: auto; width: auto; position: relative;"/>
+				</button>
+			</li>
+		</ul>
+		<p style="text-align: center; margin-top: -28px">
+			המחיר עבור חברה אחת (ח.פ/ת.ז/ע.מ) בלבד, עד חמישה חשבונות בנק לחברה
+		</p>
+	</p-dialog>
+</ng-container>

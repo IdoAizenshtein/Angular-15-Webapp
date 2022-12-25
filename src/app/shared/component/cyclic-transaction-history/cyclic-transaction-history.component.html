@@ -1,0 +1,220 @@
+<ng-template #loader>
+	<div class="loader">
+		<div class="circle"></div>
+	</div>
+</ng-template>
+
+<div class="transData-section sums" *ngIf="cyclicTrans">
+	<div class="sum-data">
+		<h3>סכום לתזרים</h3>
+		<p
+				[class.sum-credit]="cyclicTrans.total > 0 && !cyclicTrans.expence"
+				[class.sum-debit]="cyclicTrans.expence === true"
+		>
+			<span class="sum">{{ cyclicTrans.total | sum: true }}</span>
+			<span class="currency">{{
+				(cyclicTrans.companyAccountId | asBankAccount)?.currency
+						| currencySymbol
+				}}</span>
+		</p>
+	</div>
+	
+	<div class="sum-data">
+		<h3>{{ 'titles.typeOfPayment' | translate }}</h3>
+		<p
+				*ngIf="
+        restCommonService.paymentTypesTranslate$
+          | async as paymentTypesTranslate
+      "
+		>
+			{{
+			paymentTypesTranslate[cyclicTrans.paymentDesc] ||
+			paymentTypesTranslate[cyclicTrans.paymentDescOriginal]
+			}}
+		</p>
+	</div>
+	
+	<div class="sum-data">
+		<h3>תדירות</h3>
+		<p>
+			<ng-container
+					*ngIf="cyclicTrans.transFrequencyName !== 'NONE'; else noneFrequency"
+			>
+        <span>{{
+	        cyclicTrans.autoUpdateTypeName === 'USER_CURRENT_TOTAL' &&
+	        (cyclicTrans.paymentDesc === 'Slika' ||
+			        cyclicTrans.paymentDesc === 'credit')
+			        ? cyclicTrans.paymentDesc === 'Slika'
+					        ? 'לפי זיכוי קרוב'
+					        : 'לפי חיוב קרוב'
+			        : ('transactionFrequencyTypes.' +
+			        cyclicTrans.transFrequencyName +
+			        '.text' | translate)
+	        }}</span>
+				<span *ngIf="cyclicTrans.frequencyDay">
+          &nbsp;&#40;{{
+					cyclicTrans.frequencyDay
+							| transactionFrequencyHumanize: cyclicTrans.transFrequencyName
+					}}&#41;</span
+				>
+			</ng-container>
+			<!--{{trns.frquencyDay}} + {{trns.transFrequencyName}}-->
+			<ng-template #noneFrequency></ng-template>
+		</p>
+	</div>
+</div>
+
+<ng-container *ngIf="historyData$ | async as historyData; else loader">
+	<ng-container *ngIf="!(reloading$ | async); else loader">
+		<ng-container
+				*ngIf="
+        historyData.transes?.length && historyData.chartData;
+        else noHistoryAvailable
+      "
+		>
+			<div class="chart-section">
+				<app-charts
+						[chartData]="historyData.chartData"
+						[scrollHeight]="{ height: 160 }"
+				></app-charts>
+			</div>
+			<p class="mat-h4" style="margin: 0.5em 0">
+				<ng-container *ngIf="cyclicTrans.paymentDesc !== 'RECOMMENDATION'">
+					כדי לדייק את התזרים מומלץ למחוק תנועות שהותאמו בטעות
+				</ng-container>
+			</p>
+			<div class="bank-acc-details-table-container transesTable">
+				<div class="bank-acc-details-table-header">
+					<div>
+						{{ 'titles.date' | translate }}
+					</div>
+					<div>
+						{{ 'titles.description' | translate }}
+					</div>
+					<div>
+						{{ 'titles.reference' | translate }}
+					</div>
+					<div style="display: flex">
+						<div style="width: 35px">&nbsp;</div>
+						<div>
+							{{ 'titles.sum' | translate }}
+						</div>
+					</div>
+					<div></div>
+				</div>
+				<div
+						[appScrollHeight]="280"
+						appendTo="parent"
+						class="scrollbar-dynamic bank-acc-details-table-body"
+				>
+					<div>
+						<div
+								class="bank-acc-details-row"
+								*ngFor="
+                let trnsh of historyData.transes;
+                trackBy: transactionTrack
+              "
+						>
+							<div>
+								{{ trnsh.transDate | todayRelativeHumanize }}
+							</div>
+							
+							<div
+									[innerHTML]="trnsh.transDesc"
+									#transDesc
+									[pTooltip]="trnsh.transDesc"
+									tooltipPosition="top"
+									appendTo="body"
+									[showDelay]="300"
+									[tooltipDisabled]="
+                  transDesc.clientWidth >= transDesc.scrollWidth
+                "
+							></div>
+							
+							<div [innerHTML]="trnsh.asmachta">
+								<!--{{trns.transTypeId}}-->
+							</div>
+							
+							<div
+									class="ltrNum"
+									style="
+                  flex-direction: row-reverse;
+                  display: flex;
+                  align-items: center;
+                  align-content: center;
+                "
+									[class.sum-credit]="
+                  !trnsh.userMatchTotal
+                    ? trnsh.bankTotal > 0
+                    : trnsh.userMatchTotal > 0
+                "
+									[class.sum-debit]="
+                  !trnsh.userMatchTotal
+                    ? trnsh.bankTotal < 0
+                    : trnsh.userMatchTotal < 0
+                "
+							>
+								<div style="width: 35px">
+									<img
+											[matTooltip]="
+                      'מופיע בבנק כ' +
+                      trnsh.transDesc +
+                      ' על סך ' +
+                      formatWithoutPointsSum(trnsh.bankTotal) +
+                      ' ש״ח'
+                    "
+											matTooltipPosition="below"
+											*ngIf="
+                      trnsh.userMatchTotal && trnsh.userMatchTotal !== null
+                    "
+										 ngSrc="/assets/images/tooltipSign.png"
+											alt="tooltip"
+											width="14"
+											height="14"
+											style=" cursor: pointer"
+									/>
+									<ng-container *ngIf="!trnsh.userMatchTotal">
+										&nbsp;
+									</ng-container>
+								</div>
+								
+								<app-sum-view
+										[sum]="
+                    !trnsh.userMatchTotal
+                      ? trnsh.bankTotal
+                      : trnsh.userMatchTotal
+                  "
+								></app-sum-view>
+							</div>
+							<div
+									style="
+                  display: flex;
+                  display: -ms-flexbox;
+                  flex-flow: row nowrap;
+                  align-content: baseline;
+                "
+							>
+								<ng-container
+										*ngIf="cyclicTrans.paymentDesc !== 'RECOMMENDATION'"
+								>
+									<img
+											(click)="onHistoryRowHandleClick(trnsh)"
+											class="rowHandle"
+											style="height: auto; width: 12px; position: relative;" fill ngSrc="/assets/images/trash.png"
+											alt="deleteTransaction"
+									/>
+								</ng-container>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</ng-container>
+	</ng-container>
+	<ng-template #noHistoryAvailable>
+		<h1 class="mat-h1" style="text-align: center; margin-top: 2em">
+			לא נמצאו רשומות קודמות
+		</h1>
+	</ng-template>
+	<!--<pre>{{historyData | json}}</pre>-->
+</ng-container>

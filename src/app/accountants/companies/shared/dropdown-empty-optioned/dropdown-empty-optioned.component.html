@@ -1,0 +1,392 @@
+<div
+		#container
+		(click)="onMouseclick($event)"
+		[class]="styleClass"
+		[ngClass]="{
+    'p-dropdown p-widget p-state-default p-corner-all p-helper-clearfix': true,
+    'p-disabled': disabled,
+    'p-dropdown-open': overlayVisible,
+    'p-state-focus': focused,
+    'p-dropdown-clearable': showClear && !disabled
+  }"
+		[ngStyle]="style"
+>
+	<div *ngIf="autoWidth" class="p-helper-hidden-accessible">
+		<select
+				[attr.aria-label]="selectedOption ? selectedOption.label : ' '"
+				[attr.name]="name"
+				[required]="required"
+				aria-hidden="true"
+				tabindex="-1"
+		>
+			<option *ngIf="placeholder">{{ placeholder }}</option>
+			<ng-container *ngIf="group">
+				<optgroup *ngFor="let option of options" [attr.label]="option.label">
+					<option
+							*ngFor="let option of option.items"
+							[selected]="selectedOption == option"
+							[value]="option.value"
+					>
+						{{ option.label }}
+					</option>
+				</optgroup>
+			</ng-container>
+			<ng-container *ngIf="!group && isVirtual">
+				<option
+						*ngFor="let option of options"
+						[selected]="selectedOption == option"
+						[value]="option.value"
+				>
+					{{ option.label }}
+				</option>
+			</ng-container>
+			<ng-container *ngIf="!group && !isVirtual">
+				<option
+						*ngFor="
+            let option of options | slice: 0:entryLimit;
+            let i = index;
+            trackBy: trackByIndex
+          "
+						[selected]="selectedOption == option"
+						[value]="option.value"
+				>
+					{{ option.label }}
+				</option>
+			</ng-container>
+		</select>
+	</div>
+	<div class="p-helper-hidden-accessible">
+		<input
+				#in
+				(blur)="onInputBlur($event)"
+				(focus)="onInputFocus($event)"
+				(keydown)="onKeydown($event, true)"
+				[attr.aria-label]="selectedOption ? selectedOption.label : ' '"
+				[attr.autofocus]="autofocus"
+				[attr.id]="inputId"
+				[attr.tabindex]="tabindex"
+				[disabled]="disabled"
+				readonly
+				role="listbox"
+				type="text"
+		/>
+	</div>
+	<label
+			*ngIf="!editable && label != null"
+			[ngClass]="{
+      'p-dropdown-label p-inputtext p-corner-all': true,
+      'p-dropdown-label-empty': label == null || label.length === 0
+    }"
+	>
+		<ng-container *ngIf="!selectedItemTemplate">{{
+			label || 'empty'
+			}}</ng-container>
+		<ng-container
+				*ngTemplateOutlet="
+        selectedItemTemplate;
+        context: { $implicit: selectedOption }
+      "
+		></ng-container>
+	</label>
+	<label
+			*ngIf="!editable && label == null"
+			[ngClass]="{
+      'p-dropdown-label p-inputtext p-corner-all p-placeholder': true,
+      'p-dropdown-label-empty': placeholder == null || placeholder.length === 0
+    }"
+	>{{ placeholder || 'empty' }}</label
+	>
+	<input
+			#editableInput
+			(blur)="onInputBlur($event)"
+			(click)="onEditableInputClick()"
+			(focus)="onEditableInputFocus($event)"
+			(input)="onEditableInputChange($event)"
+			*ngIf="editable"
+			[attr.aria-label]="selectedOption ? selectedOption.label : ' '"
+			[attr.placeholder]="placeholder"
+			[disabled]="disabled"
+			class="p-dropdown-label p-inputtext p-corner-all"
+			type="text"
+	/>
+	<i
+			(click)="clear($event)"
+			*ngIf="value != null && showClear && !disabled"
+			class="p-dropdown-clear-icon fa fa-close"
+	></i>
+	<div class="p-dropdown-trigger p-state-default p-corner-right">
+    <span
+		    [ngClass]="dropdownIcon"
+		    class="p-dropdown-trigger-icon p-clickable"
+    ></span>
+	</div>
+	<div
+			#panel
+			[@panelState]="overlayVisible ? 'visible' : 'hidden'"
+			[class]="panelStyleClass"
+			[ngClass]="'p-dropdown-panel p-dialog-content p-corner-all p-shadow'"
+			[ngStyle]="panelStyle"
+			[style.display]="overlayVisible ? 'block' : 'none'"
+	>
+		<div
+				(click)="$event.stopPropagation()"
+				(input)="onFilter($event)"
+				*ngIf="filter"
+				class="p-dropdown-filter-container"
+		>
+			<input
+					#filter
+					(keydown)="onKeydown($event); search()"
+					(keydown.enter)="$event.preventDefault()"
+					[attr.placeholder]="filterPlaceholder"
+					autocomplete="off"
+					class="p-dropdown-filter p-inputtext p-widget p-state-default p-corner-all"
+					type="text"
+			/>
+			<span class="p-dropdown-filter-icon fa fa-search"></span>
+		</div>
+		
+		<ng-container *ngIf="!isVirtual; else virtual">
+			<div
+					#itemswrapper
+					#scrollContainer
+					(click)="$event.stopPropagation()"
+					(scroll)="onScroll($event)"
+					[style.max-height]="scrollHeight || 'auto'"
+					class="p-dropdown-items-wrapper"
+			>
+				<div *ngIf="loader" class="loaderPercent">
+					<div class="circle"></div>
+				</div>
+				<ul
+						(click)="$event.stopPropagation()"
+						*ngIf="lazy ? overlayVisible : true"
+						class="p-dropdown-items p-dropdown-list p-dialog-content p-widget p-corner-all p-helper-reset"
+				>
+					<ng-container *ngIf="topContentTemplate">
+						<li style="padding-right: 10px">
+							<ng-container
+									*ngTemplateOutlet="topContentTemplate"
+							></ng-container>
+						</li>
+					</ng-container>
+					<ng-container *ngIf="titleTemplate">
+						<li
+								*ngIf="isExistLengOfHistory"
+								class="p-dropdown-item-group"
+								style="padding-right: 10px"
+						>
+							<ng-container *ngTemplateOutlet="titleTemplate"></ng-container>
+						</li>
+					</ng-container>
+					<ng-container *ngIf="group">
+						<ng-template [ngForOf]="optionsToDisplay" let-optgroup ngFor>
+							<li class="p-dropdown-item-group">
+                <span *ngIf="!groupTemplate">{{
+	                optgroup.label || 'empty'
+	                }}</span>
+								<ng-container
+										*ngTemplateOutlet="
+                    groupTemplate;
+                    context: { $implicit: optgroup }
+                  "
+								></ng-container>
+							</li>
+							<ng-container
+									*ngTemplateOutlet="
+                  itemslist;
+                  context: {
+                    $implicit: optgroup.items,
+                    selectedOption: selectedOption
+                  }
+                "
+							></ng-container>
+						</ng-template>
+					</ng-container>
+					<ng-container *ngIf="!group">
+						<ng-container
+								*ngTemplateOutlet="
+                itemslist;
+                context: {
+                  $implicit: optionsToDisplay,
+                  selectedOption: selectedOption
+                }
+              "
+						></ng-container>
+					</ng-container>
+					<ng-template
+							#itemslist
+							let-options
+							let-selectedOption="selectedOption"
+					>
+						<ng-container
+								*ngFor="
+                let option of options | slice: 0:entryLimit;
+                let i = index;
+                trackBy: trackByIndex
+              "
+						>
+							<ng-container *ngIf="isTransTypeCode && option.isHistory">
+								<li
+										*ngIf="isFirstHistory(i, selectedOption)"
+										class="p-dropdown-item-group"
+										style="padding-right: 10px; border-top: 1px solid #cacaca"
+								>
+									סוגי תנועה נוספים
+								</li>
+							</ng-container>
+							<li
+									(click)="selectItem($event, option)"
+									*ngIf="
+                  (!isTransTypeCode ||
+                    (isTransTypeCode && selectedOption !== option)) &&
+                  (!hideTemplateOpt ||
+                    (hideTemplateOpt && !hideTemplate(option, value)))
+                "
+									[class.isLastHistory]="option.value?.isLastHistory"
+									[ngClass]="{
+                  'p-dropdown-item p-corner-all': true,
+                  'p-highlight': selectedOption == option
+                }"
+							>
+								<!--                        <li *ngFor="let option of options; let i = index;"-->
+								<!--                            [ngClass]="{'p-dropdown-item p-corner-all':true, 'p-highlight':(selectedOption == option), 'p-dropdown-item-empty':!option.label||option.label.length === 0}"-->
+								<!--                            (click)="selectItem($event, option)">-->
+								<span *ngIf="!itemTemplate">{{ option.label || 'empty' }}</span>
+								<ng-container
+										*ngTemplateOutlet="
+                    itemTemplate;
+                    context: { $implicit: option }
+                  "
+								></ng-container>
+							</li>
+						</ng-container>
+					</ng-template>
+					<li
+							*ngIf="
+              filter &&
+              optionsToDisplay &&
+              optionsToDisplay.length === 0 &&
+              !noItemTemplate
+            "
+					>
+						{{ emptyFilterMessage }}
+					</li>
+					<li
+							(click)="$event.stopPropagation()"
+							*ngIf="
+              (!!noItemTemplate &&
+                (!options ||
+                  options.length === 0 ||
+                  (filter &&
+                    optionsToDisplay &&
+                    optionsToDisplay.length === 0))) ||
+              isShowAddItemTemp()
+            "
+					>
+						<ng-container *ngTemplateOutlet="noItemTemplate"></ng-container>
+					</li>
+				</ul>
+			</div>
+			<ng-container *ngIf="bottomContentTemplate">
+				<div>
+					<ng-container
+							*ngTemplateOutlet="bottomContentTemplate"
+					></ng-container>
+				</div>
+			</ng-container>
+		</ng-container>
+		<ng-template #virtual>
+			<div
+					#itemswrapper
+					class="p-dropdown-items-wrapper"
+					style="height: 200px"
+			>
+				<ul
+						*appVsFor="
+            optionsToDisplay;
+            scrollParent: '.p-dropdown-items-wrapper';
+            tagName: 'li';
+            let _options = vsCollection
+          "
+						class="p-dropdown-items p-dropdown-list p-dialog-content p-widget p-corner-all p-helper-reset"
+						style="width: 275px; height: auto; max-height: auto"
+				>
+					<ng-container *ngIf="topContentTemplate">
+						<li style="padding-right: 10px">
+							<ng-container
+									*ngTemplateOutlet="topContentTemplate"
+							></ng-container>
+						</li>
+					</ng-container>
+					<ng-container *ngIf="titleTemplate">
+						<li
+								*ngIf="isExistLengOfHistory"
+								class="p-dropdown-item-group"
+								style="padding-right: 10px"
+						>
+							<ng-container *ngTemplateOutlet="titleTemplate"></ng-container>
+						</li>
+					</ng-container>
+					<ng-container *ngIf="!group">
+						<ng-container
+								*ngTemplateOutlet="
+                itemslist;
+                context: {
+                  $implicit: optionsToDisplay,
+                  selectedOption: selectedOption
+                }
+              "
+						></ng-container>
+					</ng-container>
+					<ng-template #itemslist let-selectedOption="selectedOption">
+						<li
+								(click)="selectItem($event, option)"
+								*ngFor="let option of _options; let i = index"
+								[class.isLastHistory]="option.value?.isLastHistory"
+								[ngClass]="{
+                'p-dropdown-item p-corner-all': true,
+                'p-highlight': selectedOption == option,
+                'p-dropdown-item-empty':
+                  !option.label || option.label.length === 0
+              }"
+								style="height: 51px; align-items: center; display: flex"
+						>
+							<span *ngIf="!itemTemplate">{{ option.label || 'empty' }}</span>
+							<ng-container
+									*ngTemplateOutlet="itemTemplate; context: { $implicit: option }"
+							></ng-container>
+						</li>
+					</ng-template>
+					<li
+							*ngIf="
+              filter &&
+              optionsToDisplay &&
+              optionsToDisplay.length === 0 &&
+              !noItemTemplate
+            "
+					>
+						{{ emptyFilterMessage }}
+					</li>
+					<li
+							*ngIf="
+              !!noItemTemplate &&
+              (!options ||
+                options.length === 0 ||
+                (filter && optionsToDisplay && optionsToDisplay.length === 0))
+            "
+					>
+						<ng-container *ngTemplateOutlet="noItemTemplate"></ng-container>
+					</li>
+					<ng-container *ngIf="bottomContentTemplate">
+						<li style="padding-right: 10px">
+							<ng-container
+									*ngTemplateOutlet="bottomContentTemplate"
+							></ng-container>
+						</li>
+					</ng-container>
+				</ul>
+			</div>
+		</ng-template>
+	</div>
+</div>

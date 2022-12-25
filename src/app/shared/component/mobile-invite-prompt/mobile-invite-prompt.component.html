@@ -1,0 +1,43 @@
+<p-dialog (visibleChange)="visible = false"
+		styleClass="mobileInvitePrompt"
+		appendTo="body"
+		[modal]="true"
+		[showHeader]="false"
+		[visible]="(visible)"
+		
+		(onHide)="hide()"
+>
+	<div>
+		<div>
+			<button class="button-link" (click)="visible = false">
+				<i class="fa fa-times"></i>
+			</button>
+		</div>
+		<div></div>
+		<div>
+			<ng-container *ngIf="linkRequested$ | async; else triggerView">
+				<button class="button-dark" (click)="provideLink()">
+					{{ 'שליחת לינק להורדה לנייד' }}
+				</button>
+				<div id="resultView">
+					<ng-container
+							*ngIf="linkProvided$ | async as linkResponse; else loading"
+					>
+						<i class="fas fa-fw fa-check"></i>
+						{{ 'קיבלת! הודעה עם לינק נשלחה למספר' }}&nbsp;{{ linkResponse }}
+					</ng-container>
+					<ng-template #loading>
+						<i class="fas fa-fw fa-circle-notch fa-spin"></i>
+					</ng-template>
+				</div>
+			</ng-container>
+			
+			<ng-template #triggerView>
+				<button class="button-dark" (click)="provideLink()">
+					{{ 'שליחת לינק להורדה לנייד' }}
+				</button>
+			</ng-template>
+		</div>
+	</div>
+	<div></div>
+</p-dialog>

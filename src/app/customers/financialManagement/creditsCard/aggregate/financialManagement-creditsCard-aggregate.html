@@ -1,0 +1,386 @@
+<div id="creditsCardAggregateView">
+	<div #header class="filterRow">
+		<app-cards-select
+				(changedTrigger)="getCreditCardTazrimSummary()"
+				[cards]="userService.appData.userData.creditCards"
+		></app-cards-select>
+		
+		<div class="exports">
+			<!--<button (click)="printTransactions()"><img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/to-printer.png" height="21" width="24"/></button>-->
+			<button
+					(click)="reportMailSubmitterToggle = true"
+					[matTooltip]="'appWalk.customers.report.mailBtn' | translate"
+					matTooltipPosition="above"
+			>
+				<img height="21" ngSrc="/assets/images/to-mail.png" width="24"/>
+				<app-report-mail-scheduler
+						(recipientApproved)="sendTransactions($event)"
+						[visible]="(reportMailSubmitterToggle)"
+				></app-report-mail-scheduler>
+			</button>
+			<!--<button (click)="exportTransactions('PDF')"><img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/to-pdf.png" height="21" width="24"/></button>-->
+			<button
+					(click)="exportTransactions('EXCEL')"
+					[matTooltip]="'appWalk.customers.report.excelBtn' | translate"
+					matTooltipPosition="above"
+			>
+				<img height="21" ngSrc="/assets/images/to-excel.png" width="24"/>
+			</button>
+		</div>
+		
+		<ul class="tabs navTabs" style="margin: 0">
+			<li
+					[matTooltip]="
+          'appWalk.customers.financialManagement.creditsCard.viewSwitchAggregate'
+            | translate
+        "
+					[routerLinkActiveOptions]="{ exact: false }"
+					matTooltipPosition="above"
+					routerLink="../aggregate"
+					queryParamsHandling="preserve"
+					routerLinkActive="active"
+			>
+				{{ 'filters.consolidated' | translate }}
+			</li>
+			<li
+					[matTooltip]="
+          'appWalk.customers.financialManagement.creditsCard.viewSwitchDetails'
+            | translate
+        "
+					[routerLinkActiveOptions]="{ exact: false }"
+					matTooltipPosition="above"
+					routerLink="../details"
+					queryParamsHandling="preserve"
+					routerLinkActive="active"
+			>
+				{{ 'filters.detailed' | translate }}
+			</li>
+			<li
+					[matTooltip]="
+          'appWalk.customers.financialManagement.creditsCard.viewSwitchChart'
+            | translate
+        "
+					[routerLinkActiveOptions]="{ exact: false }"
+					matTooltipPosition="above"
+					routerLink="../graph"
+					queryParamsHandling="preserve"
+					routerLinkActive="active"
+			>
+				<img height="13" ngSrc="/assets/images/chart.png" width="22"/>
+			</li>
+		</ul>
+	</div>
+	<div class="wrap-aggregate">
+		<div *ngIf="loader" class="loader">
+			<div class="circle"></div>
+		</div>
+		<div
+				*ngIf="
+        !loader && !userService.appData?.userData?.creditCardsDetails?.length
+      "
+				class="no-rows-found"
+		>
+			<ng-container
+					*ngIf="
+          userService.appData.userData.creditCards?.length &&
+          !userService.selectedCreditCardsCount()
+        "
+			>
+				{{ 'expressions.selectCreditCard' | translate }}
+			</ng-container>
+			<ng-container
+					*ngIf="
+          userService.appData.userData.creditCards?.length &&
+          userService.selectedCreditCardsCount()
+        "
+			>
+				{{ 'expressions.noDataFoundForCriteria' | translate }},
+				{{ 'expressions.changeCriteria' | translate }}
+			</ng-container>
+		</div>
+		<div class="prevScroll">
+			<img
+					(click)="prevScroll(aggregate)"
+					*ngIf="viewPort && viewPort['_totalContentSize'] &&viewPort['_viewportSize']&& (viewPort['_totalContentSize'] > viewPort['_viewportSize']) && cardHandlesScrollIndex !== 0 && viewPort.measureScrollOffset('right') > 505"
+					alt="next"
+					height="43"
+					ngSrc="/assets/images/arrowNexPrev.png"
+					width="42"
+			/>
+		</div>
+		
+		<cdk-virtual-scroll-viewport
+				[ngStyle]="{'height': (window.innerHeight - header.getBoundingClientRect().bottom) +'px'}"
+				itemSize="505"
+				orientation="horizontal">
+			<ul
+					#aggregate
+					(cdkDropListDropped)="drop($event)"
+					cdkDropList
+					cdkDropListOrientation="horizontal"
+					class="aggregate-columns scroll-chrome wrap-aggregate-table"
+					id="sortable"
+			>
+				<ng-container
+						*cdkVirtualFor="let item of userService.appData.userData.creditCardsDetails; let i = index; trackBy: trackById">
+					<li #cardHandle
+					    (keyup.ArrowLeft)="stepCard(1, $event)"
+					    (keyup.ArrowRight)="stepCard(-1, $event)"
+					    [class.hover]="item?.hover"
+					    [tabindex]="sortableIdGr?.indexOf(item.creditCardId) + 1"
+					    cdkDrag
+					    class="p-state-default aggregate-columns-li"
+					>
+						<div *ngIf="item" class="absoluteFixedHead">
+							<div
+									(mouseleave)="item.hover = false"
+									(mouseover)="item.hover = true"
+									class="title_col"
+							>
+								<div [class.redBg]="
+                !item.balanceIsUpToDate && !item.outdatedBecauseNotFound
+              "
+								     cdkDragHandle
+								     class="p-g topTitles topTitleCreditCardAggr flexWrap cursorAllScroll"
+								>
+									<div class="p-g-6 p-g">
+										<div class="p-g-3">
+											<app-card-view
+													[cardNumber]="item?.creditCardTypeId"
+													[showName]="false"
+													style="align-self: center; flex: 0 0 auto"
+											></app-card-view>
+											<!--<i>-->
+											<!--{{item?.creditCardTypeId}}-->
+											<!--</i>-->
+										</div>
+										<div class="p-g-3">
+											<h3>
+												{{ 'creditCards.' + item?.creditCardTypeId | translate }}
+												<!--{{item?.creditCardNickname}}-->
+											</h3>
+											<p>
+												{{ item?.creditCardNo }}
+												
+												<small *ngIf="item && !item?.bankLoaded">
+													({{ 'sumsTitles.nonBank' | translate }})
+												</small>
+											</p>
+										</div>
+									</div>
+									<div class="p-g-6">
+										<p
+												*ngIf="
+                    item.balanceIsUpToDate || item.outdatedBecauseNotFound;
+                    else cardIsOutdated
+                  "
+												class="flexWrap"
+												style="justify-content: flex-end"
+										>
+											{{ item?.accountNickname }}
+										</p>
+										<ng-template #cardIsOutdated>
+											<div class="flexWrap" style="justify-content: flex-end">
+												<app-card-outdated-view
+														[card]="item"
+												></app-card-outdated-view>
+												<!--<app-token-credentials-update-button-->
+												<!--[balanceLastUpdatedDate]="((item.companyAccountId)|asBankAccount).balanceLastUpdatedDate"-->
+												<!--[tokenData]="{-->
+												<!--companyId: userService.appData.userData.companySelect.companyId,-->
+												<!--tokenId: item.token || ((item.companyAccountId)|asBankAccount).token-->
+												<!--}">-->
+												<!--</app-token-credentials-update-button>-->
+											</div>
+										</ng-template>
+									</div>
+								</div>
+								<div class="titlesSums">
+									<div class="sums">
+										<div>
+											<h3 [translate]="'sumsTitles.creditLine'"></h3>
+											<p
+													*ngIf="item?.creditLimit !== null; else creditLimit"
+													[class.red]="item?.creditLimit < 0"
+											>
+												<!--<app-sum-view class="sum" [sum]="item?.creditLimit"></app-sum-view>-->
+												<span class="sum">{{ item.creditLimit | sum: true }}</span
+												>&nbsp;{{ item.currency | currencySymbol }}
+											</p>
+											<ng-template #creditLimit>
+												<div style="display: flex; align-items: baseline">
+													<p>{{ 'sumsTitles.notReached' | translate }}</p>
+													<app-tooltip-editor
+															(editCommit)="setCreditLimitAtCard(item, $event)"
+															[type]="item.currency"
+													>
+                        <span
+		                        class="button-link"
+		                        style="padding: 0 4px; font-size: 90%"
+                        >
+                          {{ 'actions.updateData' | translate }}
+                        </span>
+													</app-tooltip-editor>
+												</div>
+											</ng-template>
+										</div>
+										<div>
+											<h3 [translate]="'sumsTitles.availableFrame'"></h3>
+											<p
+													*ngIf="item?.availableCredit !== null; else availableFrame"
+													[class.red]="item?.availableCredit < 0"
+											>
+												<!--<app-sum-view class="sum" [sum]="item?.availableCredit"></app-sum-view>-->
+												<span class="sum">{{
+													item.availableCredit | sum: true
+													}}</span
+												>&nbsp;{{ item.currency | currencySymbol }}
+											</p>
+											<ng-template #availableFrame>
+												<p style="justify-content: center">-</p>
+											</ng-template>
+										</div>
+										<div>
+											<h3>{{ 'sumsTitles.billingDate' | translate }}</h3>
+											
+											<p *ngIf="item?.cycleDay; else cycleDay">
+												{{ item?.cycleDay }}
+												{{ 'sumsTitles.ofTheMonth' | translate }}
+											</p>
+											<ng-template #cycleDay>
+												<p>{{ 'sumsTitles.notReached' | translate }}</p>
+											</ng-template>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="p-g rows_banks title_col_chart">
+								<app-charts
+										[chartData]="item?.chartData"
+										[hover]="hoverOn?.item === item && hoverOnAsChartData"
+								></app-charts>
+							</div>
+						</div>
+						<div
+								[appScrollHeight]="header.getBoundingClientRect().bottom + 300"
+								class="scrollbar-dynamic"
+						>
+							<div
+									(click)="
+              itemChild.monthlyTotal !== null &&
+                goToFinancialManagementCreditsCardDetailsComponent(
+                  item,
+                  itemChild
+                )
+            "
+									(mouseenter)="
+              hoverOn = itemChild.monthlyTotal !== null && {
+                item: item,
+                childIndex: idx
+              }
+            "
+									(mouseleave)="hoverOn = null"
+									*ngFor="let itemChild of item?.monthSummaries; index as idx"
+									[class.today]="
+              itemChild.monthlyTotal !== null &&
+              itemChild.monthlyTotal.length &&
+              itemChild.monthlyTotal[0].notFinal
+            "
+									[ngStyle]="itemChild.monthlyTotal !== null && { cursor: 'pointer' }"
+									class="p-g accountTransactions creditTableRow"
+							>
+								<div class="p-g-3">{{ itemChild.month | date: 'MM/yyyy' }}</div>
+								<div class="p-g-6">
+									<ng-container
+											*ngIf="
+                  itemChild.monthlyTotal !== null &&
+                    itemChild.monthlyTotal.length &&
+                    itemChild.monthlyTotal[0].notFinal;
+                  else moreSums
+                "
+									>
+                <span>
+                  <i class="fa fa-fw fa-info-circle"></i>
+	                {{ 'expressions.questionable' | translate }}
+                </span>
+									</ng-container>
+									<ng-template #moreSums>
+										<ng-container
+												*ngIf="
+                    itemChild.monthlyTotal !== null &&
+                      itemChild.monthlyTotal.length > 1;
+                    else stub
+                  "
+										>
+											<ng-container
+													*ngFor="
+                      let ms of itemChild.monthlyTotal;
+                      first as isFirst;
+                      last as isLast
+                    "
+											>
+												<div
+														*ngIf="!isFirst && ms.total !== null"
+														style="display: inline-block; min-width: 16ch"
+												>
+													<app-sum-view
+															[sum]="ms.total"
+															class="forceLTR"
+													></app-sum-view
+													>&nbsp;{{ ms.iskatHul | currencySymbol }}
+													<!--<ng-container *ngIf="!isLast">&nbsp;</ng-container>-->
+												</div>
+											</ng-container>
+										</ng-container>
+										<span>&nbsp;</span>
+									</ng-template>
+									<ng-template #stub>
+										<span>&nbsp;</span>
+									</ng-template>
+								</div>
+								<div
+										[ngClass]="{
+                'sum-debit':
+                  itemChild.monthlyTotal != null &&
+                  itemChild.monthlyTotal[0].total > 0,
+                'sum-credit':
+                  itemChild.monthlyTotal != null &&
+                  itemChild.monthlyTotal[0].total < 0
+              }"
+										class="p-g-3"
+								>
+									<ng-container
+											*ngIf="
+                  itemChild.monthlyTotal !== null &&
+                  itemChild.monthlyTotal[0].total !== null
+                "
+									>
+										<app-sum-view
+												[sum]="itemChild.monthlyTotal[0].total"
+												class="ltrNum"
+										></app-sum-view
+										>&nbsp;{{ itemChild.monthlyTotal[0].iskatHul | currencySymbol }}
+										<i class="arrLeft"></i>
+									</ng-container>
+									<span *ngIf="itemChild.monthlyTotal === null">-</span>
+								</div>
+							</div>
+						</div>
+					</li>
+				</ng-container>
+			</ul>
+		</cdk-virtual-scroll-viewport>
+		
+		
+		<div class="nextScroll">
+			<img
+					(click)="nextScroll(aggregate)"
+					*ngIf="viewPort && viewPort['_totalContentSize'] &&viewPort['_viewportSize']&&  viewPort['_totalContentSize'] > viewPort['_viewportSize'] && viewPort.measureScrollOffset('end') > 25"
+					alt="next"
+					height="43"
+					ngSrc="/assets/images/arrowNexPrev.png"
+					width="42"
+			/>
+		</div>
+	</div>
+</div>

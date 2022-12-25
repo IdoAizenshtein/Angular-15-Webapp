@@ -1,0 +1,26 @@
+<h2 class="titlePage" #pageHeader>תשלומים ל-bizibox</h2>
+
+<div
+  class="billing-accounts-view"
+  [ngStyle]="{
+    height:
+      'calc(100vh - ' +
+      (pageHeader.getBoundingClientRect().bottom +
+        pageFooter.getBoundingClientRect().height +
+        10) +
+      'px)'
+  }"
+>
+  <router-outlet></router-outlet>
+</div>
+
+<footer
+  style="text-align: center"
+  [innerHTML]="
+    (userService.appData?.userData?.billingLite
+      ? 'expressions.supportWorkingHoursLite'
+      : 'expressions.supportWorkingHours'
+    ) | translate
+  "
+  #pageFooter
+></footer>

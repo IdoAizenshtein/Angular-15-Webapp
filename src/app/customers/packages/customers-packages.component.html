@@ -1,0 +1,2257 @@
+<div
+		class="packages-page METZALEM_packages"
+>
+	<div
+			[appScrollHeight]="
+      userService.appData?.userData?.topSideMesagges ? 120 : 75
+    "
+			class="scalePage scroll-chrome"
+	>
+		<ng-container
+				*ngIf="
+        userService.appData.userData.companySelect &&
+          userService.appData.userData.companySelect.METZALEM;
+        else packagesPageReg
+      "
+		>
+			<ng-container *ngIf="METZALEMStep === 1; else METZALEMStep2">
+				<div class="topTitle">
+					<div class="titles">
+						<h1>בחרו את ה-bizibox המתאים לכם ביותר</h1>
+						
+						<p>
+							חולמים להצליח בגדול? עם bizibox הניהול הפיננסי של העסק שלכם נמצא
+							בידיים טובות.
+							<br/>
+							הצטרפו לאלפי לקוחותינו שיודעים מה קורה בעסק שלהם, 24/7, מכל מקום!
+						</p>
+					</div>
+				</div>
+				
+				<div class="tables">
+					<div class="yellow">
+						<h3>לעסקים bizibox</h3>
+						<p class="subtitle">לראות את העתיד של העסק שלך</p>
+						<div class="flex-sum">
+							<p>
+								174
+								<small> ₪</small>
+							</p>
+							<div>
+								<p>לחודש</p>
+								<p>כולל מע"מ</p>
+							</div>
+						</div>
+						<div class="lines">
+							<div id="line11">&nbsp;</div>
+							<div id="line22">&nbsp;</div>
+							<div id="line33">&nbsp;</div>
+						</div>
+						<div class="info-rows">
+							<div>
+								<img fill ngSrc="/assets/images/info-rows-check.png"
+								     style="height: auto; width: auto; position: relative;"/>
+							</div>
+							
+							<div>מוקד תמיכה ושרות</div>
+						</div>
+						<div class="info-rows">
+							<div>
+								<img fill ngSrc="/assets/images/info-rows-check.png"
+								     style="height: auto; width: auto; position: relative;"/>
+							</div>
+							
+							<div>מייל ריכוז חיובי אשראי שבועי</div>
+						</div>
+						<div class="info-rows">
+							<div>
+								<img fill ngSrc="/assets/images/info-rows-check.png"
+								     style="height: auto; width: auto; position: relative;"/>
+							</div>
+							
+							<div>דו”ח תזרים אוטומטי</div>
+						</div>
+						<div class="info-rows">
+							<div>
+								<img fill ngSrc="/assets/images/info-rows-check.png"
+								     style="height: auto; width: auto; position: relative;"/>
+							</div>
+							
+							<div>התאמות אוטומטיות</div>
+						</div>
+						<div class="info-rows">
+							<div>
+								<img fill ngSrc="/assets/images/info-rows-check.png"
+								     style="height: auto; width: auto; position: relative;"/>
+							</div>
+							
+							<div>ניהול תנועות קבועות</div>
+						</div>
+						<div class="info-rows">
+							<div>
+								<img fill ngSrc="/assets/images/info-rows-check.png"
+								     style="height: auto; width: auto; position: relative;"/>
+							</div>
+							
+							<div>מחשבון המלצה לתשלום</div>
+						</div>
+						
+						<div class="nav-agreementConfirmation">
+							<div class="agreementConfirmation_check">
+								<p-checkbox (onChange)="
+                    agreementPopup.agreementConfirmation =
+                      !agreementPopup.agreementConfirmation
+                  "
+								            [binary]="true"
+								            [inputId]="'agreementConfirmation'"
+								            [ngModel]="agreementPopup.agreementConfirmation"
+								            checkboxIcon="fa fa-check"
+								>
+								</p-checkbox>
+								<label
+										[for]="'agreementConfirmation'"
+										style="margin-right: 5px"
+								>
+									<p>
+										קראתי ואני מסכים/ה
+										<span>
+                      <!--                                        (click)="agreementPopup.step = 2; $event.stopPropagation()"-->
+                      <a
+		                      class="link"
+		                      href="https://bizibox.biz/terms-of-use-bizibox/"
+		                      target="_blank"
+                      >
+                        להסכם שימוש
+                      </a>
+                    </span>
+										<!--                                        (click)="agreementPopup.step = 8; $event.stopPropagation()"-->
+										ו<span>
+                      <a
+		                      class="link"
+		                      href="https://bizibox.biz/privacy-policy-bizibox/"
+		                      target="_blank"
+                      >
+                        מדיניות הפרטיות
+                      </a>
+                    </span>
+									</p>
+								</label>
+							</div>
+							
+							<div class="startBusinessTrialOpen">
+								<button
+										(click)="startBusinessTrialStep2()"
+										[disabled]="!agreementPopup.agreementConfirmation"
+								>
+									לחצו כאן לחודש ניסיון
+								</button>
+							</div>
+						</div>
+					</div>
+					<div class="yellow">
+						<h3>+לעסקים bizibox</h3>
+						<p class="subtitle">לנתח גם את הנהלת החשבונות</p>
+						<div class="flex-sum">
+							<p>
+								233
+								<small> ₪</small>
+							</p>
+							<div>
+								<p>לחודש</p>
+								<p>כולל מע"מ</p>
+							</div>
+						</div>
+						<div class="lines">
+							<div id="line11">&nbsp;</div>
+							<div id="line22">&nbsp;</div>
+							<div id="line33">&nbsp;</div>
+						</div>
+						<div class="info-rows">
+							<div>
+								<img fill ngSrc="/assets/images/info-rows-check.png"
+								     style="height: auto; width: auto; position: relative;"/>
+							</div>
+							
+							<div>מוקד תמיכה ושרות</div>
+						</div>
+						<div class="info-rows">
+							<div>
+								<img fill ngSrc="/assets/images/info-rows-check.png"
+								     style="height: auto; width: auto; position: relative;"/>
+							</div>
+							
+							<div>מייל ריכוז חיובי אשראי שבועי</div>
+						</div>
+						<div class="info-rows">
+							<div>
+								<img fill ngSrc="/assets/images/info-rows-check.png"
+								     style="height: auto; width: auto; position: relative;"/>
+							</div>
+							
+							<div>דו”ח תזרים אוטומטי</div>
+						</div>
+						<div class="info-rows">
+							<div>
+								<img fill ngSrc="/assets/images/info-rows-check.png"
+								     style="height: auto; width: auto; position: relative;"/>
+							</div>
+							
+							<div>התאמות אוטומטיות</div>
+						</div>
+						<div class="info-rows">
+							<div>
+								<img fill ngSrc="/assets/images/info-rows-check.png"
+								     style="height: auto; width: auto; position: relative;"/>
+							</div>
+							
+							<div>ניהול תנועות קבועות</div>
+						</div>
+						<div class="info-rows">
+							<div>
+								<img fill ngSrc="/assets/images/info-rows-check.png"
+								     style="height: auto; width: auto; position: relative;"/>
+							</div>
+							
+							<div>מחשבון המלצה לתשלום</div>
+						</div>
+						<div class="info-rows">
+							<div>
+								<img fill ngSrc="/assets/images/info-rows-check-active.png"
+								     style="height: auto; width: auto; position: relative;"/>
+							</div>
+							
+							<div class="active">ניתוח מגמות נתוני הנה”ח</div>
+						</div>
+						<div class="info-rows">
+							<div>
+								<img fill ngSrc="/assets/images/info-rows-check-active.png"
+								     style="height: auto; width: auto; position: relative;"/>
+							</div>
+							
+							<div class="active">דו”ח רווח והפסד</div>
+						</div>
+						<div class="info-rows">
+							<div>
+								<img fill ngSrc="/assets/images/info-rows-check-active.png"
+								     style="height: auto; width: auto; position: relative;"/>
+							</div>
+							
+							<div class="active">מאזן בוחן חכם</div>
+						</div>
+						<div class="nav-agreementConfirmation">
+							<div class="agreementConfirmation_check">
+								<p-checkbox (onChange)="
+                    agreementPopup.agreementConfirmation_1 =
+                      !agreementPopup.agreementConfirmation_1
+                  "
+								            [binary]="true"
+								            [inputId]="'agreementConfirmation_1'"
+								            [ngModel]="agreementPopup.agreementConfirmation_1"
+								            checkboxIcon="fa fa-check"
+								>
+								</p-checkbox>
+								<label
+										[for]="'agreementConfirmation_1'"
+										style="margin-right: 5px"
+								>
+									<p>
+										קראתי ואני מסכים/ה
+										<span>
+                      <!--                                        (click)="agreementPopup.step = 2; $event.stopPropagation()"-->
+                      <a
+		                      class="link"
+		                      href="https://bizibox.biz/terms-of-use-bizibox/"
+		                      target="_blank"
+                      >
+                        להסכם שימוש
+                      </a>
+                    </span>
+										<!--                                        (click)="agreementPopup.step = 8; $event.stopPropagation()"-->
+										ו<span>
+                      <a
+		                      class="link"
+		                      href="https://bizibox.biz/privacy-policy-bizibox/"
+		                      target="_blank"
+                      >
+                        מדיניות הפרטיות
+                      </a>
+                    </span>
+									</p>
+								</label>
+							</div>
+							
+							<div class="startBusinessTrialOpen">
+								<button
+										(click)="startBusinessTrialStep2()"
+										[disabled]="!agreementPopup.agreementConfirmation_1"
+								>
+									לחצו כאן לחודש ניסיון
+								</button>
+							</div>
+						</div>
+					</div>
+					<div class="yellow">
+						<h3>bizibox PRO</h3>
+						<p class="subtitle">לקחת שליטה פיננסית מוחלטת</p>
+						<div class="flex-sum">
+							<p>
+								291
+								<small> ₪</small>
+							</p>
+							<div>
+								<p>לחודש</p>
+								<p>כולל מע"מ</p>
+							</div>
+						</div>
+						<div class="lines">
+							<div id="line11">&nbsp;</div>
+							<div id="line22">&nbsp;</div>
+							<div id="line33">&nbsp;</div>
+						</div>
+						<div class="info-rows">
+							<div>
+								<img fill ngSrc="/assets/images/info-rows-check.png"
+								     style="height: auto; width: auto; position: relative;"/>
+							</div>
+							
+							<div>מוקד תמיכה ושרות</div>
+						</div>
+						<div class="info-rows">
+							<div>
+								<img fill ngSrc="/assets/images/info-rows-check.png"
+								     style="height: auto; width: auto; position: relative;"/>
+							</div>
+							
+							<div>מייל ריכוז חיובי אשראי שבועי</div>
+						</div>
+						<div class="info-rows">
+							<div>
+								<img fill ngSrc="/assets/images/info-rows-check.png"
+								     style="height: auto; width: auto; position: relative;"/>
+							</div>
+							
+							<div>דו”ח תזרים אוטומטי</div>
+						</div>
+						<div class="info-rows">
+							<div>
+								<img fill ngSrc="/assets/images/info-rows-check.png"
+								     style="height: auto; width: auto; position: relative;"/>
+							</div>
+							
+							<div>התאמות אוטומטיות</div>
+						</div>
+						<div class="info-rows">
+							<div>
+								<img fill ngSrc="/assets/images/info-rows-check.png"
+								     style="height: auto; width: auto; position: relative;"/>
+							</div>
+							
+							<div>ניהול תנועות קבועות</div>
+						</div>
+						<div class="info-rows">
+							<div>
+								<img fill ngSrc="/assets/images/info-rows-check.png"
+								     style="height: auto; width: auto; position: relative;"/>
+							</div>
+							
+							<div>מחשבון המלצה לתשלום</div>
+						</div>
+						<div class="info-rows">
+							<div>
+								<img fill ngSrc="/assets/images/info-rows-check.png"
+								     style="height: auto; width: auto; position: relative;"/>
+							</div>
+							
+							<div>ניתוח מגמות נתוני הנה”ח</div>
+						</div>
+						<div class="info-rows">
+							<div>
+								<img fill ngSrc="/assets/images/info-rows-check.png"
+								     style="height: auto; width: auto; position: relative;"/>
+							</div>
+							
+							<div>דו”ח רווח והפסד</div>
+						</div>
+						<div class="info-rows">
+							<div>
+								<img fill ngSrc="/assets/images/info-rows-check.png"
+								     style="height: auto; width: auto; position: relative;"/>
+							</div>
+							
+							<div>מאזן בוחן חכם</div>
+						</div>
+						<div class="info-rows">
+							<div>
+								<img fill ngSrc="/assets/images/info-rows-check-active.png"
+								     style="height: auto; width: auto; position: relative;"/>
+							</div>
+							
+							<div class="active">משיכת צ’קים מתוכנת הנה”ח</div>
+						</div>
+						<div class="nav-agreementConfirmation">
+							<div class="agreementConfirmation_check">
+								<p-checkbox (onChange)="
+                    agreementPopup.agreementConfirmation_2 =
+                      !agreementPopup.agreementConfirmation_2
+                  "
+								            [binary]="true"
+								            [inputId]="'agreementConfirmation_2'"
+								            [ngModel]="agreementPopup.agreementConfirmation_2"
+								            checkboxIcon="fa fa-check"
+								>
+								</p-checkbox>
+								<label
+										[for]="'agreementConfirmation_2'"
+										style="margin-right: 5px"
+								>
+									<p>
+										קראתי ואני מסכים/ה
+										<span>
+                      <!--                                        (click)="agreementPopup.step = 2; $event.stopPropagation()"-->
+                      <a
+		                      class="link"
+		                      href="https://bizibox.biz/terms-of-use-bizibox/"
+		                      target="_blank"
+                      >
+                        להסכם שימוש
+                      </a>
+                    </span>
+										<!--                                        (click)="agreementPopup.step = 8; $event.stopPropagation()"-->
+										ו<span>
+                      <a
+		                      class="link"
+		                      href="https://bizibox.biz/privacy-policy-bizibox/"
+		                      target="_blank"
+                      >
+                        מדיניות הפרטיות
+                      </a>
+                    </span>
+									</p>
+								</label>
+							</div>
+							<div class="startBusinessTrialOpen">
+								<button
+										(click)="startBusinessTrialStep2()"
+										[disabled]="!agreementPopup.agreementConfirmation_2"
+								>
+									לחצו כאן לחודש ניסיון
+								</button>
+							</div>
+						</div>
+					</div>
+				</div>
+				
+				<div class="packages-page-info">
+					המחיר עבור חברה אחת (ח.פ / ת.ז /ע.מ) בלבד, עד חמישה חשבונות בנק לחברה
+				</div>
+				
+				<div *ngIf="loader" class="loader">
+					<div class="circle"></div>
+				</div>
+			</ng-container>
+			<ng-template #METZALEMStep2>
+				<div class="topTitle">
+					<div class="titles">
+						<h1>ברוכים הבאים ל bizibox לעסקים</h1>
+					</div>
+				</div>
+				<div class="info-step2">
+					<div>
+						<img fill ngSrc="/assets/images/tazrim-example-1.png"
+						     style="height: auto; width: auto; position: relative;"/>
+					</div>
+					<p class="text">
+						כדי
+						<strong>לחבר חשבונות בנק וכרטיסי אשראי</strong>
+						יש ללחוץ על "<strong>הגדרות</strong>" (בתפריט שבצד ימין)
+						<br/>
+						ולבחור בטאב "חשבונות בנק" או "כרטיסי אשראי".
+						<br/>
+						בטאב "<strong>חשבונות בנק</strong>" יש ללחוץ על "<strong
+					>הוספת חשבון</strong
+					>"
+						<br/>
+						בטאב "<strong>כרטיסי אשראי</strong>" יש ללחוץ על "<strong
+					>הוספת כרטיס אשראי חוץ בנקאי</strong
+					>"
+					</p>
+					<div>
+						<button
+								(click)="startBusinessTrialMetzalem('/cfl/settings/myaccount')"
+						>
+							גישה מהירה למסך הגדרות
+						</button>
+					</div>
+				</div>
+				<div class="info-step2">
+					<div>
+						<img fill ngSrc="/assets/images/tazrim-example-5.png"
+						     style="height: auto; width: auto; position: relative;"/>
+					</div>
+					<p class="text">
+						כדי
+						<strong>להוסיף עוד משתמשים</strong>
+						למערכת יש ללחוץ על "<strong>הגדרות</strong>" (בתפריט שבצד ימין)
+						<br/>
+						ולבחור בטאב "משתמשים".
+						<br/>
+						בטאב "<strong>משתמשים</strong>" יש ללחוץ על "<strong
+					>הוספת משתמש חדש</strong
+					>"
+					</p>
+					<div>
+						<button (click)="startBusinessTrialMetzalem('/cfl/settings/users')">
+							גישה מהירה לטאב משתמשים
+						</button>
+					</div>
+				</div>
+			</ng-template>
+		</ng-container>
+		<ng-template #packagesPageReg>
+			<div class="topTitle">
+				<img fill ngSrc="/assets/images/diamond.png" style="height: auto; width: auto; position: relative;"/>
+				
+				<div class="titles">
+					<h2 style="text-align: center">שלום {{ userService.appData.userData.firstName }}!</h2>
+					<p>
+						bizibox מזמינה אותך להצטרף למערכת לניהול תזרים מזומנים. bizibox
+						עוזרת לאלפי בעלי עסקים לשדרג את השליטה על הנתונים הפיננסיים ולחסוך
+						זמן וכסף באמצעות ניהול תזרים מזומנים עתידי, נתוני בנקים, כרטיסי
+						אשראי, התראות והתאמות אוטומטיות.
+					</p>
+				</div>
+			</div>
+			<div class="tables">
+				<div class="yellow">
+					<h3>לעסקים bizibox</h3>
+					<p class="subtitle">לראות את העתיד של העסק שלך</p>
+					<div class="flex-sum">
+						<p>
+							174
+							<small> ₪</small>
+						</p>
+						<div>
+							<p>לחודש</p>
+							<p>כולל מע"מ</p>
+						</div>
+					</div>
+					<div class="lines">
+						<div id="line11">&nbsp;</div>
+						<div id="line22">&nbsp;</div>
+						<div id="line33">&nbsp;</div>
+					</div>
+					<div class="info-rows">
+						<div>
+							<img fill ngSrc="/assets/images/info-rows-check.png"
+							     style="height: auto; width: auto; position: relative;"/>
+						</div>
+						
+						<div>מוקד תמיכה ושרות</div>
+					</div>
+					<div class="info-rows">
+						<div>
+							<img fill ngSrc="/assets/images/info-rows-check.png"
+							     style="height: auto; width: auto; position: relative;"/>
+						</div>
+						
+						<div>מייל ריכוז חיובי אשראי שבועי</div>
+					</div>
+					<div class="info-rows">
+						<div>
+							<img fill ngSrc="/assets/images/info-rows-check.png"
+							     style="height: auto; width: auto; position: relative;"/>
+						</div>
+						
+						<div>דו”ח תזרים אוטומטי</div>
+					</div>
+					<div class="info-rows">
+						<div>
+							<img fill ngSrc="/assets/images/info-rows-check.png"
+							     style="height: auto; width: auto; position: relative;"/>
+						</div>
+						
+						<div>התאמות אוטומטיות</div>
+					</div>
+					<div class="info-rows">
+						<div>
+							<img fill ngSrc="/assets/images/info-rows-check.png"
+							     style="height: auto; width: auto; position: relative;"/>
+						</div>
+						
+						<div>ניהול תנועות קבועות</div>
+					</div>
+					<div class="info-rows">
+						<div>
+							<img fill ngSrc="/assets/images/info-rows-check.png"
+							     style="height: auto; width: auto; position: relative;"/>
+						</div>
+						
+						<div>מחשבון המלצה לתשלום</div>
+					</div>
+					
+					<div class="nav-agreementConfirmation">
+						<div class="agreementConfirmation_check">
+							<p-checkbox (onChange)="
+                    agreementPopup.agreementConfirmation =
+                      !agreementPopup.agreementConfirmation
+                  "
+							            [binary]="true"
+							            [inputId]="'agreementConfirmation'"
+							            [ngModel]="agreementPopup.agreementConfirmation"
+							            checkboxIcon="fa fa-check"
+							>
+							</p-checkbox>
+							<label
+									[for]="'agreementConfirmation'"
+									style="margin-right: 5px"
+							>
+								<p>
+									קראתי ואני מסכים/ה
+									<span>
+                      <!--                                        (click)="agreementPopup.step = 2; $event.stopPropagation()"-->
+                      <a
+		                      class="link"
+		                      href="https://bizibox.biz/terms-of-use-bizibox/"
+		                      target="_blank"
+                      >
+                        להסכם שימוש
+                      </a>
+                    </span>
+									<!--                                        (click)="agreementPopup.step = 8; $event.stopPropagation()"-->
+									ו<span>
+                      <a
+		                      class="link"
+		                      href="https://bizibox.biz/privacy-policy-bizibox/"
+		                      target="_blank"
+                      >
+                        מדיניות הפרטיות
+                      </a>
+                    </span>
+								</p>
+							</label>
+						</div>
+						
+						<div class="startBusinessTrialOpen">
+							<button
+									(click)="startBusinessTrialOpen()"
+									[disabled]="!agreementPopup.agreementConfirmation"
+							>
+								לחצו כאן לחודש ניסיון
+							</button>
+						</div>
+					</div>
+				</div>
+				<div class="yellow">
+					<h3>+לעסקים bizibox</h3>
+					<p class="subtitle">לנתח גם את הנהלת החשבונות</p>
+					<div class="flex-sum">
+						<p>
+							233
+							<small> ₪</small>
+						</p>
+						<div>
+							<p>לחודש</p>
+							<p>כולל מע"מ</p>
+						</div>
+					</div>
+					<div class="lines">
+						<div id="line11">&nbsp;</div>
+						<div id="line22">&nbsp;</div>
+						<div id="line33">&nbsp;</div>
+					</div>
+					<div class="info-rows">
+						<div>
+							<img fill ngSrc="/assets/images/info-rows-check.png"
+							     style="height: auto; width: auto; position: relative;"/>
+						</div>
+						
+						<div>מוקד תמיכה ושרות</div>
+					</div>
+					<div class="info-rows">
+						<div>
+							<img fill ngSrc="/assets/images/info-rows-check.png"
+							     style="height: auto; width: auto; position: relative;"/>
+						</div>
+						
+						<div>מייל ריכוז חיובי אשראי שבועי</div>
+					</div>
+					<div class="info-rows">
+						<div>
+							<img fill ngSrc="/assets/images/info-rows-check.png"
+							     style="height: auto; width: auto; position: relative;"/>
+						</div>
+						
+						<div>דו”ח תזרים אוטומטי</div>
+					</div>
+					<div class="info-rows">
+						<div>
+							<img fill ngSrc="/assets/images/info-rows-check.png"
+							     style="height: auto; width: auto; position: relative;"/>
+						</div>
+						
+						<div>התאמות אוטומטיות</div>
+					</div>
+					<div class="info-rows">
+						<div>
+							<img fill ngSrc="/assets/images/info-rows-check.png"
+							     style="height: auto; width: auto; position: relative;"/>
+						</div>
+						
+						<div>ניהול תנועות קבועות</div>
+					</div>
+					<div class="info-rows">
+						<div>
+							<img fill ngSrc="/assets/images/info-rows-check.png"
+							     style="height: auto; width: auto; position: relative;"/>
+						</div>
+						
+						<div>מחשבון המלצה לתשלום</div>
+					</div>
+					<div class="info-rows">
+						<div>
+							<img fill ngSrc="/assets/images/info-rows-check-active.png"
+							     style="height: auto; width: auto; position: relative;"/>
+						</div>
+						
+						<div class="active">ניתוח מגמות נתוני הנה”ח</div>
+					</div>
+					<div class="info-rows">
+						<div>
+							<img fill ngSrc="/assets/images/info-rows-check-active.png"
+							     style="height: auto; width: auto; position: relative;"/>
+						</div>
+						
+						<div class="active">דו”ח רווח והפסד</div>
+					</div>
+					<div class="info-rows">
+						<div>
+							<img fill ngSrc="/assets/images/info-rows-check-active.png"
+							     style="height: auto; width: auto; position: relative;"/>
+						</div>
+						
+						<div class="active">מאזן בוחן חכם</div>
+					</div>
+					<div class="nav-agreementConfirmation">
+						<div class="agreementConfirmation_check">
+							<p-checkbox (onChange)="
+                    agreementPopup.agreementConfirmation_1 =
+                      !agreementPopup.agreementConfirmation_1
+                  "
+							            [binary]="true"
+							            [inputId]="'agreementConfirmation_1'"
+							            [ngModel]="agreementPopup.agreementConfirmation_1"
+							            checkboxIcon="fa fa-check"
+							>
+							</p-checkbox>
+							<label
+									[for]="'agreementConfirmation_1'"
+									style="margin-right: 5px"
+							>
+								<p>
+									קראתי ואני מסכים/ה
+									<span>
+                      <!--                                        (click)="agreementPopup.step = 2; $event.stopPropagation()"-->
+                      <a
+		                      class="link"
+		                      href="https://bizibox.biz/terms-of-use-bizibox/"
+		                      target="_blank"
+                      >
+                        להסכם שימוש
+                      </a>
+                    </span>
+									<!--                                        (click)="agreementPopup.step = 8; $event.stopPropagation()"-->
+									ו<span>
+                      <a
+		                      class="link"
+		                      href="https://bizibox.biz/privacy-policy-bizibox/"
+		                      target="_blank"
+                      >
+                        מדיניות הפרטיות
+                      </a>
+                    </span>
+								</p>
+							</label>
+						</div>
+						
+						<div class="startBusinessTrialOpen">
+							<button
+									(click)="startBusinessTrialOpen()"
+									[disabled]="!agreementPopup.agreementConfirmation_1"
+							>
+								לחצו כאן לחודש ניסיון
+							</button>
+						</div>
+					</div>
+				</div>
+				<div class="yellow">
+					<h3>bizibox PRO</h3>
+					<p class="subtitle">לקחת שליטה פיננסית מוחלטת</p>
+					<div class="flex-sum">
+						<p>
+							291
+							<small> ₪</small>
+						</p>
+						<div>
+							<p>לחודש</p>
+							<p>כולל מע"מ</p>
+						</div>
+					</div>
+					<div class="lines">
+						<div id="line11">&nbsp;</div>
+						<div id="line22">&nbsp;</div>
+						<div id="line33">&nbsp;</div>
+					</div>
+					<div class="info-rows">
+						<div>
+							<img fill ngSrc="/assets/images/info-rows-check.png"
+							     style="height: auto; width: auto; position: relative;"/>
+						</div>
+						
+						<div>מוקד תמיכה ושרות</div>
+					</div>
+					<div class="info-rows">
+						<div>
+							<img fill ngSrc="/assets/images/info-rows-check.png"
+							     style="height: auto; width: auto; position: relative;"/>
+						</div>
+						
+						<div>מייל ריכוז חיובי אשראי שבועי</div>
+					</div>
+					<div class="info-rows">
+						<div>
+							<img fill ngSrc="/assets/images/info-rows-check.png"
+							     style="height: auto; width: auto; position: relative;"/>
+						</div>
+						
+						<div>דו”ח תזרים אוטומטי</div>
+					</div>
+					<div class="info-rows">
+						<div>
+							<img fill ngSrc="/assets/images/info-rows-check.png"
+							     style="height: auto; width: auto; position: relative;"/>
+						</div>
+						
+						<div>התאמות אוטומטיות</div>
+					</div>
+					<div class="info-rows">
+						<div>
+							<img fill ngSrc="/assets/images/info-rows-check.png"
+							     style="height: auto; width: auto; position: relative;"/>
+						</div>
+						
+						<div>ניהול תנועות קבועות</div>
+					</div>
+					<div class="info-rows">
+						<div>
+							<img fill ngSrc="/assets/images/info-rows-check.png"
+							     style="height: auto; width: auto; position: relative;"/>
+						</div>
+						
+						<div>מחשבון המלצה לתשלום</div>
+					</div>
+					<div class="info-rows">
+						<div>
+							<img fill ngSrc="/assets/images/info-rows-check.png"
+							     style="height: auto; width: auto; position: relative;"/>
+						</div>
+						
+						<div>ניתוח מגמות נתוני הנה”ח</div>
+					</div>
+					<div class="info-rows">
+						<div>
+							<img fill ngSrc="/assets/images/info-rows-check.png"
+							     style="height: auto; width: auto; position: relative;"/>
+						</div>
+						
+						<div>דו”ח רווח והפסד</div>
+					</div>
+					<div class="info-rows">
+						<div>
+							<img fill ngSrc="/assets/images/info-rows-check.png"
+							     style="height: auto; width: auto; position: relative;"/>
+						</div>
+						
+						<div>מאזן בוחן חכם</div>
+					</div>
+					<div class="info-rows">
+						<div>
+							<img fill ngSrc="/assets/images/info-rows-check-active.png"
+							     style="height: auto; width: auto; position: relative;"/>
+						</div>
+						
+						<div class="active">משיכת צ’קים מתוכנת הנה”ח</div>
+					</div>
+					<div class="nav-agreementConfirmation">
+						<div class="agreementConfirmation_check">
+							<p-checkbox (onChange)="
+                    agreementPopup.agreementConfirmation_2 =
+                      !agreementPopup.agreementConfirmation_2
+                  "
+							            [binary]="true"
+							            [inputId]="'agreementConfirmation_2'"
+							            [ngModel]="agreementPopup.agreementConfirmation_2"
+							            checkboxIcon="fa fa-check"
+							>
+							</p-checkbox>
+							<label
+									[for]="'agreementConfirmation_2'"
+									style="margin-right: 5px"
+							>
+								<p>
+									קראתי ואני מסכים/ה
+									<span>
+                      <!--                                        (click)="agreementPopup.step = 2; $event.stopPropagation()"-->
+                      <a
+		                      class="link"
+		                      href="https://bizibox.biz/terms-of-use-bizibox/"
+		                      target="_blank"
+                      >
+                        להסכם שימוש
+                      </a>
+                    </span>
+									<!--                                        (click)="agreementPopup.step = 8; $event.stopPropagation()"-->
+									ו<span>
+                      <a
+		                      class="link"
+		                      href="https://bizibox.biz/privacy-policy-bizibox/"
+		                      target="_blank"
+                      >
+                        מדיניות הפרטיות
+                      </a>
+                    </span>
+								</p>
+							</label>
+						</div>
+						<div class="startBusinessTrialOpen">
+							<button (click)="startBusinessTrialOpen()"
+									[disabled]="!agreementPopup.agreementConfirmation_2">
+								לחצו כאן לחודש ניסיון
+							</button>
+						</div>
+					</div>
+				</div>
+			</div>
+			
+			<div class="packages-page-info">
+				המחיר עבור חברה אחת (ח.פ / ת.ז /ע.מ) בלבד, עד חמישה חשבונות בנק לחברה
+			</div>
+			
+			<div *ngIf="loader" class="loader">
+				<div class="circle"></div>
+			</div>
+			<!--       <div class="tables"> -->
+			<!--         <div> -->
+			<!--           <h3>bizibox</h3> -->
+			<!--           <div class="flex-sum"> -->
+			<!--             <p> -->
+			<!--               19 -->
+			<!--               <small> ₪</small> -->
+			<!--             </p> -->
+			<!--             <div> -->
+			<!--               <p>לחשבון אחד *</p> -->
+			<!--               <p>לחודש כולל מע"מ</p> -->
+			<!--             </div> -->
+			<!--           </div> -->
+			<!--           <div class="lines"> -->
+			<!--             <div id="line1">&nbsp;</div> -->
+			<!--             <div id="line2">&nbsp;</div> -->
+			<!--             <div id="line3">&nbsp;</div> -->
+			<!--           </div> -->
+			
+			<!--           <div class="info-rows"> -->
+			<!--             <div> -->
+			<!--               <img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/info-rows-check.png" /> -->
+			<!--             </div> -->
+			
+			<!--             <div>ריכוז נתונים פיננסים</div> -->
+			<!--           </div> -->
+			<!--           <div class="info-rows"> -->
+			<!--             <div> -->
+			<!--               <img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/info-rows-check.png" /> -->
+			<!--             </div> -->
+			
+			<!--             <div>ניתוח נתוני חשבונות בנק</div> -->
+			<!--           </div> -->
+			<!--           <div class="info-rows"> -->
+			<!--             <div> -->
+			<!--               <img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/info-rows-check.png" /> -->
+			<!--             </div> -->
+			
+			<!--             <div>ניתוח נתוני כרטיסי אשראי וסליקה</div> -->
+			<!--           </div> -->
+			<!--           <div class="info-rows"> -->
+			<!--             <div> -->
+			<!--               <img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/info-rows-check.png" /> -->
+			<!--             </div> -->
+			
+			<!--             <div>ניתוח צ'קים</div> -->
+			<!--           </div> -->
+			<!--           <div class="info-rows"> -->
+			<!--             <div> -->
+			<!--               <img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/info-rows-check.png" /> -->
+			<!--             </div> -->
+			
+			<!--             <div>שמירת היסטוריית נתונים</div> -->
+			<!--           </div> -->
+			<!--           <div class="info-rows"> -->
+			<!--             <div> -->
+			<!--               <img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/info-rows-check.png" /> -->
+			<!--             </div> -->
+			
+			<!--             <div>הודעות והתראות</div> -->
+			<!--           </div> -->
+			<!--           <div class="info-rows"> -->
+			<!--             <div> -->
+			<!--               <img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/info-rows-check.png" /> -->
+			<!--             </div> -->
+			
+			<!--             <div>ניהול והתראות תקציב</div> -->
+			<!--           </div> -->
+			<!--           <div class="info-rows"> -->
+			<!--             <div> -->
+			<!--               <img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/info-rows-check.png" /> -->
+			<!--             </div> -->
+			
+			<!--             <div>מייל יומי</div> -->
+			<!--           </div> -->
+			<!--           <div class="info-rows"> -->
+			<!--             <div> -->
+			<!--               <img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/info-rows-check.png" /> -->
+			<!--             </div> -->
+			
+			<!--             <div>אפליקציה סלולרית</div> -->
+			<!--           </div> -->
+			<!--           <div class="info-rows"> -->
+			<!--             <div>&nbsp;</div> -->
+			
+			<!--             <div class="notActive">דו״ח תזרים מזומנים</div> -->
+			<!--           </div> -->
+			<!--           <div class="info-rows"> -->
+			<!--             <div>&nbsp;</div> -->
+			
+			<!--             <div class="notActive">התאמות אוטומטיות</div> -->
+			<!--           </div> -->
+			<!--           <div class="info-rows"> -->
+			<!--             <div>&nbsp;</div> -->
+			
+			<!--             <div class="notActive">ניהול תנועות קבועות</div> -->
+			<!--           </div> -->
+			<!--           <div class="info-rows"> -->
+			<!--             <div>&nbsp;</div> -->
+			
+			<!--             <div class="notActive">מחשבון המלצה לתשלום</div> -->
+			<!--           </div> -->
+			<!--           <div class="info-rows"> -->
+			<!--             <div>&nbsp;</div> -->
+			
+			<!--             <div class="notActive">מייל ריכוז חיובי אשראי שבועי</div> -->
+			<!--           </div> -->
+			<!--           <div class="info-rows"> -->
+			<!--             <div>&nbsp;</div> -->
+			
+			<!--             <div class="notActive">מוקד תמיכה ושירות</div> -->
+			<!--           </div> -->
+			<!--         </div> -->
+			<!--         <div class="yellow"> -->
+			<!--           <h3>לעסקים bizibox</h3> -->
+			<!--           <div class="flex-sum"> -->
+			<!--             <p> -->
+			<!--               174 -->
+			<!--               <small> ₪</small> -->
+			<!--             </p> -->
+			<!--             <div> -->
+			<!--               <p>לחודש</p> -->
+			<!--               <p>כולל מע"מ</p> -->
+			<!--             </div> -->
+			<!--           </div> -->
+			<!--           <div class="lines"> -->
+			<!--             <div id="line11">&nbsp;</div> -->
+			<!--             <div id="line22">&nbsp;</div> -->
+			<!--             <div id="line33">&nbsp;</div> -->
+			<!--           </div> -->
+			<!--           <div class="info-rows"> -->
+			<!--             <div> -->
+			<!--               <img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/info-rows-check.png" /> -->
+			<!--             </div> -->
+			
+			<!--             <div>ריכוז נתונים פיננסים</div> -->
+			<!--           </div> -->
+			<!--           <div class="info-rows"> -->
+			<!--             <div> -->
+			<!--               <img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/info-rows-check.png" /> -->
+			<!--             </div> -->
+			
+			<!--             <div>ניתוח נתוני חשבונות בנק</div> -->
+			<!--           </div> -->
+			<!--           <div class="info-rows"> -->
+			<!--             <div> -->
+			<!--               <img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/info-rows-check.png" /> -->
+			<!--             </div> -->
+			
+			<!--             <div>ניתוח נתוני כרטיסי אשראי וסליקה</div> -->
+			<!--           </div> -->
+			<!--           <div class="info-rows"> -->
+			<!--             <div> -->
+			<!--               <img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/info-rows-check.png" /> -->
+			<!--             </div> -->
+			
+			<!--             <div>ניתוח צ'קים</div> -->
+			<!--           </div> -->
+			<!--           <div class="info-rows"> -->
+			<!--             <div> -->
+			<!--               <img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/info-rows-check.png" /> -->
+			<!--             </div> -->
+			
+			<!--             <div>שמירת היסטוריית נתונים</div> -->
+			<!--           </div> -->
+			<!--           <div class="info-rows"> -->
+			<!--             <div> -->
+			<!--               <img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/info-rows-check.png" /> -->
+			<!--             </div> -->
+			
+			<!--             <div>הודעות והתראות</div> -->
+			<!--           </div> -->
+			<!--           <div class="info-rows"> -->
+			<!--             <div> -->
+			<!--               <img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/info-rows-check.png" /> -->
+			<!--             </div> -->
+			
+			<!--             <div>ניהול והתראות תקציב</div> -->
+			<!--           </div> -->
+			<!--           <div class="info-rows"> -->
+			<!--             <div> -->
+			<!--               <img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/info-rows-check.png" /> -->
+			<!--             </div> -->
+			
+			<!--             <div>מייל יומי</div> -->
+			<!--           </div> -->
+			<!--           <div class="info-rows"> -->
+			<!--             <div> -->
+			<!--               <img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/info-rows-check.png" /> -->
+			<!--             </div> -->
+			
+			<!--             <div>אפליקציה סלולרית</div> -->
+			<!--           </div> -->
+			<!--           <div class="info-rows"> -->
+			<!--             <div> -->
+			<!--               <img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/info-rows-check-active.png" /> -->
+			<!--             </div> -->
+			
+			<!--             <div class="active">דו״ח תזרים מזומנים</div> -->
+			<!--           </div> -->
+			<!--           <div class="info-rows"> -->
+			<!--             <div> -->
+			<!--               <img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/info-rows-check-active.png" /> -->
+			<!--             </div> -->
+			
+			<!--             <div class="active">התאמות אוטומטיות</div> -->
+			<!--           </div> -->
+			<!--           <div class="info-rows"> -->
+			<!--             <div> -->
+			<!--               <img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/info-rows-check-active.png" /> -->
+			<!--             </div> -->
+			
+			<!--             <div class="active">ניהול תנועות קבועות</div> -->
+			<!--           </div> -->
+			<!--           <div class="info-rows"> -->
+			<!--             <div> -->
+			<!--               <img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/info-rows-check-active.png" /> -->
+			<!--             </div> -->
+			
+			<!--             <div class="active">מחשבון המלצה לתשלום</div> -->
+			<!--           </div> -->
+			<!--           <div class="info-rows"> -->
+			<!--             <div> -->
+			<!--               <img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/info-rows-check-active.png" /> -->
+			<!--             </div> -->
+			
+			<!--             <div class="active">מייל ריכוז חיובי אשראי שבועי</div> -->
+			<!--           </div> -->
+			<!--           <div class="info-rows"> -->
+			<!--             <div> -->
+			<!--               <img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/info-rows-check-active.png" /> -->
+			<!--             </div> -->
+			
+			<!--             <div class="active">מוקד תמיכה ושירות</div> -->
+			<!--           </div> -->
+			<!--         </div> -->
+			<!--       </div> -->
+			<!--       <div class="btn"> -->
+			<!--         <small> * למספר חשבונות - 49 ₪ </small> -->
+			<!--         <button -->
+			<!--           class="upgradeBtn" -->
+			<!--           role="button" -->
+			<!--           (click)="startBusinessTrialOpen()" -->
+			<!--         > -->
+			<!--           <strong>שדרגו את <span>bizibox</span></strong> -->
+			<!--           <p>וקבלו חודש ניסיון חינם</p> -->
+			<!--         </button> -->
+			<!--         <div (click)="customerServiceUpgrade()"> -->
+			<!--           <p>שנציג יחזור אליי</p> -->
+			<!--         </div> -->
+			<!--       </div> -->
+		</ng-template>
+	</div>
+</div>
+
+<p-dialog (visibleChange)="popUpUpgrade = false"
+          *ngIf="popUpUpgrade"
+          [modal]="true"
+          [styleClass]="'popUpUpgrade'"
+          [style]="{width: 545 + 'px',height: 252 + 'px'}"
+          [visible]="(popUpUpgrade)"
+          appendTo="body">
+	<p-header>
+		<div class="logo">
+			<figure>
+				<img alt="Logo" height="44" ngSrc="/assets/images/logo.png" width="139"/>
+				<figcaption
+						[translate]="
+            router.url.includes('cfl') ? 'toolbar.textCus' : 'toolbar.textRoh'
+          "
+				></figcaption>
+			</figure>
+		</div>
+	</p-header>
+	<div class="bodyPopUp">
+		<h3>אנחנו שמחים שבחרת לשדרג ל bizibox לעסקים!</h3>
+		<p>ניהול תזרים מזומנים - להכיר ולנהל את ההוצאות וההכנסות</p>
+		<p>של העסק שלך במינימום השקעה וזמן.</p>
+		<small *ngIf="showLastRowPopup">
+			במהלך חודש הניסיון התשלום על bizibox ישאר
+			{{ userService.appData?.userData?.companySelect?.currentPayment }}
+			ש"ח כולל מע"מ.
+		</small>
+	</div>
+	<p-footer>
+		<button (click)="startBusinessTrial()" class="btn-upgrade">
+			לחודש ניסיון
+		</button>
+	</p-footer>
+</p-dialog>
+
+<p-dialog (visibleChange)="popUpUpgradeCall = false"
+          *ngIf="popUpUpgradeCall"
+          [modal]="true"
+
+          [styleClass]="'popUpUpgrade'"
+          [style]="{width: 398 + 'px',height: 123 + 'px'}"
+          [visible]="(popUpUpgradeCall)"
+          appendTo="body"
+
+>
+	<p-header>
+		<div class="logo">
+			<figure style="margin: 10px 43px 0 0">
+				<img alt="Logo" height="44" ngSrc="/assets/images/logo.png" width="139"/>
+				<figcaption
+						[translate]="
+            router.url.includes('cfl') ? 'toolbar.textCus' : 'toolbar.textRoh'
+          "
+				></figcaption>
+			</figure>
+		</div>
+	</p-header>
+	<div class="bodyPopUp">
+		<p class="semi">פנייתך התקבלה</p>
+		<p class="semi">נציג bizibox יצור עמך קשר בהקדם</p>
+	</div>
+</p-dialog>
+
+<ng-container *ngIf="agreementPopup.step">
+	<p-dialog (onHide)="agreementPopup.step = false"
+	          (visibleChange)="agreementPopup.step = false"
+	
+	          [closeOnEscape]="false"
+	          [closeOut]="true"
+	          [draggable]="false"
+	          [modal]="true"
+	          [resizable]="false"
+	          [visible]="(agreementPopup.step)"
+	          appendTo="body"
+	          styleClass="agreementPopup agreementPopup_arc stepScroll"
+	>
+		<div class="headerNav">
+			<div>
+				<mat-icon
+						(click)="
+            agreementPopup.step === 2 || agreementPopup.step === 8
+              ? (agreementPopup.step = false)
+              : (agreementPopup.step = 2)
+          "
+						style="
+            cursor: pointer;
+            width: 16px;
+            height: 16px;
+            display: block;
+            transform: rotate(180deg);
+            align-self: center;
+            margin-top: 0px;
+          "
+						svgIcon="arrowBack"
+				></mat-icon>
+			</div>
+			<div>
+				<button
+						(click)="printScreen()"
+						[matTooltip]="'appWalk.customers.report.printBtn' | translate"
+						matTooltipPosition="above"
+						style="
+            border: none;
+            background: transparent;
+            outline: none;
+            cursor: pointer;
+          "
+				>
+					<img height="17" ngSrc="/assets/images/printIcon.png" width="19"/>
+				</button>
+			</div>
+		</div>
+		<div class="scrollData scroll-chrome">
+			<div #elemToPrint>
+				<style>
+					@page {
+						size: portrait;
+					}
+				</style>
+				<ng-container *ngIf="agreementPopup.step === 2">
+					<p style="text-align: center">
+						<strong> הסכם רישיון שימוש bizibox לסריקת מסמכים </strong>
+					</p>
+					<p style="text-align: center">
+						<strong> [עודכן בתאריך: 8 מרס, 2021] </strong>
+					</p>
+					<p>
+						<strong> הקדמה </strong>
+					</p>
+					<p>
+						• חברת איי-פקט בע"מ ("<strong>החברה</strong>" או
+						"<strong>אנחנו</strong>" ), מאפשרת למשתמש (כהגדרתו מטה) לסרוק מסמכים
+						באמצעות "bizibox לסריקת מסמכים" אשר זמינה למשתמש הן בפורטל האינטרנטי
+						של החברה והן ביישומון (ביחד, יקראו הפורטל האינטרנטי והיישומון
+						"<strong>האפליקציה</strong>" ).
+					</p>
+					<p>
+						• השימוש באפליקציה והשירותים הניתנים ו/או שיינתנו בה ו/או באמצעותה
+						כפופים גם ל<span (click)="agreementPopup.step = 3"
+					>מדיניות הפרטיות</span
+					>,
+						<span (click)="agreementPopup.step = 4"
+						>מדיניות האחריות הכללית</span
+						>
+						ו-
+						<span (click)="agreementPopup.step = 5">
+              מדיניות הקניין הרוחני והשימושים אסורים
+            </span>
+						של החברה ו
+						<span (click)="agreementPopup.step = 4"
+						>הסכם רישיון השימוש בתוכנת bizibox לרו"ח ויועצי מס</span
+						>
+						(ביחד יקראו תנאי הסכם רישיון זה, מסמכי המדיניות והסכם רישיון השימוש
+						בתוכנת bizibox לרו"ח ויועצי מס "<strong>תנאי הרישיון</strong>" או
+						"<strong>ההסכם</strong>" ).
+					</p>
+					<p>
+						• אישור תנאי הרישיון מהווים את הסכמתך ומודעותך לתוכנם וכן את
+						והתחייבותך לפעול בהתאם ובכפוף להם.
+					</p>
+					<p>
+						• הינך רשאי לסיים את ההסכם בכל רגע נתון וזאת באמצעות שליחת הודעה
+						לחברה בכתובת
+						<span
+						><a class="link" href="mailto:service@bizibox.biz" target="_blank"
+						>service@bizibox.biz</a
+						></span
+						>
+						לאחר קבלת הודעתך, החברה תחסום את גישתך לאפליקציה באופן מידי.
+					</p>
+					<p>
+						• עליך לדעת כי תנאי הרישיון עלולים להשתנות. אנו ניידע אותך ונבקש את
+						הסכמתך לכך בעת שינויים מהותיים בהסכם ע"י "פופ-אפ" אשר יופיע בעת
+						הכניסה לאפליקציה.
+					</p>
+					<p>
+						• האמור בתנאים אלה מתייחס באופן שווה לנשים וגברים, והשימוש בלשון זכר
+						נעשה מטעמי נוחות. כותרות הסעיפים בהסכם זה נועדו לנוחות בלבד, ואין
+						להתחשב בהן בפרשנות תנאי הרישיון.
+					</p>
+					<p>
+						<strong> מי רשאי להשתמש באפליקציה </strong>
+					</p>
+					<p>
+						• לתשומת ליבך כי השימוש באפליקציה מוגבל אך ורק למשתמש אשר נתן את
+						הרשאתו המפורשת לרו"ח ו/או יועץ המס שלו ("<strong>רו"ח</strong>" )
+						לעשות שימוש בתוכנת bizibox לרו"ח ויועצי מס לצורך מתן שירותי הנהלת
+						חשבונות וייעוץ מס עבורו ("<strong>אתה</strong>" או
+						"<strong>המשתמש</strong>" ). בכך, המשתמש והשימוש בנתוניו כפוף לתנאי
+						<span (click)="agreementPopup.step = 6"
+						>הסכם רישיון השימוש בתוכנת bizibox לרו"ח ויועצי מס</span
+						>
+						("<strong>הסכם רו"ח</strong>" ). במידה ואינך מסכים לשימוש כאמור, נא
+						הודע לנו מידית על כך באמצעות שליחת הודעה לחברה בכתובת
+						<span
+						><a class="link" href="mailto:service@bizibox.biz" target="_blank"
+						>service@bizibox.biz</a
+						></span
+						>.
+					</p>
+					<p>
+						<strong> רישיון השימוש באפליקציה </strong>
+					</p>
+					<p>
+						• במהלך תקופת ההסכם, בכפוף לכל דין, לנכונות הצהרותיך ומילוי כלל
+						התחייבויותיך על פיו, החברה מעניקה לך בזאת רישיון שימוש מוגבל (כלומר,
+						הרישיון ניתן לביטול, בלתי-ייחודי, בלתי ניתן להעברה, ולא ניתן להעניק
+						בו רישיונות-משנה) באפליקציה ("<strong>הרישיון</strong>" או "<strong
+					>רישיון השימוש</strong
+					>" ).
+					</p>
+					<p>
+						• מובהר בזאת כי החברה תהיה זכאית להעניק לכל צד שלישי אחר רישיון זהה
+						או דומה לרישיון השימוש לפי שיקול דעתה הבלעדי.
+					</p>
+					<p>
+						<strong> השימוש באפליקציה </strong>
+					</p>
+					<p>
+						• באמצעות האפליקציה תוכל לסרוק מסמכים כגון קבלות, חשבוניות, צילומי
+						צ'קים וכד' ("<strong>מסמכים פיננסיים</strong>" ), לרכז אותם בארכיון
+						פיננסי ייעודי ולהעבירם באופן מקוון לרוה"ח או יועץ המס שלך.
+					</p>
+					<p>
+						<strong> הצהרת המשתמש </strong>
+					</p>
+					<p>
+						באישורך והסכמתך לתנאי הרישיון, יש בכדי להוות את הצהרתך להיבטים
+						הבאים:
+					</p>
+					<p>
+						• לא קיימת כל מניעה חוקית, חוזית או אחרת להתקשרותך בתנאי הרישיון
+						ו/או בביצוע התחייבויותיך על פיהם ו/או ביחס לשימושך באפליקציה.
+					</p>
+					<p>
+						• שימושך באפליקציה יעשה בכפוף לאמור בתנאי הרישיון ובהתאם לכל דין
+						(לרבות חוק הגנת הפרטיות והתקנות מכוחו).
+					</p>
+					<p>
+						<strong> כללי </strong>
+					</p>
+					<p>
+						• מטעמי אבטחת מידע נדרש כי שימושך באפליקציה יעשה בשם משתמש וסיסמה
+						אישיים.
+					</p>
+					<p>
+						• השימוש באפליקציה אינו תחליף להפעלת שיקול דעתך העצמאי. יובהר כי אין
+						לראות בהענקת הרישיון בכדי לספק לך או לצד ג' ייעוץ מכל סוג.
+					</p>
+					<p>
+						• תנאי השימוש אינם יוצרים ולא יתפרשו כאילו הם יוצרים יחסי שותפות,
+						מיזם משותף, יחסי עובד-מעסיק, יחסי שליחות או יחסי נותן-מקבל זיכיון
+						בין הצדדים.
+					</p>
+					<p>
+						• סמכות השיפוט הבלעדית לדון בכל מחלוקת ו/או סכסוך בקשר עם תנאי
+						הרישיון תהא נתונה לבית המשפט המוסמך במחוז תל אביב.
+					</p>
+					<p>
+						<strong> פניה לחברה </strong>
+					</p>
+					<p>
+						• במידה ויש לך שאלות נוספות או הערות בנוגע לתנאי השימוש, הינך מוזמן
+						לפנות אלינו באמצעות דואר אלקטרוני בכתובת:
+						<span
+						><a class="link" href="mailto:service@bizibox.biz" target="_blank"
+						>service@bizibox.biz</a
+						></span
+						>
+						או בצור קשר דרך אתר החברה
+						<span
+						><a class="link" href="https://bizibox.biz/" target="_blank"
+						>https://www.bizibox.biz</a
+						></span
+						>
+						.
+					</p>
+					
+					<ul style="margin-top: 15px">
+						<li>
+							<p-checkbox (onChange)="
+                  agreementPopup.agreementConfirmation =
+                    !agreementPopup.agreementConfirmation
+                "
+							            [binary]="true"
+							            [inputId]="'agreementConfirmation'"
+							            [ngModel]="agreementPopup.agreementConfirmation"
+							            checkboxIcon="fa fa-check"
+							>
+							</p-checkbox>
+							<label [for]="'agreementConfirmation'" style="margin-right: 5px">
+								<p>
+									קראתי והבנתי את תנאי ההסכם ואני מסכימ/ה לכל התנאים המפורטים
+									בהם.
+								</p>
+							</label>
+						</li>
+						<li>
+							<p-checkbox (onChange)="
+                  agreementPopup.sendMarketingInformation =
+                    !agreementPopup.sendMarketingInformation
+                "
+							            [binary]="true"
+							            [inputId]="'sendMarketingInformation'"
+							            [ngModel]="agreementPopup.sendMarketingInformation"
+							            checkboxIcon="fa fa-check"
+							>
+							</p-checkbox>
+							<label
+									[for]="'sendMarketingInformation'"
+									style="margin-right: 5px"
+							>
+								<p>אשמח לקבל עדכונים על המוצרים</p>
+							</label>
+						</li>
+					</ul>
+					
+					<div
+							style="
+              margin-top: 20px;
+              display: flex;
+              text-align: center;
+              justify-content: center;
+            "
+					>
+						<button
+								(click)="updateAgreementConfirmation(agreementPopup)"
+								[disabled]="!agreementPopup.agreementConfirmation"
+								class="button-dark"
+								style="padding: 0; width: 123px; height: 33px"
+						>
+							{{ 'actions.approve' | translate }}
+						</button>
+					</div>
+				</ng-container>
+				
+				<ng-container
+						*ngIf="agreementPopup.step === 3 || agreementPopup.step === 8"
+				>
+					<p style="text-align: center">
+						<strong>
+							מדיניות הפרטיות - אפליקציה לסריקת מסמכים ("המדיניות")
+						</strong>
+					</p>
+					<p style="text-align: center">
+						<strong> [עודכן בתאריך: 8 מרס, 2021] </strong>
+					</p>
+					<p>
+						כאמור בהסכם רישיון שימוש באפליקציה לסריקת מסמכים ("ההסכם"
+						ו"האפליקציה" בהתאמה), השימוש באפליקציה כפוף בין השאר למדיניות
+						הפרטיות, אשר מהווה חלק בלתי נפרד מההסכם. ביטויים אשר לא הוגדרו
+						במדיניות הפרטיות, תהא להם משמעות הזהה למשמעותם בהסכם, לרבות הסכם
+						רישיון השימוש בתוכנת bizibox לרו"ח ויועצי מס (להלן יוגדר במדיניות
+						פרטיות זו כ"הסכם רו"ח").
+					</p>
+					<p>
+						<strong> על מי חלה המדיניות? </strong>
+					</p>
+					<p>
+						• מדיניות זו חלה על משתמשים אשר נתנו הרשאתם המפורשת לרו"ח ו/או יועצי
+						המס לעשות שימוש בתוכנת bizibox לרו"ח ויועצי מס (להלן תוגדר במדיניות
+						פרטיות זו כ"תוכנת רו"ח") לצורך מתן שירותי הנהלת חשבונות וייעוץ מס
+						להם (להלן: "אתה").
+					</p>
+					<p>
+						<strong> הסכמה </strong>
+					</p>
+					<p>
+						• מדיניות הפרטיות המפורטת במסמך זה מהווה הסכם משפטי מחייב ואכיף בינך
+						לבין החברה. לפיכך, הנך מתבקש לקרוא אותה בקפידה רבה.
+					</p>
+					<p>
+						• בעצם השימוש המבוצע בנתוניך באפליקציה, בין אם על ידך ובין אם ע"י
+						משתמש לו סיפקת את נתוניך לרבות רו"ח ו/או יועץ מס ("מורשה מטעמך"),
+						הינך מצהיר כי קראת והבנת את מדיניות הפרטיות, כי ניתנה לך האפשרות
+						לעיין בה, וכי הינך מסכים לכל התנאים המפורטים בה.
+					</p>
+					<p>
+						• אם אינך מסכים לאי אילו מהתנאים המפורטים להלן, הנך מחויב, באופן
+						מידי, להימנע מכניסה ו/או מכל שימוש באפליקציה בכל אופן ו/או להודיע
+						זאת למורשה מטעמך.
+					</p>
+					<p>
+						<strong>
+							איזה מידע אנחנו רשאים לאסוף במסגרת המידע המוזן לאפליקציה?
+						</strong>
+					</p>
+					<p>
+						• הסוג הראשון של מידע שהחברה אוספת הנו מידע אנונימי ואינו מזהה
+						(להלן: "מידע לא אישי").
+						<br/>
+						
+						מידע לא אישי הוא כל מידע גלוי אשר זמין לחברה בשעה שתשתמש באפליקציה,
+						ואינו מאפשר את זיהויך.
+						<br/>
+						
+						מידע לא אישי, כולל מידע אנונימי, טכני וכן מידע שנאסף אודות התנהגות
+						המשתמש באפליקציה, ועשוי לכלול, בין היתר, את פעילותו באפליקציה, את
+						זהות מערכת ההפעלה, זרם הקשות (click-stream), רזולוציית מסך המכשיר
+						ממנו מתבצעת הגישה לאפליקציה וכיוצ"ב.
+					</p>
+					<p>
+						• הסוג השני של מידע שהחברה אוספת הנו מידע אישי מזהה. ככלל, בהסכמתך
+						למדיניות זו, אתה מאשר לנו להשתמש בכל הנתונים והמידע אשר בהם אתה ו/או
+						מורשה מטעמך ביצע/ת בהם שימוש מכל סוג (כהגדרתם בהסכם רו"ח), הן במסגרת
+						ה"שימוש באפליקציה" ובפורטל (ר' פירוט בהסכם) והן במסגרת "רישיון
+						השימוש בתוכנה" ו"השימוש בתוכנה" (ר' פירוט בהסכם רו"ח) (להלן: "מידע
+						אישי"). אינך מחויב למסור מידע אישי.
+						<br/>
+						
+						המידע האישי, מאפשר לחברה לזהות באופן אישי את המשתמש ו/או את מושא
+						הנתונים ובדרך כלל נושא אופי פרטי או רגיש.
+						<br/>
+						
+						המשתמש מספק באופן אוטומטי בהתאם לרשת או למכשיר בהם מבוצע השימוש.
+						מידע זה נאסף בין השאר על מנת לשפר את חוויית המשתמשים ולמטרות אבטחה.
+						<br/>
+						
+						בנוסף, אנו אוספים מידע אישי הנמסר על-ידי המשתמש באופן מודע ומרצונו
+						החופשי במהלך השימוש באפליקציה. מידע זה כולל בין היתר מידע המצוי
+						ב"מסמכים פיננסיים" (כהגדרתם בהסכם), את ה"נתונים" (כהגדרתם בהסכם
+						רו"ח), וכן כל מידע המתקבל עם ו/או עקב השימוש באפליקציה ו/או באמצעות
+						תוכנת רו"ח ,וכן כל תוצר שהופק באמצעותן.
+						<br/>
+						
+						כחלק מהשימוש באפליקציה, כל משתמש נדרש בפתיחת חשבון אישי. המידע להלן
+						נאסף במסגרת פתיחת החשבון: (א) כתובת דואר-אלקטרוני; (ב) שם מלא; (ג)
+						מספר ח.פ./ע.מ.(במידה ומדובר בעוסק מורשה); (ד) פרטי חשבון בנק ו/או
+						כרטיסי אשראי; (ה) מספר טלפון סלולארי; (ו) שם משתמש וסיסמת כניסה
+						לפורטל ו/או לאפליקציה; (ז) פרטי אמצעי תשלום (המידע נאסף על-ידי ספקי
+						שירותי סליקה כמפורט להלן); ו- (ח) כל הפרמטרים הנדרשים להתחברות לכל
+						מקורות המידע הפיננסי אשר ברשות המשתמש ו/או מורשה מטעמו אשר ברצונו
+						לקשר לאפליקציה ו/או לתוכנה, לרבות שמות המשתמש והסיסמאות הרלוונטיות
+						לכל אחד ממקורות המידע הפיננסי.
+						<br/>
+						
+						המידע האישי שמסרת לחברה יישמר במאגר המידע המאובטח של החברה והגישה
+						אליו תהיה מוגבלת בלבד. כמו כן, מידע אודות שימושים ספציפיים שביצעת
+						באפליקציה, ייאסף אף הוא וייחשב כחלק מה-"מידע האישי" כאמור לעיל.
+					</p>
+					<p>
+						• כאמור בהסכם, באמצעות האפליקציה תוכל לסרוק מסמכים פיננסיים, לרכז
+						אותם בארכיון פיננסי ייעודי ולהעבירם באופן מקוון לרוה"ח או יועץ המס
+						שלך. ע"מ שתוכל לבצע את השימוש באפליקציה, עליך לתת לנו הרשאת גישה
+						למכשיר בו מותקנת האפליקציה:
+						<br/>
+						
+						הרשאה לקבלת Push Notifications - הרשאה זאת מתבקשת על מנת שהמשתמש
+						יוכל לקבל התראות "דחיפה", (ר' פירוט מטה).
+						<br/>
+						
+						הרשאת גישה למצלמת המכשיר וגישה לגלריית התמונות, והתקני אחסון וזיכרון
+						במכשיר - הרשאה זאת מתבקשת עבור אפליקציית סריקת המסמכים הפיננסיים
+						ישירות ממכשירך.
+						<br/>
+						
+						(להלן יחדיו: "המידע")
+					</p>
+					
+					<p>
+						• הנך מסכים ומצהיר בזאת שהמידע האישי שהינך מספק לנו, בין אם ישירות
+						ובין אם ע"י מורשה מטעמך, נמסר מרצונך החופשי, על מנת שנוכל לספק עבורך
+						את שירותי האפליקציה וכן הינך מסכים כי נשמור את המידע שסיפקת לנו
+						במאגר מידע (אשר יתכן ויירשם בהתאם לדרישות הדין).
+					</p>
+					<p>
+						<strong> שימוש במידע </strong>
+					</p>
+					<p>
+						• אנו נשתמש במידע האישי שמסרת ו/או במידע הסטטיסטי שנאסף אצלנו לצורך
+						אספקת שירותים, לצורך שינוי ושיפור התכנים, כך שיתאימו לאופי המשתמש,
+						לרבות להעדפותיך ממש, כפי שמשתקף מניתוח המידע הסטטיסטי שנאסף בחברה
+						לגבי הרגלי השימוש באפליקציה.
+					</p>
+					<p>
+						• המידע שנאסוף, לרבות באמצעות השימוש בקבצי 'עוגיות' (ראה בהמשך),
+						עשוי לזהות אותך בכל פעם שתיכנס לאפליקציה וכך לייתר את הצורך בהזנת שם
+						המשתמש והסיסמא בכניסותיך החוזרות לאפליקציה.
+					</p>
+					<p>
+						• אנו נשתמש במידע האישי שמסרת על מנת ליצור איתך קשר בעת הצורך, ו/או,
+						במידה ונתת את הסכמתך לכך ע"י סימון V בתיבה המיועדת לכך, לשלוח אליך
+						מדי פעם פרסומות ו/או הודעות באמצעות דואר אלקטרוני לפי הפרטים שמסרת
+						בעת הרישום, ובהם עדכונים על מבצעים שונים באפליקציה, חידושים בשירותים
+						הניתנים, שוברי הנחה, הודעות ו/או פרסומות שונות, בין מטעם החברה ובין
+						מטעם צדדים שלישיים (להלן: "דברי פרסומת").
+					</p>
+					<p>
+						• סימון ה-V בתיבה המיועדת לכך, כמו גם המשך השימוש שלך באפליקציה
+						והסכמתך לכללי מדיניות זו מהווים הסכמה לקבלת דברי פרסומת בהתאם
+						להוראות סעיף 30א לחוק התקשורת (בזק ושירותים), התשמ"ב–1982. לתשומת
+						לבך כי, בכפוף להוראות הדין, בכל עת תוכל לבחור לחדול מלקבל הודעות
+						דברי פרסומת כאמור על-ידי מחיקת פרטיך מרשימת הדיוור של האפליקציה.
+						זאת, באמצעות משלוח בקשה להסרה מרשימת הדיוור ע"י לחיצה על "הסר" בגוף
+						ההודעה מרגע בו הסכמה זו ניתנת, כל חומר שנשלח אליך מטעם החברה לא יחשב
+						כספאם מכל סוג ומין אשר מהווה או יש בו כדי להוות הפרה של חוק הספאם.
+					</p>
+					<p>
+						• אנו נשתמש במידע הסטטיסטי שנאסף ו/או נאגר אצלנו לצרכינו הפנימיים,
+						לרבות על מנת לדאוג לתפעול האפליקציה ופיתוחה, לשיפור המבנה שלה,
+						השירותים הניתנים בה וכד'. לשם כך, עשויים אנו להסתייע בצדדים שלישיים
+						לצורך איסוף וניתוח המידע הסטטיסטי והאנונימי כדי ללמוד על הרגלי
+						השימוש שלך ושל יתר משתמשי האפליקציה באופן שלא יזהה אותך ו/או את יתר
+						המשתמשים באופן אישי.
+					</p>
+					<p>
+						• אנו נשתמש במידע שמסרת או במידע שנאסף אצלנו לכל מטרה אחרת בקשר עם
+						אספקת השירותים המוצעים באפליקציה, לרבות כל מטרה המפורטת במדיניות זו
+						ו/או בתנאי השימוש.
+					</p>
+					
+					<p>
+						<strong> איסוף מידע לצרכים סטטיסטיים </strong>
+					</p>
+					<p>
+						• החברה נעזרת בחברות שונות המספקות לה ניתוחים סטטיסטיים אודות השימוש
+						באפליקציה. החברות אוספות ומנתחות מידע על היקף השימוש באפליקציה,
+						תדירות השימוש בהם, מקורות הגישה של המשתמשים אליהם וכיוצא בזה. המידע
+						הנאסף הוא סטטיסטי במהותו, הוא איננו מזהה אותך אישית והוא נועד לצרכי
+						ניתוח, מחקר ובקרה.
+					</p>
+					<p>
+						<strong> מסירת מידע ואיסוף המידע </strong>
+					</p>
+					<p>
+						• המידע שמסרת לחברה ישמר במאגר המידע של החברה (להלן: "<strong
+					>מאגר המידע</strong
+					>").
+					</p>
+					<p>
+						• בעת מסירת המידע האישי לחברה, עליך להקפיד למסור פרטים נכונים, מלאים
+						ולא שגויים או מסולפים. ככל שיחולו שינויים במידע האישי אותו מסרת בעת
+						הרישום, תתבקש לעדכן את הנתונים בחשבון המשתמש שלך בתוכנה.
+					</p>
+					<p>
+						• המידע הסטטיסטי הנאסף בעת השימוש בתוכנה על-ידינו מכיל רק את המידע
+						הנחוץ לנו לצורך מתן השירותים ושיפורם. אנו נעשה במידע זה שימוש בכפוף
+						למדיניות הפרטיות המפורטת להלן ובהתאם להוראות חוק הגנת הפרטיות,
+						התשמ"א–1981 (להלן: "<strong>חוק הגנת הפרטיות</strong>").
+					</p>
+					<p>
+						•
+						<strong>מידע אישי</strong>
+						– החברה לא תעביר לצדדים שלישיים את המידע האישי אלא באחד המקרים
+						המפורטים להלן:
+						<br/>
+						במידה והחברה ביקשה את רשותך, ואת/ה נתת את הסכמתך המפורשת לכך;
+						<br/>
+						במקרה שתפר את ההסכם;
+						<br/>
+						במידה ויתקבל צו מבית משפט או מכל ערכאה מוסמכת אחרת, המורה לחברה
+						למסור את פרטיך או המידע האישי אודותיך לידי בית המשפט או הערכאה האחרת
+						או לידי צד שלישי כלשהו;
+						<br/>
+						במקרה של מחלוקת משפטית בינך לבין החברה שתחייב את חשיפת פרטיך;
+						<br/>
+						בכל מקרה שהחברה תסבור, כי מסירת המידע נחוצה כדי למנוע נזק חמור לגופך
+						או לרכושך או לגופו או לרכושו של צד שלישי;
+						<br/>
+						החברה תהיה רשאית להעביר את פרטיך והמידע שנאסף בעקבות השימוש שעשית
+						בתוכנה לחברות אחרות הקשורות לחברה, ובלבד שהן תשתמשנה במידע זה רק
+						על-פי הוראות מדיניות פרטיות זו;
+						<br/>
+						במקרה שהחברה תתמזג עם גוף אחר או תמזג את פעילותיה עם פעילותו של צד
+						שלישי - היא תהיה זכאית להעביר לתאגיד החדש העתק מן המידע שנאגר
+						אודותיך או כל מידע סטטיסטי שבידיה, ובלבד שתאגיד זה יקבל על עצמו את
+						הוראות מדיניות פרטיות זו.
+						<br/>
+						במידה ומסירת המידע האישי הינה לעובדים המוסמכים של החברה ו/או לשלוחים
+						מטעמה ו/או לפועלים מטעמה, והיא במידה הנדרשת והחיונית לצורך אספקת
+						השירותים ותפעול הפורטל ו/או האפליקציה;
+						<br/>
+						במידה ומסירת המידע נעשית עפ"י דין.
+					</p>
+					<p>
+						•
+						<strong>מידע סטטיסטי</strong>
+						– החברה עשויה להעביר מידע סטטיסטי, בתמורה או שלא בתמורה, לצדדים
+						שלישיים המצויים איתם בקשרים עסקיים או אחרים, לרבות חברות העוסקות
+						בניתוח מידע סטטיסטי אנונימי כאמור לצורך שיפור השירותים המוצעים
+						בתוכנה, לפי שיקול דעתם הבלעדי של החברה.
+					</p>
+					<p>
+						<strong> "עוגיות" (Cookies) ואחסון מקומי </strong>
+					</p>
+					
+					<p>
+						• בשעת השימוש בתוכנה, החברה או צדדים שלישיים עשויים להשתמש
+						בטכנולוגיה אשר מקובלת בתעשייה ומוכרת כ"עוגיות" ו-Flash (או
+						טכנולוגיות דומות), המאחסנת מידע מסוים במחשב של המשתמש, מאפשרת לחברה
+						להפעיל מאפיינים מסוימים באופן אוטומטי, ומשפרת את חווית השימוש של
+						המשתמש בשירותי החברה.
+					</p>
+					<p>
+						• העוגיות נדרשות לצורך תפעול התוכנה באופן שוטף, ובכלל זה, בכדי לאסוף
+						נתונים אודות הרגלי השימוש בתוכנה ולזהות דפוסי משתמשים, לאימות פרטים,
+						להתאמת להעדפותיך האישיות ולצרכי אבטחת מידע.
+					</p>
+					<p>
+						• מרבית דפדפני האינטרנט מאפשרים למשתמשים למחוק עוגיות ממכשיר המשתמש,
+						לחסום קבלה של עוגיות או לקבל התראות לפני אחסונן של עוגיות. עם זאת,
+						יש לשים לב כי אם המשתמש ימחק את העוגיות או לא יאפשר את אחסונן, או אם
+						ישנה את המאפיינים של Flash, החוויה המקוונת של המשתמש דרך הפורטל ו/או
+						האפליקציה תהיה מוגבלת.
+					</p>
+					
+					<p>
+						<strong> זכות עיון במידע </strong>
+					</p>
+					<p>
+						• על-פי חוק הגנת הפרטיות, כל אדם זכאי לעיין בעצמו, או על-ידי בא-כוחו
+						שהרשהו בכתב או על-ידי אפוטרופוסו, במידע שעליו המוחזק במאגר מידע. אדם
+						שעיין במידע שעליו ומצא כי אינו נכון, שלם, ברור או מעודכן, רשאי לפנות
+						לבעל מאגר המידע בבקשה לתקן את המידע או למוחקו. אם בעל המאגר סירב
+						למלא בקשה זו, עליו להודיע על כך למבקש באופן ובדרך שנקבעו בתקנות. על
+						סירובו של בעל מאגר מידע לאפשר עיון ועל הודעת סירוב לתקן או למחוק
+						מידע, רשאי מבקש המידע לערער לפני בית משפט השלום באופן ובדרך שנקבעו
+						בתקנות.
+					</p>
+					
+					<p>
+						• בנוסף, אם המידע שבמאגרי החברה משמש לצורך פניה אישית אליך, בהתבסס
+						על השתייכותך לקבוצת אוכלוסין, שנקבעה על-פי איפיון אחד או יותר של בני
+						אדם ששמותיהם כלולים במאגר (להלן: "פניה בהצעה מסחרית"), כי אז אתה
+						זכאי על-פי חוק הגנת הפרטיות, לדרוש בכתב שהמידע המתייחס אליך יימחק
+						ממאגר המידע. החברה תימחק במקרה זה מידע הדרוש לה רק כדי לפנות אליך
+						בהצעות מסחריות כאמור לעיל. מידע הדרוש להחברה לשם ניהול עסקיה - לרבות
+						תיעוד פעולות מסחריות ואחרות שביצעת בתוכנה - יוסיף להישמר בהחברה
+						על-פי דין, אך לא ישמש עוד לצורך פניות אליך. אם בתוך 30 יום לא תקבל
+						הודעה כי המידע שנתבקשה החברה למחוק אכן נמחק על-פי סעיף זה, תהיה זכאי
+						לפנות לבית משפט השלום באופן הקבוע בתקנות שמכוח החוק, כדי שיורה
+						להחברה לפעול כאמור.
+					</p>
+					
+					<p>
+						<strong> "הודעות Push" </strong>
+					</p>
+					<p>
+						• החברה מיישמת ו/או עלולה ליישם בעתיד, במסגרת השימוש באפליקציה,
+						שירות הודעות בדחיפה (להלן: "הודעות ה-Push") המאפשר לשלוח התראות
+						וצלילים אף אם האפליקציה איננה פעילה, זאת, דרך שרתי מערכת ההפעלה של
+						המחשב בו מבוצע השימוש באפליקציה.
+					</p>
+					<p>
+						• יתכן, כי במסגרת השימוש באפליקציה, תישלחנה, מעת לעת, למחשבך הודעות
+						Push באמצעותן תוכל להתעדכן אודות מוצרים ושירותים נוספים שהחברה סבורה
+						כי אתה עשוי למצוא בהם עניין, וכן לקבל מידע נוסף אודות החברה
+						ושירותיה. הודעות ה-Push תישלחנה בזמנים ובתדירות כפי שייקבע על-ידי
+						החברה.
+					</p>
+					<p>
+						• הינך מצהיר כי ידוע לך שהודעות ה-Push עשויות לכלול מסרים שעשויים
+						להיחשב כ-"דבר פרסומת" כהגדרתו בסעיף 30א לחוק התקשורת (בזק ושידורים),
+						התשס"ח–2008, והינך רשאי לבטל או לעדכן את האפשרות לקבל את הודעות
+						ה-Push, כולן או מקצתן, בכל עת, באמצעות שינוי הגדרות האפליקציה במכשיר
+						הנייד שברשותך.
+					</p>
+					
+					<p>
+						<strong> שירותי צדדים שלישיים </strong>
+					</p>
+					<p>
+						• אנו רשאים להשתמש בתוכנה או בשירותי צד שלישי על מנת לאסוף, לאחסן
+						ו/או לעבד את המידע שנאסף במסגרת הפורטל ו/או האפליקציה. אנו עושים
+						מאמצים על מנת להתקשר עם צדדים שלישיים המפרסמים מדיניות פרטיות החלה
+						על איסוף, אחסון, עיבוד ושימוש במידע אישי ובמידע לא אישי. שירותי
+						צדדים שלישיים כוללים, בין היתר, Google Analytics, אשר מדיניות
+						הפרטיות שלה מפורסמת בכתובות:
+						<span
+						><a
+								class="link"
+								href="https://www.google.com/policies/privacy"
+								target="_blank"
+						>https://www.google.com/policies/privacy</a
+						></span
+						>;וחברת קארדקום בע"מ, אשר פרטים בנוגע למדיניות הפרטיות שלה ניתן
+						למצוא בכתובות:
+						<span
+						><a
+								class="link"
+								href="http://www.cardcom.co.il/MainPage.aspx"
+								target="_blank"
+						>http://www.cardcom.co.il/MainPage.aspx</a
+						></span
+						>.
+					</p>
+					<p>
+						• יחד עם זאת, לחברה אין כל שליטה על צדדים שלישיים אלה. אנו ממליצים
+						לך לקרוא את תנאי השימוש ומדיניות הפרטיות של צדדים שלישיים אלה ו/או
+						לפנות אליהם במישרין על מנת שתוכל לדעת אילו סוגי מידע נאספים לגביך.
+					</p>
+					<p>
+						<strong> שינויים במדיניות הפרטיות </strong>
+					</p>
+					<p>
+						• החברה שומרת על זכותה לשנות מדיניות פרטיות זו בכל זמן, ומבקשת מכלל
+						המשתמשים לשוב ולבקר בדף זה לעיתים קרובות ככל האפשר.
+					</p>
+					<p>
+						• אנו נודיע למשתמש על כל שינוי מהותי בתנאי מדיניות פרטיות זו, כאמור
+						בהסכם רו"ח.
+					</p>
+					<p>
+						• שינויים שאינם מהותיים יכנסו לתוקף תוך שבעה (7) ימים ממועד ההודעה
+						כאמור. כל שאר השינויים במדיניות הפרטיות ייכנסו לתוקף באופן מידי
+						והמשך השימוש שלך בתוכנה לאחר תאריך העדכון האחרון יהווה הסכמה שלך לכך
+						שהשינויים יחייבו אותך.
+					</p>
+					<p>
+						<strong> שאלות </strong>
+					</p>
+					<p>
+						• במידה ויש לך שאלות נוספות או הערות בנוגע לתנאים, הינך מוזמן לפנות
+						אלינו ע"י קריאת שרות דרך התוכנה,ב"צור קשר" באתר החברה
+						<span
+						><a class="link" href="https://bizibox.biz/" target="_blank"
+						>https://www.bizibox.biz</a
+						></span
+						>
+						ובאמצעות דואר אלקטרוני בכתובת:
+						<span
+						><a class="link" href="mailto:service@bizibox.biz" target="_blank"
+						>service@bizibox.biz</a
+						></span
+						>, אנו נעשה את מירב המאמצים לחזור אליך תוך זמן סביר.
+					</p>
+					
+					<ng-container *ngIf="agreementPopup.step === 8">
+						<ul style="margin-top: 15px">
+							<li>
+								<p-checkbox (onChange)="
+                    agreementPopup.agreementConfirmation =
+                      !agreementPopup.agreementConfirmation
+                  "
+								            [binary]="true"
+								            [inputId]="'agreementConfirmation'"
+								            [ngModel]="agreementPopup.agreementConfirmation"
+								            checkboxIcon="fa fa-check"
+								>
+								</p-checkbox>
+								<label
+										[for]="'agreementConfirmation'"
+										style="margin-right: 5px"
+								>
+									<p>
+										קראתי והבנתי את הסכם שימוש ומדיניות הפרטיות ואני מסכים/ה לכל
+										התאים המפורטים בהם
+									</p>
+								</label>
+							</li>
+							<li>
+								<p-checkbox (onChange)="
+                    agreementPopup.sendMarketingInformation =
+                      !agreementPopup.sendMarketingInformation
+                  "
+								            [binary]="true"
+								            [inputId]="'sendMarketingInformation'"
+								            [ngModel]="agreementPopup.sendMarketingInformation"
+								            checkboxIcon="fa fa-check"
+								>
+								</p-checkbox>
+								<label
+										[for]="'sendMarketingInformation'"
+										style="margin-right: 5px"
+								>
+									<p>אשמח לקבל עדכונים על המוצרים</p>
+								</label>
+							</li>
+						</ul>
+						
+						<div
+								style="
+                margin-top: 20px;
+                display: flex;
+                text-align: center;
+                justify-content: center;
+              "
+						>
+							<button
+									(click)="updateAgreementConfirmation(agreementPopup)"
+									[disabled]="!agreementPopup.agreementConfirmation"
+									class="button-dark"
+									style="padding: 0; width: 123px; height: 33px"
+							>
+								{{ 'actions.approve' | translate }}
+							</button>
+						</div>
+					</ng-container>
+				</ng-container>
+				
+				<ng-container *ngIf="agreementPopup.step === 4">
+					<p style="text-align: center">
+						<strong> מדיניות האחריות הכללית </strong>
+					</p>
+					<p style="text-align: center">
+						<strong> [עודכן בתאריך: 11/11/20] </strong>
+					</p>
+					<p>
+						כאמור בהסכם רישיון שימוש בתוכנת bizibox לרו"ח ויועצי מס, השימוש
+						בתוכנה כפוף בין השאר למדיניות האחריות הכללית אשר מהווה חלק בלתי נפרד
+						מ"תנאי הרישיון". ביטויים אשר לא הוגדרו במדיניות זו, תהא להם משמעות
+						הזהה למשמעותם בהסכם.
+					</p>
+					<p>
+						<strong> אנא קרא בעיון את ההוראות הבאות: </strong>
+					</p>
+					<p>
+						• אנו עושים מאמצים על מנת להבטיח שהתוכנה והשירותים יהיו זמינים עבורך
+						באופן רציף ושהשימוש בהם יהיה יעיל ומאובטח ככל הניתן, ככל שתתגלה תקלה
+						הנובעת מהתוכנה עצמה, נפעל לתקנה (יתכן כי באמצעות צד ג'), בכפוף לקבלת
+						הודעת קריאה בסמוך למועד גילוי התקלה ולשיתוף פעולתך בנושא.
+					</p>
+					<p>
+						• עם זאת, השימוש בתוכנה תלוי בגורמים שאינם בשליטת החברה ולכן איננו
+						מתחייבים שהשימוש בה יהיה ללא תקלות ו/או הפרעות ו/או נקי מפגמים ו/או
+						הגבלות אחרות (“תקלה” או “תקלות”) ולכן החברה אינה אחראית להיבטים אלו
+						ולאחרים.
+					</p>
+					<p>
+						• אנא שים לב לתקלות אפשריות העלולות להתרחש במסגרת השימוש בתוכנה:
+					</p>
+					<p>
+						<strong> זמינות </strong>
+					</p>
+					<p>
+						יתכן ומעת לעת לא יתאפשר זמנית השימוש בתוכנה בשל תקלה, עדכון, תחזוקה,
+						תיקון ו/או כל פעולה אחרת, שהחברה, לפי שיקול דעתה הבלעדי תנקוט. החברה
+						שומרת לעצמה את הזכות לתקן, להרחיב, לשפר, לעדכן, לשדרג, לאבטח, להוסיף
+						תכונות חדשות, להסיר ו/או לערוך כל התאמה ו/או שינוי אחר בתוכנה ו/או
+						בכל חלק ממנה, וזאת בלא צורך להודיע על כך מראש.
+					</p>
+					<p>
+						<strong> דיוק וטכנולוגיה </strong>
+					</p>
+					<p>
+						החברה משקיעה מאמצים רבים בהגנה מפני סיכונים הטמונים בטכנולוגיה
+						ומבצעת מאמצים רבים לנאמנות המידע ביחס לנתוני המקור, אך עם זאת, יתכנו
+						אי-דיוקים במידע לאור גורמים רבים. החברה אינה בודקת ואינה אחראית
+						לדיוק, נכונות, אמינות, שלמות ו/או חוקיות הנתונים. הנך מחויב לבדוק את
+						דיוק התוצרים שהופקו בהתאם לנתונים שהכנסת לתוכנה בכל עת. תוצרי השימוש
+						מופקים בהסתמך על הנתונים, כפי שהם (“as is”), על פי זמינותם (“as
+						available”) ונכון למועד בו יובאו, לוקטו ונקראו, ואין בהם כדי לרפא כל
+						טעות שנפלה במקור ו/או להציג נתונים שלא היו זמינים במועד בו לוקטו
+						ו/או להתייחס לכל שינוי שחל בנתונים לאחר מכן. החברה אינה מצהירה, בכל
+						צורה שהיא, כי הנתונים ו/או תוצרי השימוש מדויקים, איכותיים, מקצועיים,
+						נכונים, וכי הם לא כוללים מידע שגוי.
+					</p>
+					<p>
+						<strong> סיכוני אינטרנט </strong>
+					</p>
+					<p>
+						אנו משקיעים מאמצים רבים בהגנה מפני סיכונים הטמונים באינטרנט לרבות
+						סיכוני סייבר.עם זאת, אין ביכולתנו ו/או בשליטתנו למנוע לחלוטין את
+						חדירתן ופעולתן של תוכנות מזיקות וגורמים עוינים כגון וירוסים, באגים,
+						רוגלות, או כל קודי מחשב, קבצים או תוכנות אחרות אשר עשויים לבצע
+						תרמיות והונאות מקוונות וכד'.
+					</p>
+					<p>
+						<strong> הגבלת אחריות </strong>
+					</p>
+					<p>
+						• השירותים בתוכנה ניתנים לך “כמות שהם”(“as is”) , ללא כל התחייבות או
+						אחריות מכל סוג שהוא, באופן מפורש או מכללא, לרבות בין השאר, אחריות
+						בנוגע לסחירות, דיוק, אי הפרה של זכויות קניין רוחני, או להתאמה למטרה
+						מסוימת. הסכמה לתנאי השימוש משמעה שבדקת את התוכנה, ומצאת אותה מתאימה
+						לצרכיך ולמטרותיך.
+					</p>
+					<p>
+						• למן הסר ספק, תוצרי השימוש אינם מהווים ייעוץ כספי, פיננסי, חשבונאי,
+						מיסויי, ייעוץ בהשקעות ו/או כל ייעוץ אחר, ואין בהם משום הצעה, שידול
+						ו/או ייעוץ לביצוע כל עסקה, פעולה ו/או קבלת החלטה כלשהי.
+					</p>
+					<p>
+						• החברה תהיה פטורה מכל אחריות לכל הוצאה, הפסד, נזק ישיר ו/או עקיף,
+						הפסד הכנסה או עסקים, רווח מנוע, פגיעה במוניטין וכיו”ב, שנגרם ו/או
+						אשר עלול להיגרם לך, ללקוחותיך ו/או לכל צד ג' אחר בקשר עם ו/או כתוצאה
+						משימוש בתוכנה ו/או בתוצרי השימוש ו/או בקשר עם הסכם זה.
+					</p>
+					<p>
+						• פטור זה כולל בין השאר, אך לא רק, נזק עקב טעות, תקלות, תפעול שגוי
+						של התוכנה, שיבושים בפעולת אתר/י צד ג' (לרבות מוסדות פיננסים), זמינות
+						ו/או זמני תגובה של המערכות הממוחשבות שלך ו/או של צדדים שלישיים
+						(לרבות מוסדות פיננסים), שיבושים במידע ו/או בנתונים ו/או בקבלתם ו/או
+						באובדנם כתוצאה מתקלות אחרות שאינן בשליטת החברה, ובכלל זה תקלה בליקוט
+						ו/או בהצגת הנתונים בשל שינוי באופן הצגת ו/או בזמינות נתונים אצל מוסד
+						פיננסי כלשהו (למשל בעקבות שינוי באתר אינטרנט ו/או בתצוגת מסך אצל
+						מוסד פיננסי, העשוי להשפיע על תוצרי השימוש), חוסר התאמה ו/או דיוק בין
+						הנתונים המקוריים לאלו אשר נקלטו בתוכנה.
+					</p>
+					<p>
+						• החברה מצהירה, כי לא תוכל לספק את רישיון השימוש ללא הגבלת האחריות
+						כאמור לעיל.
+					</p>
+					<p>
+						• בכל מקרה, שלטענתך, נגרם לך ו/או למי מטעמך נזק בקשר לתוכנה ו/או
+						למידע ו/או לתנאי השימוש, עליך למסור מיד הודעה בכתב לחברה בליווי כל
+						המידע ו/או החומר הרלבנטיים, ולשתף עמנו פעולה בכל עניין בקשר לכך.
+					</p>
+					<p>
+						• הנך מתחייב/ת בזאת לשפות ולפצות את החברה או מי מטעמה, בגין כל נזק,
+						הוצאה או הפסד, ישיר או עקיף, לרבות הוצאות משפט ושכ"ט עורכי דין,
+						שיגרמו לה בקשר עם הפרת תנאי השימוש, או ביצוע כל פעולה אחרת בניגוד
+						לדין בקשר עם האפליקציה והשירותים.
+					</p>
+				</ng-container>
+				<ng-container *ngIf="agreementPopup.step === 5">
+					<p style="text-align: center">
+						<strong>
+							מדיניות קניין רוחני ושימוש אסורים כלליים באפליקציית bizibox לסריקת
+							מסמכים
+						</strong>
+					</p>
+					<p style="text-align: center">
+						<strong> [עודכן בתאריך: 30/11/20] </strong>
+					</p>
+					
+					<p>
+						<strong>
+							כאמור בהסכם רישיון שימוש באפליקציית bizibox לסריקת מסמכים, השימוש
+							באפליקציה כפוף בין השאר למדיניות הקניין הרוחני ושימוש אסורים
+							כלליים אשר מהווה חלק בלתי נפרד מ"תנאי הרישיון". ביטויים אשר לא
+							הוגדרו במדיניות זו, תהא להם משמעות הזהה למשמעותם בהסכם. אנא קרא
+							בעיון את ההוראות הבאות:
+						</strong>
+					</p>
+					<p>
+						<strong> קניין רוחני </strong>
+					</p>
+					<p>
+						• מלוא זכויות הקניין הרוחני בתוכנה הנם בבעלות קניינית מלאה ובלעדית
+						של החברה ו/או בשימושה לפי רישיון שימוש שקיבלה, ולמשתמש בה אין כל
+						זכויות בתוכנה ו/או בכל חלק ממנה.
+					</p>
+					<p>
+						• בין זכויות קניין רוחני אלו, אך לא רק ומבלי להגביל את כלליות האמור:
+						שמות מתחם (בין אם רשומים או ניתנים לרישום ובין אם לאו), חוויית
+						משתמש, תוכן (מילולי, חזותי, קולי, או כל שילוב שלהם או חלק מהם וכן
+						עיצובו, עיבודו, עריכתו ודרך הצגתו), טקסט, מידע, גרפיקה, עיצובים,
+						תמונות, צילומים, וידאו/סרטונים, לוגו, סמלים, ממשקים, הודעות,
+						מוניטין, זכויות יוצרים, סימני מסחר (בין רשומים ובין אם לאו), פטנטים,
+						רעיונות, פיתוחים, קוד מקור, שיטות, תהליכים, טכנולוגיות, כל זכויות
+						דומות באשר הן.
+					</p>
+					<p>
+						• המשתמש בתוכנה לא יעתיק, ישכפל, יפיץ, יפרסם, ישדר, יציג, ישנה, יעבד
+						או יעשה כל שימוש בתוכנה לכל מטרה, שלא הותרה במפורש לפי תנאי השימוש,
+						ובכלל זה כל שימוש העשוי לפגוע בזכויות הקניין הרוחני של החברה ו/או של
+						צד ג' אחר כלשהו.
+					</p>
+					<p>
+						• המשתמש בתוכנה לא יעביר בכל דרך שהיא לצד ג' כלשהו כל ו/או חלק
+						מהקניין הרוחני של החברה ו/או מהתוכנה ו/או מרישיון השימוש שלו, ללא
+						קבלת הסכמה מפורשת מראש ובכתב מאיתנו ובכפוף לה.
+					</p>
+					<p>
+						• אישור תנאי השימוש על ידך מהווה הסכמה לכך שנבצע שימוש מכל סוג וכפי
+						שתמצא לנכון, בכל משוב, המלצה או רעיון מכל סוג שהוא, שתעביר לחברה.
+						בכך מוענק לנו רישיון תמידי, הניתן להעברה ולרישוי משנה, גלובלי, בלתי
+						חוזר, משולם במלואו וללא חיוב בתגמולים להשתמש בכל דרך שהיא באלו.
+					</p>
+					<p>
+						<strong> זכויות ושימושים בתמונות המסמכים הפיננסיים </strong>
+					</p>
+					<p>
+						• השימוש באפליקציה מותנה בכך שצילום המסמכים שתעשה במסגרת שימושך
+						באפליקציה יהיה של המסמכים הפיננסיים האישיים שלך בלבד.
+					</p>
+					<p>
+						• הזכויות במסמכים הפיננסיים אותם תצלם שייכות לך, ואתה מעניק לחברה
+						רישיון חינם, כלל-עולמי, לא בלעדי, בלתי ניתן לביטול וניתן להעברה
+						להשתמש, להעתיק, להפיץ, להכין יצירות נגזרות, ולבצע כל פעולה אחרת
+						הנדרשת עפ"י שיקול דעת החברה לצורך אספקת השירותים לפי תנאי הרישיון,
+						והכול בהתאם למדיניות הפרטיות ("רשות השימוש של החברה").
+					</p>
+					<p>
+						<strong> שימושים אסורים </strong>
+					</p>
+					<p>
+						פעולות מסוימות אסורות בעת השימוש בתוכנה, אי עמידה בהוראות המצוינות
+						להלן אף עשויה לחשוף את המשתמש לחבות אזרחית ו/או פלילית. אינך רשאי
+						(ואינך רשאי להתיר לכל צד שלישי), אלא אם הדבר הותר במפורש על-פי תנאי
+						שימוש אלה:
+					</p>
+					<p>
+						• להשתמש בתוכנה ו/או בתוכן לכל מטרה בלתי חוקית, בלתי מוסרית,
+						בלתי-מורשית ו/או אסורה;
+					</p>
+					<p>
+						• להשתמש בתוכנה ו/או בתוכן למטרות מסחריות או שאינן פרטיות, ללא הסכמה
+						מפורשת של החברה בכתב ומראש;
+					</p>
+					<p>
+						• להסיר או להפריד מהתוכן ו/או מהתוכנה כל הגבלות וסימנים המציינים
+						זכויות קנייניות של החברה או נותני הרישיון שלו, לרבות כל ההודעות
+						הקנייניות המופיעות בהם (כגון ©, TMאו ®), והנך מצהיר ומתחייב בזאת כי
+						תציית לכל החוקים החלים בעניין זה;
+					</p>
+					<p>
+						• להפר ו/או לפגוע בזכויות המשתמשים לפרטיות וזכויות אחרות, או לאסוף
+						מידע אישי מזהה אודות משתמשים ללא הסכמתם המפורשת, בין אם באופן ידני
+						או באמצעות שימוש בכל רובוט, עכביש, זחלן, כל יישום חיפוש או אחזור, או
+						שימוש באמצעי, בתהליך או בשיטה ידניים או אוטומטיים אחרים על מנת
+						להיכנס לתוכנה ולאחזר, לאסוף ו/או לשאוב מידע;
+					</p>
+					<p>
+						• לפגוע או לשבש בפעולת התוכנה או השרתים או הרשתות המאחסנות את
+						התוכנה, או להפר כל חוק, תקנה, דרישה, נוהל או מדיניות של שרתים או
+						רשתות כאמור;
+					</p>
+					<p>
+						• להצהיר הצהרות שקריות או להציג מצג שווא בנוגע לקשר שלך עם כל אדם או
+						גוף, או לציין במפורש או במרומז כי החברה משויכת אליך בכל דרך שהיא,
+						מעניקה חסות, תומכת בך, בתוכנה שלך, בעסקך או בהצהרותיך, או להציג מידע
+						שקרי או לא מדויק אודות התוכנה או החברה;
+					</p>
+					<p>
+						• לבצע כל פעולה היוצרת או העלולה ליצור עומס גדול ובלתי סביר על תשתית
+						התוכנה;
+					</p>
+					<p>
+						• לעקוף את כל האמצעים בהם החברה משתמשת על מנת למנוע או להגביל את
+						הגישה לתוכנה;
+					</p>
+					<p>
+						• להעתיק, לתקן, לשנות, להתאים, למסור, להנגיש, לתרגם, להפנות, לבצע
+						הנדסה חוזרת, להמיר קוד בינארי לקוד פתוח, לעשות דה-קומפילציה, או
+						להפריד כל חלק בתוכן או בתוכנה, או להציג לציבור, ליצור יצירות נגזרות,
+						לבצע, להפיץ, לתת רישיון משנה, לעשות כל שימוש מסחרי, למכור, להשכיר,
+						להעביר, להלוות, לעבד, לאסוף, לשלב עם תוכנה אחרת – של כל חומר הכפוף
+						לזכויות קנייניות של החברה, לרבות קניין רוחני של החברה (כהגדרתו של
+						מונח זה להלן), בכל אופן או בכל אמצעי, אלא אם הדבר הותר במפורש בתנאים
+						ו/או על-פי כל דין החל, המתיר פעולות אלו במפורש;
+					</p>
+					<p>
+						• לעשות כל שימוש בתוכן בכל תוכנה אחר או רשת מחשבים, לכל מטרה, ללא
+						הסכמה של החברה בכתב ומראש;
+					</p>
+					<p>
+						• ליצור סביבת דפדפן, לתחם (frame), ליצור העתק (mirror) או לבצע
+						in-line linkingלכל חלק מהתוכנה ללא הרשאה מפורשת של החברה בכתב ומראש;
+					</p>
+					<p>
+						• למכור, לתת רישיון, או לנצל למטרה מסחרית כלשהי כל שימוש או גישה
+						לתוכנה;
+					</p>
+					<p>
+						• ליצור מאגר מידע על-ידי הורדה ואחסון שיטתיים של כל או חלק מהתוכן;
+					</p>
+					<p>
+						• להעביר או להנגיש בכל דרך אחרת, בקשר לתוכנה או לתוכן, כל וירוס,
+						“תולעת”, סוס טרויאני, באג, רוגלה, נוזקה, או כל קוד מחשב, קובץ או
+						תוכנה אחרים אשר עשויים להזיק, או נועדו להזיק לפעילות של כל חומרה,
+						תוכנה, ציוד תקשורת, קוד או רכיב;
+					</p>
+					<p>• (טו) להפר אי אלו מתנאי הרישיון.</p>
+				</ng-container>
+			</div>
+		</div>
+	</p-dialog>
+</ng-container>

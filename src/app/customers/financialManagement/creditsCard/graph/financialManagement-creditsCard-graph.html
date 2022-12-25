@@ -1,0 +1,222 @@
+<div id="creditsCardGraphView" style="position: relative" #containerHost>
+  <div class="filterRow">
+    <app-cards-select
+		    #cardsDD
+      [cards]="userService.appData.userData.creditCards"
+      (changedTrigger)="getCreditCardTazrimGraph(cardsDD)"></app-cards-select>
+
+    <app-ccard-dates></app-ccard-dates>
+
+    <div class="search">
+      <input
+        type="text"
+        placeholder="{{ 'filters.search' | translate }}"
+        [formControl]="queryControl"
+        autocomplete="off"
+      />
+    </div>
+    <app-tooltip-category
+      [title]="'titles.category' | translate"
+      [type]="'transType'"
+      [data]="transTypesArr"
+      (changed)="filterCategory($event)"
+    ></app-tooltip-category>
+
+    <ul class="tabs navTabs">
+      <li
+        routerLink="../aggregate"
+        queryParamsHandling="preserve"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: false }"
+        [matTooltip]="
+          'appWalk.customers.financialManagement.creditsCard.viewSwitchAggregate'
+            | translate
+        "
+        matTooltipPosition="above"
+      >
+        {{ 'filters.consolidated' | translate }}
+      </li>
+      <li
+        routerLink="../details"
+        queryParamsHandling="preserve"
+
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: false }"
+        [matTooltip]="
+          'appWalk.customers.financialManagement.creditsCard.viewSwitchDetails'
+            | translate
+        "
+        matTooltipPosition="above"
+      >
+        {{ 'filters.detailed' | translate }}
+      </li>
+      <li
+        routerLink="../graph"
+        queryParamsHandling="preserve"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: false }"
+        [matTooltip]="
+          'appWalk.customers.financialManagement.creditsCard.viewSwitchChart'
+            | translate
+        "
+        matTooltipPosition="above"
+      >
+        <img  ngSrc="/assets/images/chart.png" height="13" width="22" />
+      </li>
+    </ul>
+  </div>
+
+  <!--<div *ngIf="loader" class="loader">-->
+  <!--<div class="circle"></div>-->
+  <!--</div>-->
+
+  <div
+    class="rowSumsAndSelect"
+    [ngClass]="{
+      redBg:
+        creditCardsOutdated?.length && !allCreditCardsOutdatedBecauseNotFound
+    }"
+    #header
+  >
+    <div class="sums">
+      <!--<p-checkbox checkboxIcon="fa fa-check" class="checkboxGraph" [label]="'actions.displayValues'| translate"-->
+      <!--[(ngModel)]="showValues" [binary]="true" (onChange)="updateChart()"></p-checkbox>-->
+      <p-checkbox checkboxIcon="fa fa-check"
+        id="p-showHideValuesInside"
+        inputId="showHideValuesInside"
+        [label]="'actions.displayValues' | translate"
+        [formControl]="showValuesControl"
+        [binary]="true"
+      ></p-checkbox>
+      <p-checkbox checkboxIcon="fa fa-check"
+        id="p-showHideStackedInside"
+        inputId="showHideStackedInside"
+        [label]="'תצוגת כרטיסים מאוחדת' | translate"
+        [formControl]="showStackedControl"
+        [binary]="true"
+      ></p-checkbox>
+
+      <div
+        *ngIf="
+          creditCardsOutdated.length === 1 &&
+          !allCreditCardsOutdatedBecauseNotFound
+        "
+      >
+        <app-card-outdated-view
+          [card]="creditCardsOutdated[0]"
+        ></app-card-outdated-view>
+        <!--<app-token-credentials-update-button-->
+        <!--[balanceLastUpdatedDate]="creditCardsOutdated[0].balanceLastUpdatedDate"-->
+        <!--[tokenData]="{-->
+        <!--companyId: userService.appData.userData.companySelect.companyId,-->
+        <!--tokenId: creditCardsOutdated[0].token || ((creditCardsOutdated[0].companyAccountId)|asBankAccount).token-->
+        <!--}">-->
+        <!--</app-token-credentials-update-button>-->
+      </div>
+      <div
+        *ngIf="
+          creditCardsOutdated.length > 1 &&
+          !allCreditCardsOutdatedBecauseNotFound
+        "
+        class="alert-deviation-multi"
+      >
+        <i class="fas fa-exclamation-triangle"></i>
+        <div>
+          {{ 'expressions.cardsDataOutdated0' | translate }}
+          {{ creditCardsOutdated.length }}
+          {{ 'expressions.cardsDataOutdated1' | translate }}
+        </div>
+        <div class="separatorInsider"></div>
+        <div class="link" (click)="tooltipWithNavigation.toggle($event)">
+          {{ 'sumsTitles.forDetails' | translate }}
+          <p-overlayPanel
+            styleClass="tooltip-bottom tooltip-acc-deviation"
+            [style]="{ transform: 'translate(-50%, 10px)', width: 'auto' }"
+            #tooltipWithNavigation
+            appendTo="body"
+          >
+            <ul class="scroll-chrome">
+              <li
+                *ngFor="let cc of creditCardsOutdated"
+                (click)="selectCreditCard(cc); tooltipWithNavigation.hide()"
+              >
+                <span>{{ cc.creditCardNickname }}</span
+                >&nbsp;
+
+                <span class="sum-debit">
+                  <span style="color: #0f3860; text-decoration: none">-</span
+                  >&nbsp;{{ 'filters.outdated' | translate }}
+                </span>
+                <!--<span class="sum-debit">{{cc.balanceLastUpdatedDate| todayRelativeHumanize:'days'}}</span>-->
+              </li>
+            </ul>
+          </p-overlayPanel>
+        </div>
+      </div>
+    </div>
+    <div class="exports">
+      <!--<button><img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/to-printer.png" height="21" width="24"/></button>-->
+      <!--<button><img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/to-pdf.png" height="21" width="24"/></button>-->
+    </div>
+  </div>
+
+  <!--<div *ngIf="userService.appData?.userData?.creditCards?.length && dataTableAll?.length">-->
+  <!--<app-charts [chartData]="chartData" [scrollHeight]="280"></app-charts>-->
+  <!--</div>-->
+
+  <!--<ng-container *ngIf="!loader && !dataTableAll?.length">-->
+  <!--<div class="no-rows-found" [appScrollHeight]="250">-->
+  <!--<ng-container *ngIf="!dataTableAll.length && userService.appData.userData.creditCards?.length-->
+  <!--&& !userService.selectedCreditCardsCount()">-->
+  <!--{{'expressions.selectCreditCard'| translate}}-->
+  <!--</ng-container>-->
+  <!--<ng-container-->
+  <!--*ngIf="userService.appData.userData.creditCards?.length && userService.selectedCreditCardsCount()">-->
+  <!--{{'expressions.noDataFoundForCriteria'| translate}}, {{'expressions.changeCriteria'| translate}}-->
+  <!--</ng-container>-->
+  <!--</div>-->
+  <!--</ng-container>-->
+
+  <ng-template #loader>
+    <div
+      class="loader"
+      [appScrollHeight]="header.getBoundingClientRect().bottom + 10"
+    >
+      <div class="circle"></div>
+    </div>
+  </ng-template>
+
+  <ng-template #noChartData>
+    <div
+      class="no-rows-found"
+      [appScrollHeight]="header.getBoundingClientRect().bottom + 10"
+    >
+      <ng-container
+        *ngIf="!cardsSelector.selectedCards?.length; else refineCriteria"
+      >
+        {{ 'expressions.selectCreditCard' | translate }}
+      </ng-container>
+      <ng-template #refineCriteria>
+        {{ 'expressions.noDataFoundForCriteria' | translate }},
+        {{ 'expressions.changeCriteria' | translate }}
+      </ng-template>
+    </div>
+  </ng-template>
+
+  <div
+    *ngIf="chartData$ | async as chartDataNew; else loader"
+    id="chartContainer"
+  >
+    <ng-container *ngIf="chartDataNew.series?.length; else noChartData">
+      <!--<p-checkbox checkboxIcon="fa fa-check" id="p-showHideValuesInside" inputId="showHideValuesInside"-->
+      <!--class="checkboxGraph" [ngStyle]="{top: 0}"-->
+      <!--[label]="'actions.displayValues'| translate"-->
+      <!--[formControl]="showValuesControl" [binary]="true"></p-checkbox>-->
+
+      <app-charts
+        [chartData]="chartDataNew"
+        [scrollHeight]="header.getBoundingClientRect().bottom + 10"
+      ></app-charts>
+    </ng-container>
+  </div>
+</div>

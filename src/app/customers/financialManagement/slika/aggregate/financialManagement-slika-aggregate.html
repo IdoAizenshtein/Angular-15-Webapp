@@ -1,0 +1,255 @@
+<div id="slikaAggregateView">
+	<div #header class="filterRow">
+		<app-solek-select
+				(changed)="getSlikaSummary()"
+				[solek]="userService.appData.userData.slika"
+		></app-solek-select>
+		
+		<div class="exports">
+			<!--<button (click)="printTransactions()"><img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/to-printer.png" height="21" width="24"/></button>-->
+			<button
+					(click)="reportMailSubmitterToggle = true"
+					[matTooltip]="'appWalk.customers.report.mailBtn' | translate"
+					matTooltipPosition="above"
+			>
+				<img height="21" ngSrc="/assets/images/to-mail.png" width="24"/>
+				<app-report-mail-scheduler
+						(recipientApproved)="sendTransactions($event)"
+						
+						[visible]="(reportMailSubmitterToggle)"
+				></app-report-mail-scheduler>
+			</button>
+			<!--<button (click)="exportTransactions('PDF')"><img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/to-pdf.png" height="21" width="24"/></button>-->
+			<button
+					(click)="exportTransactions('EXCEL')"
+					[matTooltip]="'appWalk.customers.report.excelBtn' | translate"
+					matTooltipPosition="above"
+			>
+				<img height="21" ngSrc="/assets/images/to-excel.png" width="24"/>
+			</button>
+		</div>
+		
+		<ul class="tabs navTabs" style="margin: 0">
+			<li
+					[matTooltip]="
+          'appWalk.customers.financialManagement.slika.viewSwitchAggregate'
+            | translate
+        "
+					[routerLinkActiveOptions]="{ exact: false }"
+					matTooltipPosition="above"
+					routerLink="../aggregate"
+					queryParamsHandling="preserve"
+					routerLinkActive="active"
+			>
+				{{ 'filters.consolidated' | translate }}
+			</li>
+			<li
+					[matTooltip]="
+          'appWalk.customers.financialManagement.slika.viewSwitchDetails'
+            | translate
+        "
+					[routerLinkActiveOptions]="{ exact: false }"
+					matTooltipPosition="above"
+					routerLink="../details"
+					queryParamsHandling="preserve"
+					routerLinkActive="active"
+			>
+				{{ 'filters.detailed' | translate }}
+			</li>
+			<li
+					[matTooltip]="
+          'appWalk.customers.financialManagement.slika.viewSwitchChart'
+            | translate
+        "
+					[routerLinkActiveOptions]="{ exact: false }"
+					matTooltipPosition="above"
+					routerLink="../graph"
+					queryParamsHandling="preserve"
+					routerLinkActive="active"
+			>
+				<img height="13" ngSrc="/assets/images/chart.png" width="22"/>
+			</li>
+		</ul>
+	</div>
+	<div class="wrap-aggregate">
+		<div *ngIf="loader" class="loader">
+			<div class="circle"></div>
+		</div>
+		<div
+				*ngIf="!loader && !userService.appData?.userData?.soleksDetails?.length"
+				class="no-rows-found"
+		>
+			<ng-container
+					*ngIf="
+          userService.appData.userData.slika?.length &&
+          !userService.selectedSolkim().length
+        "
+			>
+				{{ 'expressions.selectSolek' | translate }}
+			</ng-container>
+			<ng-container
+					*ngIf="
+          userService.appData.userData.slika?.length &&
+          userService.selectedSolkim().length
+        "
+			>
+				{{ 'expressions.noDataFoundForCriteria' | translate }},
+				{{ 'expressions.changeCriteria' | translate }}
+			</ng-container>
+		</div>
+		<div class="prevScroll">
+			<img
+					(click)="prevScroll(aggregate)"
+					*ngIf="viewPort && viewPort['_totalContentSize'] &&viewPort['_viewportSize']&& (viewPort['_totalContentSize'] > viewPort['_viewportSize']) && cardHandlesScrollIndex !== 0 && viewPort.measureScrollOffset('right') > 505"
+					alt="next"
+					height="43"
+					ngSrc="/assets/images/arrowNexPrev.png"
+					width="42"
+			/>
+		</div>
+		<cdk-virtual-scroll-viewport
+				[ngStyle]="{'height': (window.innerHeight - header.getBoundingClientRect().bottom) +'px'}"
+				itemSize="505"
+				orientation="horizontal">
+			<ul
+					#aggregate
+					(cdkDropListDropped)="drop($event)"
+					cdkDropList
+					cdkDropListOrientation="horizontal"
+					class="aggregate-columns scroll-chrome wrap-aggregate-table"
+					id="sortable"
+			>
+				<ng-container
+						*cdkVirtualFor="let item of userService.appData.userData.soleksDetails; let i = index; trackBy: trackById">
+					<li #cardHandle
+					    (keyup.ArrowLeft)="stepCard(1, $event)"
+					    (keyup.ArrowRight)="stepCard(-1, $event)"
+					    [class.hover]="item?.hover"
+					    [tabindex]="sortableIdGr?.indexOf(item.solekNum) + 1"
+					    cdkDrag
+					    class="p-state-default aggregate-columns-li"
+					>
+						<div *ngIf="item" class="absoluteFixedHead">
+							<div
+									(mouseleave)="item.hover = false"
+									(mouseover)="item.hover = true"
+									class="title_col"
+							>
+								<div [class.redBg]="
+                !item.balanceIsUpToDate && !item.outdatedBecauseNotFound
+              "
+								     cdkDragHandle
+								     class="p-g topTitles topTitleCreditCardAggr flexWrap cursorAllScroll"
+								>
+									<div class="p-g-6 p-g">
+										<div class="p-g-3">
+											<app-solek-view
+													[showName]="false"
+													[solekNumber]="item?.solekBankId"
+													style="align-self: center; flex: 0 0 auto"
+											></app-solek-view>
+											<!--<i>-->
+											<!--{{item?.solekBankId}}-->
+											<!--</i>-->
+										</div>
+										<div class="p-g-3">
+											<h3>
+												{{ 'clearingAgencies.' + item?.solekBankId | translate }}
+												<!--{{item?.solekBankId}}-->
+											</h3>
+											<p>{{ item?.solekNum }}</p>
+										</div>
+									</div>
+									<div class="p-g-6">
+										<p
+												*ngIf="
+                    item.balanceIsUpToDate || item.outdatedBecauseNotFound;
+                    else solekIsOutdated
+                  "
+												class="flexWrap"
+												style="justify-content: flex-end"
+										>
+											{{ item?.accountNickname }} -- {{ item.balanceOutdatedDays }}
+										</p>
+										<ng-template #solekIsOutdated>
+											<div class="flexWrap" style="justify-content: flex-end">
+												<app-solek-outdated-view
+														[solek]="item"
+												></app-solek-outdated-view>
+												<!--<app-token-credentials-update-button-->
+												<!--[balanceLastUpdatedDate]="item.ballanceLastUpdatedDate"-->
+												<!--[tokenData]="{-->
+												<!--companyId: userService.appData.userData.companySelect.companyId,-->
+												<!--tokenId: item.token || ((item.companyAccountId)|asBankAccount).token-->
+												<!--}">-->
+												<!--</app-token-credentials-update-button>-->
+											</div>
+										</ng-template>
+									</div>
+								</div>
+							</div>
+							<div class="p-g rows_banks title_col_chart">
+								<app-charts
+										[chartData]="item?.chartData"
+										[hover]="hoverOn?.item === item && hoverOnAsChartData"
+								></app-charts>
+							</div>
+						</div>
+						<div [appScrollHeight]="440" class="scrollbar-dynamic">
+							<div
+									(click)="
+              itemChild.monthlyTotal !== null &&
+                goToFinancialManagementSlikaDetailsComponent(item, itemChild)
+            "
+									(mouseenter)="
+              hoverOn = itemChild.monthlyTotal !== null && {
+                item: item,
+                childIndex: idx
+              }
+            "
+									(mouseleave)="hoverOn = null"
+									*ngFor="let itemChild of item?.monthlyTotals; index as idx"
+									[class.today]="itemChild.notFinal"
+									[ngStyle]="itemChild.monthlyTotal !== null && { cursor: 'pointer' }"
+									class="p-g accountTransactions creditTableRow"
+							>
+								<div class="p-g-3">
+									{{ itemChild.cycleDate | date: 'MM/yyyy' }}
+								</div>
+								<div class="p-g-6">
+              <span *ngIf="itemChild.notFinal">
+                {{ 'titles.notFinal' | translate }}
+              </span>
+									<span *ngIf="!itemChild.notFinal"> &nbsp; </span>
+								</div>
+								<div
+										[ngClass]="{
+                'sum-credit': itemChild.monthlyTotal > 0,
+                'sum-debit': itemChild.monthlyTotal < 0
+              }"
+										class="p-g-3 ltrNum"
+								>
+									<ng-container *ngIf="itemChild.monthlyTotal !== null">
+										<app-sum-view [sum]="itemChild.monthlyTotal"></app-sum-view>
+										<i class="arrLeft"></i>
+									</ng-container>
+									<span *ngIf="itemChild.monthlyTotal === null">-</span>
+								</div>
+							</div>
+						</div>
+					</li>
+				</ng-container>
+			</ul>
+		</cdk-virtual-scroll-viewport>
+		<div class="nextScroll">
+			<img
+					(click)="nextScroll(aggregate)"
+					*ngIf="viewPort && viewPort['_totalContentSize'] &&viewPort['_viewportSize']&&  viewPort['_totalContentSize'] > viewPort['_viewportSize'] && viewPort.measureScrollOffset('end') > 25"
+					alt="next"
+					height="43"
+					ngSrc="/assets/images/arrowNexPrev.png"
+					width="42"
+			/>
+		</div>
+	</div>
+</div>

@@ -1,0 +1,28 @@
+<p>בחרו את החברה אליה תרצו להעביר את המסמך</p>
+<div #header class="search">
+	<input
+			[formControl]="query"
+			autocomplete="off"
+			placeholder="{{ 'filters.search' | translate }}"
+			type="text"
+	/>
+</div>
+
+<div [appScrollHeight]="0" appendTo="parent" class="scrollbar-dynamic">
+	<mat-list *ngIf="companiesFitlered$ | async as companies">
+		<ng-container *ngFor="let comp of companies; trackBy: trackCompany">
+			<mat-list-item
+					(click)="selectedCompany = comp"
+					*ngIf="selectedCompanyId !== comp.companyId"
+					[class.active]="comp === selectedCompany"
+			>
+				<p matLine>
+					<span class="forceLTR">{{ comp.companyHp }}</span>
+				</p>
+				<p matLine>
+					<span>{{ comp.companyName }}</span>
+				</p>
+			</mat-list-item>
+		</ng-container>
+	</mat-list>
+</div>

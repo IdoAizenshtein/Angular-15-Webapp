@@ -1,0 +1,41 @@
+@import url('https://fonts.googleapis.com/css?family=Assistant:200,300,400,600,700,800&subset=hebrew');
+
+@function getFont($type) {
+  @if $type == extra-light {
+    @return 200;
+  } @else if $type == light {
+    @return 300;
+  } @else if $type == regular {
+    @return 400;
+  } @else if $type == semi-bold {
+    @return 600;
+  } @else if $type == bold {
+    @return 700;
+  } @else if $type == extra-bold {
+    @return 800;
+  } @else {
+    @return 400;
+  }
+}
+
+@mixin font($type, $size: initial, $line-height: normal) {
+  font: {
+    size: $size; // !important;
+    weight: getFont($type); // !important;
+    family: 'Assistant' !important;
+  }
+  line-height: $line-height; // !important;
+}
+
+@each $typeFont in normal, light, bold, extra-bold {
+  .font-#{$typeFont} {
+    @include font($typeFont);
+  }
+}
+
+@mixin flex($type) {
+  .flex-#{$type} {
+    flex: $type 0 0;
+    -ms-flex: $type 0 0;
+  }
+}

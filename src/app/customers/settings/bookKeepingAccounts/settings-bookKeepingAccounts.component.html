@@ -1,0 +1,351 @@
+<div
+  id="settingsBookKeepingAccounts"
+  [appScrollHeight]="
+    settingsComponent.rowOfCompanies
+      ? settingsComponent.rowOfCompanies.nativeElement.getBoundingClientRect()
+          .bottom + 20
+      : 280
+  "
+  class="scrollbar-dynamic"
+>
+  <ng-container
+    *ngIf="
+      selectedCompanyAccountBankSettings$
+        | async as selectedCompanyAccountBankSetting;
+      else loader
+    "
+  >
+    <ng-container *ngIf="!(loading$ | async); else loader">
+      <ng-container
+        *ngFor="let sourceProgramGroup of selectedCompanyAccountBankSetting"
+      >
+        <section class="sourceProgramContainer">
+          <div>
+            {{
+              'settings.bookKeepingAccounts.sourceProgramGroupTitlePrefix'
+                | translate
+            }}&nbsp;&minus;&nbsp;
+            {{
+              'sourcePrograms.' + sourceProgramGroup.sourceProgramName
+                | translate
+            }}<br />
+            <button
+              class="button-link"
+              (click)="
+                rolloutClassifyAsBankPromptFor(
+                  sourceProgramGroup.sourceProgramId
+                )
+              "
+            >
+              <img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/add.png" />&nbsp;{{
+                'הוספת כרטיס שלא ברשימה'
+              }}
+            </button>
+          </div>
+          <div class="columns header">
+            <div>{{ 'כרטיס הנה"ח' }}</div>
+            <div>{{ 'תיאור' }}</div>
+            <div>{{ 'מספר חשבון בנק' }}</div>
+            <div>{{ 'סניף' }}</div>
+            <div></div>
+          </div>
+          <ng-container
+            *ngFor="let group of sourceProgramGroup.byAccountGroups"
+          >
+            <div
+              class="columns expandable"
+              (click)="
+                groupsExpanded[
+                  sourceProgramGroup.sourceProgramId +
+                    (group[0].companyAccountId || 'none')
+                ] =
+                  !groupsExpanded[
+                    sourceProgramGroup.sourceProgramId +
+                      (group[0].companyAccountId || 'none')
+                  ]
+              "
+              [class.expanded]="
+                groupsExpanded[
+                  sourceProgramGroup.sourceProgramId +
+                    (group[0].companyAccountId || 'none')
+                ]
+              "
+            >
+              <i
+                class="fa fa-fw"
+                [ngClass]="
+                  groupsExpanded[
+                    sourceProgramGroup.sourceProgramId +
+                      (group[0].companyAccountId || 'none')
+                  ]
+                    ? 'fa-chevron-up'
+                    : 'fa-chevron-down'
+                "
+              ></i>
+
+              <ng-container
+                *ngIf="group[0].companyAccountId; else notLinkedGroup"
+              >
+                <app-bank-view
+                  [bankNumber]="group[0].bankId"
+                  [showName]="true"
+                ></app-bank-view>
+                <!--<div>{{group[0].bankId| toIconSrc:'bank'}}</div>-->
+              </ng-container>
+              <ng-template #notLinkedGroup>
+                <div style="display: flex; align-items: center">
+                  <img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/letters.png" />
+                  <div style="width: 0.4em"></div>
+                  <span>{{ 'כרטיסים ללא שיוך' }}</span>
+                </div>
+              </ng-template>
+            </div>
+
+            <ng-container
+              *ngIf="
+                groupsExpanded[
+                  sourceProgramGroup.sourceProgramId +
+                    (group[0].companyAccountId || 'none')
+                ]
+              "
+            >
+              <div class="columns row" *ngFor="let cust of group">
+                <div>{{ cust.custId }}</div>
+                <div>{{ cust.companyCustomerLname }}</div>
+                <div>
+                  <ng-container
+                    *ngIf="cust.companyAccountId; else recommendedBankView"
+                  >
+                    <img [src]="" width="20"  />
+                    <!--<img style="height: auto; width: auto; position: relative;" fill [ngSrc]="!cust.bankId ? '' : cust.bankId| toIconSrc:'bank'"/>-->
+                    <em>&nbsp;</em>
+                    {{ cust.bankAccountId }}
+                  </ng-container>
+                  <ng-template #recommendedBankView>
+                    <img
+                      style="height: auto; width: auto; position: relative;" fill [ngSrc]="
+                        !cust.recommendedBankId
+                          ? ''
+                          : (cust.recommendedBankId | toIconSrc: 'bank')
+                      "
+                    />
+                    <em>&nbsp;</em>
+                    {{ cust.recommendedBankAccountId }}
+                  </ng-template>
+                </div>
+                <div>
+                  {{
+                    cust.companyAccountId
+                      ? cust.bankSnifId
+                      : cust.recommendedBankSnifId
+                  }}
+                </div>
+                <div>
+                  <ng-container
+                    *ngIf="cust.companyAccountId; else notLinkedActions"
+                  >
+                    <button
+                      class="button-link"
+                      (click)="updateBankPairing(cust, null)"
+                      [disabled]="cust.processing$ | async"
+                    >
+                      {{ 'ביטול שיוך' }}
+                    </button>
+                    <button
+                      class="button-dark"
+                      [disabled]="cust.processing$ | async"
+                      (click)="rolloutAccountPairingPromptFor(cust)"
+                    >
+                      {{ 'שיוך לבנק אחר' }}
+                    </button>
+                  </ng-container>
+                  <ng-template #notLinkedActions>
+                    <button
+                      class="button-link"
+                      [style.visibility]="
+                        !cust.recommendedCompanyAccountId ? 'hidden' : null
+                      "
+                      (click)="
+                        updateBankPairing(
+                          cust,
+                          cust.recommendedCompanyAccountId
+                        )
+                      "
+                      [disabled]="
+                        !cust.recommendedCompanyAccountId ||
+                        (cust.processing$ | async)
+                      "
+                    >
+                      <i class="fas fa-fw fa-check"></i>{{ 'אישור המלצה' }}
+                    </button>
+                    <button
+                      class="button-dark"
+                      [disabled]="cust.processing$ | async"
+                      (click)="rolloutAccountPairingPromptFor(cust)"
+                    >
+                      {{ 'שיוך לבנק' }}
+                    </button>
+                  </ng-template>
+                </div>
+              </div>
+            </ng-container>
+          </ng-container>
+        </section>
+      </ng-container>
+      <!--{{selectedCompanyAccountBankSetting| json}}-->
+    </ng-container>
+  </ng-container>
+</div>
+
+<ng-template #loader>
+  <div class="loader">
+    <div class="circle"></div>
+  </div>
+</ng-template>
+
+<ng-container   *ngIf="accountPairingPrompt">
+	<p-dialog (visibleChange)=" accountPairingPrompt.visible = $event"
+	          [visible]="(accountPairingPrompt?.visible) ? userService.showModalVar : userService.hideModalVar"
+	          styleClass="accountPairingDialog"
+	          appendTo="body"
+	          [modal]="true"
+	>
+		<p-header>{{ 'actions.accountPairing.title' | translate }}</p-header>
+		
+		<div class="columns header">
+			<div>{{ 'לחשבון בנק' }}</div>
+			<div>{{ 'סניף' }}</div>
+			<div>{{ 'תאריך עדכון אחרון' }}</div>
+		</div>
+		<div [appScrollHeight]="600" class="scrollbar-dynamic">
+			<ng-container
+					*ngIf="
+        selectedCompanyAccounts$ | async as selectedCompanyAccounts;
+        else loader
+      "
+			>
+				<div
+						class="columns row"
+						*ngFor="let acc of selectedCompanyAccounts"
+						(click)="
+          accountPairingPrompt.selectedCompanyAccountId = acc.companyAccountId
+        "
+						[class.selected]="
+          acc.companyAccountId === accountPairingPrompt.selectedCompanyAccountId
+        "
+				>
+					<div>
+						<img style="height: auto; width: auto; position: relative;" fill [ngSrc]="acc.bankId | toIconSrc: 'bank'" />&nbsp;{{
+						acc.accountNickname
+						}}&nbsp;({{ acc.currency | currencySymbol }}
+						)
+					</div>
+					<div>{{ acc.bankSnifId }}</div>
+					<div>{{ acc.balanceLastUpdatedDate | date: 'dd/MM/yy' }}</div>
+				</div>
+				<!--<pre>{{selectedCompanyAccounts| json}}</pre>-->
+			</ng-container>
+		</div>
+		
+		<p-footer>
+			<div style="justify-content: space-between">
+				<button
+						class="button-link"
+						(click)="accountPairingPrompt.visible = false"
+				>
+					{{ 'actions.accountPairing.decline' | translate }}
+				</button>
+				<button
+						class="button-dark"
+						(click)="accountPairingPrompt.onApprove()"
+						[disabled]="
+          !accountPairingPrompt.selectedCompanyAccountId ||
+          (accountPairingPrompt?.cust.processing$ | async)
+        "
+				>
+					<i
+							class="fas fa-fw fa-circle-notch fa-spin"
+							*ngIf="accountPairingPrompt?.cust.processing$ | async"
+					></i>
+					{{ 'actions.accountPairing.approve' | translate }}
+				</button>
+			</div>
+		</p-footer>
+	</p-dialog>
+</ng-container>
+
+<p-dialog (visibleChange)=" classifyAsBankPrompt.visible = $event"
+  *ngIf="classifyAsBankPrompt"
+  [visible]="(classifyAsBankPrompt?.visible)"
+  styleClass="classifyAsBankDialog"
+  appendTo="body"
+  [modal]="true"
+>
+  <p-header>{{ 'actions.classifyAsBank.title' | translate }}</p-header>
+
+  <div class="search">
+    <input
+      id="containTextFilter"
+      type="text"
+      autocomplete="off"
+      placeholder="{{ 'filters.search' | translate }}"
+      [formControl]="classifyAsBankPrompt.filterInput"
+    />
+  </div>
+
+  <div class="columns header">
+    <div>{{ 'כרטיס הנה"\ח' }}</div>
+    <div>{{ 'תיאור' }}</div>
+    <div>{{ 'סיווג נוכחי' }}</div>
+    <div></div>
+  </div>
+  <div [appScrollHeight]="600" class="scrollbar-dynamic">
+    <ng-container
+      *ngIf="
+        classifyAsBankPrompt.nonBankSettings$ | async as nonBankSettings;
+        else loader
+      "
+    >
+      <div class="columns row" *ngFor="let stng of nonBankSettings">
+        <div
+          [innerHTML]="
+            stng.custId | highlight: classifyAsBankPrompt.filterInput.value
+          "
+        ></div>
+        <div
+          [innerHTML]="
+            stng.companyCustomerLname
+              | highlight: classifyAsBankPrompt.filterInput.value
+          "
+        ></div>
+        <div
+          [innerHTML]="
+            stng.targetSupplierTypeName
+              | highlight: classifyAsBankPrompt.filterInput.value
+          "
+        ></div>
+        <div>
+          <button
+            class="button-dark"
+            [disabled]="stng.processing$ | async"
+            (click)="classifyAsBankPrompt.onApproveCustomer(stng)"
+          >
+            {{ 'סיווג כבנק' }}
+          </button>
+        </div>
+      </div>
+      <!--<pre>{{nonBankSettings| json}}</pre>-->
+    </ng-container>
+  </div>
+
+  <p-footer>
+    {{ 'לא מצאת את הכרטיס המבוקש?' }}&nbsp;
+    <button
+      class="button-link"
+      (click)="classifyAsBankPrompt.visible = false"
+      disabled
+    >
+      {{ 'טעינת הכרטיסים מחשבשבת' }}
+    </button>
+  </p-footer>
+</p-dialog>

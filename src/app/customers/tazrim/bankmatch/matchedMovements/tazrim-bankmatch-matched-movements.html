@@ -1,0 +1,494 @@
+<div class="lineAccBankMatchAccountNav">
+  <div class="filterRow">
+    <p-dropdown
+      #dd
+      [options]="userService.appData.userData.bankMatchAccount"
+      [(ngModel)]="userService.appData.userData.bankMatchAccountAcc"
+      [scrollHeight]="'135px'"
+      required
+      (onFocus)="clearFilter(dd)"
+      (onChange)="startChild()"
+      optionLabel="accountNickname"
+      [style]="{ width: '170px' }"
+      [dropdownIcon]="'p-dropdown-icon'"
+      placeholder="{{ 'actions.account' | translate }}"
+    >
+      <ng-template let-item pTemplate="selectedItem">
+        <div class="p-helper-clearfix" style="display: flex">
+          <img
+         fill [ngSrc]="
+              (item.companyAccountId | asBankAccount).bankId
+                | toIconSrc: 'bank'
+            "
+            [alt]="item.accountNickname"
+            style="
+            height: auto; width: auto; position: relative;
+              align-self: center;
+              flex: 0 0 auto;
+              -ms-flex: 0 0 auto;
+              margin: 0 0px 0px 4px;
+            "
+          />
+          <!--<img style="height: auto; width: auto; position: relative;" fill ngSrc="{{item.bankIconSrc}}"-->
+          <!--alt="{{item.accountNickname}}"-->
+          <!--style="align-self: center; flex: 0 0 auto;-ms-flex:0 0 auto; margin: 0 0px 0px 4px;"/>-->
+          <p
+            class="nameAcc"
+            style="
+              overflow: hidden;
+              white-space: nowrap;
+              text-overflow: ellipsis;
+            "
+          >
+            {{ item.accountNickname }} {{ item.currency }}
+          </p>
+        </div>
+      </ng-template>
+      <ng-template let-list pTemplate="item">
+        <div class="p-helper-clearfix" style="display: flex">
+          <img fill [ngSrc]="
+              (list.companyAccountId | asBankAccount).bankId
+                | toIconSrc: 'bank'
+            "
+            [alt]="list.accountNickname"
+            style="
+            height: auto; width: auto; position: relative;
+              align-self: center;
+              flex: 0 0 auto;
+              -ms-flex: 0 0 auto;
+              margin: 0 0px 0px 4px;
+            "
+          />
+          <!--<img style="height: auto; width: auto; position: relative;" fill ngSrc="{{list.value.bankIconSrc}}"-->
+          <!--alt="{{list.value.accountNickname}}"-->
+          <!--style="align-self: center; flex: 0 0 auto;-ms-flex:0 0 auto; margin: 0 0px 0px 4px;"/>-->
+          <p
+            class="nameAcc"
+            style="
+              overflow: hidden;
+              white-space: nowrap;
+              text-overflow: ellipsis;
+            "
+          >
+            {{ list.accountNickname }} {{ list.currency }}
+          </p>
+        </div>
+      </ng-template>
+    </p-dropdown>
+
+    <app-bankmatch-dates></app-bankmatch-dates>
+    <!--<app-acc-dates [option]="'days'" (changedTrigger)="filterDates($event)"></app-acc-dates>-->
+
+    <ul class="tabs">
+      <li
+        (click)="filterTypes('false')"
+        [class.active]="filterTypesVal === 'false'"
+      >
+        מערכת
+      </li>
+      <li
+        (click)="filterTypes('true')"
+        [class.active]="filterTypesVal === 'true'"
+      >
+        ידני
+      </li>
+      <li (click)="filterTypes(null)" [class.active]="filterTypesVal === null">
+        הכל
+      </li>
+    </ul>
+
+    <div class="search">
+      <input
+        id="containTextFilter"
+        type="text"
+        placeholder="{{ 'filters.search' | translate }}"
+        [value]="queryString"
+        [formControl]="filterInput"
+        autocomplete="off"
+      />
+    </div>
+    <div id="navTabs">
+      <ul class="tabs">
+        <li
+          routerLink="../"
+          queryParamsHandling="preserve"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }"
+          [title]="'תנועות להתאמה'"
+        >
+          {{ 'תנועות להתאמה' }}
+        </li>
+        <li
+          routerLink="../matched"
+          queryParamsHandling="preserve"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }"
+          [title]="'תנועות שהותאמו'"
+        >
+          {{ 'תנועות שהותאמו' }}
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="table-matched-movements">
+  <div class="titlesColumn" #header>
+    <div>&nbsp;</div>
+    <div>תנועות בנק</div>
+    <div class="separatorFlex">
+      <div>&nbsp;</div>
+    </div>
+    <div>תנועות צפויות שהותאמו</div>
+    <div class="separatorFlex">
+      <div>&nbsp;</div>
+    </div>
+    <div>פרטי ההתאמה</div>
+    <div>&nbsp;</div>
+  </div>
+  <div class="titlesColumnInside" *ngIf="dataTable && dataTable.length">
+    <div>&nbsp;</div>
+    <div>
+      <div>{{ 'titles.description' | translate }}</div>
+      <div>{{ 'titles.typeOfPayment' | translate }}</div>
+      <div (click)="sortPipeFilter(1)">
+        תאריך
+        <img
+          style="height: auto; width: auto; position: relative;margin: 0 3px -3px 0" fill [ngSrc]="
+            '/assets/images/sort-' +
+            (sortPipeDirDate1 === 'smaller' ? 'asc' : 'desc') +
+            '.png'
+          "
+        />
+      </div>
+      <div>{{ 'titles.sum' | translate }}</div>
+    </div>
+    <div class="separatorFlex">
+      <div>&nbsp;</div>
+    </div>
+    <div>
+      <div>{{ 'titles.description' | translate }}</div>
+      <div>{{ 'titles.typeOfPayment' | translate }}</div>
+      <div>{{ 'titles.expectedToDate' | translate }}</div>
+      <div>{{ 'titles.sum' | translate }}</div>
+    </div>
+    <div class="separatorFlex">
+      <div>&nbsp;</div>
+    </div>
+    <div>
+      <div>הותאם ע״י</div>
+      <div (click)="sortPipeFilter(3)">
+        בתאריך
+        <img
+          style="height: auto; width: auto; position: relative;margin: 0 3px -3px 0" fill [ngSrc]="
+            '/assets/images/sort-' +
+            (sortPipeDirDate3 === 'smaller' ? 'asc' : 'desc') +
+            '.png'
+          "
+        />
+      </div>
+      <div>&nbsp;</div>
+    </div>
+    <div>&nbsp;</div>
+  </div>
+  <div
+    [appScrollHeight]="header.getBoundingClientRect().bottom + 40"
+    #scrollContainer
+    style="position: relative"
+    class="scrollbar-dynamic"
+  >
+    <div *ngIf="loader" class="loader">
+      <div class="circle"></div>
+    </div>
+    <div
+      class="table-matched"
+      *ngFor="
+        let item of dataTable
+          | slice
+            : currentPage * entryLimit
+            : currentPage * entryLimit + entryLimit;
+        trackBy: trackById
+      "
+    >
+      <div>&nbsp;</div>
+      <div>
+        <div style="min-width: 0">
+          <ng-container *ngIf="item.bankMatchTransInner.beneficiary">
+            <div
+              class="text-ellipsis"
+              [innerHTML]="
+                item.bankMatchTransInner.transDesc | highlight: queryString
+              "
+              [pTooltip]="item.bankMatchTransInner.transDesc"
+              tooltipPosition="top"
+            ></div>
+            <div
+              class="text-ellipsis"
+              [pTooltip]="item.bankMatchTransInner.beneficiary.accountMutavName"
+              tooltipPosition="top"
+              style="color: #637e97; font-size: 14px"
+            >
+              {{ item.bankMatchTransInner.beneficiary.accountMutavName }}
+            </div>
+          </ng-container>
+          <ng-container *ngIf="!item.bankMatchTransInner.beneficiary">
+            <div
+              [innerHTML]="
+                item.bankMatchTransInner.transDesc | highlight: queryString
+              "
+            ></div>
+          </ng-container>
+        </div>
+        <div
+          [innerHTML]="
+            item.bankMatchTransInner.paymentDescTranslate
+              | highlight: queryString
+          "
+        ></div>
+        <div>
+          <div
+            [innerHTML]="
+              item.bankMatchTransInner.transDateFull
+                | date: 'dd/MM/yy'
+                | highlight: (searchInDates ? queryString : '')
+            "
+          ></div>
+          <!--<div [innerHTML]="item.bankMatchTransInner.transDateHumanizedStr | highlight: searchInDates ? queryString : ''"></div>-->
+
+          <div>
+            {{
+              item.bankMatchTransInner.transDateFull
+                | todayRelativeHumanize: 'days'
+            }}
+          </div>
+        </div>
+        <div>
+          <div
+            class="ltrNum"
+            [class.sum-credit]="item.bankMatchTransInner.bankTotal > 0"
+            [class.sum-debit]="item.bankMatchTransInner.bankTotal < 0"
+          >
+            <!--<div class="ltrNum"-->
+            <!--[class.sum-debit]="item.bankMatchTransInner.expence"-->
+            <!--[class.sum-credit]="!item.bankMatchTransInner.expence">-->
+            <app-sum-view
+              class="text-ellipsis"
+              [sum]="item.bankMatchTransInner.bankTotal"
+              [highlight]="queryString"
+            ></app-sum-view>
+          </div>
+        </div>
+      </div>
+      <div class="separatorFlex">
+        <div>&nbsp;</div>
+      </div>
+      <div>
+        <div *ngFor="let itemInside of item.array">
+          <div
+            [innerHTML]="itemInside.targetName | highlight: queryString"
+          ></div>
+          <div style="display: flex">
+            <div
+              [innerHTML]="
+                itemInside.paymentDescTranslate | highlight: queryString
+              "
+            ></div>
+            <div
+              [style.visibility]="
+                (itemInside.targetTypeName | isPeriodicType)
+                  ? 'visible'
+                  : 'hidden'
+              "
+              class="periodic-trans-indication"
+              style="margin-left: 2ch"
+            >
+              <img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/periodic-trans.png" />
+            </div>
+          </div>
+          <div>
+            <div
+              [innerHTML]="
+                itemInside.dueDateFull
+                  | date: 'dd/MM/yy'
+                  | highlight: (searchInDates ? queryString : '')
+              "
+            ></div>
+            <!--<div [innerHTML]="itemInside.dueDateHumanizedStr | highlight: searchInDates ? queryString : ''"></div>-->
+
+            <div>
+              {{ itemInside.dueDateFull | todayRelativeHumanize: 'days' }}
+            </div>
+          </div>
+          <div>
+            <div
+              class="ltrNum"
+              [class.sum-credit]="!itemInside.hova"
+              [class.sum-debit]="itemInside.hova"
+            >
+              <!--                        <div class="ltrNum" [class.sum-credit]="itemInside.targetTotal > 0" [class.sum-debit]="itemInside.targetTotal < 0">-->
+              <app-sum-view
+                class="text-ellipsis"
+                [sum]="itemInside.targetTotal"
+                [highlight]="queryString"
+              ></app-sum-view>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="separatorFlex">
+        <div>&nbsp;</div>
+      </div>
+      <div>
+        <div>{{ item.bankMatchTransInner.matchedUserName }}</div>
+        <div
+          [innerHTML]="
+            item.bankMatchTransInner.matchDateHumanizedStr
+              | highlight: (searchInDates ? queryString : '')
+          "
+        ></div>
+        <div>
+          <button
+            class="button-dark"
+            (click)="
+              openPopBankMatchDelete(item.bankMatchTransInner.bankTransId)
+            "
+            *ngIf="item.allowUnmatch"
+          >
+            בטל התאמה
+          </button>
+        </div>
+      </div>
+      <div>&nbsp;</div>
+    </div>
+    <app-paginator
+      [rows]="entryLimit"
+      [alwaysShow]="false"
+      #paginator
+      [totalRecords]="dataTable.length"
+      [rowsPerPageOptions]="[50, 100, 200]"
+      (onPageChange)="paginate($event)"
+    >
+    </app-paginator>
+    <div
+      class="alertNotData"
+      *ngIf="!loader && dataTable && !dataTable.length && alertNotData"
+    >
+      {{ 'expressions.noDataFoundForCriteria' | translate }},
+      {{ 'expressions.changeCriteria' | translate }}
+    </div>
+  </div>
+</div>
+
+<p-dialog (visibleChange)="showModalAutoMatch = false"
+  [visible]="(showModalAutoMatch)"
+
+  (onHide)="showModalAutoMatch = false"
+  appendTo="body"
+  [modal]="true"
+  [resizable]="false"
+  styleClass="modalEditCardsBeforeSend"
+>
+  <p-header>
+    <h1>ביטול התאמה אוטומטית</h1>
+  </p-header>
+
+  <p
+    style="text-align: right"
+    *ngIf="
+      showModalAutoMatch &&
+      showModalAutoMatch.bankMatchTransInner &&
+      showModalAutoMatch.array
+    "
+  >
+    האם ברצונך לבטל את ההתאמה האוטומטית
+    <br />
+    בין {{ showModalAutoMatch.bankMatchTransInner.transDesc }}
+
+    <br />
+    לתנועה הקבועה
+
+    <ng-container *ngFor="let itemInside of showModalAutoMatch.array">{{
+      itemInside.targetName
+    }}</ng-container>
+
+    עבור -
+  </p>
+
+  <ul
+    *ngIf="
+      showModalAutoMatch &&
+      showModalAutoMatch.array &&
+      showModalAutoMatch.array.length
+    "
+  >
+    <li>
+      <p-radioButton
+        name="changeOption"
+        [label]="'תנועה זו בלבד'"
+        [value]="false"
+        [(ngModel)]="showModalAutoMatch.array[0].searchkeyUpdate"
+        [inputId]="'setFieldValueForFuture1'"
+      ></p-radioButton>
+    </li>
+    <li>
+      <p-radioButton
+        name="changeOption"
+        [label]="'תנועות עתיד (מהיום קדימה)'"
+        [value]="true"
+        [(ngModel)]="showModalAutoMatch.array[0].searchkeyUpdate"
+        [inputId]="'setFieldValueForFuture2'"
+      ></p-radioButton>
+    </li>
+  </ul>
+  <p-footer>
+    <button class="button-link" (click)="showModalAutoMatch = false">
+      {{ 'actions.cancellation' | translate }}
+    </button>
+    <button class="button-dark" (click)="bankMatchDeleteAutoMatch()">
+      {{ 'actions.approve' | translate }}
+    </button>
+  </p-footer>
+</p-dialog>
+
+<p-dialog (visibleChange)="popUpDeleteMatch = false"
+  *ngIf="popUpDeleteMatch"
+  [visible]="(popUpDeleteMatch)"
+
+  appendTo="body"
+  [modal]="true"
+  [styleClass]="popUpDeleteMatch.styleClass"
+  [style]="{width: popUpDeleteMatch.width + 'px'}"
+  (onHide)="popUpDeleteMatch = false"
+>
+  <p-header>
+    <div>ביטול התאמה</div>
+  </p-header>
+  <div class="bodyPopUp" style="height: 87px; overflow: hidden">
+    <p>
+      האם ברצונך לבטל את ההתאמה בין
+      <strong
+        >"{{ popUpDeleteMatch.item.bankMatchTransInner.transDesc }}"</strong
+      >
+      <br />
+      לבין
+      <strong *ngFor="let itemInside of popUpDeleteMatch.item.array"
+        >"{{ itemInside.targetName }}"</strong
+      >
+      ?
+    </p>
+  </div>
+  <p-footer>
+    <a
+      href="javascript:void(0)"
+      role="button"
+      class="button-white button-link"
+      (click)="popUpDeleteMatch = false"
+    >
+      חזרה למסך
+    </a>
+
+    <button class="button-dark" type="button" (click)="bankMatchDelete()">
+      אישור
+    </button>
+  </p-footer>
+</p-dialog>

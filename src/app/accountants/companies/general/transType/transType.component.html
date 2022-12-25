@@ -1,0 +1,1392 @@
+<div
+        *ngIf="!isModal"
+        class="interestedBtn"
+        style="padding: 0px 10px; height: 30px; display: flex"
+>
+    <p-radioButton
+            (onClick)="onChangeValInterested(false)"
+            [(ngModel)]="interested"
+            [label]="'ללא סוג תנועה'"
+            [value]="false"
+            inputId="radio1"
+            name="radioGroupInterested"
+    >
+    </p-radioButton>
+    <span style="padding: 0px 8px"></span>
+    <p-radioButton
+            (onClick)="onChangeValInterested(true)"
+            [(ngModel)]="interested"
+            [label]="'עם סוג תנועה'"
+            [value]="true"
+            inputId="radio2"
+            name="radioGroupInterested"
+    >
+    </p-radioButton>
+</div>
+<ng-container *ngIf="interested">
+    <div class="interestedTransTypeScreen">
+        <p class="title">
+            ניתן לשנות את המלצת המערכת ע”י בחירה אחרת ממהדרופ בעמודת סוגי תנועה. לחיצה
+            על
+            <img fill ngSrc="/assets/images/plusTransType.png" style="height: auto; width: auto; position: relative;"/>
+            תוסיף עוד סוג תנועה.
+            <!--            *ngIf="transType.transTypeStatus==='NOT_DEFINED'"-->
+            <strong style="font-size: 16px">
+                <!--                 יש לאשר את המלצת המערכת בלחיצה על-->
+
+                <!--                <span style="color: #038ed6;display: inline-block;margin-right: 4px;"> אישור </span>-->
+                <!--                <mat-icon-->
+                <!--                        svgIcon="tick" style="-->
+                <!--    color: #038ed6;-->
+                <!--    height: 18px;-->
+                <!--    width: 20px;-->
+                <!--    display: block;-->
+                <!--    margin-right: 5px;-->
+                <!--    "></mat-icon>-->
+                סוגי תנועה ראשיים ישמשו כברירת מחדל
+            </strong>
+        </p>
+
+        <div
+                [appScrollHeight]="isModal ? 630 : 430"
+                [appendTo]="isModal ? 'parent' : 'body'"
+                class="scrollPage scrollbar-dynamic"
+        >
+            <div *ngIf="!isModal" class="table">
+                <div class="titleTable">הוצאה</div>
+                <div class="headerTable">
+                    <div>&nbsp;</div>
+                    <div>תיאור</div>
+                    <div>סוג תנועה</div>
+                    <div>שם</div>
+                    <div>חובה</div>
+                    <div>אחוז</div>
+                    <div>זכות</div>
+                    <div>אחוז</div>
+                    <div>&nbsp;</div>
+                </div>
+                <div class="bodyTable">
+                    <ng-container
+                            *ngFor="
+              let desc of transType.expenseData;
+              let i = index;
+              trackBy: trackDesc
+            "
+                    >
+                        <div
+                                *ngFor="let row of desc.rows; let iChild = index"
+                                [class.active]="
+                transType.transTypeStatus === 'NOT_DEFINED' &&
+                !row.empty &&
+                row.defined === false
+              "
+                                class="row"
+                        >
+                            <div>
+                                <img
+                                        (click)="
+                    addRow(
+                      'expenseData',
+                      desc.desc,
+                      row.transTypeName,
+                      row.options
+                    )
+                  "
+                                        *ngIf="row.parent"
+                                        src="/assets/images/plusTransType.png"
+                                        style="cursor: pointer"
+                                />
+
+                                <mat-icon
+                                        (click)="removeItem('expenseData', desc.desc, iChild, row)"
+                                        *ngIf="!row.parent"
+                                        style="
+                    color: #022258;
+                    cursor: pointer;
+                    height: 18px;
+                    width: 26px;
+                    display: block;
+                  "
+                                        svgIcon="trash"
+                                ></mat-icon>
+                            </div>
+                            <div>
+                                {{ 'transTypeTranslate.expenseData.' + desc.desc | translate }}
+                            </div>
+                            <div>
+                                <ng-container *ngIf="transTypeAll">
+                                    <p-dropdown
+                                        #formDropdowns
+                                        (onChange)="
+                      updateTransTypeCode(
+                        row,
+                'EXPENSE',
+                        'expenseData',
+                        desc.desc
+                      )
+                    "
+                                        (onClick)="row.transTypeCodeOld = row.transTypeCode;"
+                                        (onFocus)="clearFilter(formDropdowns)"
+                                        [(ngModel)]="row.transTypeCode"
+                                        [autoDisplayFirst]="false"
+                                        [dropdownIcon]="'fa fa-fw fa-caret-down'"
+                                        [filter]="true"
+                                        [options]="row.options"
+                                        [placeholder]="
+                      row.options && row.options.length && !(row.options.length === 1 && row.options[0].transTypeCode === null) ? 'בחירה' : 'ללא'
+                    "
+                                        [scrollHeight]="'135px'"
+                                        [style]="{ width: '100%' }"
+                                        appendTo="body"
+                                        dataKey="transTypeCode"
+                                        emptyFilterMessage="לא נמצאו תוצאות"
+                                        filterBy="value.transTypeCode,value.transTypeName"
+                                        optionDisabled="disabled"
+                                        optionLabel="transTypeCode"
+                                        panelStyleClass="transTypeAllDD-panel"
+                                        styleClass="transTypeAllDD"
+                                    >
+                                        <ng-template let-item pTemplate="selectedItem">
+                      <span
+                          #spanElement
+                          [pTooltip]="
+                          item.transTypeCode +
+                          ' ' +
+                          item.transTypeName
+                        "
+                          [tooltipDisabled]="
+                          spanElement.offsetWidth >= spanElement.scrollWidth
+                        "
+                          style="
+                          vertical-align: middle;
+                          display: block;
+                          white-space: nowrap;
+                          overflow: hidden;
+                          text-overflow: ellipsis;
+                        "
+                          tooltipPosition="top"
+                      >{{ item.transTypeCode }}</span
+                      >
+                                        </ng-template>
+                                        <ng-template let-item pTemplate="item">
+                                            <div
+                                                    *ngIf="
+                          transTypeAll &&
+                          row.options.length === 1 &&
+                          row.options[0].transTypeCode === null
+                        "
+                                                    class="p-helper-clearfix cust-item"
+                                            >
+                                                <div style="display: flex; align-items: center">
+                          <span class="text-ellipsis">
+                            לא מצאנו סוג תנועה בחשבשבת
+                          </span>
+                                                </div>
+                                            </div>
+                                            <div
+                                                    *ngIf="
+                          !(
+                            transTypeAll &&
+                            row.options.length === 1 &&
+                            row.options[0].transTypeCode === null
+                          )
+                        "
+                                                    class="p-helper-clearfix cust-item"
+                                            >
+                                                <div *ngIf="item.transTypeName !== 'title'"
+                                                     style="display: flex; align-items: center">
+                          <span
+                                  *ngIf="
+                              item.transTypeName !==
+                                'לא מצאנו סוגי תנועה נוספים לתיאור זה' &&
+                              !(
+                                item.transTypeCode === 'ללא' &&
+                                row.transTypeCode.transTypeName !== null &&
+                                !item.transTypeName
+                              )
+                            "
+                                  class="text-ellipsis"
+                                  style="
+                              width: 40px;
+                              display: inline-block;
+                              margin-left: 10px;
+                            "
+                          >{{ item.transTypeCode }}</span
+                          >
+
+                                                    <span class="text-ellipsis">{{
+                                                        item.transTypeCode === 'ללא' &&
+                                                        row.transTypeCode.transTypeName !== null &&
+                                                        !item.transTypeName
+                                                            ? 'ביטול בחירה'
+                                                            : item.transTypeName
+                                                        }}</span>
+                                                </div>
+
+                                                <div *ngIf="item.transTypeName === 'title'"
+                                                     style="font-weight: 700;font-size: 16px;">
+                                                    {{item.transTypeCode}}
+                                                </div>
+                                            </div>
+                                        </ng-template>
+                                        <ng-template pTemplate="empty">
+                                            <div
+                                                    class="p-helper-clearfix"
+                                                    style="font-size: 0.95em; padding: 0.3em 1em"
+                                            >
+                                                <div>לא נמצאו ס.תנועה בחשבשבת</div>
+                                            </div>
+                                        </ng-template>
+                                        <ng-template pTemplate="emptyfilter">
+                                            <div
+                                                    class="p-helper-clearfix"
+                                                    style="font-size: 0.95em; padding: 0.3em 1em"
+                                            >
+                                                <div>לא נמצאו ס.תנועה בחשבשבת</div>
+                                            </div>
+                                        </ng-template>
+                                    </p-dropdown>
+                                </ng-container>
+                                <ng-container *ngIf="!transTypeAll">
+                                    {{ row.transTypeCode ? row.transTypeCode.transTypeCode : '' }}
+                                </ng-container>
+                            </div>
+                            <div>
+                                {{ row.transTypeName }}
+                            </div>
+                            <div>
+                                <ng-container
+                                        *ngIf="row.expenseCust1 !== null && row.expenseCust2 !== null"
+                                >
+                                    <div>
+                                        {{ row.expenseCust1 }}
+                                    </div>
+                                    <div>
+                                        {{ row.expenseCust2 }}
+                                    </div>
+                                </ng-container>
+                                <ng-container
+                                        *ngIf="row.expenseCust1 !== null && row.expenseCust2 === null"
+                                >
+                                    {{ row.expenseCust1 }}
+                                </ng-container>
+                                <ng-container *ngIf="row.expenseCust1 === null">
+                                    &nbsp;
+                                </ng-container>
+                            </div>
+                            <div>
+                                <ng-container
+                                        *ngIf="row.expensePrc1 !== null && row.expensePrc2 !== null"
+                                >
+                                    <div>
+                                        {{ row.expensePrc1 }}
+                                    </div>
+                                    <div>
+                                        {{ row.expensePrc2 }}
+                                    </div>
+                                </ng-container>
+                                <ng-container
+                                        *ngIf="row.expensePrc1 !== null && row.expensePrc2 === null"
+                                >
+                                    {{ row.expensePrc1 }}
+                                </ng-container>
+                                <ng-container *ngIf="row.expensePrc1 === null">
+                                    &nbsp;
+                                </ng-container>
+                            </div>
+                            <div>
+                                <ng-container
+                                        *ngIf="row.incomeCust1 !== null && row.incomeCust2 !== null"
+                                >
+                                    <div>
+                                        {{ row.incomeCust1 }}
+                                    </div>
+                                    <div>
+                                        {{ row.incomeCust2 }}
+                                    </div>
+                                </ng-container>
+                                <ng-container
+                                        *ngIf="row.incomeCust1 !== null && row.incomeCust2 === null"
+                                >
+                                    {{ row.incomeCust1 }}
+                                </ng-container>
+                                <ng-container *ngIf="row.incomeCust1 === null">
+                                    &nbsp;
+                                </ng-container>
+                            </div>
+                            <div>
+                                <ng-container
+                                        *ngIf="row.incomePrc1 !== null && row.incomePrc2 !== null"
+                                >
+                                    <div>
+                                        {{ row.incomePrc1 }}
+                                    </div>
+                                    <div>
+                                        {{ row.incomePrc2 }}
+                                    </div>
+                                </ng-container>
+                                <ng-container
+                                        *ngIf="row.incomePrc1 !== null && row.incomePrc2 === null"
+                                >
+                                    {{ row.incomePrc1 }}
+                                </ng-container>
+                                <ng-container *ngIf="row.incomePrc1 === null">
+                                    &nbsp;
+                                </ng-container>
+                            </div>
+                            <div>
+                                <ng-container
+                                        *ngIf="
+                    transType.transTypeStatus === 'NOT_DEFINED' &&
+                    !row.empty &&
+                    row.defined === false
+                  "
+                                >
+                                    <!--                                    (click)="row.defined === false ? changeDef(row, 'EXPENSE') : null"-->
+
+                                    <mat-icon
+                                            *ngIf="row.defined !== false"
+                                            [ngStyle]="{
+                      color: row.defined === false ? '#038ed6' : '#4f4e4e',
+                      cursor: row.defined === false ? 'default' : 'default'
+                    }"
+                                            style="height: 18px; width: 20px; display: block"
+                                            svgIcon="tick"
+                                    ></mat-icon>
+                                    <ng-container *ngIf="row.defined === false">
+                                        <!--                                        <i (click)="changeDef(row, 'EXPENSE')"-->
+                                        <!--                                           style="cursor: pointer; color: #038ed6;font-size: 15px;font-weight: 600;">-->
+                                        <!--                                            אישור-->
+                                        <!--                                        </i>-->
+                                        &nbsp;
+                                    </ng-container>
+                                </ng-container>
+                                <ng-container
+                                        *ngIf="
+                    transType.transTypeStatus !== 'NOT_DEFINED' ||
+                    row.empty ||
+                    row.defined === true
+                  "
+                                >
+                                    &nbsp;
+                                </ng-container>
+                            </div>
+                        </div>
+                    </ng-container>
+                </div>
+            </div>
+            <div *ngIf="!isModal" class="table">
+                <div class="titleTable">הכנסה</div>
+                <div class="headerTable">
+                    <div>&nbsp;</div>
+                    <div>תיאור</div>
+                    <div>סוג תנועה</div>
+                    <div>שם</div>
+                    <div>חובה</div>
+                    <div>אחוז</div>
+                    <div>זכות</div>
+                    <div>אחוז</div>
+                    <div>&nbsp;</div>
+                </div>
+                <div class="bodyTable">
+                    <ng-container
+                            *ngFor="
+              let desc of transType.incomeData;
+              let i = index;
+              trackBy: trackDesc
+            "
+                    >
+                        <div
+                                *ngFor="let row of desc.rows; let iChild = index"
+                                [class.active]="
+                transType.transTypeStatus === 'NOT_DEFINED' &&
+                !row.empty &&
+                row.defined === false
+              "
+                                class="row"
+                        >
+                            <div>
+                                <img
+                                        (click)="
+                    addRow(
+                      'incomeData',
+                      desc.desc,
+                      row.transTypeName,
+                      row.options
+                    )
+                  "
+                                        *ngIf="row.parent"
+                                        src="/assets/images/plusTransType.png"
+                                        style="cursor: pointer"
+                                />
+
+                                <mat-icon
+                                        (click)="removeItem('incomeData', desc.desc, iChild, row)"
+                                        *ngIf="!row.parent"
+                                        style="
+                    color: #022258;
+                    cursor: pointer;
+                    height: 18px;
+                    width: 26px;
+                    display: block;
+                  "
+                                        svgIcon="trash"
+                                ></mat-icon>
+                            </div>
+                            <div>
+                                {{ 'transTypeTranslate.incomeData.' + desc.desc | translate }}
+                            </div>
+                            <div>
+                                <ng-container *ngIf="transTypeAll">
+                                    <p-dropdown
+                                        #formDropdowns
+                                        (onChange)="
+                      updateTransTypeCode(
+                        row,
+                   'INCOME',
+                        'incomeData',
+                        desc.desc
+                      )
+                    "
+                                        (onClick)="row.transTypeCodeOld = row.transTypeCode;"
+                                        (onFocus)="clearFilter(formDropdowns)"
+                                        [(ngModel)]="row.transTypeCode"
+                                        [autoDisplayFirst]="false"
+                                        [dropdownIcon]="'fa fa-fw fa-caret-down'"
+                                        [filter]="true"
+                                        [options]="row.options"
+                                        [placeholder]="
+                      row.options && row.options.length && !(row.options.length === 1 && row.options[0].transTypeCode === null) ? 'בחירה' : 'ללא'
+                    "
+                                        [scrollHeight]="'135px'"
+                                        [style]="{ width: '100%' }"
+                                        appendTo="body"
+                                        dataKey="transTypeCode"
+                                        emptyFilterMessage="לא נמצאו תוצאות"
+                                        filterBy="value.transTypeCode,value.transTypeName"
+                                        optionDisabled="disabled"
+                                        optionLabel="transTypeCode"
+                                        panelStyleClass="transTypeAllDD-panel"
+                                        styleClass="transTypeAllDD"
+                                    >
+                                        <ng-template let-item pTemplate="selectedItem">
+                      <span
+                          #spanElement
+                          [pTooltip]="
+                          item.transTypeCode +
+                          ' ' +
+                          item.transTypeName
+                        "
+                          [tooltipDisabled]="
+                          spanElement.offsetWidth >= spanElement.scrollWidth
+                        "
+                          style="
+                          vertical-align: middle;
+                          display: block;
+                          white-space: nowrap;
+                          overflow: hidden;
+                          text-overflow: ellipsis;
+                        "
+                          tooltipPosition="top"
+                      >{{ item.transTypeCode }}</span
+                      >
+                                        </ng-template>
+                                        <ng-template let-item pTemplate="item">
+                                            <div
+                                                    *ngIf="
+                          transTypeAll &&
+                          row.options.length === 1 &&
+                          row.options[0].transTypeCode === null
+                        "
+                                                    class="p-helper-clearfix cust-item"
+                                            >
+                                                <div style="display: flex; align-items: center">
+                          <span class="text-ellipsis">
+                            לא מצאנו סוג תנועה בחשבשבת
+                          </span>
+                                                </div>
+                                            </div>
+                                            <div
+                                                    *ngIf="
+                          !(
+                            transTypeAll &&
+                            row.options.length === 1 &&
+                            row.options[0].transTypeCode === null
+                          )
+                        "
+                                                    class="p-helper-clearfix cust-item"
+                                            >
+                                                <div *ngIf="item.transTypeName !== 'title'"
+                                                     style="display: flex; align-items: center">
+                          <span
+                                  *ngIf="
+                              item.transTypeName !==
+                                'לא מצאנו סוגי תנועה נוספים לתיאור זה' &&
+                              !(
+                                item.transTypeCode === 'ללא' &&
+                                row.transTypeCode.transTypeName !== null &&
+                                !item.transTypeName
+                              )
+                            "
+                                  class="text-ellipsis"
+                                  style="
+                              width: 40px;
+                              display: inline-block;
+                              margin-left: 10px;
+                            "
+                          >{{ item.transTypeCode }}</span
+                          >
+
+                                                    <span class="text-ellipsis">{{
+                                                        item.transTypeCode === 'ללא' &&
+                                                        row.transTypeCode.transTypeName !== null &&
+                                                        !item.transTypeName
+                                                            ? 'ביטול בחירה'
+                                                            : item.transTypeName
+                                                        }}</span>
+                                                </div>
+
+                                                <div *ngIf="item.transTypeName === 'title'"
+                                                     style="font-weight: 700;font-size: 16px;">
+                                                    {{item.transTypeCode}}
+                                                </div>
+                                            </div>
+                                        </ng-template>
+                                        <ng-template pTemplate="empty">
+                                            <div
+                                                    class="p-helper-clearfix"
+                                                    style="font-size: 0.95em; padding: 0.3em 1em"
+                                            >
+                                                <div>לא נמצאו ס.תנועה בחשבשבת</div>
+                                            </div>
+                                        </ng-template>
+                                        <ng-template pTemplate="emptyfilter">
+                                            <div
+                                                    class="p-helper-clearfix"
+                                                    style="font-size: 0.95em; padding: 0.3em 1em"
+                                            >
+                                                <div>לא נמצאו ס.תנועה בחשבשבת</div>
+                                            </div>
+                                        </ng-template>
+                                    </p-dropdown>
+                                </ng-container>
+                                <ng-container *ngIf="!transTypeAll">
+                                    {{ row.transTypeCode ? row.transTypeCode.transTypeCode : '' }}
+                                </ng-container>
+                            </div>
+                            <div>
+                                {{ row.transTypeName }}
+                            </div>
+                            <div>
+                                <ng-container
+                                        *ngIf="row.expenseCust1 !== null && row.expenseCust2 !== null"
+                                >
+                                    <div>
+                                        {{ row.expenseCust1 }}
+                                    </div>
+                                    <div>
+                                        {{ row.expenseCust2 }}
+                                    </div>
+                                </ng-container>
+                                <ng-container
+                                        *ngIf="row.expenseCust1 !== null && row.expenseCust2 === null"
+                                >
+                                    {{ row.expenseCust1 }}
+                                </ng-container>
+                                <ng-container *ngIf="row.expenseCust1 === null">
+                                    &nbsp;
+                                </ng-container>
+                            </div>
+                            <div>
+                                <ng-container
+                                        *ngIf="row.expensePrc1 !== null && row.expensePrc2 !== null"
+                                >
+                                    <div>
+                                        {{ row.expensePrc1 }}
+                                    </div>
+                                    <div>
+                                        {{ row.expensePrc2 }}
+                                    </div>
+                                </ng-container>
+                                <ng-container
+                                        *ngIf="row.expensePrc1 !== null && row.expensePrc2 === null"
+                                >
+                                    {{ row.expensePrc1 }}
+                                </ng-container>
+                                <ng-container *ngIf="row.expensePrc1 === null">
+                                    &nbsp;
+                                </ng-container>
+                            </div>
+                            <div>
+                                <ng-container
+                                        *ngIf="row.incomeCust1 !== null && row.incomeCust2 !== null"
+                                >
+                                    <div>
+                                        {{ row.incomeCust1 }}
+                                    </div>
+                                    <div>
+                                        {{ row.incomeCust2 }}
+                                    </div>
+                                </ng-container>
+                                <ng-container
+                                        *ngIf="row.incomeCust1 !== null && row.incomeCust2 === null"
+                                >
+                                    {{ row.incomeCust1 }}
+                                </ng-container>
+                                <ng-container *ngIf="row.incomeCust1 === null">
+                                    &nbsp;
+                                </ng-container>
+                            </div>
+                            <div>
+                                <ng-container
+                                        *ngIf="row.incomePrc1 !== null && row.incomePrc2 !== null"
+                                >
+                                    <div>
+                                        {{ row.incomePrc1 }}
+                                    </div>
+                                    <div>
+                                        {{ row.incomePrc2 }}
+                                    </div>
+                                </ng-container>
+                                <ng-container
+                                        *ngIf="row.incomePrc1 !== null && row.incomePrc2 === null"
+                                >
+                                    {{ row.incomePrc1 }}
+                                </ng-container>
+                                <ng-container *ngIf="row.incomePrc1 === null">
+                                    &nbsp;
+                                </ng-container>
+                            </div>
+                            <div>
+                                <ng-container
+                                        *ngIf="
+                    transType.transTypeStatus === 'NOT_DEFINED' &&
+                    !row.empty &&
+                    row.defined === false
+                  "
+                                >
+                                    <!--                                    (click)="row.defined === false ? changeDef(row, 'INCOME') : null"-->
+
+                                    <mat-icon
+                                            *ngIf="row.defined !== false"
+                                            [ngStyle]="{
+                      color: row.defined === false ? '#038ed6' : '#4f4e4e',
+                      cursor: row.defined === false ? 'default' : 'default'
+                    }"
+                                            style="height: 18px; width: 20px; display: block"
+                                            svgIcon="tick"
+                                    ></mat-icon>
+                                    <ng-container *ngIf="row.defined === false">
+                                        <!--                                        <i (click)="changeDef(row, 'INCOME')"-->
+                                        <!--                                           style="cursor: pointer; color: #038ed6;font-size: 15px;font-weight: 600;">-->
+                                        <!--                                            אישור-->
+                                        <!--                                        </i>-->
+                                        &nbsp;
+                                    </ng-container>
+                                </ng-container>
+
+                                <ng-container
+                                        *ngIf="
+                    transType.transTypeStatus !== 'NOT_DEFINED' ||
+                    row.empty ||
+                    row.defined === true
+                  "
+                                >
+                                    &nbsp;
+                                </ng-container>
+                            </div>
+                        </div>
+                    </ng-container>
+                </div>
+            </div>
+            <div class="table">
+                <div class="titleTable">תקבולים</div>
+                <div class="headerTable">
+                    <div>&nbsp;</div>
+                    <div>תיאור</div>
+                    <div>סוג תנועה</div>
+                    <div>שם</div>
+                    <div>חובה</div>
+                    <div>אחוז</div>
+                    <div>זכות</div>
+                    <div>אחוז</div>
+                    <div>&nbsp;</div>
+                </div>
+                <div class="bodyTable">
+                    <ng-container
+                            *ngFor="
+              let desc of transType.receiptData;
+              let i = index;
+              trackBy: trackDesc
+            "
+                    >
+                        <div
+                                *ngFor="let row of desc.rows; let iChild = index"
+                                [class.active]="
+                transType.transTypeStatus === 'NOT_DEFINED' &&
+                !row.empty &&
+                row.defined === false
+              "
+                                class="row"
+                        >
+                            <div>
+                                <img
+                                        (click)="
+                    addRow(
+                      'receiptData',
+                      desc.desc,
+                      row.transTypeName,
+                      row.options
+                    )
+                  "
+                                        *ngIf="row.parent"
+                                        src="/assets/images/plusTransType.png"
+                                        style="cursor: pointer"
+                                />
+
+                                <mat-icon
+                                        (click)="removeItem('receiptData', desc.desc, iChild, row)"
+                                        *ngIf="!row.parent"
+                                        style="
+                    color: #022258;
+                    cursor: pointer;
+                    height: 18px;
+                    width: 26px;
+                    display: block;
+                  "
+                                        svgIcon="trash"
+                                ></mat-icon>
+                            </div>
+                            <div>
+                                {{ 'transTypeTranslate.receiptData.' + desc.desc | translate }}
+                            </div>
+                            <div>
+
+                                <ng-container *ngIf="transTypeAll">
+                                    <p-dropdown
+                                        #formDropdowns
+                                        (onChange)="
+                      updateTransTypeCode(
+                        row,
+                  'RECEIPT',
+                        'receiptData',
+                        desc.desc
+                      )
+                    "
+                                        (onClick)="row.transTypeCodeOld = row.transTypeCode;"
+                                        (onFocus)="clearFilter(formDropdowns)"
+                                        [(ngModel)]="row.transTypeCode"
+                                        [autoDisplayFirst]="false"
+                                        [dropdownIcon]="'fa fa-fw fa-caret-down'"
+                                        [filter]="true"
+                                        [options]="row.options"
+                                        [placeholder]="
+                      row.options && row.options.length && !(row.options.length === 1 && row.options[0].transTypeCode === null) ? 'בחירה' : 'ללא'
+                    "
+                                        [scrollHeight]="'135px'"
+                                        [style]="{ width: '100%' }"
+                                        appendTo="body"
+                                        dataKey="transTypeCode"
+                                        emptyFilterMessage="לא נמצאו תוצאות"
+                                        filterBy="value.transTypeCode,value.transTypeName"
+                                        optionDisabled="disabled"
+                                        optionLabel="transTypeCode"
+                                        panelStyleClass="transTypeAllDD-panel"
+                                        styleClass="transTypeAllDD"
+                                    >
+                                        <ng-template let-item pTemplate="selectedItem">
+                      <span
+                          #spanElement
+                          [pTooltip]="
+                          item.transTypeCode +
+                          ' ' +
+                          item.transTypeName
+                        "
+                          [tooltipDisabled]="
+                          spanElement.offsetWidth >= spanElement.scrollWidth
+                        "
+                          style="
+                          vertical-align: middle;
+                          display: block;
+                          white-space: nowrap;
+                          overflow: hidden;
+                          text-overflow: ellipsis;
+                        "
+                          tooltipPosition="top"
+                      >{{ item.transTypeCode }}</span
+                      >
+                                        </ng-template>
+                                        <ng-template let-item pTemplate="item">
+                                            <div
+                                                    *ngIf="
+                          transTypeAll &&
+                          row.options.length === 1 &&
+                          row.options[0].transTypeCode === null
+                        "
+                                                    class="p-helper-clearfix cust-item"
+                                            >
+                                                <div style="display: flex; align-items: center">
+                          <span class="text-ellipsis">
+                            לא מצאנו סוג תנועה בחשבשבת
+                          </span>
+                                                </div>
+                                            </div>
+                                            <div
+                                                    *ngIf="
+                          !(
+                            transTypeAll &&
+                            row.options.length === 1 &&
+                            row.options[0].transTypeCode === null
+                          )
+                        "
+                                                    class="p-helper-clearfix cust-item"
+                                            >
+                                                <div *ngIf="item.transTypeName !== 'title'"
+                                                     style="display: flex; align-items: center">
+                          <span
+                                  *ngIf="
+                              item.transTypeName !==
+                                'לא מצאנו סוגי תנועה נוספים לתיאור זה' &&
+                              !(
+                                item.transTypeCode === 'ללא' &&
+                                row.transTypeCode.transTypeName !== null &&
+                                !item.transTypeName
+                              )
+                            "
+                                  class="text-ellipsis"
+                                  style="
+                              width: 40px;
+                              display: inline-block;
+                              margin-left: 10px;
+                            "
+                          >{{ item.transTypeCode }}</span
+                          >
+
+                                                    <span class="text-ellipsis">{{
+                                                        item.transTypeCode === 'ללא' &&
+                                                        row.transTypeCode.transTypeName !== null &&
+                                                        !item.transTypeName
+                                                            ? 'ביטול בחירה'
+                                                            : item.transTypeName
+                                                        }}</span>
+                                                </div>
+
+                                                <div *ngIf="item.transTypeName === 'title'"
+                                                     style="font-weight: 700;font-size: 16px;">
+                                                    {{item.transTypeCode}}
+                                                </div>
+                                            </div>
+                                        </ng-template>
+                                        <ng-template pTemplate="empty">
+                                            <div
+                                                    class="p-helper-clearfix"
+                                                    style="font-size: 0.95em; padding: 0.3em 1em"
+                                            >
+                                                <div>לא נמצאו ס.תנועה בחשבשבת</div>
+                                            </div>
+                                        </ng-template>
+                                        <ng-template pTemplate="emptyfilter">
+                                            <div
+                                                    class="p-helper-clearfix"
+                                                    style="font-size: 0.95em; padding: 0.3em 1em"
+                                            >
+                                                <div>לא נמצאו ס.תנועה בחשבשבת</div>
+                                            </div>
+                                        </ng-template>
+                                    </p-dropdown>
+                                </ng-container>
+                                <ng-container *ngIf="!transTypeAll">
+                                    {{ row.transTypeCode ? row.transTypeCode.transTypeCode : '' }}
+                                </ng-container>
+                            </div>
+                            <div>
+                                {{ row.transTypeName }}
+                            </div>
+                            <div>
+                                <ng-container
+                                        *ngIf="row.expenseCust1 !== null && row.expenseCust2 !== null"
+                                >
+                                    <div>
+                                        {{ row.expenseCust1 }}
+                                    </div>
+                                    <div>
+                                        {{ row.expenseCust2 }}
+                                    </div>
+                                </ng-container>
+                                <ng-container
+                                        *ngIf="row.expenseCust1 !== null && row.expenseCust2 === null"
+                                >
+                                    {{ row.expenseCust1 }}
+                                </ng-container>
+                                <ng-container *ngIf="row.expenseCust1 === null">
+                                    &nbsp;
+                                </ng-container>
+                            </div>
+                            <div>
+                                <ng-container
+                                        *ngIf="row.expensePrc1 !== null && row.expensePrc2 !== null"
+                                >
+                                    <div>
+                                        {{ row.expensePrc1 }}
+                                    </div>
+                                    <div>
+                                        {{ row.expensePrc2 }}
+                                    </div>
+                                </ng-container>
+                                <ng-container
+                                        *ngIf="row.expensePrc1 !== null && row.expensePrc2 === null"
+                                >
+                                    {{ row.expensePrc1 }}
+                                </ng-container>
+                                <ng-container *ngIf="row.expensePrc1 === null">
+                                    &nbsp;
+                                </ng-container>
+                            </div>
+                            <div>
+                                <ng-container
+                                        *ngIf="row.incomeCust1 !== null && row.incomeCust2 !== null"
+                                >
+                                    <div>
+                                        {{ row.incomeCust1 }}
+                                    </div>
+                                    <div>
+                                        {{ row.incomeCust2 }}
+                                    </div>
+                                </ng-container>
+                                <ng-container
+                                        *ngIf="row.incomeCust1 !== null && row.incomeCust2 === null"
+                                >
+                                    {{ row.incomeCust1 }}
+                                </ng-container>
+                                <ng-container *ngIf="row.incomeCust1 === null">
+                                    &nbsp;
+                                </ng-container>
+                            </div>
+                            <div>
+                                <ng-container
+                                        *ngIf="row.incomePrc1 !== null && row.incomePrc2 !== null"
+                                >
+                                    <div>
+                                        {{ row.incomePrc1 }}
+                                    </div>
+                                    <div>
+                                        {{ row.incomePrc2 }}
+                                    </div>
+                                </ng-container>
+                                <ng-container
+                                        *ngIf="row.incomePrc1 !== null && row.incomePrc2 === null"
+                                >
+                                    {{ row.incomePrc1 }}
+                                </ng-container>
+                                <ng-container *ngIf="row.incomePrc1 === null">
+                                    &nbsp;
+                                </ng-container>
+                            </div>
+                            <div>
+                                <ng-container
+                                        *ngIf="
+                    transType.transTypeStatus === 'NOT_DEFINED' &&
+                    !row.empty &&
+                    row.defined === false
+                  "
+                                >
+                                    <!--                                    (click)="row.defined === false ? changeDef(row, 'RECEIPT') : null"-->
+
+                                    <mat-icon
+                                            *ngIf="row.defined !== false"
+                                            [ngStyle]="{
+                      color: row.defined === false ? '#038ed6' : '#4f4e4e',
+                      cursor: row.defined === false ? 'default' : 'default'
+                    }"
+                                            style="height: 18px; width: 20px; display: block"
+                                            svgIcon="tick"
+                                    ></mat-icon>
+                                    <ng-container *ngIf="row.defined === false">
+                                        <!--                                        <i (click)="changeDef(row, 'RECEIPT')"-->
+                                        <!--                                           style="cursor: pointer; color: #038ed6;font-size: 15px;font-weight: 600;">-->
+                                        <!--                                            אישור-->
+                                        <!--                                        </i>-->
+                                        &nbsp;
+                                    </ng-container>
+                                </ng-container>
+
+                                <ng-container
+                                        *ngIf="
+                    transType.transTypeStatus !== 'NOT_DEFINED' ||
+                    row.empty ||
+                    row.defined === true
+                  "
+                                >
+                                    &nbsp;
+                                </ng-container>
+                            </div>
+                        </div>
+                    </ng-container>
+                </div>
+            </div>
+            <div class="table">
+                <div class="titleTable">תשלומים</div>
+                <div class="headerTable">
+                    <div>&nbsp;</div>
+                    <div>תיאור</div>
+                    <div>סוג תנועה</div>
+                    <div>שם</div>
+                    <div>חובה</div>
+                    <div>אחוז</div>
+                    <div>זכות</div>
+                    <div>אחוז</div>
+                    <div>&nbsp;</div>
+                </div>
+                <div class="bodyTable">
+                    <ng-container
+                            *ngFor="
+              let desc of transType.paymentsData;
+              let i = index;
+              trackBy: trackDesc
+            "
+                    >
+                        <div
+                                *ngFor="let row of desc.rows; let iChild = index"
+                                [class.active]="
+                transType.transTypeStatus === 'NOT_DEFINED' &&
+                !row.empty &&
+                row.defined === false
+              "
+                                class="row"
+                        >
+                            <div>
+                                <img
+                                        (click)="
+                    addRow(
+                      'paymentsData',
+                      desc.desc,
+                      row.transTypeName,
+                      row.options
+                    )
+                  "
+                                        *ngIf="row.parent"
+                                        src="/assets/images/plusTransType.png"
+                                        style="cursor: pointer"
+                                />
+
+                                <mat-icon
+                                        (click)="removeItem('paymentsData', desc.desc, iChild, row)"
+                                        *ngIf="!row.parent"
+                                        style="
+                    color: #022258;
+                    cursor: pointer;
+                    height: 18px;
+                    width: 26px;
+                    display: block;
+                  "
+                                        svgIcon="trash"
+                                ></mat-icon>
+                            </div>
+                            <div>
+                                {{ 'transTypeTranslate.paymentsData.' + desc.desc | translate }}
+                            </div>
+                            <div>
+
+                                <ng-container *ngIf="transTypeAll">
+                                    <p-dropdown
+                                        #formDropdowns
+                                        (onChange)="
+                      updateTransTypeCode(
+                        row,
+                   'PAYMENTS',
+                        'paymentsData',
+                        desc.desc
+                      )
+                    "
+                                        (onClick)="row.transTypeCodeOld = row.transTypeCode;"
+                                        (onFocus)="clearFilter(formDropdowns)"
+                                        [(ngModel)]="row.transTypeCode"
+                                        [autoDisplayFirst]="false"
+                                        [dropdownIcon]="'fa fa-fw fa-caret-down'"
+                                        [filter]="true"
+                                        [options]="row.options"
+                                        [placeholder]="
+                      row.options && row.options.length && !(row.options.length === 1 && row.options[0].transTypeCode === null) ? 'בחירה' : 'ללא'
+                    "
+                                        [scrollHeight]="'135px'"
+                                        [style]="{ width: '100%' }"
+                                        appendTo="body"
+                                        dataKey="transTypeCode"
+                                        emptyFilterMessage="לא נמצאו תוצאות"
+                                        filterBy="value.transTypeCode,value.transTypeName"
+                                        optionDisabled="disabled"
+                                        optionLabel="transTypeCode"
+                                        panelStyleClass="transTypeAllDD-panel"
+                                        styleClass="transTypeAllDD"
+                                    >
+                                        <ng-template let-item pTemplate="selectedItem">
+                      <span
+                          #spanElement
+                          [pTooltip]="
+                          item.transTypeCode +
+                          ' ' +
+                          item.transTypeName
+                        "
+                          [tooltipDisabled]="
+                          spanElement.offsetWidth >= spanElement.scrollWidth
+                        "
+                          style="
+                          vertical-align: middle;
+                          display: block;
+                          white-space: nowrap;
+                          overflow: hidden;
+                          text-overflow: ellipsis;
+                        "
+                          tooltipPosition="top"
+                      >{{ item.transTypeCode }}</span
+                      >
+                                        </ng-template>
+                                        <ng-template let-item pTemplate="item">
+                                            <div
+                                                    *ngIf="
+                          transTypeAll &&
+                          row.options.length === 1 &&
+                          row.options[0].transTypeCode === null
+                        "
+                                                    class="p-helper-clearfix cust-item"
+                                            >
+                                                <div style="display: flex; align-items: center">
+                          <span class="text-ellipsis">
+                            לא מצאנו סוג תנועה בחשבשבת
+                          </span>
+                                                </div>
+                                            </div>
+                                            <div
+                                                    *ngIf="
+                          !(
+                            transTypeAll &&
+                            row.options.length === 1 &&
+                            row.options[0].transTypeCode === null
+                          )
+                        "
+                                                    class="p-helper-clearfix cust-item"
+                                            >
+                                                <div *ngIf="item.transTypeName !== 'title'"
+                                                     style="display: flex; align-items: center">
+                          <span
+                                  *ngIf="
+                              item.transTypeName !==
+                                'לא מצאנו סוגי תנועה נוספים לתיאור זה' &&
+                              !(
+                                item.transTypeCode === 'ללא' &&
+                                row.transTypeCode.transTypeName !== null &&
+                                !item.transTypeName
+                              )
+                            "
+                                  class="text-ellipsis"
+                                  style="
+                              width: 40px;
+                              display: inline-block;
+                              margin-left: 10px;
+                            "
+                          >{{ item.transTypeCode }}</span
+                          >
+
+                                                    <span class="text-ellipsis">{{
+                                                        item.transTypeCode === 'ללא' &&
+                                                        row.transTypeCode.transTypeName !== null &&
+                                                        !item.transTypeName
+                                                            ? 'ביטול בחירה'
+                                                            : item.transTypeName
+                                                        }}</span>
+                                                </div>
+
+                                                <div *ngIf="item.transTypeName === 'title'"
+                                                     style="font-weight: 700;font-size: 16px;">
+                                                    {{item.transTypeCode}}
+                                                </div>
+                                            </div>
+                                        </ng-template>
+                                        <ng-template pTemplate="empty">
+                                            <div
+                                                    class="p-helper-clearfix"
+                                                    style="font-size: 0.95em; padding: 0.3em 1em"
+                                            >
+                                                <div>לא נמצאו ס.תנועה בחשבשבת</div>
+                                            </div>
+                                        </ng-template>
+                                        <ng-template pTemplate="emptyfilter">
+                                            <div
+                                                    class="p-helper-clearfix"
+                                                    style="font-size: 0.95em; padding: 0.3em 1em"
+                                            >
+                                                <div>לא נמצאו ס.תנועה בחשבשבת</div>
+                                            </div>
+                                        </ng-template>
+                                    </p-dropdown>
+                                </ng-container>
+                                <ng-container *ngIf="!transTypeAll">
+                                    {{ row.transTypeCode ? row.transTypeCode.transTypeCode : '' }}
+                                </ng-container>
+                            </div>
+                            <div>
+                                {{ row.transTypeName }}
+                            </div>
+                            <div>
+                                <ng-container
+                                        *ngIf="row.expenseCust1 !== null && row.expenseCust2 !== null"
+                                >
+                                    <div>
+                                        {{ row.expenseCust1 }}
+                                    </div>
+                                    <div>
+                                        {{ row.expenseCust2 }}
+                                    </div>
+                                </ng-container>
+                                <ng-container
+                                        *ngIf="row.expenseCust1 !== null && row.expenseCust2 === null"
+                                >
+                                    {{ row.expenseCust1 }}
+                                </ng-container>
+                                <ng-container *ngIf="row.expenseCust1 === null">
+                                    &nbsp;
+                                </ng-container>
+                            </div>
+                            <div>
+                                <ng-container
+                                        *ngIf="row.expensePrc1 !== null && row.expensePrc2 !== null"
+                                >
+                                    <div>
+                                        {{ row.expensePrc1 }}
+                                    </div>
+                                    <div>
+                                        {{ row.expensePrc2 }}
+                                    </div>
+                                </ng-container>
+                                <ng-container
+                                        *ngIf="row.expensePrc1 !== null && row.expensePrc2 === null"
+                                >
+                                    {{ row.expensePrc1 }}
+                                </ng-container>
+                                <ng-container *ngIf="row.expensePrc1 === null">
+                                    &nbsp;
+                                </ng-container>
+                            </div>
+                            <div>
+                                <ng-container
+                                        *ngIf="row.incomeCust1 !== null && row.incomeCust2 !== null"
+                                >
+                                    <div>
+                                        {{ row.incomeCust1 }}
+                                    </div>
+                                    <div>
+                                        {{ row.incomeCust2 }}
+                                    </div>
+                                </ng-container>
+                                <ng-container
+                                        *ngIf="row.incomeCust1 !== null && row.incomeCust2 === null"
+                                >
+                                    {{ row.incomeCust1 }}
+                                </ng-container>
+                                <ng-container *ngIf="row.incomeCust1 === null">
+                                    &nbsp;
+                                </ng-container>
+                            </div>
+                            <div>
+                                <ng-container
+                                        *ngIf="row.incomePrc1 !== null && row.incomePrc2 !== null"
+                                >
+                                    <div>
+                                        {{ row.incomePrc1 }}
+                                    </div>
+                                    <div>
+                                        {{ row.incomePrc2 }}
+                                    </div>
+                                </ng-container>
+                                <ng-container
+                                        *ngIf="row.incomePrc1 !== null && row.incomePrc2 === null"
+                                >
+                                    {{ row.incomePrc1 }}
+                                </ng-container>
+                                <ng-container *ngIf="row.incomePrc1 === null">
+                                    &nbsp;
+                                </ng-container>
+                            </div>
+                            <div>
+                                <ng-container
+                                        *ngIf="
+                    transType.transTypeStatus === 'NOT_DEFINED' &&
+                    !row.empty &&
+                    row.defined === false
+                  "
+                                >
+                                    <!--                                    (click)="row.defined === false ? changeDef(row, 'PAYMENTS') : null"-->
+
+                                    <mat-icon
+                                            *ngIf="row.defined !== false"
+                                            [ngStyle]="{
+                      color: row.defined === false ? '#038ed6' : '#4f4e4e',
+                      cursor: row.defined === false ? 'default' : 'default'
+                    }"
+                                            style="height: 18px; width: 20px; display: block"
+                                            svgIcon="tick"
+                                    ></mat-icon>
+                                    <ng-container *ngIf="row.defined === false">
+                                        <!--                                        <i (click)="changeDef(row, 'PAYMENTS')"-->
+                                        <!--                                           style="cursor: pointer; color: #038ed6;font-size: 15px;font-weight: 600;">-->
+                                        <!--                                            אישור-->
+                                        <!--                                        </i>-->
+                                        &nbsp;
+                                    </ng-container>
+                                </ng-container>
+                                <ng-container
+                                        *ngIf="
+                    transType.transTypeStatus !== 'NOT_DEFINED' ||
+                    row.empty ||
+                    row.defined === true
+                  "
+                                >
+                                    &nbsp;
+                                </ng-container>
+                            </div>
+                        </div>
+                    </ng-container>
+                </div>
+            </div>
+        </div>
+    </div>
+</ng-container>
+<ng-container *ngIf="!interested && isModal">
+    <div class="loader" style="height: 652px">
+        <div class="circle"></div>
+    </div>
+</ng-container>
+
+<ng-container *ngIf="removeItemModal">
+    <p-dialog (visibleChange)="removeItemModal = false"
+              [modal]="true"
+              [resizable]="false"
+              [visible]="(removeItemModal)"
+              appendTo="body"
+              styleClass="transTypeDelete"
+    >
+        <p-header>
+            <h1>מחיקת סוג תנועה</h1>
+        </p-header>
+
+        <p class="text">
+            סוג תנועה
+            <strong
+            >"{{ removeItemModal?.row?.transTypeCode?.transTypeCode }}
+                {{ removeItemModal?.row?.transTypeName }}"</strong
+            >
+            תמחק ללא אפשרות שחזור.
+            <br/>
+            האם למחוק?
+        </p>
+
+        <p-footer>
+            <button (click)="removeItemModal = false" class="button-link">
+                {{ 'actions.cancellation' | translate }}
+            </button>
+            <button (click)="transTypeDelete()" class="button-dark">
+                {{ 'actions.approve' | translate }}
+            </button>
+        </p-footer>
+    </p-dialog>
+</ng-container>

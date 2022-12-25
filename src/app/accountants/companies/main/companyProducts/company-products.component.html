@@ -1,0 +1,399 @@
+<ng-container *ngIf="!router.url.includes('addProducts')">
+	<h2 class="titlePage">
+		<i>{{ 'menu.accountants.companies.products' | translate }}</i>
+	</h2>
+	
+	<div
+			class="filterRow"
+			style="
+      margin-top: 10px;
+      margin-bottom: 20px;
+      justify-content: space-between;
+      align-items: flex-end;
+    "
+	>
+		<div class="filters-companies-main">
+			<div
+					[style.width]="
+          companyNameColumn.getBoundingClientRect().width +
+          (izuBankColumn.getBoundingClientRect().width * 3) / 4 +
+          'px'
+        "
+					class="search"
+			>
+				<input
+						[formControl]="filterInput"
+						[value]="queryString"
+						autocomplete="off"
+						placeholder="הקלידו שם חברה או ח.פ"
+						type="text"
+				/>
+			</div>
+		</div>
+	</div>
+	
+	<div class="comapniesTable companyProducts">
+		<div #header class="header">
+			<div #companyNameColumn>
+				<app-tooltip-category
+						(changed)="filterCategory($event)"
+						[data]="companyNameArr"
+						[isSorted]="true"
+						[type]="'companyName'"
+						title="שם החברה"
+				>
+				</app-tooltip-category>
+			</div>
+			<div #izuBankColumn>
+				<app-tooltip-category
+						(changed)="filterCategory($event)"
+						[data]="izuBankArr"
+						[isSorted]="false"
+						[type]="'izuBank'"
+						title="יצוא בנק"
+				>
+				</app-tooltip-category>
+			</div>
+			<div>
+				<app-tooltip-category
+						(changed)="filterCategory($event)"
+						[data]="izuCreditArr"
+						[isSorted]="false"
+						[type]="'izuCredit'"
+						title="יצוא אשראי"
+				>
+				</app-tooltip-category>
+			</div>
+			
+			<div>
+				<app-tooltip-category
+						(changed)="filterCategory($event)"
+						[data]="journalVendorAndCustomerArr"
+						[isNewLine]="true"
+						[isSorted]="false"
+						[type]="'journalVendorAndCustomer'"
+						title="        פקודות יומן
+  <br class='hideIn1920'>
+                ספקים ולקוחות"
+				>
+				</app-tooltip-category>
+			</div>
+			<div>
+				<app-tooltip-category
+						(changed)="filterCategory($event)"
+						[data]="journalBankArr"
+						[isNewLine]="true"
+						[isSorted]="false"
+						[type]="'journalBank'"
+						title="        פקודות יומן
+  <br class='hideIn1920'>
+                בנק"
+				>
+				</app-tooltip-category>
+			</div>
+			<div>
+				<app-tooltip-category
+						(changed)="filterCategory($event)"
+						[data]="journalCreditArr"
+						[isNewLine]="true"
+						[isSorted]="false"
+						[type]="'journalCredit'"
+						title="        פקודות יומן
+  <br class='hideIn1920'>
+                אשראי"
+				>
+				</app-tooltip-category>
+			</div>
+			<div>
+				<app-tooltip-category
+						(changed)="filterCategory($event)"
+						[data]="contactsArr"
+						[filter]="false"
+						[isSorted]="true"
+						[type]="'contacts'"
+				>
+					<mat-icon
+							[svgIcon]="'user_bg'"
+							class="left-space"
+							style="
+              height: 20px !important;
+              width: 20px !important;
+              vertical-align: middle;
+              color: #092355;
+            "
+					>
+					</mat-icon>
+				</app-tooltip-category>
+			</div>
+			<div>הוספת מוצרים</div>
+		</div>
+		<div
+				(scroll)="onScrollCubes()"
+				[appScrollByChildrenContent]="
+        !(companiesSrc && !companiesSrc.length) &&
+        !(companiesSrc && companiesSrc.length && companies && !companies.length)
+      "
+				[appScrollHeight]="
+        header.getBoundingClientRect().bottom +
+        paginator.getBoundingClientRect().height +
+        30 +
+        footer.getBoundingClientRect().height
+      "
+				class="body scrollbar-dynamic containerList"
+				style="position: relative"
+		>
+			<div *ngIf="loader" class="loader">
+				<div class="circle"></div>
+			</div>
+			
+			<ng-container *ngIf="companies && companies.length">
+				<div
+						(click)="resetActive()"
+						*ngFor="
+            let company of companies
+              | slice
+                : currentPage * entryLimit
+                : currentPage * entryLimit + entryLimit;
+            let i = index;
+            trackBy: trackById
+          "
+						[class.active]="company.active"
+						class="row"
+				>
+					<div style="overflow: hidden; display: block">
+						<div
+								[ngStyle]="{
+                'margin-right': company.companyName !== null ? '0' : '12%'
+              }"
+						>
+              <span
+		              (mouseleave)="tooltipMoreData.hide()"
+		              (mouseover)="
+                  hoverCompanyName(company.companyId, tooltipMoreData, $event);
+                  onScrollCubes(i);
+                  tooltipMoreData.show($event)
+                "
+		              [class.red]="company.companyColor === 'RED'"
+		              [innerHTML]="
+                  company.companyName || '-' | highlight: queryString
+                "
+		              [pTooltip]="company.companyName"
+		              class="link text-ellipsis"
+              >
+              </span>
+							
+							<p-overlayPanel
+									#tooltipMoreData
+									[style]="{
+                   'margin-left': '-10px',
+              'margin-top': '0px',
+                  width: 'auto',
+                  left: 'inherit !important',
+                  right: rightSideTooltip + 'px'
+                }"
+									appendTo="body"
+									styleClass="tooltip-bottom tooltip-acc-deviation tooltipInfoCompany"
+							>
+								<ng-container *ngIf="companyDataObj; else loader">
+									<div>
+										<p>
+											שם בסיס נתונים |
+											{{ !company?.yearlyProgram ? 'רב שנתי' : 'שנתי' }}
+										</p>
+										
+										<p
+												*ngIf="companyDataObj && companyDataObj?.dbName"
+												style="margin-right: 20px"
+										>
+											{{ companyDataObj?.dbName }}
+										</p>
+									</div>
+									<div [class.red]="company.companyColor === 'RED'">
+										<small> טעינה אחרונה </small>
+										
+										<small
+												*ngIf="companyDataObj && companyDataObj?.dataReceiveDate"
+												style="margin-right: 20px"
+										>
+											{{
+											companyDataObj?.dataReceiveDate
+													| todayRelativeHumanize: 'dataReceiveDate'
+											}}
+										</small>
+									</div>
+								</ng-container>
+								
+								<ng-template #loader>
+									<div class="loaderPercent" style="justify-content: center">
+										<div class="circle"></div>
+									</div>
+								</ng-template>
+							</p-overlayPanel>
+						</div>
+						
+						<div
+								[innerHTML]="company.companyHp || '-' | highlight: queryString"
+								[ngStyle]="{
+                'margin-right': company.companyHp !== null ? '0' : '12%'
+              }"
+								[pTooltip]="company.companyHp"
+								class="text-ellipsis"
+						></div>
+					</div>
+					<div>
+						<img
+								style="height: auto; width: auto; vertical-align: middle"  [src]="
+                company.izuBank
+                  ? '/assets/images/productExist.png'
+                  : '/assets/images/productNotExist.png'
+              "
+						
+						/>
+					</div>
+					<div>
+						<img
+								style="height: auto; width: auto; vertical-align: middle"  [src]="
+                company.izuCredit
+                  ? '/assets/images/productExist.png'
+                  : '/assets/images/productNotExist.png'
+              "
+						/>
+					</div>
+					<div>
+						<img
+								style="height: auto; width: auto; vertical-align: middle"  [src]="
+                company.journalVendorAndCustomer
+                  ? '/assets/images/productExist.png'
+                  : '/assets/images/productNotExist.png'
+              "
+						/>
+					</div>
+					<div>
+						<img
+								style="height: auto; width: auto;vertical-align: middle"  [src]="
+                company.journalBank
+                  ? '/assets/images/productExist.png'
+                  : '/assets/images/productNotExist.png'
+              "
+							
+						/>
+					</div>
+					<div>
+						<img
+								style="height: auto; width: auto;vertical-align: middle"  [src]="
+                company.journalCredit
+                  ? '/assets/images/productExist.png'
+                  : '/assets/images/productNotExist.png'
+              "
+						
+						/>
+					</div>
+					
+					<div>
+						<mat-icon
+								*ngIf="company.contactsList.length"
+								[matTooltip]="company.contactsListTootip"
+								[svgIcon]="'user'"
+								class="left-space"
+								matTooltipClass="multiline-tooltip"
+								matTooltipPosition="below"
+								style="
+                height: 20px !important;
+                width: 20px !important;
+                vertical-align: middle;
+                color: #959595;
+              "
+						>
+						</mat-icon>
+					</div>
+					
+					<div>
+						<!--                        <img style="height: auto; width: auto; position: relative;" fill [ngSrc]="'/assets/images/hasAllTheProducts.png'"-->
+						<!--                             style="vertical-align: middle;"/>-->
+						
+						<img
+								*ngIf="company.hasAllTheProducts"
+								style="height: auto; width: auto; position: relative;vertical-align: middle" fill [ngSrc]="'/assets/images/hasAllTheProducts.png'"
+						/>
+						
+						<img
+								(click)="selectedCompany = company"
+								*ngIf="!company.hasAllTheProducts"
+								[routerLinkActiveOptions]="{ exact: true }"
+								[routerLink]="['./addProducts']"
+								style="height: auto; width: auto; position: relative;vertical-align: middle" fill [ngSrc]="'/assets/images/hasNotAllTheProducts.png'"
+								queryParamsHandling="merge"
+								routerLinkActive="active"
+						/>
+					</div>
+				</div>
+			</ng-container>
+			
+			<div *ngIf="companiesSrc && !companiesSrc.length" class="noData">
+				<mat-icon
+						style="
+            vertical-align: middle;
+            width: auto;
+            height: 61px;
+            margin-bottom: 10px;
+          "
+						svgIcon="export2"
+				></mat-icon>
+				<h1>לא נמצאו חברות</h1>
+			</div>
+			
+			<div
+					*ngIf="
+          companiesSrc && companiesSrc.length && companies && !companies.length
+        "
+					class="noData"
+			>
+				<img
+						src="/assets/images/companiesSNotFound.png"
+						style="vertical-align: middle; margin-bottom: 20px"
+				/>
+				<h1>החברה שחיפשתם לא נמצאת במאגר</h1>
+				<p (click)="sharedComponent.showOpenTicket()" class="link">
+					פתחו קריאת שירות
+				</p>
+			</div>
+		</div>
+		
+		<div #footer [class.noDataFooter]="!companies.length" class="footer">
+			<div>
+				<strong *ngIf="companies.length"> סה״כ </strong>
+				{{ companies.length || '' }}
+			</div>
+			<div>
+				{{ rowSums.izuBank || '' }}
+			</div>
+			<div>
+				{{ rowSums.izuCredit || '' }}
+			</div>
+			<div>
+				{{ rowSums.journalVendorAndCustomer || '' }}
+			</div>
+			<div>
+				{{ rowSums.journalBank || '' }}
+			</div>
+			<div>
+				{{ rowSums.journalCredit || '' }}
+			</div>
+			<div></div>
+			<div></div>
+		</div>
+		
+		<div #paginator>
+			<app-paginator
+					(onPageChange)="paginate($event)"
+					[alwaysShow]="false"
+					[rowsPerPageOptions]="[50, 100, 200]"
+					[rows]="entryLimit"
+					[totalRecords]="companies.length"
+			>
+			</app-paginator>
+		</div>
+	</div>
+</ng-container>
+
+<router-outlet (activate)="onActivate($event)"></router-outlet>

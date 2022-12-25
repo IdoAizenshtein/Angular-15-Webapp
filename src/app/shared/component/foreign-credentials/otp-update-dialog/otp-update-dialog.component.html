@@ -1,0 +1,222 @@
+<p-dialog (visibleChange)="display = false"
+		[visible]="(display)"
+		appendTo="body"
+		[modal]="true"
+		[resizable]="false"
+		
+		[styleClass]="'otp-credentials-update'"
+>
+	<p-header>
+		<ng-container *ngIf="tokenData">
+			<div>
+				{{
+				'foreignCredentialsUpdate.expressions.updateOTPSettings'
+						| translate: otpTargetSettings
+				}}
+			</div>
+			<div>{{ tokenData?.tokenNickname }}</div>
+			<div class="attempts-counter">
+				{{
+				'foreignCredentialsUpdate.expressions.attemptPtrn'
+						| translate
+						: {
+							screenPasswordUpdateCount:
+									(tokenData && tokenData.screenPasswordUpdateCount
+											? tokenData.screenPasswordUpdateCount
+											: 0) + 1
+						}
+				}}
+			</div>
+		</ng-container>
+	</p-header>
+	
+	<ng-template #updateOtpSettings>
+		<ng-container [ngSwitch]="state">
+			<div class="polling-section" *ngSwitchCase="DialogState.UPDATE_FAILED">
+				<i class="fas fa-exclamation-triangle"></i>
+				<h2>{{ 'signup.tokenTrackStep.tokenTimedOut.title' | translate }}</h2>
+				<p
+						[innerHTML]="
+            'signup.tokenTrackStep.tokenTimedOut.subtitle' | translate
+          "
+				></p>
+				<button class="button-dark" (click)="display = false">
+					{{ 'actions.closing' | translate }}
+				</button>
+			</div>
+			<ng-container *ngSwitchDefault>
+				<div class="Form__foreignOtpTypes">
+					<div class="mat-typography" [formGroup]="otpForm">
+						<div class="selected-desc">{{ otpTargetSettings.description }}</div>
+						<div
+								*ngFor="
+                let otpType of otpTargetSettings.otpTypes;
+                first as isFirst
+              "
+								class="otp-credential-option"
+								[style.background]="
+                otpForm.get('otpType').value === otpType.value
+                  ? '#f7f7f7'
+                  : 'transparent'
+              "
+						>
+							<p-radioButton
+									name="otpType"
+									formControlName="otpType"
+									[value]="otpType.value"
+									[label]="otpType.label"
+									[style]="{ 'font-weight': 'bold' }"
+							></p-radioButton>
+							<span *ngIf="isFirst" class="tag success">מומלץ!</span>
+							<i
+									class="fas fa-info-circle"
+									[pTooltip]="otpType.info"
+									[escape]="false"
+									[tooltipPosition]="'top'"
+									app
+							></i>
+							<div
+									class="Signup__control"
+									[formGroup]="otpForm"
+									*ngIf="otpForm.get('otpType').value === otpType.value"
+							>
+								<p>{{ otpType.description }}</p>
+								<!--<label [for]="otpControl.key">-->
+								<!--&lt;!&ndash;{{otpTargetSettings.description}}&ndash;&gt;-->
+								<!--&lt;!&ndash;{{otpControl.label}}&ndash;&gt;-->
+								<!--</label>-->
+								<div
+										[ngClass]="{
+                    Form__group: true,
+                    'Form__group--err':
+                      !otpForm.get(otpControl.key).valid &&
+                      otpForm.get(otpControl.key).dirty
+                  }"
+								>
+									<input type="text" [formControlName]="otpControl.key"/>
+									<div
+											class="Form__feedback Form__feedback--warning Form__feedback--warning--block"
+											[style.visibility]="
+                      otpForm.get(otpControl.key).invalid &&
+                      otpForm.get(otpControl.key).dirty
+                        ? 'visible'
+                        : 'hidden'
+                    "
+											*ngFor="let rule of otpControl.rules"
+									>
+										<i class="fa fa-fw fa-exclamation-triangle"></i> {{ rule }}
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				
+				<div class="p-dialog-footer">
+					<button
+							class="button-dark"
+							(click)="submitTokenUpdate()"
+							[disabled]="otpForm.invalid || state === DialogState.UPDATING"
+					>
+						{{
+						'foreignCredentialsUpdate.expressions.updateOTPSettings'
+								| translate: otpTargetSettings
+						}}
+					</button>
+					<a
+							href="#"
+							role="button"
+							class="button-white button-link"
+							(click)="display = false"
+					>
+						{{ 'actions.cancellation' | translate }}
+					</a>
+				</div>
+			</ng-container>
+		</ng-container>
+	</ng-template>
+	
+	<ng-container
+			*ngIf="tokenStatusPoll$ | async as tokenData; else updateOtpSettings"
+	>
+		<div [ngSwitch]="tokenData.uiStatus" class="polling-section">
+			<ng-container *ngSwitchCase="'SUCCESS'">
+				<h1>
+					<i class="fas fa-check"></i>&nbsp;{{
+					'signup.tokenTrackStep.tokenSuccess.title' | translate
+					}}
+				</h1>
+				<p
+						[innerHTML]="
+            'signup.tokenTrackStep.tokenSuccess.subtitle' | translate
+          "
+				></p>
+				<button class="button-dark" (click)="display = false">
+					{{ 'actions.closing' | translate }}
+				</button>
+			</ng-container>
+			<ng-container *ngSwitchCase="'FAILURE'">
+				<h2>
+					<i class="fas fa-ban"></i>&nbsp;{{
+					'signup.tokenTrackStep.tokenFailed.title' | translate
+					}}
+				</h2>
+				<p
+						[innerHTML]="'signup.tokenTrackStep.tokenFailed.subtitle' | translate"
+				></p>
+				<button
+						class="button-dark"
+						type="button"
+						[id]="'failBtn'"
+						(click)="display = false"
+				>
+          <span>{{
+	          'foreignCredentialsUpdate.expressions.closing' | translate
+	          }}</span>
+				</button>
+			</ng-container>
+			<ng-container *ngSwitchCase="'UPDATE_AND_RETRY'">
+				<i class="fas fa-exclamation-triangle"></i>
+				<h2>
+					{{ 'signup.tokenTrackStep.tokenUpdateAndRetry.title' | translate }}
+				</h2>
+				<p
+						[innerHTML]="
+            'signup.tokenTrackStep.tokenUpdateAndRetry.subtitle' | translate
+          "
+				></p>
+				<button class="button-dark" (click)="resetPollingObs()">
+					{{ 'formLogin.tryAgain' | translate }}
+				</button>
+			</ng-container>
+			<ng-container *ngSwitchCase="'TIMED_OUT'">
+				<i class="fas fa-exclamation-triangle"></i>
+				<h2>{{ 'signup.tokenTrackStep.tokenTimedOut.title' | translate }}</h2>
+				<p
+						[innerHTML]="
+            'signup.tokenTrackStep.tokenTimedOut.subtitle' | translate
+          "
+				></p>
+				<button class="button-dark" (click)="display = false">
+					{{ 'actions.closing' | translate }}
+				</button>
+			</ng-container>
+			<ng-container *ngSwitchDefault>
+				<img  ngSrc="/assets/images/bizb-loading.gif" height="74" width="107"/>
+				<p>{{ 'signup.tokenTrackStep.waitingMessage' | translate }}</p>
+			</ng-container>
+		</div>
+	</ng-container>
+	
+	<!--<p-footer>-->
+	<!--<a href="#" role="button" class="button-white button-link" (click)="display = false;">-->
+	<!--{{'actions.cancellation' | translate}}-->
+	<!--</a>-->
+	<!--<button class="button-dark" (click)="submitTokenUpdate()" [disabled]="otpForm.invalid">-->
+	<!--{{'foreignCredentialsUpdate.expressions.'-->
+	<!--+ (((tokenData?.tokenStatus| toTokenStatusEnumValue) !== TokenStatus.Blocked)-->
+	<!--? 'updatePassword' : 'updateCredentials')| translate}}-->
+	<!--</button>-->
+	
+	<!--</p-footer>-->
+</p-dialog>

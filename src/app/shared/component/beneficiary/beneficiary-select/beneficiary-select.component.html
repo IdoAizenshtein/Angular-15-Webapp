@@ -1,0 +1,202 @@
+<p-dropdown
+		#ddCategories
+		(keyup.esc)="cancelChanges.emit($event)"
+		(onChange)="changed.emit($event)"
+		(onFilter)="filterFunc($event, ddCategories)"
+		(onShow)="show()"
+		[(ngModel)]="ngModelVal"
+		[autoDisplayFirst]="autoDisplayFirst"
+		[autofocusFilter]="filter"
+		[dataKey]="'biziboxMutavId'"
+		[disabled]="disabled"
+		[dropdownIcon]="'p-dropdown-icon'"
+		[filterBy]="'label'"
+		[filter]="filter"
+		[inputId]="inputId"
+		[options]="categories"
+		[panelStyleClass]="'beneficiary-dropdown-panel'"
+		[placeholder]="placeholder"
+		[resetFilterOnHide]="filter"
+		[scrollHeight]="'188px'"
+		[styleClass]="'beneficiary-dropdown'"
+		[style]="style"
+		[virtualScrollItemSize]="44"
+		[virtualScroll]="true"
+		appendTo="body"
+		optionDisabled="disabled">
+	<ng-template pTemplate="empty">
+		<div style="padding: 9px 8px;font-weight: bold;">
+			<div>לא נמצאו מוטבים</div>
+		</div>
+	</ng-template>
+	<ng-template pTemplate="emptyfilter">
+		<div
+				*ngIf="
+            !showBtnAddBeneficiary
+          "
+				style="color: #cacaca; padding: 5px 12px"
+		>
+			לא נמצא מוטב לחיפוש המבוקש
+		</div>
+		<div
+				#createBeneficiaryInline
+				(click)="
+            beneficiaryCreateThenSelect(
+              filterVal,
+              $event
+            )
+          "
+				(keydown.enter)="
+            beneficiaryCreateThenSelect(
+              filterVal,
+              $event
+            )
+          "
+				*ngIf="
+            showBtnAddBeneficiary
+          "
+				[class.p-highlight]="
+            createBeneficiaryInline.ownerDocument.activeElement ===
+            createBeneficiaryInline
+          "
+				class="p-dropdown-item"
+				style="
+            display: flex;
+            display: -ms-flexbox;
+            flex-direction: column;
+            height: auto;
+            margin-bottom: 2em !important;
+          "
+				tabindex="0"
+		>
+          <span style="line-height: 1.4em">{{
+	          filterVal
+	          }}</span>
+			<span
+					style="
+              opacity: 0.5;
+              white-space: normal;
+              text-overflow: unset;
+              line-height: 1.4em;
+            "
+			>{{ '(הוספת מוטב חדש)' }}</span
+			>
+		</div>
+	</ng-template>
+	<ng-template let-option pTemplate="selectedItem">
+		<div>
+				     <span
+						     #spanElement
+						     [pTooltip]="option.label"
+						     [tooltipDisabled]="
+                  spanElement.offsetWidth >= spanElement.scrollWidth
+                ">{{ option.label || '' }}</span>
+		</div>
+	</ng-template>
+	<ng-template let-option pTemplate="item">
+			<span>
+				{{loaderData ? '' : (option.label || '') }}
+				<span *ngIf="loaderData" style="margin-top: 7px;display: block;">
+		                  	                  <p-skeleton [width]="'80%'" height="8px"></p-skeleton>
+				</span>
+			</span>
+		<ng-container *ngIf="option.value">
+                  <span>{{loaderData ? '' :
+		                  (
+				                  ('banks.' + option.value.bankId | translate) +
+				                  ' ' +
+				                  option.value.accountId)}}
+
+	                  <span *ngIf="loaderData"
+	                        style="margin-top: 2px;display: block;">
+		                  	                  <p-skeleton [width]="'60%'" height="8px"></p-skeleton>
+	                  </span>
+                  </span>
+		</ng-container>
+		<i (click)="ddCategories.clear($event); $event.stopPropagation()"
+		   style="z-index: 9999999;"
+		   *ngIf="ngModelVal && (ngModelVal.biziboxMutavId == option.value.biziboxMutavId)"
+		   class="p-dropdown-clear-icon fas fa-times"
+		></i>
+		<i (click)="edit(option, $event); $event.stopPropagation()"
+		   style="z-index: 9999999;"
+		   *ngIf="!loaderData"
+		   class="fas fa-edit"
+		></i>
+	</ng-template>
+	<ng-template pTemplate="footer">
+		<button
+				(click)="beneficiaryCreateThenSelect(null, $event)"
+				*ngIf="showBtnAddBeneficiary"
+				class="p-dropdown-item"
+				style="border: none;
+								height: 33px;font-weight: 600;font-family: Assistant!important;border-radius: unset!important;margin: 0!important;text-align: right!important;
+        width: 100%;
+        padding: 0.25em 1em !important;
+        -webkit-filter: drop-shadow(0 -2px 2px rgba(0, 0, 0, 0.12));
+        filter: drop-shadow(0 -2px 2px rgba(0, 0, 0, 0.12));
+        display: flex;
+        display: -ms-flexbox;
+        align-items: center;
+        font-size: 1em;
+        line-height: 1.5em;
+      "
+				type="button"
+		>
+			<i class="fas fa-fw fa-plus-circle" style="margin-left: 5px;"></i>{{ 'מוטב חדש' | translate }}
+		</button>
+	</ng-template>
+</p-dropdown>
+
+
+<ng-container *ngIf="beneficiaryCreateOrEditPrompt.visible">
+	<app-beneficiary-create-prompt
+			(creationSuccess)="onCreationSuccess($event)"
+			[createWith]="createWithExtended"
+			[visible]="beneficiaryCreateOrEditPrompt.visible"
+	></app-beneficiary-create-prompt>
+</ng-container>
+
+<ng-container *ngIf="showGuide">
+	<p-overlayPanel
+			#beneficiarySelectionGuideOvP
+			(onHide)="onBeneficiarySelectionGuideHide()"
+			[dismissable]="true"
+			[style]="{ 'padding-top': '0' }"
+			appendTo="body"
+			styleClass="beneficiarySelectionGuideDialog"
+	>
+		<div class="p-dialog-header p-helper-clearfix p-corner-top">
+        <span
+		        class="p-dialog-title ng-tns-c13-48 ng-star-inserted"
+		        id="p-dialog-3-label"
+        >
+          <div>{{ 'guides.beneficiary.title' | translate }}</div>
+        </span>
+			<a
+					(click)="beneficiarySelectionGuideOvP.hide()"
+					class="p-dialog-header-icon p-dialog-header-close p-corner-all"
+					role="button"
+			>
+				<span class="fa fa-fw fa-times"></span>
+			</a>
+		</div>
+		<div class="p-dialog-content mat-typography">
+			<h3 [innerHTML]="'guides.beneficiary.content' | translate"></h3>
+		</div>
+		<div class="p-dialog-footer">
+			<p-checkbox [(ngModel)]="beneficiarySelectionGuide.stopIt"
+			            [binary]="true"
+			            [label]="'guides.beneficiary.stopDisplaying' | translate"
+			            checkboxIcon="fa fa-check"
+			></p-checkbox>
+			<button
+					(click)="beneficiarySelectionGuideOvP.hide()"
+					class="button-dark"
+			>
+				{{ 'guides.beneficiary.gotIt' | translate }}
+			</button>
+		</div>
+	</p-overlayPanel>
+</ng-container>
+

@@ -1,0 +1,115 @@
+<!--<div class="billing-accounts-view" style="height: calc(100vh - 175px);">-->
+
+<ng-template #loader>
+  <div *ngIf="loader" class="loader">
+    <div class="circle"></div>
+  </div>
+</ng-template>
+
+<ng-template #plainPaymentTypeDesc let-billingAccount>
+  {{
+    (billingAccount.paymentTypeId
+      ? 'billingPaymentTypes.' + billingAccount.paymentTypeId
+      : 'expressions.awaitingPayment'
+    ) | translate
+  }}
+</ng-template>
+<ng-template #creditCardDesc let-billingAccount>
+  {{ 'billingCreditCardTypes.' + billingAccount.extspMutag24 | translate }}
+  {{ billingAccount.extspCardnumber5 }}
+</ng-template>
+
+<ng-container *ngIf="billingAccounts$ | async as billingAccounts; else loader">
+  <ul
+    class="billing-accounts-list"
+    [class.selectable]="billingAccounts.length > 1"
+    #header
+  >
+    <ng-container *ngIf="billingAccounts.length > 1">
+      <li
+        *ngFor="let billingAccount of billingAccounts"
+        [routerLink]="[billingAccount.billingAccountId]"
+        [queryParamsHandling]="'preserve'"
+        routerLinkActive="selected"
+        [routerLinkActiveOptions]="{ exact: true }"
+      >
+        <button class="button-link">
+          <ng-template
+            [ngTemplateOutlet]="
+              billingAccount.paymentTypeId === 3
+                ? creditCardDesc
+                : plainPaymentTypeDesc
+            "
+            [ngTemplateOutletContext]="{
+              $implicit: billingAccount
+            }"
+          ></ng-template>
+          <!--{{ billingAccount.paymentName }}-->
+        </button>
+        <section class="companies-linked-summary">
+          <ng-container
+            *ngIf="
+              !billingAccount.companies || billingAccount.companies.length === 0
+            "
+          >
+            <div>&nbsp;</div>
+          </ng-container>
+          <ng-container *ngIf="billingAccount.companies?.length === 1">
+            <div>{{ billingAccount.companies[0].companyName }}</div>
+          </ng-container>
+          <ng-container *ngIf="billingAccount.companies?.length === 2">
+            <div>{{ billingAccount.companies[0].companyName }}</div>
+            <button
+              class="button-link"
+              (click)="
+                toggleCompaniesListFrom(
+                  $event,
+                  billingAccount.companies,
+                  companiesOp
+                )
+              "
+            >
+              {{ 'ועוד עסק אחד' }}
+            </button>
+          </ng-container>
+          <ng-container *ngIf="billingAccount.companies?.length > 2">
+            <div>{{ billingAccount.companies[0].companyName }}</div>
+            <button
+              class="button-link"
+              (click)="
+                toggleCompaniesListFrom(
+                  $event,
+                  billingAccount.companies,
+                  companiesOp
+                )
+              "
+            >
+              {{ 'ועוד ' + (billingAccount.companies.length - 1) + ' עסקים' }}
+            </button>
+          </ng-container>
+        </section>
+      </li>
+
+      <p-overlayPanel
+        #companiesOp
+        appendTo="body"
+        styleClass="billing-companies-list-overlay"
+      >
+        <ul>
+          <li *ngFor="let comp of toggledCompaniesList">
+            {{ comp.companyName }}
+          </li>
+        </ul>
+      </p-overlayPanel>
+    </ng-container>
+  </ul>
+
+  <div
+    [appScrollHeight]="header.getBoundingClientRect().bottom + 25"
+    class="scrollbar-dynamic"
+    style="position: relative"
+  >
+    <router-outlet></router-outlet>
+  </div>
+</ng-container>
+<!--</div>-->

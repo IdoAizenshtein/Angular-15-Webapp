@@ -1,0 +1,565 @@
+@import 'fonts';
+@import 'heights-sizes';
+@import 'colors';
+@import 'base';
+@import 'lang';
+
+// ====== CSS ARROW PLEASE =====
+// technique from http://cssarrowplease.com/
+@mixin arrow-top(
+  $leftSide,
+  $size,
+  $color,
+  $border-width,
+  $border-color: rgba(0, 0, 0, 0.12),
+  $left: 50%
+) {
+  & {
+    background: $color;
+    border: 1px solid $border-color;
+  }
+
+  &:after,
+  &:before {
+    bottom: 100%;
+    border: solid transparent;
+    content: ' ';
+    height: 0;
+    width: 0;
+    position: absolute;
+    pointer-events: none;
+    top: unset;
+  }
+
+  &:after {
+    border-color: rgba($color, 0);
+    border-bottom-color: $color;
+    border-width: $size;
+    #{$leftSide}: $left;
+    margin-#{$leftSide}: -$size;
+  }
+  &:before {
+    border-color: rgba($border-color, 0);
+    border-bottom-color: $border-color;
+    border-width: $size + round(1.41421356 * $border-width);
+    #{$leftSide}: $left;
+    margin-#{$leftSide}: -($size + round(1.41421356 * $border-width));
+  }
+}
+
+@mixin arrow-bottom(
+  $leftSide,
+  $size,
+  $color,
+  $border-width,
+  $border-color: rgba(0, 0, 0, 0.12),
+  $left: 50%
+) {
+  & {
+    background: $color;
+    border: 1px solid $border-color;
+  }
+
+  &:after,
+  &:before {
+    top: 100%;
+    border: solid transparent;
+    content: ' ';
+    height: 0;
+    width: 0;
+    position: absolute;
+    pointer-events: none;
+  }
+
+  &:after {
+    border-color: rgba($color, 0);
+    border-top-color: $color;
+    border-width: $size;
+    #{$leftSide}: $left;
+    margin-#{$leftSide}: -$size;
+    border-bottom-color: transparent !important;
+  }
+  &:before {
+    border-color: rgba($border-color, 0);
+    border-top-color: $border-color;
+    border-width: $size + round(1.41421356 * $border-width);
+    #{$leftSide}: $left;
+    margin-#{$leftSide}: -($size + round(1.41421356 * $border-width));
+  }
+}
+
+@mixin tooltip(
+  $leftSide,
+  $rightSide,
+  $top: auto,
+  $right: auto,
+  $bottom: auto,
+  $left: auto,
+  $width: auto,
+  $height: auto,
+  $zIndex: 9
+) {
+  position: absolute;
+  bottom: $bottom;
+  #{$rightSide}: $right;
+  top: $top;
+  #{$leftSide}: $left;
+  width: $width;
+  height: $height;
+  z-index: $zIndex;
+  color: $color-base-font-titles;
+  background: $white;
+  //border: 2px solid $border-gray;
+  @include font(semi-bold, 16px, 30px);
+  @include border-radius(4px);
+  @include padding-box(0px, 0px, 0px, 0px);
+  @extend %box-sizing-border;
+  margin-top: 12px;
+  //box-shadow: -2px 2px 4px 1px #cecece;
+  //box-shadow: 0 0 8px 0 rgba(0,0,0,0.12), -1px -1px 4px 0 rgba(0,0,0,0.08), 1px 1px 8px 0 rgba(0,0,0,0.12), 2px 2px 4px 0 rgba(0,0,0,0.08);
+  box-shadow: 0 -1px 2px 0 rgba(0, 0, 0, 0.12), 0 4px 8px 0 rgba(0, 0, 0, 0.12),
+    0 2px 4px 0 rgba(0, 0, 0, 0.08);
+  @include padding-box(18px, 15px, 18px, 15px);
+}
+
+.p-tooltip {
+  border-radius: 2px;
+  max-width: 52ch;
+
+  &.p-tooltip-bottom .p-tooltip-arrow {
+    border-bottom-color: #748498; // #ffffff;
+  }
+
+  &.p-tooltip-top .p-tooltip-arrow {
+    border-top-color: #748498; // #ffffff;
+  }
+
+  &.p-tooltip-left .p-tooltip-arrow {
+    border-left-color: #748498; // #ffffff;
+  }
+
+  &.p-tooltip-right .p-tooltip-arrow {
+    border-right-color: #748498; // #ffffff;
+  }
+
+  .p-tooltip-text {
+    @include font(semi-bold, 15px, 20px);
+    color: $white; //$color-base-font-titles !important;
+    background-color: #748498 !important; // #ffffff !important;
+    word-break: normal; // break-all;
+    padding: 0.5em 1em;
+    border-radius: 2px;
+
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+
+    b {
+      font-weight: getFont(bold);
+    }
+
+    &.p-shadow {
+      box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.12),
+        0 2px 4px 0 rgba(0, 0, 0, 0.08);
+    }
+  }
+}
+
+@mixin dirTooltip($lang) {
+  $left: get-side($lang, left);
+  $right: get-side($lang, right);
+
+  .tooltip {
+    @include tooltip($left, $right);
+    //@include arrow-top($left, 10px, $white, 1px, $border-gray);
+    @include arrow-top($left, 10px, $white, 1px, transparent);
+    //margin-right: -100%;
+    //right: 50%;
+
+    input[type='text'],
+    input[type='number'] {
+      font-weight: getFont(semi-bold);
+      @include color-placeholder($color-place-holder);
+      border: 2px solid $border-gray;
+      @include border-radius(3px);
+      @include padding-box-all($lang, 0, 12px, 0, 7px);
+    }
+
+    input[type='number'] {
+      max-width: 15ch;
+
+      &::-webkit-inner-spin-button,
+      &::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+    }
+
+    .search {
+      font-size: 0.9em;
+      padding-#{$left}: 1.9em;
+      line-height: 1.4em;
+      height: 2em;
+
+      input {
+        font-size: inherit;
+        padding: 0;
+        border: none;
+      }
+    }
+
+    ul.p-dropdown-items {
+      > li.p-dropdown-item {
+        font-weight: getFont(semi-bold);
+        font-size: 1em;
+        line-height: 1.3em;
+        display: flex;
+        align-items: center;
+
+        label {
+          font-weight: unset;
+          font-size: unset;
+          line-height: unset;
+          cursor: unset;
+        }
+
+        &.p-highlight,
+        &:hover {
+          .button-link {
+            color: $color-base-font-white;
+          }
+
+          color: $color-base-font-white;
+          background: $color-base-font;
+        }
+
+        cursor: pointer;
+
+        &.p-highlight {
+          cursor: auto;
+        }
+
+        [hidden] {
+          visibility: collapse;
+        }
+      }
+    }
+  }
+
+  .tooltip-top {
+    //@include arrow-bottom($left, 10px, $white, 1px, $border-gray);
+    @include arrow-bottom($left, 10px, $white, 1px);
+
+    :after {
+      border-bottom-color: transparent !important;
+    }
+  }
+
+  .tooltip-bottom {
+    //@include arrow-top($left, 10px, $white, 1px, $border-gray);
+    @include arrow-top($left, 10px, $white, 1px);
+
+    &.tooltip-daily-edit {
+      .p-overlaypanel-content {
+        padding: 0;
+      }
+
+      ul {
+        width: 90px;
+
+        li {
+          cursor: pointer;
+        }
+      }
+    }
+
+    &.tooltip-daily-edit:before {
+      margin-left: -28px;
+    }
+
+    &.tooltip-daily-edit:after {
+      margin-left: -27px;
+    }
+  }
+
+  .tooltip-acc-deviation {
+    @include font(semi-bold, 15px, 34px);
+    @include border-radius(4px);
+    @include padding-box(0px, 0px, 0px, 0px);
+    box-shadow: -1.331px 1.888px 6px rgba(0, 0, 0, 0.14) !important;
+
+    .p-overlaypanel-content {
+      padding: 1em 0;
+    }
+
+    ul {
+      //font-size: 14px;
+      max-height: 20em;
+      overflow-y: auto;
+
+      li {
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        padding: 0 15px;
+
+        .sum-debit p {
+          font-size: 14px !important;
+        }
+
+        &:hover {
+          background: #d3e4ec;
+
+          span:first-child {
+            text-decoration: underline;
+            cursor: pointer;
+          }
+        }
+      }
+    }
+  }
+
+  .tooltip-acc-list {
+    @include font(semi-bold, 15px, 34px);
+    @include border-radius(4px);
+    @include padding-box(0px, 0px, 0px, 0px);
+    box-shadow: -1.331px 1.888px 6px rgba(0, 0, 0, 0.14) !important;
+
+    .p-overlaypanel-content {
+      padding: 1em 0;
+    }
+
+    ul {
+      max-height: 20em;
+      overflow-y: auto;
+
+      li {
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        padding: 0 15px;
+      }
+    }
+  }
+
+  //.p-shadow {
+  //  box-shadow: -1.331px 1.888px 6px rgba(0, 0, 0, 0.14);
+  //}
+
+  .snack-success {
+    background: $add-check-in;
+    color: $white;
+  }
+
+  .tooltip-mini-pies-barchart {
+    //display: none;
+    width: 227px;
+    height: 157px;
+    background: #ffffff;
+    border: 1px solid #ebebeb;
+    //position: absolute;
+    //right: -38px;
+    padding: 15px;
+
+    &:not(.tooltip-toplast) {
+      transform: translateY(-200px);
+      transform-origin: top center;
+    }
+
+    &:before {
+      #{$left}: 20px;
+    }
+
+    &:after {
+      border-bottom-color: #ffffff;
+      #{$left}: 20px;
+    }
+
+    .wrap-pie-inside {
+      display: flex;
+      display: -ms-flexbox;
+      align-items: center;
+      justify-content: center;
+      border-bottom: 1px solid #cdcdcd;
+
+      > div {
+        height: 110px;
+        text-align: center;
+        flex: 1;
+        -ms-flex: 1;
+        display: flex;
+        display: -ms-flexbox;
+        align-items: center;
+        flex-direction: column;
+        justify-content: flex-end;
+
+        > div {
+          &:nth-child(1) {
+            color: #0f3860;
+            direction: ltr;
+            @include font(semi-bold, 14px, 20px);
+          }
+
+          &:nth-child(2) {
+            width: 16px;
+            margin: 0 auto;
+          }
+        }
+      }
+
+      &.red .bar {
+        background: $base-red-sum;
+      }
+
+      &.green .bar {
+        background: $base-green-sum;
+      }
+    }
+
+    .wrap-date-inside {
+      display: flex;
+      display: -ms-flexbox;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+
+      > div {
+        flex: 1;
+        -ms-flex: 1;
+        color: #5e5e5e;
+        @include font(regular, 12px);
+      }
+    }
+  }
+
+  .mdc-tooltip, .mat-tooltip {
+    @include font(semi-bold, 15px, 20px);
+    max-width: 52ch;
+    color: $white; //$color-base-font-titles !important;
+    background: #748498; // #ffffff !important;
+    word-break: normal; // break-all;
+    padding: 0.5em 1em;
+    border-radius: 2px;
+    margin: 0;
+
+    b {
+      font-weight: getFont(bold);
+    }
+
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.12), 0 2px 4px 0 rgba(0, 0, 0, 0.08);
+  }
+
+  .version-update-snack {
+    background-color: $white;
+    color: $color-base-font;
+    box-shadow: 0 15px 30px 0 rgba(0, 0, 0, 0.11),
+      0 5px 15px 0 rgba(0, 0, 0, 0.08);
+    @include font(semi-bold, 16px, 32px);
+
+    div {
+      display: flex;
+      display: -ms-flexbox;
+    }
+
+    .button-link {
+      margin-#{$right}: 2ch;
+      font-size: inherit;
+      line-height: inherit;
+    }
+  }
+
+  .docs-update-snack {
+    background-color: $white;
+    box-shadow: 0 15px 30px 0 rgba(0, 0, 0, 0.22),
+      0 5px 15px 0 rgba(0, 0, 0, 0.08);
+    @include font(regular, 16px);
+    color: #022258;
+    width: 330px;
+    height: 57px;
+    border-radius: 5px;
+    //transform: translateY(-174px) !important;
+
+    padding: 0 24px !important;
+    align-items: center !important;
+    display: flex !important;
+
+    div {
+      display: flex;
+      display: -ms-flexbox;
+      justify-content: space-between;
+      align-items: center;
+      width: 282px;
+    }
+
+    .button-link {
+      color: #038ed6;
+      @include font(semi-bold, 15px);
+    }
+  }
+
+  .billing-companies-list-overlay {
+    @include arrow-top($left, 6px, $white, 1px, rgba(0, 0, 0, 0.12), 20%);
+    border: none;
+    border-radius: 2px;
+    transform: translate(-5%, 6px);
+
+    &.p-dialog-content {
+      box-shadow: 0 15px 30px 0 rgba(0, 0, 0, 0.11),
+        0 5px 15px 0 rgba(0, 0, 0, 0.08) !important;
+    }
+  }
+
+  .tooltip-bottom.overlayPanelRightClick {
+    z-index: 100000 !important;
+
+    &:before,
+    &:after {
+      content: none !important;
+    }
+
+    svg {
+      fill: #022258 !important;
+    }
+
+    .st0 {
+      fill: #022258 !important;
+    }
+
+    ul li:hover {
+      background: #022258;
+
+      svg {
+        fill: #ffffff !important;
+      }
+
+      #visibility > path {
+        fill: #ffffff !important;
+      }
+
+      .st0 {
+        fill: #ffffff !important;
+      }
+
+      p {
+        color: #ffffff;
+      }
+    }
+  }
+}
+
+.cdk-overlay-container {
+  z-index: 2000;
+}
+
+body {
+  &.isRTL,
+  .isRTL {
+    $lang: rtl;
+    @include dirTooltip($lang);
+  }
+
+  &.isLTR,
+  .isLTR {
+    $lang: ltr;
+    @include dirTooltip($lang);
+  }
+}

@@ -1,0 +1,127 @@
+<div
+		[matTooltip]="'appWalk.customers.filterAvailable' | translate"
+		class="menu-with-panel"
+		matTooltipPosition="above"
+		style="display: inline-block; position: relative"
+>
+	<div
+			(click)="togglePanel()"
+			[class.ddIcon]="ddIcon"
+			[class.isNewLine]="isNewLine"
+			[ngClass]="dataContent?.length > 0 ? 'trigger' : 'trigger-disabled'"
+			style="cursor: pointer"
+	>
+		<ng-container *ngIf="title && !isNewLine">{{ title }}</ng-container>
+		<div *ngIf="title && isNewLine" [innerHTML]="title"></div>
+		<ng-container *ngIf="!title">
+			<ng-content></ng-content>
+		</ng-container>
+		&nbsp;<img
+			#trigger
+			*ngIf="!ddIcon"
+			width="11"
+			height="11"
+		 [src]="
+        '/assets/images/' +
+        (containsUncheckedOptions() ? 'filter-active' : 'filter') +
+        '.png'
+      "
+			style="width: 11px; height: 11px"
+	/>
+	</div>
+	<div
+			*ngIf="containsUncheckedOptions()"
+			style="
+      width: 0;
+      height: 0;
+      border: 2px solid #022258;
+      border-radius: 50%;
+      top: calc(50% - 5px - 2px);
+      left: 8px;
+      position: absolute;
+    "
+	></div>
+	<div
+			#tt
+			*ngIf="showPanelDD"
+			[@slideInOutDD]
+			[style.top.px]="trigger ? trigger['offsetTop'] + trigger['offsetHeight'] + 2 : 30"
+			class="tooltip"
+	>
+		<ng-container *ngIf="filter && dataContent?.length > 5">
+			<div class="search">
+				<input [formControl]="itemsFilter" autocomplete="off" type="text"/>
+			</div>
+		</ng-container>
+		<ul
+				[ngClass]="{ 'p-dropdown-items': selectionMode === 'single' }"
+				[style.min-height.vh]="filter && dataContent?.length > 5 ? 10 : null"
+				class="scroll-chrome"
+				style="
+        max-height: 35vh;
+        overflow: auto;
+        position: relative;
+        padding-left: 5px;
+        max-width: 180px;
+      "
+		>
+			<li
+					*ngFor="
+          let item of dataContent | filterPipe: itemsFilter.value:searchableList
+        "
+					[ngClass]="{
+          'p-dropdown-item': selectionMode === 'single',
+          'p-highlight':
+            selectionMode === 'single' && item === selectedSingle
+        }"
+					style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis"
+			>
+				<ng-container
+						*ngTemplateOutlet="
+            selectionMode === 'single'
+              ? singleSelectionItem
+              : multiSelectionItem;
+            context: { $implicit: item }
+          "
+				></ng-container>
+				<!--        <p-checkbox checkboxIcon="fa fa-check" [inputId]="item.id"-->
+				<!--                    [label]="translate$ && item.id !== 'all' ? item.valTranslated : (item.id === 'all' ? '[' + item.val + ']' : item.val)"-->
+				<!--                    [binary]="true"-->
+				<!--                    [ngModel]="item.checked" (onChange)="changeSelected(item)"></p-checkbox>-->
+			</li>
+		</ul>
+		<ng-template #singleSelectionItem let-item>
+			<label (click)="changeSelected(item)" [id]="item.id" style="flex: 1">
+				{{
+				translate$ && item.id !== 'all'
+						? item.valTranslated
+						: item.id === 'all'
+								? '[' + item.val + ']'
+								: item.val
+				}}
+			</label>
+			<button
+					(click)="changeSelected(item !== selectedSingle ? item : null)"
+					[style.opacity]="item !== selectedSingle ? 0 : 1"
+					class="button-link"
+			>
+				<mat-icon>close</mat-icon>
+			</button>
+		</ng-template>
+		<ng-template #multiSelectionItem let-item>
+			<p-checkbox checkboxIcon="fa fa-check"
+			            (onChange)="changeSelected(item)"
+			            [(ngModel)]="item.checked"
+			            [binary]="true"
+			            [inputId]="item.id"
+			            [label]="
+          translate$ && item.id !== 'all'
+            ? item.valTranslated
+            : item.id === 'all'
+            ? '[' + item.val + ']'
+            : item.val
+        "
+			></p-checkbox>
+		</ng-template>
+	</div>
+</div>

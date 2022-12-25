@@ -1,0 +1,253 @@
+{
+  "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
+  "cli": {
+    "cache": {
+      "environment": "all",
+      "enabled": false
+    }
+  },
+  "version": 1,
+  "newProjectRoot": "projects",
+  "projects": {
+    "bizibox": {
+      "projectType": "application",
+      "schematics": {
+        "@schematics/angular:component": {
+          "style": "scss"
+        }
+      },
+      "root": "",
+      "sourceRoot": "src",
+      "prefix": "app",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:browser",
+          "options": {
+            "allowedCommonJsDependencies": [
+              "polygon-clipping",
+              "core-js",
+              "raf",
+              "rgbcolor",
+              "dompurify",
+              "html2canvas",
+              "bezier-easing",
+              "moment-timezone",
+              "moment",
+              "highcharts",
+              "highcharts/highcharts-gantt",
+              "highcharts/highmaps",
+              "highcharts/highstock"
+            ],
+            "outputPath": "../../../target/frontend",
+            "index": "src/index.html",
+            "main": "src/main.ts",
+            "polyfills": "src/polyfills.ts",
+            "tsConfig": "tsconfig.app.json",
+            "inlineStyleLanguage": "scss",
+            "assets": [
+              "src/favicon.ico",
+              "src/assets",
+              "src/apple-app-site-association"
+            ],
+            "styles": [
+              {
+                "input": "node_modules/primeng/resources/primeng.min.css",
+                "bundleName": "primeng"
+              },
+              {
+                "input": "src/assets/style/_reset.scss",
+                "bundleName": "reset"
+              },
+              {
+                "input": "src/assets/style/_primeicons.scss",
+                "bundleName": "primeicons"
+              },
+              {
+                "input": "src/assets/style/fontawesome.scss",
+                "bundleName": "fontawesome"
+              },
+              {
+                "input": "src/assets/style/_carousel.scss",
+                "bundleName": "carousel"
+              },
+              {
+                "input": "src/assets/style/_inputswitch.scss",
+                "bundleName": "_inputswitch"
+              },
+              {
+                "input": "src/assets/style/_autocomplete.scss",
+                "bundleName": "autocomplete"
+              },
+              {
+                "input": "src/assets/style/_calendar.scss",
+                "bundleName": "calendar"
+              },
+              {
+                "input": "src/assets/style/_pagination.scss",
+                "bundleName": "pagination"
+              },
+              {
+                "input": "src/assets/style/_dialog.scss",
+                "bundleName": "dialog"
+              },
+              {
+                "input": "src/assets/style/_tooltip.scss",
+                "bundleName": "tooltip"
+              },
+              {
+                "input": "src/assets/style/_dropdown.scss",
+                "bundleName": "dropdown"
+              },
+              {
+                "input": "src/assets/style/_menu_dd.scss",
+                "bundleName": "menu_dd"
+              },
+              {
+                "input": "src/assets/style/_buttons.scss",
+                "bundleName": "buttons"
+              },
+              {
+                "input": "src/assets/style/_table.scss",
+                "bundleName": "table"
+              },
+              {
+                "input": "src/assets/style/style.scss",
+                "bundleName": "style"
+              },
+              {
+                "input": "src/assets/style/styleSecond.scss",
+                "bundleName": "styleSecond"
+              },
+              {
+                "input": "src/assets/style/styleThird.scss",
+                "bundleName": "styleThird"
+              },
+              {
+                "input": "src/assets/style/styleFourth.scss",
+                "bundleName": "styleFourth"
+              },
+              {
+                "input": "src/assets/style/styleFifth.scss",
+                "bundleName": "styleFifth"
+              },
+              {
+                "input": "src/assets/style/styleSixth.scss",
+                "bundleName": "styleSixth"
+              }
+            ],
+            "scripts": [
+              {
+                "input": "src/assets/js/pdf.js",
+                "bundleName": "pdf"
+              },
+              {
+                "input": "src/assets/js/jschardet.min.js",
+                "bundleName": "jschardet"
+              },
+              {
+                "input": "node_modules/jquery/dist/jquery.min.js",
+                "bundleName": "jquerye"
+              },
+              {
+                "input": "node_modules/jquery-ui/dist/jquery-ui.js",
+                "bundleName": "jquery-ui"
+              },
+              {
+                "input": "src/assets/js/pdf-lib.min.js",
+                "bundleName": "pdf-lib"
+              },
+              {
+                "input": "src/assets/js/konva.min.js",
+                "bundleName": "konva"
+              },
+              {
+                "input": "src/assets/js/jquery.scrollbar.min.js",
+                "bundleName": "scrollbar"
+              },
+              {
+                "input": "src/assets/files/resources/dynamsoft.webtwain.min.js",
+                "bundleName": "webtwain-initiate"
+              }
+            ]
+          },
+          "configurations": {
+            "production": {
+              "buildOptimizer": true,
+              "optimization": true,
+              "sourceMap": false,
+              "namedChunks": false,
+              "aot": true,
+              "extractLicenses": true,
+              "vendorChunk": false,
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "14mb",
+                  "maximumError": "16mb"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "6kb",
+                  "maximumError": "8kb"
+                }
+              ],
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.prod.ts"
+                }
+              ],
+              "outputHashing": "all"
+            },
+            "development": {
+              "aot": false,
+              "buildOptimizer": false,
+              "optimization": false,
+              "vendorChunk": true,
+              "extractLicenses": false,
+              "sourceMap": true,
+              "namedChunks": true
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "serve": {
+          "builder": "@angular-devkit/build-angular:dev-server",
+          "configurations": {
+            "production": {
+              "browserTarget": "bizibox:build:production"
+            },
+            "development": {
+              "browserTarget": "bizibox:build:development"
+            }
+          },
+          "defaultConfiguration": "development"
+        },
+        "extract-i18n": {
+          "builder": "@angular-devkit/build-angular:extract-i18n",
+          "options": {
+            "browserTarget": "bizibox:build"
+          }
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "main": "src/test.ts",
+            "polyfills": "src/polyfills.ts",
+            "tsConfig": "tsconfig.spec.json",
+            "karmaConfig": "karma.conf.js",
+            "inlineStyleLanguage": "scss",
+            "assets": [
+              "src/favicon.ico",
+              "src/assets"
+            ],
+            "styles": [
+              "src/styles.scss"
+            ],
+            "scripts": []
+          }
+        }
+      }
+    }
+  }
+}

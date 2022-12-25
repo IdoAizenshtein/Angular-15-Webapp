@@ -1,0 +1,13 @@
+<h2 class="titlePage">
+  <i
+    [matTooltip]="
+      'appWalk.customers.financialManagement.bankAccount.' +
+        activated.snapshot.firstChild.url.join('') +
+        '.pageTitle' | translate
+    "
+    matTooltipPosition="after"
+  >
+    {{ 'menu.customers.financialManagement.bankAccount.main' | translate }}</i
+  >
+</h2>
+<router-outlet></router-outlet>

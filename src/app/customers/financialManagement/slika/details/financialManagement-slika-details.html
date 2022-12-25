@@ -1,0 +1,579 @@
+<div>
+  <div class="filterRow">
+    <app-solek-select
+      [solek]="userService.appData.userData.slika"
+      (changed)="getSlikaDetails()"
+    ></app-solek-select>
+
+    <app-clragencies-dates></app-clragencies-dates>
+    <!--<app-solek-dates [option]="'monthCredit'" (onChange)="filterDates($event)"></app-solek-dates>-->
+
+    <div class="search">
+      <input
+        type="text"
+        placeholder="{{ 'filters.search' | translate }}"
+        [value]="queryString"
+        [formControl]="filterInput"
+        autocomplete="off"
+      />
+    </div>
+    <ul class="tabs navTabs">
+      <li
+        routerLink="../aggregate"
+        queryParamsHandling="preserve"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: false }"
+        [matTooltip]="
+          'appWalk.customers.financialManagement.slika.viewSwitchAggregate'
+            | translate
+        "
+        matTooltipPosition="above"
+      >
+        {{ 'filters.consolidated' | translate }}
+      </li>
+      <li
+        routerLink="../details"
+        queryParamsHandling="preserve"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: false }"
+        [matTooltip]="
+          'appWalk.customers.financialManagement.slika.viewSwitchDetails'
+            | translate
+        "
+        matTooltipPosition="above"
+      >
+        {{ 'filters.detailed' | translate }}
+      </li>
+      <li
+        routerLink="../graph"
+        queryParamsHandling="preserve"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: false }"
+        [matTooltip]="
+          'appWalk.customers.financialManagement.slika.viewSwitchChart'
+            | translate
+        "
+        matTooltipPosition="above"
+      >
+        <img  ngSrc="/assets/images/chart.png" height="13" width="22" />
+      </li>
+    </ul>
+  </div>
+  <div>
+    <div
+      class="sums"
+      [ngClass]="{
+        'sums-deviation':
+          selectedSolkimOutdated?.length &&
+          !allSelectedSolkimOutdatedBecauseNotFound
+      }"
+    >
+      <ng-template #sumNan>
+        <p class="sum-nan"></p>
+      </ng-template>
+      <div class="sum-data">
+        <h3 *ngIf="userService.appData.userData.slika">סה״כ זיכויים עתידיים</h3>
+        <p
+          [class.sum-debit]="selectedSolkimSums.futureCredits < 0"
+          *ngIf="
+            userService.appData.userData.slika?.length > 0 &&
+              selectedSolkimSums.futureCredits !== null;
+            else sumNan
+          "
+        >
+          <span class="sum">{{
+            selectedSolkimSums.futureCredits | sum: true
+          }}</span>
+          <span class="currency">{{ 1 | currencySymbol }}</span>
+          <!--<span class="currency" *ngIf="userService.appData.userData.slika[0].currency">{{userService.appData.userData.slika[0].currency| currencySymbol}}</span>-->
+        </p>
+      </div>
+      <div class="operator">&#8722;</div>
+      <div class="sum-data">
+        <h3 *ngIf="userService.appData.userData.slika">
+          סה״כ התחייבויות עתידיות
+        </h3>
+        <p
+          [class.sum-credit]="selectedSolkimSums.futureCharges > 0"
+          *ngIf="
+            userService.appData.userData.slika?.length > 0 &&
+              selectedSolkimSums.futureCharges !== null;
+            else sumNan
+          "
+        >
+          <span class="sum">{{
+            selectedSolkimSums.futureCharges * -1 | sum: true
+          }}</span>
+          <span class="currency">{{ 1 | currencySymbol }}</span>
+          <!--<span class="currency" *ngIf="userService.appData.userData.slika[0].currency">{{userService.appData.userData.slika[0].currency| currencySymbol}}</span>-->
+        </p>
+      </div>
+      <div class="operator">&#61;</div>
+      <div class="sum-data">
+        <h3 *ngIf="userService.appData.userData.slika">סה״כ יתרה עתידית</h3>
+        <p
+          [class.sum-credit]="selectedSolkimSums.futureBallance > 0"
+          [class.sum-debit]="selectedSolkimSums.futureBallance < 0"
+          *ngIf="
+            userService.appData.userData.slika?.length > 0 &&
+              selectedSolkimSums.futureBallance !== null;
+            else sumNan
+          "
+        >
+          <span class="sum">{{
+            selectedSolkimSums.futureBallance | sum: true
+          }}</span>
+          <span class="currency">{{ 1 | currencySymbol }}</span>
+          <!--<span class="currency" *ngIf="userService.appData.userData.slika[0].currency">{{userService.appData.userData.slika[0].currency| currencySymbol}}</span>-->
+        </p>
+      </div>
+      <div class="separator"></div>
+      <div class="sum-data">
+        <h3 *ngIf="userService.appData.userData.slika">סה״כ לתקופה</h3>
+        <p
+          [class.sum-credit]="dataTableAll.totalSum > 0"
+          [class.sum-debit]="dataTableAll.totalSum < 0"
+          *ngIf="
+            selectedSolkim?.length > 0 && dataTableAll?.totalSum !== null;
+            else sumNan
+          "
+        >
+          <span class="sum">{{ dataTableAll.totalSum | sum: true }}</span>
+          <span class="currency">{{ 1 | currencySymbol }}</span>
+          <!--<span class="currency" *ngIf="userService.appData.userData.slika[0].currency">{{userService.appData.userData.slika[0].currency| currencySymbol}}</span>-->
+        </p>
+      </div>
+
+      <div
+        *ngIf="
+          selectedSolkimOutdated?.length === 1 &&
+          !allSelectedSolkimOutdatedBecauseNotFound
+        "
+        style="margin: 0 1em"
+      >
+        <app-solek-outdated-view
+          [solek]="selectedSolkimOutdated[0]"
+        ></app-solek-outdated-view>
+        <!--<app-token-credentials-update-button-->
+        <!--[balanceLastUpdatedDate]="selectedSolkimOutdated[0].ballanceLastUpdatedDate"-->
+        <!--[tokenData]="{-->
+        <!--companyId: userService.appData.userData.companySelect.companyId,-->
+        <!--tokenId: selectedSolkimOutdated[0].token || ((selectedSolkimOutdated[0].companyAccountId)|asBankAccount).token-->
+        <!--}">-->
+        <!--</app-token-credentials-update-button>-->
+      </div>
+      <div
+        *ngIf="
+          selectedSolkimOutdated?.length > 1 &&
+          !allSelectedSolkimOutdatedBecauseNotFound
+        "
+        class="alert-deviation-multi"
+        style="margin: 0 1em"
+      >
+        <i class="fas fa-exclamation-triangle"></i>
+        <div>
+          {{ 'expressions.solkimDataOutdated0' | translate }}
+          {{ selectedSolkimOutdated.length }}
+          {{ 'expressions.solkimDataOutdated1' | translate }}
+        </div>
+        <div class="separatorInsider"></div>
+        <div class="link" (click)="tooltipWithNavigation.toggle($event)">
+          {{ 'sumsTitles.forDetails' | translate }}
+          <p-overlayPanel
+            styleClass="tooltip-bottom tooltip-acc-deviation"
+            [style]="{ transform: 'translate(-50%, 10px)', width: 'auto' }"
+            #tooltipWithNavigation
+            appendTo="body"
+          >
+            <ul class="scroll-chrome">
+              <li
+                *ngFor="let slk of selectedSolkimOutdated"
+                (click)="selectSolek(slk); tooltipWithNavigation.hide()"
+              >
+                <span>{{
+                  slk.solekDesc ||
+                    ('clearingAgencies.' + slk.solekBankId | translate) +
+                      ' ' +
+                      slk.solekNum
+                }}</span
+                >&nbsp;
+                <span class="sum-debit">
+                  <span style="color: #0f3860; text-decoration: none">-</span
+                  >&nbsp;{{ 'filters.outdated' | translate }}
+                </span>
+                <!--<span class="sum-debit">{{cc.balanceLastUpdatedDate| todayRelativeHumanize:'days'}}</span>-->
+              </li>
+            </ul>
+          </p-overlayPanel>
+        </div>
+      </div>
+
+      <div class="exports" style="flex-flow: row wrap; width: 160px">
+        <button
+          style="flex: 1"
+          (click)="printTransactions()"
+          [matTooltip]="'appWalk.customers.report.printBtn' | translate"
+          matTooltipPosition="above"
+        >
+          <img  ngSrc="/assets/images/to-printer.png" height="21" width="24" />
+        </button>
+        <button
+          style="flex: 1"
+          (click)="reportMailSubmitterToggle = true"
+          [matTooltip]="'appWalk.customers.report.mailBtn' | translate"
+          matTooltipPosition="above"
+        >
+          <img  ngSrc="/assets/images/to-mail.png" height="21" width="24" />
+          <app-report-mail-scheduler
+		          [visible]="(reportMailSubmitterToggle)"
+		          (recipientApproved)="sendTransactions($event)"
+          ></app-report-mail-scheduler>
+        </button>
+        <button
+          style="flex: 1"
+          (click)="exportTransactions('PDF')"
+          [matTooltip]="'appWalk.customers.report.pdfBtn' | translate"
+          matTooltipPosition="above"
+        >
+          <img  ngSrc="/assets/images/to-pdf.png" height="21" width="24" />
+        </button>
+        <button
+          style="flex: 1"
+          (click)="exportTransactions('EXCEL')"
+          [matTooltip]="'appWalk.customers.report.excelBtn' | translate"
+          matTooltipPosition="above"
+        >
+          <img  ngSrc="/assets/images/to-excel.png" height="21" width="24" />
+        </button>
+        <ul
+          style="
+            display: flex;
+            flex: 1 0 100%;
+            justify-content: space-between;
+            margin: 0 10px;
+            font-size: 92%;
+          "
+        >
+          <li class="button-link" (click)="collapseOpen(true)">
+            {{ 'actions.expandAll' | translate }}
+          </li>
+          <li>|</li>
+          <li class="button-link" (click)="collapseOpen(false)">
+            {{ 'actions.collapseAll' | translate }}
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div
+    class="bank-acc-details-table-container solekTable"
+    style="position: relative"
+  >
+    <div class="bank-acc-details-table-header" #tableHeader>
+      <!--<div class="bank-acc-details-table-header" style="padding-left: 0.8em"-->
+      <!--[style.padding-left.px]="scrollContainer.scrollHeight > scrollContainer.clientHeight ? 12 : 0">-->
+      <div>{{ 'titles.account' | translate }}</div>
+      <div>{{ 'titles.solek' | translate }}</div>
+      <div style="overflow: visible">
+        <div>
+          <app-tooltip-category
+            [title]="'titles.cardType' | translate"
+            [data]="cardTypesArr"
+            (changed)="filterCardType($event)"
+          ></app-tooltip-category>
+        </div>
+      </div>
+      <!--<div>-->
+      <!--סוג כרטיס-->
+      <!--</div>-->
+      <div>
+        {{ 'titles.regularTransactions' | translate }}
+        <!--עסקאות רגילות-->
+      </div>
+      <div>
+        {{ 'titles.paymentTransactions' | translate }}
+        <!--עסקאות בתשלומים-->
+      </div>
+      <div>
+        {{ 'sumsTitles.total' | translate }}
+        <!--סה״כ-->
+      </div>
+      <div
+        [ngClass]="{
+          lite: userService?.appData?.userData?.companySelect?.lite
+        }"
+        (click)="clickToPackages()"
+      >
+        <div *ngIf="userService?.appData?.userData?.companySelect?.lite">
+          <img  ngSrc="/assets/images/diamond.png" width="23" height="19" />
+        </div>
+        {{ 'titles.expectedFlow' | translate }}
+        <!--צפי לתזרים-->
+      </div>
+      <div
+        [ngClass]="{
+          lite: userService?.appData?.userData?.companySelect?.lite
+        }"
+        (click)="clickToPackages()"
+      >
+        <div *ngIf="userService?.appData?.userData?.companySelect?.lite">
+          <img  ngSrc="/assets/images/diamond.png" width="23" height="19" />
+        </div>
+        {{ 'titles.flowPercent' | translate }}
+        <!--אחוז מצפי-->
+      </div>
+    </div>
+    <div
+      [appScrollHeight]="tableHeader.getBoundingClientRect().bottom + 5"
+      class="scrollbar-dynamic bank-acc-details-table-body"
+      #scrollContainer
+      style="position: relative"
+    >
+      <div *ngIf="loader" class="loader">
+        <div class="circle"></div>
+      </div>
+      <div *ngIf="dataTable && dataTable.length">
+        <div
+          *ngFor="
+            let item of dataTable
+              | slice
+                : currentPage * entryLimit
+                : currentPage * entryLimit + entryLimit;
+            let i = index
+          "
+        >
+          <div
+            class="bank-acc-details-row titleRow"
+            [class.opened]="item.opened"
+            (click)="
+              item.opened = !item.opened;
+              setIndexRowCollapse(item.opened, item.date)
+            "
+          >
+            <div>
+              <i
+                class="fa fa-fw"
+                [ngClass]="item.opened ? 'fa-caret-up' : 'fa-caret-down'"
+              ></i>
+              מזוכה בתאריך {{ item.date | date: 'dd/MM/yy' }}
+            </div>
+            <div class="ltrNum">
+              {{ item.total.regularPaymentsTotal | sum }}
+            </div>
+            <div class="ltrNum">{{ item.total.paymentsTotal | sum }}</div>
+            <div class="ltrNum">{{ item.total.transTotal | sum }}</div>
+            <div
+              class="ltrNum"
+              *ngIf="userService?.appData?.userData?.companySelect?.lite"
+            >
+              &nbsp;
+            </div>
+            <div
+              class="ltrNum"
+              *ngIf="userService?.appData?.userData?.companySelect?.lite"
+            >
+              &nbsp;
+            </div>
+            <div
+              class="ltrNum"
+              *ngIf="!userService?.appData?.userData?.companySelect?.lite"
+            >
+              <ng-container
+                *ngIf="
+                  item.total.cycleTotalZefi !== null;
+                  else cycleTotalZefiNan
+                "
+              >
+                <app-sum-view [sum]="item.total.cycleTotalZefi"></app-sum-view>
+                <!--<app-sum-view [class.sum-credit]="item.total.cycleTotalZefi > 0" [class.sum-debit]="item.total.cycleTotalZefi < 0"-->
+                <!--[sum]="item.total.cycleTotalZefi"></app-sum-view>-->
+              </ng-container>
+              <ng-template #cycleTotalZefiNan>-</ng-template>
+              <!--{{item.total.cycleTotalZefi}}-->
+              <!--<span *ngIf="item.total.cycleTotalZefi">%</span>-->
+            </div>
+            <div
+              class="ltrNum"
+              *ngIf="!userService?.appData?.userData?.companySelect?.lite"
+            >
+              <ng-container
+                *ngIf="
+                  item.total.expectedPercent !== null;
+                  else expectedPercentNan
+                "
+              >
+                <span>{{ item.total.expectedPercent | sum }}&#x25;</span>
+              </ng-container>
+              <ng-template #expectedPercentNan>-</ng-template>
+              <!--{{item.total.expectedPercent | sum}}-->
+            </div>
+          </div>
+          <div *ngIf="item.opened" style="position: relative">
+            <div
+              class="bank-acc-details-row transactionsRow"
+              *ngFor="let itemChild of item.typeTotals"
+              tabindex="-1"
+            >
+              <div style="display: flex">
+                <img
+                  style="height: auto; width: auto; position: relative;align-self: center; flex: 0 0 auto; margin: 0 0 0 4px" fill [ngSrc]="itemChild.bankId | toIconSrc: 'bank'"
+                  *ngIf="itemChild?.bankId"
+                  [alt]="itemChild?.accountNickname"
+              
+                />
+                <p
+                  class="text-ellipsis"
+                  [pTooltip]="itemChild.accountNickname"
+                  tooltipPosition="top"
+                >
+                  {{ itemChild?.accountNickname }}
+                </p>
+              </div>
+
+              <div style="display: flex; flex-flow: column; line-height: 1.2em">
+                <p
+                  [innerHTML]="getSolekDesk(itemChild) | highlight: queryString"
+                ></p>
+                <!--<p>{{item.creditCardNickname}}</p>-->
+                <p
+                  style="color: #6d859c; font-size: 95%"
+                  [innerHTML]="itemChild.solekNum | highlight: queryString"
+                ></p>
+              </div>
+              <!--<div>{{(('clearingAgencies.' + itemChild.solekBankId)| translate)}}</div>-->
+
+              <div>
+                <p
+                  [innerHTML]="
+                    (itemChild.solekTypeId
+                      ? ('clearingAgencies.' + itemChild.solekTypeId
+                        | translate)
+                      : ('filters.allCreditCards' | translate)
+                    ) | highlight: queryString
+                  "
+                ></p>
+                <!--<span [innerHTML]="itemChild.solekNickname| highlight: queryString"></span>-->
+              </div>
+
+              <div
+                class="ltrNum"
+                [class.sum-credit]="itemChild.regularPaymentsTotal > 0"
+                [class.sum-debit]="itemChild.regularPaymentsTotal < 0"
+              >
+                <app-sum-view
+                  [sum]="itemChild.regularPaymentsTotal"
+                  [highlight]="queryString"
+                ></app-sum-view>
+              </div>
+              <!--<div class="ltrNum">{{itemChild.regularPaymentsTotal | sum}}</div>-->
+
+              <div
+                class="ltrNum"
+                [class.sum-credit]="itemChild.paymentsTotal > 0"
+                [class.sum-debit]="itemChild.paymentsTotal < 0"
+              >
+                <app-sum-view
+                  [sum]="itemChild.paymentsTotal"
+                  [highlight]="queryString"
+                ></app-sum-view>
+              </div>
+              <!--<div class="ltrNum">{{itemChild.paymentsTotal | sum}}</div>-->
+
+              <div
+                class="ltrNum"
+                [class.sum-credit]="itemChild.transTotal > 0"
+                [class.sum-debit]="itemChild.transTotal < 0"
+              >
+                <app-sum-view
+                  [sum]="itemChild.transTotal"
+                  [highlight]="queryString"
+                ></app-sum-view>
+              </div>
+              <!--<div class="ltrNum">{{itemChild.transTotal | sum}}</div>-->
+
+              <div
+                class="ltrNum"
+                *ngIf="!userService?.appData?.userData?.companySelect?.lite"
+              >
+                <ng-container
+                  *ngIf="
+                    itemChild.cycleTotalZefi !== null;
+                    else cycleTotalZefiNan
+                  "
+                >
+                  <app-sum-view
+                    [class.sum-credit]="itemChild.cycleTotalZefi > 0"
+                    [class.sum-debit]="itemChild.cycleTotalZefi < 0"
+                    [sum]="itemChild.cycleTotalZefi"
+                    [highlight]="queryString"
+                  ></app-sum-view>
+                </ng-container>
+                <ng-template #cycleTotalZefiNan>-</ng-template>
+              </div>
+              <!--<div class="ltrNum">{{itemChild.cycleTotalZefi}}-->
+              <!--<span *ngIf="itemChild.cycleTotalZefi">%</span>-->
+              <!--</div>-->
+
+              <div
+                class="ltrNum"
+                *ngIf="!userService?.appData?.userData?.companySelect?.lite"
+              >
+                <ng-container
+                  *ngIf="
+                    itemChild.expectedPercent !== null;
+                    else expectedPercentNan
+                  "
+                >
+                  <span
+                    [innerHTML]="
+                      itemChild.expectedPercent | highlight: queryString
+                    "
+                  ></span
+                  >&#x25;
+                </ng-container>
+                <ng-template #expectedPercentNan>-</ng-template>
+              </div>
+              <!--<div class="ltrNum">{{itemChild.expectedPercent | sum}}</div>-->
+
+              <div
+                class="ltrNum"
+                *ngIf="userService?.appData?.userData?.companySelect?.lite"
+              >
+                &nbsp;
+              </div>
+              <div
+                class="ltrNum"
+                *ngIf="userService?.appData?.userData?.companySelect?.lite"
+              >
+                &nbsp;
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <ng-container *ngIf="!loader && !dataTable?.length">
+        <div class="no-rows-found">
+          <ng-container
+            *ngIf="!dataTableAll?.length && !selectedSolkim?.length"
+          >
+            {{ 'expressions.selectAccount' | translate }}
+          </ng-container>
+          <ng-container *ngIf="selectedSolkim?.length">
+            {{ 'expressions.noDataFoundForCriteria' | translate }},
+            {{ 'expressions.changeCriteria' | translate }}
+          </ng-container>
+        </div>
+      </ng-container>
+
+      <app-paginator
+        [rows]="entryLimit"
+        [alwaysShow]="false"
+        #paginator
+        [totalRecords]="dataTable.length"
+        [rowsPerPageOptions]="[50, 100, 200]"
+        (onPageChange)="paginate($event)"
+      >
+      </app-paginator>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,85 @@
+@import 'variables';
+
+@font-face {
+  font-family: 'fontello';
+  src: url('#{$fa-font-path}/fontello.eot?22526870');
+  src: url('#{$fa-font-path}/fontello.eot?22526870#iefix')
+      format('embedded-opentype'),
+    url('#{$fa-font-path}/fontello.woff2?22526870') format('woff2'),
+    url('#{$fa-font-path}/fontello.woff?22526870') format('woff'),
+    url('#{$fa-font-path}/fontello.ttf?22526870') format('truetype'),
+    url('#{$fa-font-path}/fontello.svg?22526870#fontello') format('svg');
+  font-weight: normal;
+  font-style: normal;
+}
+/* Chrome hack: SVG is rendered more smooth in Windozze. 100% magic, uncomment if you need it. */
+/* Note, that will break hinting! In other OS-es font will be not as sharp as it could be */
+/*
+@media screen and (-webkit-min-device-pixel-ratio:0) {
+  @font-face {
+    font-family: 'fontello';
+    src: url('../font/fontello.svg?67970405#fontello') format('svg');
+  }
+}
+*/
+
+[class*='icon-']:before,
+[class*=' icon-']:before {
+  font-family: 'fontello';
+  font-style: normal;
+  font-weight: normal;
+  speak: never;
+
+  display: inline-block;
+  text-decoration: inherit;
+  width: 1em;
+  margin-right: 0.2em;
+  text-align: center;
+  /* opacity: .8; */
+
+  /* For safety - reset parent styles, that can break glyph codes*/
+  font-variant: normal;
+  text-transform: none;
+
+  /* fix buttons height, for twitter bootstrap */
+  line-height: 1em;
+
+  /* Animation center compensation - margins should be symmetric */
+  /* remove if not needed */
+  margin-left: 0.2em;
+
+  /* you can be more comfortable with increased icons size */
+  /* font-size: 120%; */
+
+  /* Font smoothing. That was taken from TWBS */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  /* Uncomment for 3D effect */
+  /* text-shadow: 1px 1px 1px rgba(127, 127, 127, 0.3); */
+}
+
+.icon-company_products:before {
+  content: '\e801';
+} /* '' */
+.icon-bizibox_folder:before {
+  content: '\e802';
+} /* '' */
+.icon-mail:before {
+  content: '\e803';
+} /* '' */
+.icon-mobile:before {
+  content: '\e804';
+} /* '' */
+.icon-scan:before {
+  content: '\e805';
+} /* '' */
+.icon-upload:before {
+  content: '\e806';
+} /* '' */
+.icon-user-circle:before {
+  content: '\f2bd';
+} /* '' */
+.icon-user-circle-o:before {
+  content: '\f2be';
+} /* '' */

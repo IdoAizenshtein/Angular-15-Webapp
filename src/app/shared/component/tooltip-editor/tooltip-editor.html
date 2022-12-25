@@ -1,0 +1,26 @@
+<div style="display: inline-block; position: relative">
+	<div (click)="toggleTooltip()" style="cursor: pointer" #trigger>
+		<ng-content></ng-content>
+	</div>
+	<div
+			class="tooltip"
+			*ngIf="tooltipShown"
+			[@slideInOutDD]
+			#tt
+			[style.top.px]="trigger.offsetTop + trigger.offsetHeight + 2"
+			[style.left.px]="
+      trigger.offsetLeft + trigger.offsetWidth / 2 - tt.offsetWidth / 2
+    "
+	>
+		<input
+				[type]="valType"
+				[(ngModel)]="value"
+				#editor
+				(keydown.enter)="commitEdit()"
+				(keydown.esc)="cancelEdit()"
+		/>
+		<span *ngIf="currency" style="margin: 0 4px; font-size: 1.2em">{{
+			currency | currencySymbol
+			}}</span>
+	</div>
+</div>

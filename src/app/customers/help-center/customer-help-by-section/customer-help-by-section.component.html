@@ -1,0 +1,142 @@
+<!--<p>-->
+<!--  customer-help-by-section works! {{section$| async}}-->
+<!--</p>-->
+
+<!--</mat-accordion>-->
+<ng-container
+  *ngIf="{
+    faqs:
+      sectionQuestions$
+      | async
+      | filterSearchables: customersHelpCenterComponent.searchFC.value,
+    terms:
+      sectionTerms$
+      | async
+      | filterSearchables: customersHelpCenterComponent.searchFC.value,
+    videos: (sectionVideo$ | async)
+  } as lists"
+>
+  <ng-container *ngIf="lists.videos as videosList">
+    <!--    <pre>{{lists.videos| json}}</pre>-->
+    <div id="vimeo-carousel" *ngIf="videosList.length > 0">
+      <button
+        mat-icon-button
+        *ngIf="lists.videos.length > 1"
+        (click)="scrollVideo(-1, lists.videos)"
+      >
+        <mat-icon>keyboard_arrow_right</mat-icon>
+      </button>
+      <div id="vimeo-player-inline" #playerContainer></div>
+      <button
+        mat-icon-button
+        *ngIf="lists.videos.length > 1"
+        (click)="scrollVideo(1, lists.videos)"
+      >
+        <mat-icon>keyboard_arrow_left</mat-icon>
+      </button>
+    </div>
+  </ng-container>
+
+  <ng-container *ngIf="lists.faqs as faqList">
+    <header *ngIf="faqList?.length">שאלות נפוצות</header>
+    <ul id="faq-list">
+      <li
+        *ngFor="let faq of faqList; trackBy: searchableTrackbyFn"
+        #displayedFaq
+        (click)="customersHelpCenterComponent.handleQuestionClick(faq, $event)"
+        [class.expanded]="faq.expanded"
+        [id]="faq.questionId"
+      >
+        <header>
+          <i
+            class="fas fa-lg"
+            [ngClass]="faq.expanded ? 'fa-angle-up' : 'fa-angle-down'"
+          ></i
+          >&nbsp;{{ faq.question }}
+        </header>
+        <div
+          *ngIf="faq.expanded"
+          [innerHTML]="
+            customersHelpCenterComponent.responsesParsed[faq.question] ||
+            faq.answer
+          "
+        ></div>
+        <!--<ul class="keywords-list" *ngIf="faq.expanded">-->
+        <!--<li *ngFor="let kw of faq.keywords">{{kw.keyword}}</li>-->
+        <!--</ul>-->
+        <!--<pre>{{faq| json}}</pre>-->
+      </li>
+    </ul>
+  </ng-container>
+
+  <mat-divider
+    *ngIf="lists.faqs?.length > 0 && lists.terms?.length"
+  ></mat-divider>
+
+  <ng-container *ngIf="lists.terms as termsList">
+    <header *ngIf="termsList?.length">מילון מונחים</header>
+    <ul id="terms-list">
+      <li
+        *ngFor="let term of termsList; trackBy: searchableTrackbyFn"
+        #displayedTerm
+        (click)="term.expanded = !term.expanded"
+        [class.expanded]="term.expanded"
+        [id]="term.termId"
+      >
+        <header>
+          <i
+            class="fas fa-lg"
+            [ngClass]="term.expanded ? 'fa-angle-up' : 'fa-angle-down'"
+          ></i
+          >&nbsp;{{ term.subject }}
+        </header>
+        <div *ngIf="term.expanded">{{ term.details }}</div>
+        <!--<ul class="keywords-list" *ngIf="faq.expanded">-->
+        <!--<li *ngFor="let kw of faq.keywords">{{kw.keyword}}</li>-->
+        <!--</ul>-->
+        <!--<pre>{{faq| json}}</pre>-->
+      </li>
+    </ul>
+  </ng-container>
+</ng-container>
+
+<!--<ng-container *ngIf="((sectionQuestions$| async)| filterSearchables:customersHelpCenterComponent.searchFC.value) as faqList">-->
+<!--  <header *ngIf="faqList?.length">שאלות נפוצות</header>-->
+<!--  <ul id="faq-list">-->
+<!--    <li *ngFor="let faq of faqList"-->
+<!--        (click)="customersHelpCenterComponent.handleQuestionClick(faq, $event)"-->
+<!--        [class.expanded]="faq.expanded">-->
+<!--      <header><i class="fas fa-lg"-->
+<!--                 [ngClass]="faq.expanded ? 'fa-angle-up' : 'fa-angle-down'"></i>&nbsp;{{faq.question}}-->
+<!--      </header>-->
+<!--      <div *ngIf="faq.expanded" [innerHTML]="customersHelpCenterComponent.responsesParsed[faq.question] || faq.answer"></div>-->
+<!--      &lt;!&ndash;<ul class="keywords-list" *ngIf="faq.expanded">&ndash;&gt;-->
+<!--      &lt;!&ndash;<li *ngFor="let kw of faq.keywords">{{kw.keyword}}</li>&ndash;&gt;-->
+<!--      &lt;!&ndash;</ul>&ndash;&gt;-->
+<!--      &lt;!&ndash;<pre>{{faq| json}}</pre>&ndash;&gt;-->
+<!--    </li>-->
+<!--  </ul>-->
+<!--</ng-container>-->
+
+<!--<ng-container *ngIf="{faqs: (sectionQuestions$| async)| filterSearchables:customersHelpCenterComponent.searchFC.value,-->
+<!--    terms: (sectionTerms$| async)| filterSearchables:customersHelpCenterComponent.searchFC.value} as lists">-->
+<!--  <mat-divider *ngIf="lists.faqs?.length > 0 && lists.terms?.length"></mat-divider>-->
+<!--</ng-container>-->
+
+<!--<ng-container *ngIf="(sectionTerms$| async)| filterSearchables:customersHelpCenterComponent.searchFC.value as termsList">-->
+<!--  <header *ngIf="termsList?.length">מילון מונחים</header>-->
+<!--  <ul id="terms-list">-->
+<!--    <li *ngFor="let term of termsList"-->
+<!--        (click)="term.expanded = !term.expanded"-->
+<!--        [class.expanded]="term.expanded">-->
+<!--      <header><i class="fas fa-lg"-->
+<!--                 [ngClass]="term.expanded ? 'fa-angle-up' : 'fa-angle-down'"></i>&nbsp;{{term.subject}}-->
+<!--      </header>-->
+<!--      <div *ngIf="term.expanded">{{term.details}}</div>-->
+<!--      &lt;!&ndash;<ul class="keywords-list" *ngIf="faq.expanded">&ndash;&gt;-->
+<!--      &lt;!&ndash;<li *ngFor="let kw of faq.keywords">{{kw.keyword}}</li>&ndash;&gt;-->
+<!--      &lt;!&ndash;</ul>&ndash;&gt;-->
+<!--      &lt;!&ndash;<pre>{{faq| json}}</pre>&ndash;&gt;-->
+<!--    </li>-->
+<!--  </ul>-->
+<!--</ng-container>-->

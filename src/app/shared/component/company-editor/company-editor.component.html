@@ -1,0 +1,97 @@
+<div class="Signup__control HorizontalForm__group">
+	<!--<mat-form-field hideRequiredMarker="true">-->
+	<!--<mat-label>{{'signup.businessInfoStep.name' | translate}}</mat-label>-->
+	<!--<input matInput autocomplete="off" type="text" [formControl]="business.get('name')" name="name" id="name" autocomplete="off">-->
+	<!--</mat-form-field>-->
+	<label for="name">{{ 'signup.businessInfoStep.name' | translate }}</label>
+	<div
+			[ngClass]="{
+      Form__group: true,
+      'Form__group--err':
+        !business.get('name').valid && business.get('name').dirty
+    }"
+	>
+		<input
+				type="text"
+				[formGroup]="business"
+				[formControl]="business.get('name')"
+				name="name"
+				id="name"
+				autocomplete="off"
+		/>
+	</div>
+</div>
+<div class="Signup__control HorizontalForm__group">
+	<!--<mat-form-field hideRequiredMarker="true">-->
+	<!--<mat-label>{{'signup.businessInfoStep.id' | translate}}</mat-label>-->
+	<!--<input matInput autocomplete="off" type="text" [formControl]="business.get('id')" name="id" id="id" autocomplete="off">-->
+	<!--<mat-error *ngIf="business.get('id').hasError('idExists')">-->
+	<!--<i class="fa fa-ban"></i> {{'signup.businessInfoStep.idAlreadyRegistered'| translate}}-->
+	<!--</mat-error>-->
+	<!--<mat-error *ngIf="business.get('id').hasError('pattern')">-->
+	<!--<i class="fa fa-exclamation-triangle"></i> {{'signup.businessInfoStep.idPatternError'| translate}}-->
+	<!--</mat-error>-->
+	<!--</mat-form-field>-->
+	<label for="id">
+		{{ 'מס ח.פ/ת.ז' }}
+		<!--{{'signup.businessInfoStep.id'| translate}}-->
+	</label>
+	<div
+			[ngClass]="{
+      Form__group: true,
+      'Form__group--err': business.get('id').invalid && business.get('id').dirty
+    }"
+	>
+		<input
+				type="text"
+				[formGroup]="business"
+				[formControl]="business.get('id')"
+				name="id"
+				id="id"
+				autocomplete="off"
+		/>
+		<div
+				class="Form__feedback Form__feedback--warning"
+				*ngIf="business.get('id').hasError('pattern')"
+		>
+			<i class="fa fa-exclamation-triangle"></i>
+			{{ 'signup.businessInfoStep.idPatternError' | translate }}
+		</div>
+	</div>
+</div>
+<div
+		class="Form__feedback Form__feedback--status"
+		*ngIf="business.get('id').hasError('idExists')"
+>
+	<i class="fa fa-ban"></i>
+	{{ 'signup.businessInfoStep.idAlreadyRegistered' | translate }}
+</div>
+<div class="Signup__control Signup__control--status HorizontalForm__group">
+	<!--<mat-form-field hideRequiredMarker="true">-->
+	<!--<mat-label>{{'signup.businessInfoStep.profile' | translate}}</mat-label>-->
+	<!--<input matInput autocomplete="off" type="text" [formControl]="business.get('profile')" id="profile" name="profile" [placeholder]="'signup.businessInfoStep.profile-placeholder'| translate">-->
+	<!--<mat-hint>{{'* ' + ('expressions.optionalField'| translate)}}</mat-hint>-->
+	<!--</mat-form-field>-->
+	<label for="profile">{{
+		'signup.businessInfoStep.profile' | translate
+		}}</label>
+	<div
+			[ngClass]="{
+      Form__group: true,
+      'Form__group--err':
+        !business.get('profile').valid && business.get('profile').dirty
+    }"
+	>
+		<input
+				type="text"
+				[formGroup]="business"
+				[formControl]="business.get('profile')"
+				id="profile"
+				name="profile"
+				[placeholder]="'signup.businessInfoStep.profile-placeholder' | translate"
+		/>
+		<div class="Form__feedback Form__feedback--status">
+			{{ '* ' + ('expressions.optionalField' | translate) }}
+		</div>
+	</div>
+</div>

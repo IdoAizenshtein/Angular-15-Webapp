@@ -1,0 +1,54 @@
+<p-dialog (visibleChange)="visible = false"
+		[visible]="(visible)"
+		appendTo="body"
+		[modal]="true"
+		[styleClass]="'reportMailSubmitter'"
+>
+	<p-header>{{ 'expressions.sendingToEmail' | translate }}</p-header>
+	<div class="Form">
+		<ng-container *ngIf="!processing; else processingNow">
+			<form
+					novalidate
+					[formGroup]="form"
+					id="reportMailRecepient"
+					(submit)="approveMailAddress()"
+			>
+				<div
+						class="Form__group"
+						[ngClass]="{
+            'Form__group--err':
+              form.get('sendReportTo').invalid && form.get('sendReportTo').dirty
+          }"
+				>
+					<label for="sendReportTo">
+						<span>{{ 'signup.personalInfoStep.email' | translate }}</span>
+					</label>
+					<input
+							id="sendReportTo"
+							name="sendReportTo"
+							formControlName="sendReportTo"
+							type="text"
+							placeholder="name@domain"
+							autocomplete="email"
+					/>
+				</div>
+				<button type="submit" style="display: none"></button>
+			</form>
+		</ng-container>
+		<ng-template #processingNow>
+			<img ngSrc="/assets/images/bizb-loading.gif" height="74" width="107"/>
+		</ng-template>
+	</div>
+	<p-footer
+			style="display: flex; display: -ms-flexbox; justify-content: center"
+	>
+		<button
+				class="button-dark"
+				(click)="approveMailAddress()"
+				[disabled]="form.invalid || processing"
+		>
+			<i class="fas fa-circle-notch fa-spin" *ngIf="processing"></i>
+			{{ 'expressions.sending' | translate }}
+		</button>
+	</p-footer>
+</p-dialog>

@@ -1,0 +1,42 @@
+<!--<p>-->
+<!--  customers-help-faq works!-->
+<!--</p>-->
+<!--<pre>{{(faqList$| async)| json}}</pre>-->
+<!--<mat-accordion>-->
+<!--  <mat-expansion-panel *ngFor="let faq of (faqList$| async) as faqList">-->
+<!--    <mat-expansion-panel-header>-->
+<!--      <mat-panel-title>{{faq.question}}</mat-panel-title>-->
+<!--    </mat-expansion-panel-header>-->
+<!--    {{faq.answer}}-->
+<!--  </mat-expansion-panel>-->
+<!--</mat-accordion>-->
+<ul id="faq-list">
+  <li
+    *ngFor="
+      let faq of customersHelpCenterComponent.faqList$
+        | async
+        | filterSearchables
+          : customersHelpCenterComponent.searchFC.value as faqList
+    "
+    (click)="customersHelpCenterComponent.handleQuestionClick(faq, $event)"
+    [class.expanded]="faq.expanded"
+  >
+    <header>
+      <i
+        class="fas fa-lg"
+        [ngClass]="faq.expanded ? 'fa-angle-up' : 'fa-angle-down'"
+      ></i
+      >&nbsp;{{ faq.question }}
+    </header>
+    <div
+      *ngIf="faq.expanded"
+      [innerHTML]="
+        customersHelpCenterComponent.responsesParsed[faq.question] || faq.answer
+      "
+    ></div>
+    <!--<ul class="keywords-list" *ngIf="faq.expanded">-->
+    <!--<li *ngFor="let kw of faq.keywords">{{kw.keyword}}</li>-->
+    <!--</ul>-->
+    <!--<pre>{{faq| json}}</pre>-->
+  </li>
+</ul>

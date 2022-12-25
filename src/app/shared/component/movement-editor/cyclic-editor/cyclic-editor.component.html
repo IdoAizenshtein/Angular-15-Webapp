@@ -1,0 +1,429 @@
+<div
+		*ngFor="let fld of fields"
+		[formGroup]="form"
+		class="HorizontalForm__group"
+		[class.has-errors]="form.get(fld.name).invalid && form.get(fld.name).dirty"
+		[style.display]="!shouldDisplay(fld) ? 'none' : ''"
+		[style.align-items]="
+    ['autoUpdateTypeName', 'endDate'].includes(fld.name) ? 'baseline' : null
+  "
+>
+	<ng-container *ngIf="fld && fld.name">
+		<ng-container [ngSwitch]="fld.name">
+			<ng-container *ngSwitchCase="'companyAccountId'">
+				<label
+						[for]="fld.name || 'companyAccountId'"
+				>{{
+					'formFixedMovement.field.' + fld.name | translate
+					}}</label>
+				<p-dropdown
+						[options]="userService.appData.userData.accounts"
+						[formControlName]="fld.name"
+						dataKey="companyAccountId"
+						optionLabel="accountNickname"
+						[inputId]="fld.name"
+						[placeholder]="('actions.select' | translate) + '...'"
+						[dropdownIcon]="'p-dropdown-icon'"
+						[autoDisplayFirst]="false"
+				>
+					<ng-template let-item pTemplate="selectedItem">
+						<div style="display: flex; display: -ms-flexbox; align-items: center">
+							<img
+									style="height: auto; width: 24px; position: relative;"  [src]="
+                !item.bankId
+                  ? ''
+                  : (item.bankId | toIconSrc: 'bank')
+              "
+							/>&nbsp;
+							<div class="text-ellipsis">{{ item?.accountNickname }}</div>
+						</div>
+					</ng-template>
+					<ng-template let-option pTemplate="item">
+						<div
+								style="
+              position: relative;
+              display: flex;
+              display: -ms-flexbox;
+              align-items: center;
+            "
+						>
+							<img
+									style="height: auto; width: 24px; position: relative;" fill [ngSrc]="
+                (!option.bankId ? '' : option.bankId)
+                  | toIconSrc: 'bank'
+              "
+							/>&nbsp;
+							<div class="text-ellipsis">{{ option.accountNickname }}</div>
+							<div>&#40;{{ option.currency | currencySymbol }}&#41;</div>
+						</div>
+					</ng-template>
+				</p-dropdown>
+				<!--<pre>{{form.get(fld.name).value| json}}</pre>-->
+			</ng-container>
+			
+			<ng-container *ngSwitchCase="'transTypeId'">
+				<ng-container *ngIf="fld && fld.name">
+					<label
+							[for]="fld.name || 'transTypeId'"
+							[ngStyle]="{'align-self':form.get(fld.name) && form.get(fld.name).value && form.get(fld.name).value['transTypeId'] && !(multipleCategoriesId === form.get(fld.name).value['transTypeId']) && form.get(fld.name).enabled ? 'flex-start': null }">
+						{{ 'formFixedMovement.field.transTypeId' | translate }}
+					</label>
+					<ng-container
+							*ngIf="form.get(fld.name) && form.get(fld.name).value && form.get(fld.name).value.transTypeId &&
+          multipleCategoriesId === form.get(fld.name).value.transTypeId;
+          else categoriesSelector
+        "
+					>
+						<input type="text" [value]="'קטגוריות שונות'" disabled/>
+					</ng-container>
+					<ng-template #categoriesSelector>
+						<div>
+							<app-category-select
+									[disabled]="form.get(fld.name).disabled"
+									[categories]="companyTransTypes"
+									[companyId]="companyId"
+									[ngModelVal]="form.get(fld.name).value"
+									(changed)="form.get(fld.name).patchValue($event.value);"
+									[inputId]="fld.name"
+									[autoDisplayFirst]="false"
+									[filter]="false"
+									[filterBy]="'transTypeName'"
+									[placeholder]="('actions.select' | translate) + '...'"
+							>
+							</app-category-select>
+							<!-- 					*ngIf=" -->
+							<!-- 					form.get(fld.name).enabled && -->
+							<!-- 					form.get('mutavArray').value?.length && -->
+							<!-- 					!(!source.transId || source['fromRecommendation']) -->
+							<!-- 					" -->
+							<p-checkbox checkboxIcon="fa fa-check"
+							            [binary]="true"
+							            (onChange)="userService.appData.updateCyclicPast = $event.checked;"
+							            [formControl]="applyCategorySelectionToPastCntrl"
+							            [label]="
+              'formFixedMovement.applyCategorySelectionToPastText' | translate
+            "
+							            [labelStyleClass]="'p-checkbox-label-wrappable'"
+							            [ngStyle]="{
+              display: 'flex',
+              'align-content': 'baseline',
+              'align-items': 'flex-start',
+              'line-height': '1.1em',
+              'max-width': '32ch',
+              'margin-top': '.5em'
+            }"
+							></p-checkbox>
+						</div>
+					</ng-template>
+				</ng-container>
+			</ng-container>
+			
+			<ng-container *ngSwitchCase="'paymentDesc'">
+				<label
+						[for]="fld.name || 'paymentDesc'"
+				>{{
+					'formFixedMovement.field.' + fld.name | translate
+					}}</label>
+				<p-dropdown
+						[options]="restCommonService.paymentTypesTranslateSelectable$ | async"
+						[formControlName]="fld.name"
+						[inputId]="fld.name"
+						[dropdownIcon]="'p-dropdown-icon'"
+						[autoDisplayFirst]="false"
+						[placeholder]="('actions.select' | translate) + '...'"
+				>
+				</p-dropdown>
+				<!--      <p-dropdown [options]="fld.options"-->
+				<!--                  [formControlName]="fld.name" [inputId]="fld.name"-->
+				<!--                   [autoDisplayFirst]="false"-->
+				<!--                  [placeholder]="('actions.select'| translate) + '...'">-->
+				<!--      </p-dropdown>-->
+			</ng-container>
+			
+			<ng-container *ngSwitchCase="'cash'">
+				<label
+						[for]="fld.name || 'cash'"
+				>שבוע עבודה</label>
+				<p-dropdown
+						[dropdownIcon]="'p-dropdown-icon'"
+						[options]="fld.options"
+						[formControlName]="fld.name"
+						[inputId]="fld.name"
+						[autoDisplayFirst]="false"
+						[placeholder]="('actions.select' | translate) + '...'"
+				>
+				</p-dropdown>
+			</ng-container>
+			
+			<ng-container *ngSwitchCase="'transFrequencyName'">
+				<label
+						[for]="fld.name || 'transFrequencyName'"
+				>{{
+					'formFixedMovement.field.' + fld.name | translate
+					}}</label>
+				<p-dropdown
+						[options]="fld.options"
+						[formControlName]="fld.name"
+						[inputId]="fld.name"
+						[dropdownIcon]="'p-dropdown-icon'"
+						[autoDisplayFirst]="false"
+				>
+				</p-dropdown>
+				<!--<pre>{{form.get(fld.name).value}}</pre>-->
+			</ng-container>
+			
+			<ng-container *ngSwitchCase="'transDate'">
+				<label
+						[for]="fld.name || 'transDate'"
+				>{{
+					(mode !== EditingType.Single
+									? 'formFixedMovement.field.' + fld.name
+									: 'titles.date'
+					) | translate
+					}}</label>
+				<p-calendar
+						[formControlName]="fld.name"
+						[inputId]="fld.name"
+						[inputStyle]="{ 'max-width': '121px' }"
+						[locale]="'langCalendar' | translate"
+						dateFormat="dd/mm/y"
+						[minDate]="today"
+						[readonlyInput]="true"
+						(onFocus)="scrollTillSelectable()"
+						#transDateSelector
+				></p-calendar>
+				<!--<pre>{{form.get(fld.name).value}}</pre>-->
+			</ng-container>
+			
+			<ng-container *ngSwitchCase="'autoUpdateTypeName'">
+				<label
+						[for]="fld.name || 'autoUpdateTypeName'"
+				>{{
+					'formFixedMovement.field.' + fld.name | translate
+					}}</label>
+				<div
+						style="display: flex; display: -ms-flexbox; flex-flow: column nowrap"
+				>
+					<p-radioButton
+							*ngFor="let opt of fld.options"
+							[name]="'autoUpdateTypeName'"
+							formControlName="autoUpdateTypeName"
+							[value]="opt.value"
+							[label]="opt.label"
+							[inputId]="opt.label"
+							[style]="{ 'font-weight': 'bold' }"
+					></p-radioButton>
+				</div>
+				<!--<pre>{{form.get(fld.name).value| json}}</pre>-->
+			</ng-container>
+			
+			<ng-container *ngSwitchCase="'endDate'">
+				<label
+						[for]="fld.name || 'endDate'"
+				>{{
+					'formFixedMovement.field.' + fld.name | translate
+					}}</label>
+				<div
+						style="display: flex; display: -ms-flexbox; flex-flow: column nowrap"
+				>
+					<ul>
+						<li
+								*ngFor="let opt of fld.options"
+								[class.has-errors]="
+              (opt.value === 'times' && form.get('endDateTimes').invalid) ||
+              (opt.value === 'on' && form.get('endDateOn').invalid)
+            "
+						>
+							<p-radioButton
+									name="endDate"
+									formControlName="endDate"
+									[value]="opt.value"
+									[label]="'formFixedMovement.field.' + opt.label | translate"
+									[inputId]="opt.label"
+									[labelStyleClass]="'cyclic-end-date-label'"
+									[style]="{ 'font-weight': 'bold' }"
+							></p-radioButton>
+							<ng-container [ngSwitch]="opt.value">
+								<ng-container *ngSwitchCase="'times'">
+									&nbsp;<input
+										type="text"
+										class="input-sm"
+										[id]="'endDate-' + opt.value"
+										[name]="'endDate-' + opt.value"
+										formControlName="endDateTimes"
+										[style.max-width]="'8ch'"
+										[required]="form.get(fld.name).value === opt.value"
+										(focus)="form.get(fld.name).setValue(opt.value)"
+										appNumbersOnly="positiveInt"
+										autocomplete="off"
+								/>
+									<span> פעמים </span>
+									<!--{{form.get('endDateTimes').valid}}-->
+								</ng-container>
+								<ng-container *ngSwitchCase="'on'">
+									&nbsp;<p-calendar
+										formControlName="endDateOn"
+										[inputId]="'endDate-' + opt.value"
+										[inputStyle]="{ 'max-width': '121px' }"
+										[required]="form.get(fld.name).value === opt.value"
+										[locale]="'langCalendar' | translate"
+										dateFormat="dd/mm/y"
+										[minDate]="today"
+										[readonlyInput]="true"
+										(onFocus)="form.get(fld.name).setValue(opt.value)"
+								></p-calendar>
+									<!--{{form.get('endDateOn').valid}}-->
+								</ng-container>
+							</ng-container>
+						</li>
+					</ul>
+				</div>
+				<!--<pre>{{form.get(fld.name).value| json}}</pre>-->
+			</ng-container>
+			
+			<ng-container *ngSwitchCase="'mutavArray'">
+				<label
+						[for]="fld.name || 'mutavArray'"
+				>{{
+					'formFixedMovement.field.' + fld.name | translate
+					}}</label>
+				<app-beneficiary-multi-select
+						[inputId]="fld.name"
+						formControlName="mutavArray"
+						(changed)="form.get(fld.name).patchValue($event.value);"
+						#beneficiaryMultiSelectComponent
+						[companyTransTypes]="companyTransTypes"
+						[createWith]="{
+          companyAccountId: form.getRawValue()['companyAccountId']
+            ? form.getRawValue()['companyAccountId']['companyAccountId']
+            : userService?.appData?.userData?.accounts[0].companyAccountId,
+          paymentDesc: form.getRawValue()['paymentDesc'],
+          total: form.getRawValue()['total']
+        }"
+						[dontAllowAddition]="dontAllowAddition"
+						[config]="{
+          totalDisabled: calculateAutoUpdateTypeCntrl.value,
+          allowAddition: mode === EditingType.Series,
+          traceSelectedBeneficiariesWithExistingTransactions:
+            mode === EditingType.Series,
+          showApplyRetroactivelyOption:
+            mode === EditingType.Series && source.transId
+        }"
+				>
+				</app-beneficiary-multi-select>
+				<!--      <app-beneficiary-select [formControlName]="fld.name" [style]="{'max-width': '100%'}"-->
+				<!--                              [autoDisplayFirst]="false" placeholder="לא חובה"-->
+				<!--                              [showClear]="false" [dropdownIcon]="'fa fa-fw fa-caret-down'"-->
+				<!--                              [createWith]="{-->
+				<!--                                  companyAccountId: form.getRawValue().companyAccountId-->
+				<!--                                        ? form.getRawValue().companyAccountId.companyAccountId-->
+				<!--                                        : userService?.appData?.userData?.accounts[0].companyAccountId,-->
+				<!--                                  paymentDesc: form.getRawValue()['paymentDesc']-->
+				<!--                                }">-->
+				<!--      </app-beneficiary-select>-->
+			</ng-container>
+			
+			<ng-container *ngSwitchCase="'total'">
+				<label
+						[for]="fld.name || 'total'"
+						[ngStyle]="{
+          'align-self':
+            form.get('mutavArray').value?.length > 1 ? 'flex-start' : null
+        }"
+				>
+					{{ 'formFixedMovement.field.' + fld.name | translate }}</label
+				>
+				<ng-container
+						*ngIf="
+          !(form.get('mutavArray').value?.length > 1);
+          else withExplanation
+        "
+				>
+					<input
+							type="text"
+							[id]="fld.name"
+							[name]="fld.name"
+							[formControlName]="fld.name"
+							[style.max-width]="'18ch'"
+							[appNumbersOnly]="'positive'"
+							autocomplete="off"
+					/>
+				</ng-container>
+				<ng-template #withExplanation>
+					<div>
+						<input
+								type="text"
+								[id]="fld.name"
+								[name]="fld.name"
+								[formControlName]="fld.name"
+								[style.max-width]="'18ch'"
+								[appNumbersOnly]="'positive'"
+								autocomplete="off"
+						/>
+						<p style="font-size: 0.8em">
+							{{
+							mode === EditingType.Series &&
+							multipleCategoriesId ===
+							form.get('transTypeId').value.transTypeId
+									? 'עדכון הסכום והקטגוריות מתבצע דרך שדה מוטב'
+									: 'עדכון הסכום מתבצע דרך שדה מוטב'
+							}}
+						</p>
+					</div>
+				</ng-template>
+			</ng-container>
+			
+			<ng-container *ngSwitchDefault>
+				<label
+						[for]="fld.name || 'total'"
+				>{{
+					'formFixedMovement.field.' + fld.name | translate
+					}}</label>
+				<ng-container
+						*ngIf="
+          fld.name !== 'total' && fld.name !== 'asmachta';
+          else validateNumbers
+        "
+				>
+					<input
+							type="text"
+							[id]="fld.name"
+							[name]="fld.name"
+							[formControlName]="fld.name"
+							[style.max-width]="fld.name === 'total' ? '18ch' : '100%'"
+							autocomplete="off"
+					/>
+				</ng-container>
+				<ng-template #validateNumbers>
+					<input
+							type="text"
+							[id]="fld.name"
+							[name]="fld.name"
+							[formControlName]="fld.name"
+							[style.max-width]="fld.name === 'total' ? '18ch' : '100%'"
+							[appNumbersOnly]="fld.name === 'asmachta' ? 'positiveInt' : ''"
+							autocomplete="off"
+					/>
+				</ng-template>
+				<!--<pre>{{form.get(fld.name).value| json}}</pre>-->
+			</ng-container>
+		</ng-container>
+	</ng-container>
+</div>
+<ng-container *ngIf="mode === EditingType.Series">
+	<!--<ng-container *ngIf="source.fromRecommendation">-->
+	<p-checkbox checkboxIcon="fa fa-check"
+	            [formControl]="calculateAutoUpdateTypeCntrl"
+	            [label]="'formFixedMovement.calculateAutoUpdateTypeText' | translate"
+	            [binary]="true"
+	            [labelStyleClass]="'p-checkbox-label-wrappable'"
+	            [ngStyle]="{
+      display: 'flex',
+      'align-content': 'baseline',
+      'align-items': 'flex-start',
+      'line-height': '1.4em',
+      'max-width': '43ch',
+      'margin-top': '1em'
+    }"
+	></p-checkbox>
+</ng-container>

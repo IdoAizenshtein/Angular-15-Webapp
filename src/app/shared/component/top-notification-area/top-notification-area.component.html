@@ -1,0 +1,1532 @@
+<ng-container
+		*ngIf="{
+    isExampleCompany: userService.appData?.userData?.exampleCompany,
+    inAccountancyButHasNoPermission:
+      router.url.includes('cfl/accountancy/') &&
+      !this.userService?.appData?.userData?.companySelect?.privs.includes(
+        'ANHALATHESHBONOT'
+      ),
+    mailActivation:
+      userService.appData?.userData?.activatedType === 'dialogUpdate',
+    countStatusData_NOT_OK:
+      userService.appData?.countStatusData === 'NOT_OK' &&
+      userService?.appData?.userData &&
+      userService.appData?.userData?.accountant,
+    countStatusDataOldNOT_OK:
+      userService.appData?.countStatusDataOldNOT_OK &&
+      userService?.appData?.userData &&
+      userService.appData?.userData?.accountant,
+    isViewingSettings: router.url.includes('cfl/settings'),
+    companiesWithoutAgreement: userService.appData?.companiesWithoutAgreement && isCompaniesScreen(),
+    companySelectedBillingStatusWarn:
+      userService.appData?.userData?.companySelectedBillingStatus === 'WARN',
+    backendFailedResponse: backendFailedResponse$ | async,
+    alertTokens:
+      userService.appData?.userData?.companySelect?.alertTokens &&
+      userService.appData?.userData?.companySelect?.alertTokens.length
+  } as tracer"
+>
+	<div
+			*ngIf="
+      tracer.companySelectedBillingStatusWarn ||
+      tracer.companiesWithoutAgreement ||
+      tracer.countStatusData_NOT_OK ||
+      tracer.countStatusDataOldNOT_OK ||
+      tracer.inAccountancyButHasNoPermission ||
+      (tracer.mailActivation &&
+        !tracer.inAccountancyButHasNoPermission &&
+        !tracer.isExampleCompany &&
+        userService?.appData?.userData &&
+        !userService.appData?.userData?.accountant) ||
+      tracer.backendFailedResponse ||
+      (tracer.alertTokens &&
+        !(
+          !userService.appData?.userData?.companySelectedBillingStatus &&
+          !tracer.inAccountancyButHasNoPermission &&
+          tracer.isExampleCompany
+        ))
+    "
+			[@slideInOutDD]
+			[class.countStatusDataOldNOT_OK]="tracer.countStatusDataOldNOT_OK"
+			[class.countStatusData_NOT_OK]="
+      tracer.countStatusData_NOT_OK && !tracer.companiesWithoutAgreement
+    "
+			[class.errors]="
+      ((tracer.companySelectedBillingStatusWarn &&
+        userService.appData.userData.companySelect && userService.appData.userData.companySelect.billingAccountId !==
+          '00000000-0000-0000-0000-000000000000') ||
+        (tracer.alertTokens &&
+          !tracer.companySelectedBillingStatusWarn &&
+          !tracer.inAccountancyButHasNoPermission &&
+          !(
+            !userService.appData?.userData?.companySelectedBillingStatus &&
+            !tracer.inAccountancyButHasNoPermission &&
+            tracer.isExampleCompany
+          ))) &&
+      !tracer.companiesWithoutAgreement
+    "
+			[class.centerAlert]="tracer.companySelectedBillingStatusWarn && !(userService.appData.userData.companySelect && userService.appData.userData.companySelect.billingAccountId ===
+                  '00000000-0000-0000-0000-000000000000' ||
+                  userService.appData.userData.companySelect
+                    .deskTrialExpired === 0)"
+			[class.fatal]="tracer.backendFailedResponse"
+			[class.warn]="
+      tracer.mailActivation ||
+      tracer.companySelectedBillingStatusWarn ||
+      tracer.inAccountancyButHasNoPermission ||
+      tracer.companiesWithoutAgreement
+    "
+			id="top-notification-container"
+	>
+		<ng-container *ngIf="tracer.companiesWithoutAgreement; else firstPriority">
+			<div class="content" style="margin: auto">
+				<div>
+					<strong
+							*ngIf="userService?.appData?.companiesWithoutAgreement"
+							style="font-size: 100%; margin-left: 10px"
+					>
+						<ng-container
+								*ngIf="userService.appData.companiesWithoutAgreement.notSigned === 1 && userService.appData.companiesWithoutAgreement.totalCompanies; else alertOthers">
+							חברה אחת
+						</ng-container>
+
+						<ng-template #alertOthers>
+							{{userService?.appData?.companiesWithoutAgreement.notSigned === 1 ?
+								'חברה אחת ' :
+								(userService?.appData?.companiesWithoutAgreement.notSigned +
+										' חברות ')}}
+
+							מתוך
+							{{userService.appData.companiesWithoutAgreement.totalCompanies}}
+
+							{{userService.appData.companiesWithoutAgreement.totalCompanies === 1 ?
+								' חברה אחת '
+								:
+								' חברות '
+							}}
+						</ng-template>
+						{{userService?.appData?.companiesWithoutAgreement.notSigned === 1 ?
+							' עדיין לא נתנה ייפוי כח' :
+							(' עדיין לא נתנו ייפוי כח')}}
+					</strong>
+
+					<span
+							(click)="showCompaniesWithoutAgreement()"
+							class="showOpenTicket"
+							style="cursor: pointer; text-decoration: underline"
+					>
+            שליחה
+          </span>
+					<span
+							(click)="showAddInfo = true;"
+							class="showOpenTicket"
+							style="cursor: pointer; text-decoration: underline;     margin-right: 15px;"
+					>
+            מידע נוסף
+          </span>
+				</div>
+			</div>
+		</ng-container>
+
+		<ng-template #firstPriority>
+			<ng-container *ngIf="tracer.countStatusData_NOT_OK; else secondPriority">
+				<div class="content" style="margin: auto">
+					<div *ngIf="userService?.appData?.expComputerName !== ''">
+						נתוני הנה"ח לא מעודכנים. יש לאתחל את המחשב של
+						<strong>{{ userService?.appData?.expComputerName }}</strong
+						>. האתחול לא עזר?
+
+						<span (click)="showOpenTicket(true)" class="showOpenTicket">
+              לחצו כאן
+            </span>
+					</div>
+					<div *ngIf="userService?.appData?.expComputerName === ''">
+						נתוני הנה"ח לא מעודכנים. יש לאתחל את המחשב שמקושר ל- bizibox. האתחול
+						לא עזר?
+
+						<span (click)="showOpenTicket(true)" class="showOpenTicket">
+              לחצו כאן
+            </span>
+					</div>
+				</div>
+			</ng-container>
+			<ng-template #secondPriority>
+				<!--{{tracer.backendFailedResponse| json}}-->
+				<ng-container *ngIf="tracer.countStatusDataOldNOT_OK; else priority">
+					<div class="content" style="margin: auto">
+						<div>טעינת הנתונים מתבצעת כעת</div>
+					</div>
+					<i
+							(click)="userService.appData.countStatusDataOldNOT_OK = false"
+							class="fa fa-times fa-fw"
+					></i>
+				</ng-container>
+
+				<ng-template #priority>
+					<ng-container *ngIf="tracer.backendFailedResponse; else priority1">
+						<span>{{ 'התעוררה תקלה טכנית. אנחנו עובדים על פיתרון' }}</span>
+					</ng-container>
+				</ng-template>
+
+				<ng-template #priority1>
+					<ng-container
+							*ngIf="tracer.companySelectedBillingStatusWarn; else priority2"
+					>
+						<ng-container
+								*ngIf="
+                userService.appData.userData.companySelect && userService.appData.userData.companySelect.billingAccountId ===
+                  '00000000-0000-0000-0000-000000000000' ||
+                  userService.appData.userData.companySelect
+                    .deskTrialExpired === 0;
+                else failedPaymentBanner
+              "
+						>
+              <span
+		              [innerHTML]="
+                  ((userService.appData.userData.companySelect &&
+                    userService.appData.userData?.companySelect
+                      ?.deskTrialExpired &&
+                    userService.appData.userData?.companySelect
+                      ?.deskTrialExpired <= 14) ||
+                  (userService.appData.userData?.companySelect &&
+                    userService.appData?.userData?.companySelect?.METZALEM &&
+                    !!userService.appData.userData?.companySelect
+                      ?.daysLeftTillExpired)
+                    ? 'expressions.deskTrialExpiredPatternHTML'
+                    : 'expressions.trialPeriodDaysLeftPatternHTML'
+                  ) | translate: userService.appData.userData.companySelect
+                "
+              ></span>
+							<button
+									(click)="companyBillingStatusWarn.close($event)"
+									[routerLink]="[
+                  !this.userService.appData.userData.accountant
+                    ? '/cfl/billing'
+                    : '/accountants/companies/billing',
+                  userService.appData.userData.companySelect.billingAccountId
+                ]"
+									class="button-dark"
+									queryParamsHandling="preserve"
+									type="button"
+							>
+								{{ 'להסדרת תשלום' }}
+							</button>
+						</ng-container>
+						<ng-template #failedPaymentBanner>
+							<div
+									style="
+                  display: flex;
+                  justify-content: center;
+                  align-items: center;
+                "
+							>
+								<span>{{ 'החיוב החודשי נכשל. יש להסדיר את התשלום דרך' }}</span>
+								<button
+										[routerLink]="[
+                    !this.userService.appData.userData.accountant
+                      ? '/cfl/billing'
+                      : '/accountants/companies/billing',
+                    userService.appData.userData.companySelect.billingAccountId
+                  ]"
+										class="button-link"
+										queryParamsHandling="preserve"
+										style="margin-right: 3px"
+										type="button"
+								>
+									{{ 'מסך התשלומים' }}
+								</button>
+								<span
+								>&nbsp;{{ 'או צרו קשר עם מוקד השירות בטלפון 2365*' }}</span
+								>
+							</div>
+						</ng-template>
+					</ng-container>
+				</ng-template>
+
+				<ng-template #priority2>
+					<ng-container
+							*ngIf="tracer.inAccountancyButHasNoPermission; else priority3"
+					>
+						<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/headphone.png"/>&nbsp;
+						<span
+						>{{
+							'הנתונים המוצגים הם להדגמה בלבד. לצפייה בנתוני הנה"ח של עסקכם, צרו קשר עם מוקד התמיכה והשירות '
+							}}
+							<a class="link" href="mailto:service@bizibox.biz" target="_blank"
+							>service@bizibox.biz</a
+							>
+            </span>
+					</ng-container>
+				</ng-template>
+				<ng-template #priority3>
+					<ng-container
+							*ngIf="
+              tracer.alertTokens &&
+                !(
+                  !userService.appData?.userData
+                    ?.companySelectedBillingStatus &&
+                  !tracer.inAccountancyButHasNoPermission &&
+                  tracer.isExampleCompany
+                );
+              else priority4
+            "
+					>
+						<ng-container *ngIf="userService.appData.userData.companySelect.alertTokensOthers.length && !userService.appData.userData.companySelect.alertTokensMotyEyalPoalimAsakim">
+							<div class="content">
+								<div>
+									סיסמתך ל
+									<ng-container
+											*ngFor="
+                    let alert of userService.appData?.userData?.companySelect?.alertTokensOthers;
+                    last as isLast
+                  "
+									>
+										<strong
+												[routerLink]="[
+                      alert.source === 'account'
+                        ? !userService.appData.userData.accountant
+                          ? '/cfl/settings/bankAccounts'
+                          : '/accountants/companies/settings/bankAccounts'
+                        : alert.source === 'card'
+                        ? !userService.appData.userData.accountant
+                          ? '/cfl/settings/creditCard'
+                          : '/accountants/companies/settings/creditCard'
+                        : !userService.appData.userData.accountant
+                        ? '/cfl/settings/slikaAccounts'
+                        : '/accountants/companies/settings/slikaAccounts'
+                    ]"
+												queryParamsHandling="preserve"
+										>{{ alert?.tokenNickname }}</strong
+										>
+										<ng-container *ngIf="!isLast">,</ng-container>
+									</ng-container>
+									שגויה או פגה
+								</div>
+
+								<button (click)="hideAlertTokens()" type="button">
+									לא להציג שוב
+								</button>
+							</div>
+
+							<i
+									(click)="userService.appData.userData.companySelect.alertTokens = false"
+									class="fa fa-times fa-fw"
+							></i>
+						</ng-container>
+						<ng-container *ngIf="userService.appData.userData.companySelect.alertTokensMotyEyalPoalimAsakim">
+							<div class="content">
+								<div>
+									קיימת בעיה בטעינת הנתונים, אנו מטפלים בזה
+								</div>
+							</div>
+
+							<i
+									(click)="closePoalimAlert()"
+									class="fa fa-times fa-fw"
+							></i>
+						</ng-container>
+					</ng-container>
+				</ng-template>
+				<ng-template #priority4>
+					<ng-container
+							*ngIf="
+              tracer.mailActivation &&
+              !tracer.inAccountancyButHasNoPermission &&
+              !tracer.isExampleCompany &&
+              userService?.appData?.userData &&
+              !userService.appData?.userData?.accountant
+            "
+					>
+            <span>{{
+	            'expressions.activationMessagePattern'
+			            | translate: userService.appData.userData
+	            }}</span>
+						<button
+								(click)="showupMailVerificationPrompt()"
+								class="button-dark"
+								type="button"
+						>
+							שליחת מייל
+						</button>
+					</ng-container>
+				</ng-template>
+			</ng-template>
+		</ng-template>
+	</div>
+
+	<div
+			*ngIf="
+      !userService.appData?.userData?.companySelectedBillingStatus &&
+      !tracer.inAccountancyButHasNoPermission &&
+      tracer.isExampleCompany
+    "
+			[@slideInOutDD]
+			[class.example-company-token-tracker-inline]="
+      !(tokenTracker.tokenStatusLoad$ | async)?.length
+    "
+			class="example-company-token-tracker"
+	>
+		<app-token-tracker
+				#tokenTracker
+				[companyId]="userService.appData?.userData?.companySelect?.companyId"
+				[isAccountant]="
+        userService?.appData?.userData &&
+        userService.appData?.userData?.accountant
+      "
+				[showToast]="
+        userService?.appData?.userData?.companySelect &&
+        userService?.appData?.userData?.companySelect?.privs.includes('KSAFIM')
+      "
+		></app-token-tracker>
+	</div>
+
+	<div
+			*ngIf="
+      toastTransactionCreation &&
+      (toastTransactionCreation.duration === 0 ||
+        (timer$ | async) < toastTransactionCreation.duration)
+    "
+			[@slideInOutDD]
+			[ngClass]="toastTransactionCreation ? 'success' : ''"
+			class="top-toast-container"
+	>
+		<ng-container *ngIf="toastTransactionCreation">
+			<i class="fas fa-fw fa-check"></i>
+			<span *ngIf="!toastTransactionCreation.text">{{
+				'expressions.' +
+				(toastTransactionCreation.multiple
+						? 'transactionsAddedSuccessfully'
+						: 'transactionAddedSuccessfully') | translate
+				}}</span>
+			<span *ngIf="toastTransactionCreation.text">{{
+				toastTransactionCreation.text
+				}}</span>
+			<button
+					(click)="toastTransactionCreation.onPaymentNavigationSelected()"
+					*ngIf="toastTransactionCreation.onPaymentNavigationSelected"
+					class="button-link"
+			>
+				{{ 'למעבר לתאריך התנועה שהתווספה' }}
+			</button>
+		</ng-container>
+	</div>
+</ng-container>
+
+<p-sidebar
+		*ngIf="
+    reportService.postponed &&
+    !reportService.postponed.fired &&
+    !!reportService.postponed.message
+  "
+		[baseZIndex]="100"
+		[modal]="false"
+		[position]="'top'"
+		[styleClass]="'postponed-action'"
+		[visible]="(    reportService.postponed &&
+    !reportService.postponed.fired &&
+    !!reportService.postponed.message)"
+
+		appendTo="parent"
+>
+	<h1 [innerHTML]="reportService.postponed?.message"></h1>
+	<button
+			(click)="
+      reportService.postponed.action
+        ? reportService.showCancel()
+        : (reportService.postponed = null)
+    "
+			*ngIf="reportService.postponed?.message && reportService.postponed?.action"
+			class="button-link"
+	>
+		{{ 'actions.cancellation' | translate }}
+	</button>
+</p-sidebar>
+
+<p-sidebar
+		*ngIf="
+    reportService.forLogic &&
+    !reportService.forLogic.fired &&
+    !!reportService.forLogic.message &&
+    !(
+      reportService.postponed &&
+      !reportService.postponed.fired &&
+      !!reportService.postponed.message
+    ) &&
+    !(reportService.reportIsProcessing$ | async) &&
+    !(reportService.reportIsProcessingPrint$ | async)
+  "
+		[baseZIndex]="100"
+		[modal]="false"
+		[position]="'top'"
+		[styleClass]="'postponed-action'"
+		[visible]="(    reportService.forLogic &&
+    !reportService.forLogic.fired &&
+    !!reportService.forLogic.message &&
+    !(
+      reportService.postponed &&
+      !reportService.postponed.fired &&
+      !!reportService.postponed.message
+    ) &&
+    !(reportService.reportIsProcessing$ | async) &&
+    !(reportService.reportIsProcessingPrint$ | async) &&
+    !reportService.cancelToast &&
+    !reportService.cancelToastMatch)"
+
+
+		appendTo="parent"
+>
+	<h1 [innerHTML]="reportService.forLogic?.message"></h1>
+	<!--
+		  <button class="button-link" (click)="reportService.forLogic = null;">
+			  <mat-icon svgIcon="closeIcon"
+						style="color: #ffffff;height: 14px;width: 14px;"></mat-icon>
+		  </button>
+	  -->
+</p-sidebar>
+
+<p-sidebar
+		#cancelToastTop
+		*ngIf="reportService.cancelToast"
+		[baseZIndex]="100"
+		[modal]="false"
+		[position]="'top'"
+		[styleClass]="'postponed-action'"
+		[visible]="(!!reportService.cancelToast?.message)"
+		appendTo="parent"
+>
+	<h1 [innerHTML]="reportService.cancelToast.message"></h1>
+	<button
+			(click)="reportService.cancelToast.onClose(); cancelToastTop.hide()"
+			class="button-link"
+	>
+		<mat-icon
+				style="color: #ffffff; height: 14px; width: 14px"
+				svgIcon="closeIcon"
+		></mat-icon>
+	</button>
+</p-sidebar>
+
+<p-sidebar
+		#cancelToastTopMatch
+		*ngIf="reportService.cancelToastMatch"
+		[baseZIndex]="100"
+		[modal]="false"
+		[position]="'top'"
+		[visible]="(!!reportService.cancelToastMatch?.message)"
+		appendTo="parent"
+		styleClass="postponed-action {{ reportService.cancelToastMatch?.class }}"
+>
+	<h1
+			(click)="
+      reportService.cancelToastMatch.onClick(); cancelToastTopMatch.hide()
+    "
+			[innerHTML]="reportService.cancelToastMatch.message"
+	></h1>
+	<button
+			(click)="
+      reportService.cancelToastMatch.onClose(); cancelToastTopMatch.hide()
+    "
+			class="button-link"
+	>
+		<mat-icon
+				style="color: #000000; height: 14px; width: 14px"
+				svgIcon="closeIcon"
+		></mat-icon>
+	</button>
+</p-sidebar>
+
+<div
+		*ngIf="reportService.reportIsProcessing$ | async"
+		[@slideInOutDD]
+		class="top-toast-container priority-top warn"
+>
+	<img
+			style="height: auto; width: auto; position: relative;align-self: center" fill ngSrc="/assets/images/download-in-progress.png"
+	/>
+	<span>{{ 'אנחנו מכינים את המסמך להורדה' }}</span>
+	<mat-progress-bar [mode]="'indeterminate'"></mat-progress-bar>
+</div>
+<div
+		*ngIf="reportService.reportIsProcessingPrint$ | async"
+		[@slideInOutDD]
+		class="top-toast-container priority-top warn"
+>
+	<img
+			style="height: auto; width: auto; position: relative;align-self: center" fill ngSrc="/assets/images/download-in-progress.png"
+	/>
+	<span>{{ 'אנחנו מכינים את המסמך להדפסה' }}</span>
+	<mat-progress-bar [mode]="'indeterminate'"></mat-progress-bar>
+</div>
+<div
+		*ngIf="
+    (reportService.joinToBizibox$ | async) &&
+    userService.appData?.userData?.companySelect?.METZALEM_TYPE !== 'KSAFIM' &&
+    userService.appData?.userData?.companySelect?.METZALEM_TYPE !==
+      'KSAFIM_ANHALATHESHBONOT'
+  "
+		[@slideInOutDD]
+		class="top-toast-container priority-top bannerMETZALEM_top"
+>
+	<img style="height: auto; width: auto; position: relative;margin-left: 60px" fill ngSrc="/assets/images/diamond-right.png"/>
+
+	<div>
+		<h3>הצטרפו לאלפי בעלי עסקים</h3>
+		<p>
+			שלקחו שליטה על
+			<strong> ניהול התזרים </strong>
+			שלהם!
+		</p>
+		<button
+				[routerLinkActiveOptions]="{ exact: true }"
+				[routerLink]="['/cfl/landingPage']"
+				queryParamsHandling="merge"
+				routerLinkActive="active"
+		>
+			השארת פרטים
+		</button>
+	</div>
+
+	<img style="height: auto; width: auto; position: relative;margin-right: 60px" fill ngSrc="/assets/images/diamond-left.png"/>
+</div>
+<app-token-tracker-on-demand></app-token-tracker-on-demand>
+
+<!-- [unmaskAppHeader]="true" -->
+<p-dialog #companyBillingStatusWarn
+          (onHide)="
+    userService.appData.userData.companySelectedBillingStatusWarningAccepted = true
+  "
+          (visibleChange)="userService.appData.userData.companySelectedBillingStatusWarningAccepted = true"
+          [blockScroll]="true"
+          [closable]="
+    userService.appData?.userData?.companySelectedBillingStatus !== 'RESTRICT'
+  "
+          [closeOnEscape]="false"
+          [draggable]="false"
+          [modal]="true"
+          [resizable]="false"
+          [visible]="(  userService.appData?.userData?.companySelectedBillingStatus &&
+    (!userService.appData?.userData?.accountant ||
+      (userService.appData.userData.companySelect &&
+        userService.appData.userData.companySelect
+          .METZALEM_deskTrialExpired)) &&
+    !router.url.includes(
+      !this.userService.appData.userData.accountant
+        ? '/cfl/billing'
+        : '/accountants/companies/billing'
+    ) &&
+    (userService.appData.userData.companySelectedBillingStatus === 'RESTRICT' ||
+      !userService.appData.userData.companySelectedBillingStatusWarningAccepted))"
+
+
+          appendTo="body"
+          baseZIndex="999"
+          maskStyleClass="companyBillingStatusWarnDialogMask"
+          styleClass="companyBillingStatusWarnDialog"
+>
+	<p-header>
+		<img class="logo" style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/fb-logo-bizibox-32-32.png"/>
+		<!--<img class="logo" style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/logo-big.png"/>-->
+	</p-header>
+	<ng-container
+			[ngSwitch]="userService.appData?.userData?.companySelectedBillingStatus"
+	>
+		<ng-container *ngSwitchCase="'WARN'">
+			<h2
+					[translateParams]="userService.appData.userData.companySelect"
+					[translate]="
+          (userService.appData.userData.companySelect &&
+            userService.appData.userData.companySelect.METZALEM &&
+            !!userService.appData.userData.companySelect.daysLeftTillExpired) ||
+          (userService.appData.userData.companySelect &&
+            userService.appData.userData?.companySelect?.deskTrialExpired &&
+            userService.appData.userData?.companySelect?.deskTrialExpired <= 14)
+            ? 'expressions.deskTrialExpiredPattern'
+            : 'expressions.trialPeriodDaysLeftPattern'
+        "
+			></h2>
+			<button
+					(click)="companyBillingStatusWarn.close($event)"
+					[routerLink]="[
+          !this.userService.appData.userData.accountant
+            ? '/cfl/billing'
+            : '/accountants/companies/billing',
+          userService.appData.userData.companySelect.billingAccountId
+        ]"
+					class="button-dark"
+					queryParamsHandling="preserve"
+					type="button"
+			>
+				{{ 'הסדרת תשלום' }}
+			</button>
+		</ng-container>
+		<ng-container *ngSwitchCase="'RESTRICT'">
+			<ng-container
+					*ngIf="
+          (userService.appData.userData.companySelect && userService.appData.userData.companySelect.billingAccountId ===
+            '00000000-0000-0000-0000-000000000000' &&
+            userService.appData.userData.companySelect.daysLeftTillExpire ==
+              0) ||
+            userService.appData.userData.companySelect && userService.appData.userData.companySelect.deskTrialExpired === 0;
+          else failedPayment
+        "
+			>
+				<!--
+									<ng-container
+											*ngIf="(userService.appData.userData.companySelect.billingAccountId === '00000000-0000-0000-0000-000000000000' || userService.appData.userData.companySelect.METZALEM_deskTrialExpired); else failedPayment">
+						-->
+				<h2>{{ 'לצערנו עדיין לא השלמת את תהליך הרכישה של bizibox' }}</h2>
+				<p>
+					{{ 'ניתן לפנות למוקד השירות שלנו:' }}<br/>{{ '03-5610382 או 2365*' }}
+				</p>
+				<button
+						(click)="companyBillingStatusWarn.close($event)"
+						[routerLink]="[
+            !this.userService.appData.userData.accountant
+              ? '/cfl/billing'
+              : '/accountants/companies/billing',
+            userService.appData.userData.companySelect.billingAccountId
+          ]"
+						class="button-link"
+						queryParamsHandling="preserve"
+						type="button"
+				>
+					{{ 'למעבר לתהליך הרכישה' }}
+				</button>
+			</ng-container>
+			<ng-template #failedPayment>
+				<h2>{{ 'המערכת נחסמה לשימוש. אנא הסדירו את התשלום' }}</h2>
+				<p>
+					{{ 'ניתן לפנות למוקד השירות שלנו:' }}<br/>{{ '03-5610382 או 2365*' }}
+				</p>
+				<button
+						(click)="companyBillingStatusWarn.close($event)"
+						[routerLink]="[
+            !this.userService.appData.userData.accountant
+              ? '/cfl/billing'
+              : '/accountants/companies/billing',
+            userService.appData.userData.companySelect.billingAccountId
+          ]"
+						class="button-link"
+						queryParamsHandling="preserve"
+						type="button"
+				>
+					{{ 'הסדרת תשלום' }}
+				</button>
+			</ng-template>
+		</ng-container>
+	</ng-container>
+</p-dialog>
+
+<ng-container *ngIf="mailVerificationPrompt.visible">
+	<p-dialog (visibleChange)="mailVerificationPrompt.visible = false"
+
+	          [modal]="true"
+
+	          [styleClass]="'mailVerificationPrompt'"
+	          [visible]="(mailVerificationPrompt.visible)"
+	          appendTo="body"
+	>
+		<p-header>
+			<i
+					*ngIf="!(mailVerificationPrompt.sendActivationMails$ | async)"
+					class="fas fa-fw fa-circle-notch fa-spin"
+			></i>
+			{{
+			(mailVerificationPrompt.sendActivationMails$ | async)
+					? 'מייל האימות נשלח בהצלחה'
+					: 'אימות כתובת מייל'
+			}}
+		</p-header>
+
+		<ng-container
+				*ngIf="
+      mailVerificationPrompt.sendActivationMails$ | async as activationSentTo;
+      else activationInProcessBody
+    "
+		>
+			<div style="margin-bottom: 1em">
+				<i class="fas fa-check fa-3x"></i>
+			</div>
+			<p
+					[innerHTML]="
+        'expressions.activationMailSuccessPattern'
+          | translate: { to: activationSentTo }
+      "
+					class="mat-h2"
+					style="text-align: center"
+			></p>
+			<p class="mat-h3">
+				<em>{{ 'במידה ונפלה טעות בכתובת המייל, אנא ' }}</em>
+				<button
+						(click)="
+          mailVerificationPrompt.visible = false; popUpReplaceMailShow = true
+        "
+						class="button-link"
+						style="padding: 0"
+						type="button"
+				>
+					{{ 'עדכנו את כתובתכם' }}
+				</button>
+			</p>
+		</ng-container>
+		<ng-template #activationInProcessBody>
+			<div style="margin-bottom: 1em">
+				<i class="fas fa-10x fa-circle-notch fa-spin"></i>
+			</div>
+		</ng-template>
+	</p-dialog>
+</ng-container>
+
+
+<ng-container *ngIf="popUpReplaceMailShow">
+	<p-dialog (visibleChange)="popUpReplaceMailShow = false"
+	          [header]="'החלפת מייל'"
+	          [modal]="true"
+	          [styleClass]="'userMailEditDialog'"
+	          [visible]="(popUpReplaceMailShow)"
+	          appendTo="body"
+	>
+		<app-user-mail-edit
+				(changeApplied)="changeApplied($event)"
+		></app-user-mail-edit>
+	</p-dialog>
+</ng-container>
+
+
+<p-dialog (visibleChange)="knowledgeBaseVisible = false"
+          [modal]="true"
+          [visible]="(knowledgeBaseVisible)"
+          appendTo="body"
+          styleClass="service-call-dialog"
+>
+	<p-header>קריאת שירות</p-header>
+	<ng-container *ngIf="knowledgeBaseVisible">
+		<app-service-call-dialog
+				[data]="knowledgeBaseVisible"
+		></app-service-call-dialog>
+	</ng-container>
+</p-dialog>
+
+<ng-container *ngIf="companiesWithoutAgreement">
+	<p-dialog (visibleChange)="companiesWithoutAgreement = false; submitAlert = false"
+	          [closeOnEscape]="true"
+	          [draggable]="false"
+	          [modal]="true"
+	          (onHide)="submitAlert = false"
+	          position="top"
+	          [style]="{'margin-top':'198px'}"
+	          [resizable]="false"
+	          [visible]="(companiesWithoutAgreement)"
+	          appendTo="body"
+	          styleClass="companiesWithoutAgreement">
+		<p-header> שליחת הסכם התקשרות</p-header>
+
+		<ng-container *ngIf="submitAlert">
+			<div>
+				<div style="text-align: center; margin-top: 30px">
+					<i
+							class="fas fa-check-circle"
+							style="color: #73b573; font-size: 70px"
+					></i>
+				</div>
+				<div style="text-align: center; margin-top: 15px; margin-bottom: 30px">
+					<strong style="font-size: 24px; font-weight: 700">
+						{{ submitAlert === 1 ? 'ההסכם נשלח ' : 'ההסכמים נשלחו ' }}
+						בהצלחה!
+					</strong>
+				</div>
+			</div>
+		</ng-container>
+		<ng-container *ngIf="!submitAlert">
+			<div *ngIf="loaderSubmit">
+				<div class="loader">
+					<div class="circle"></div>
+				</div>
+			</div>
+			<div>
+				<p style="
+    padding: 6px 0px 15px 0px;
+">
+					בהמשך להודעה שנשלחה במייל אנא עדכנו מורשי חתימה למתן ייפוי כוח
+					<br>
+					{{accountantAgreementStatus.sent}}
+					הסכמים נשלחו,
+
+					{{accountantAgreementStatus.signed}}
+					הסכמים נחתמו,
+
+					ו-
+					{{accountantAgreementStatus.notSent}}
+					הסכמים עדיין לא נשלחו.
+				</p>
+
+				<div class="header-companiesWithoutAgreement">
+					<div>
+						<p-checkbox (onChange)="selcetAllFiles=!selcetAllFiles;selecteAllFilesEvent()"
+						            [ngModel]="selcetAllFiles"
+						            binary="true"
+						            checkboxIcon="fa fa-check">
+						</p-checkbox>
+						סמן לשליחה
+					</div>
+					<div>
+						שם החברה
+					</div>
+					<div>
+						איש קשר מורשה חתימה
+					</div>
+					<div>
+						סטטוס שליחה
+					</div>
+				</div>
+				<div class="scroll-chrome scrollbar-dynamic containerList">
+					<ng-container
+							*ngFor="let row of accountantAgreementStatus.agreementStatuses; let i = index; trackBy: trackById;">
+						<div class="row-companiesWithoutAgreement">
+							<div>
+								<p-checkbox (onChange)="row.selcetFile=!row.selcetFile;checkSelected();"
+								            *ngIf="row.agreementSendDate"
+								            [ngModel]="row.selcetFile"
+								            binary="true"
+								            checkboxIcon="fa fa-check">
+								</p-checkbox>
+							</div>
+							<div>
+								{{row.companyName}}
+							</div>
+							<div>
+								<p-dropdown #dd
+								            (onChange)="updateContactSelected(row, dd)"
+								            (onFocus)="clearFilter(dd)"
+								            [(ngModel)]="row.contactSelected"
+								            [disabled]="row.contactSelected && row.contactSelected.agreementSendDate"
+								            [dropdownIcon]="'p-dropdown-icon'"
+								            [emptyFilterMessage]="'לא נמצאו אנשי קשר מתאימים לחיפוש זה'"
+								            [options]="row.companyContacts"
+								            [scrollHeight]="'135px'"
+								            [style]="{'width': '100%'}"
+								            appendTo="body"
+								            dataKey="value"
+								            filter="true"
+								            filterBy="label"
+								            optionDisabled="inactive"
+								            optionLabel="label"
+								            panelStyleClass="panelContactListClass"
+								            placeholder="בחר/י איש קשר...">
+									<ng-template pTemplate="empty">
+										<div style="
+    padding: 3px 4px 7px 0px;
+    font-weight: 600;
+">
+											<div>לא נמצאו אנשי קשר לחברה זו</div>
+										</div>
+									</ng-template>
+									<ng-template pTemplate="emptyfilter">
+										<div style="
+    padding: 3px 4px 7px 0px;
+    font-weight: 600;
+">
+											<div>לא נמצאו אנשי קשר לחיפוש</div>
+										</div>
+									</ng-template>
+									<ng-template let-item pTemplate="selectedItem">
+										{{item.label}}
+									</ng-template>
+									<ng-template let-option pTemplate="item">
+										<div class="ui-helper-clearfix">
+											{{option.label}}
+										</div>
+									</ng-template>
+									<ng-template pTemplate="footer">
+										<div (click)="openModalAddContact($event, row)"
+										     class="ui-helper-clearfix linkAddContact">
+											<img style="height: auto; width: auto; position: relative;align-self: center; flex: 0 0 auto;-ms-flex:0 0 auto; margin: 0 0px 0px 4px;" fill ngSrc="/assets/images/add.png"
+										/>
+											הוספת איש קשר חדש
+										</div>
+									</ng-template>
+
+								</p-dropdown>
+							</div>
+							<div>
+								<ng-container *ngIf="row.contactSelected">
+									<p *ngIf="row.contactSelected.agreementConfirmationDate"
+									   class="agreementConfirmationDate">
+										<mat-icon
+												[svgIcon]="'tick'"
+												style="height: 100%;color: #ffffff;width: 14px;margin-left: 6px;">
+										</mat-icon>
+										נחתם
+										{{withinTwentyFourHours(row.contactSelected.agreementConfirmationDate) <= 24 ? (
+											'לפני '
+											+
+											withinTwentyFourHours(row.contactSelected.agreementConfirmationDate) +
+											' שעות'
+									) : 'ב-' + (row.contactSelected.agreementConfirmationDate | date: 'dd/MM/yy')}}
+									</p>
+									<p *ngIf="row.contactSelected.agreementSendDate && !row.contactSelected.agreementConfirmationDate"
+									   class="agreementSendDate">
+										<i class="fas fa-history" style="margin-left: 4px"></i>
+										נשלח לאחרונה
+										{{withinTwentyFourHours(row.contactSelected.agreementSendDate) <= 24 ? (
+											'לפני '
+											+
+											withinTwentyFourHoursMin(row.contactSelected.agreementSendDate) +
+
+											(withinTwentyFourHours(row.contactSelected.agreementSendDate) >= 1 ? ' שעות' :
+													' דקות')
+									) : 'ב-' + (row.contactSelected.agreementSendDate | date: 'dd/MM/yy')}}
+									</p>
+								</ng-container>
+							</div>
+						</div>
+					</ng-container>
+				</div>
+			</div>
+			<div
+					class="p-dialog-footer"
+					style="padding-left: 0; padding-bottom: 5px; margin-top: 1px"
+			>
+				<div
+						style="
+            width: 100%;
+            display: flex;
+            display: -ms-flexbox;
+            justify-content: flex-end;
+            align-items: center;
+          "
+				>
+					<button
+							(click)="companiesWithoutAgreement = false"
+							class="button-link"
+					>
+						{{ 'actions.cancellation' | translate }}
+					</button>
+					<button
+							(click)="companiesWithoutAgreementSubmit()"
+							[disabled]="isDisabledSelectedContacts()"
+							class="button-dark"
+							style="width: 130px; height: 33px !important; padding: 0"
+					>
+						{{ 'expressions.sending' | translate }}
+					</button>
+				</div>
+			</div>
+		</ng-container>
+	</p-dialog>
+</ng-container>
+
+<ng-container *ngIf="userService.appData.addContactModal">
+	<p-dialog (visibleChange)="userService.appData.addContactModal = false"
+	          [closeOnEscape]="true"
+	          [draggable]="false"
+	          [modal]="true"
+	          [resizable]="false"
+	          [visible]="(userService.appData.addContactModal)"
+	          appendTo="body"
+	          styleClass="addContactModal"
+	>
+		<p-header> הוספת איש קשר חדש</p-header>
+
+		<form
+				[formGroup]="userService.appData.addContactModal.addContactForm"
+				novalidate
+		>
+			<div class="rows-advancedSearchParams">
+				<div class="row text-ellipsis">
+					<input
+							#inputElement
+							[class.error]="
+              userService.appData.addContactModal.addContactForm.get(
+                'firstName'
+              ).touched &&
+              userService.appData.addContactModal.addContactForm.get(
+                'firstName'
+              ).invalid
+            "
+							[pTooltip]="
+              userService.appData.addContactModal.addContactForm.get(
+                'firstName'
+              ).value
+            "
+							[tooltipDisabled]="
+              inputElement.offsetWidth >= inputElement.scrollWidth
+            "
+							[tooltipStyleClass]="'p-tooltip-one-line'"
+							class="text-ellipsis"
+							formControlName="firstName"
+							placeholder="שם פרטי"
+							type="text"
+					/>
+					<div
+							*ngIf="
+              userService.appData.addContactModal.addContactForm.get(
+                'firstName'
+              ).touched &&
+              userService.appData.addContactModal.addContactForm.get(
+                'firstName'
+              ).invalid
+            "
+							class="invalidAlert"
+					>
+						שדה חובה
+					</div>
+				</div>
+				<div class="row text-ellipsis">
+					<input
+							#inputElement
+							[class.error]="
+              userService.appData.addContactModal.addContactForm.get('lastName')
+                .touched &&
+              userService.appData.addContactModal.addContactForm.get(
+                'firstName'
+              ).invalid
+            "
+							[pTooltip]="
+              userService.appData.addContactModal.addContactForm.get('lastName')
+                .value
+            "
+							[tooltipDisabled]="
+              inputElement.offsetWidth >= inputElement.scrollWidth
+            "
+							[tooltipStyleClass]="'p-tooltip-one-line'"
+							class="text-ellipsis"
+							formControlName="lastName"
+							placeholder="שם משפחה"
+							type="text"
+					/>
+					<div
+							*ngIf="
+              userService.appData.addContactModal.addContactForm.get('lastName')
+                .touched &&
+              userService.appData.addContactModal.addContactForm.get('lastName')
+                .invalid
+            "
+							class="invalidAlert"
+					>
+						שדה חובה
+					</div>
+				</div>
+				<div class="row text-ellipsis" style="padding: 0 12px">
+					<p style="font-weight: 600">חברה</p>
+					<div style="opacity: 0.4">
+						{{ userService.appData.addContactModal.company.companyName }}
+					</div>
+				</div>
+				<div class="row text-ellipsis">
+					<input
+							#inputElement
+							[class.error]="
+              userService.appData.addContactModal.addContactForm.get(
+                'cellPhone'
+              ).touched &&
+              (userService.appData.addContactModal.addContactForm.get(
+                'cellPhone'
+              ).invalid ||
+                userService.appData.addContactModal.addContactForm
+                  .get('cellPhone')
+                  .hasError('forbiddenCellPhone'))
+            "
+							[pTooltip]="
+              userService.appData.addContactModal.addContactForm.get(
+                'cellPhone'
+              ).value
+            "
+							[tooltipDisabled]="
+              inputElement.offsetWidth >= inputElement.scrollWidth
+            "
+							[tooltipStyleClass]="'p-tooltip-one-line'"
+							appNumbersOnly="phoneNo"
+							class="text-ellipsis"
+							formControlName="cellPhone"
+							placeholder="מספר נייד"
+							type="text"
+					/>
+					<div
+							*ngIf="
+              userService.appData.addContactModal.addContactForm.get(
+                'cellPhone'
+              ).touched &&
+              userService.appData.addContactModal.addContactForm.get(
+                'cellPhone'
+              ).value &&
+              userService.appData.addContactModal.addContactForm.get(
+                'cellPhone'
+              ).invalid &&
+              !userService.appData.addContactModal.addContactForm
+                .get('cellPhone')
+                .hasError('forbiddenCellPhone')
+            "
+							class="invalidAlert"
+					>
+						המספר לא תקין
+					</div>
+					<div
+							*ngIf="
+              userService.appData.addContactModal.addContactForm.get(
+                'cellPhone'
+              ).touched &&
+              !userService.appData.addContactModal.addContactForm.get(
+                'cellPhone'
+              ).value &&
+              userService.appData.addContactModal.addContactForm.get(
+                'cellPhone'
+              ).invalid
+            "
+							class="invalidAlert"
+					>
+						שדה חובה
+					</div>
+					<div
+							*ngIf="
+              userService.appData.addContactModal.addContactForm.get(
+                'cellPhone'
+              ).touched &&
+              userService.appData.addContactModal.addContactForm.get(
+                'cellPhone'
+              ).value &&
+              userService.appData.addContactModal.addContactForm.get(
+                'cellPhone'
+              ).invalid &&
+              userService.appData.addContactModal.addContactForm
+                .get('cellPhone')
+                .hasError('forbiddenCellPhone')
+            "
+							class="invalidAlert"
+					>
+						מספר הנייד כבר קיים בחברה
+					</div>
+				</div>
+				<div class="row text-ellipsis">
+					<input
+							#inputElement
+							[class.error]="
+              userService.appData.addContactModal.addContactForm.get('email')
+                .touched &&
+              (userService.appData.addContactModal.addContactForm.get('email')
+                .invalid ||
+                userService.appData.addContactModal.addContactForm
+                  .get('email')
+                  .hasError('forbiddenMail'))
+            "
+							[pTooltip]="
+              userService.appData.addContactModal.addContactForm.get('email')
+                .value
+            "
+							[tooltipDisabled]="
+              inputElement.offsetWidth >= inputElement.scrollWidth
+            "
+							[tooltipStyleClass]="'p-tooltip-one-line'"
+							class="text-ellipsis"
+							formControlName="email"
+							placeholder="אימייל"
+							type="email"
+					/>
+					<div
+							*ngIf="
+              userService.appData.addContactModal.addContactForm.get('email')
+                .touched &&
+              !userService.appData.addContactModal.addContactForm.get('email')
+                .value &&
+              userService.appData.addContactModal.addContactForm.get('email')
+                .invalid
+            "
+							class="invalidAlert"
+					>
+						שדה חובה
+					</div>
+					<div
+							*ngIf="
+              userService.appData.addContactModal.addContactForm.get('email')
+                .touched &&
+              userService.appData.addContactModal.addContactForm.get('email')
+                .value &&
+              userService.appData.addContactModal.addContactForm.get('email')
+                .invalid &&
+              !userService.appData.addContactModal.addContactForm
+                .get('email')
+                .hasError('forbiddenMail')
+            "
+							class="invalidAlert"
+					>
+						כתובת המייל לא תקינה
+					</div>
+					<div
+							*ngIf="
+              userService.appData.addContactModal.addContactForm.get('email')
+                .touched &&
+              userService.appData.addContactModal.addContactForm.get('email')
+                .value &&
+              userService.appData.addContactModal.addContactForm.get('email')
+                .invalid &&
+              userService.appData.addContactModal.addContactForm
+                .get('email')
+                .hasError('forbiddenMail')
+            "
+							class="invalidAlert"
+					>
+						כתובת המייל כבר קיימת בחברה
+					</div>
+				</div>
+
+				<div class="joinApp">
+					<p-checkbox (onChange)="
+              joinAppContact(userService.appData.addContactModal.addContactForm)
+            "
+					            [binary]="true"
+					            [label]="'צירוף לאפליקציה'"
+					            checkboxIcon="fa fa-check"
+					            formControlName="joinApp"
+					>
+					</p-checkbox>
+				</div>
+				<div class="authorizedSigner">
+					<p-checkbox (onChange)="
+              authorizedSignerContact(
+                userService.appData.addContactModal.addContactForm
+              )
+            "
+					            [binary]="true"
+					            [label]="'מורשה חתימה'"
+					            checkboxIcon="fa fa-check"
+					            formControlName="authorizedSigner"
+					>
+					</p-checkbox>
+					<p>
+						רק משתמשים מורשי חתימה יכולים לחתום על
+						<br/>
+						הסכם ההתקשרות
+					</p>
+				</div>
+			</div>
+		</form>
+
+		<p-footer>
+			<button
+					(click)="userService.appData.addContactModal = false"
+					class="button-link"
+			>
+				{{ 'actions.cancellation' | translate }}
+			</button>
+			<button
+					(click)="addContactSave()"
+					[disabled]="userService.appData.addContactModal.addContactForm.invalid"
+					class="button-dark"
+					style="width: 171px; height: 35px !important; padding: 0"
+			>
+				הוספה
+			</button>
+		</p-footer>
+	</p-dialog>
+</ng-container>
+
+<ng-container *ngIf="joinAppContactModal">
+	<p-dialog (visibleChange)=" joinAppContactModalClose(contactSaved.contact)"
+	          [modal]="true"
+
+	          [resizable]="false"
+	          [visible]="(joinAppContactModal)"
+	          appendTo="body"
+	          styleClass="joinAppContactModal"
+	>
+		<p-header>{{
+			joinAppContactModal.join ? 'צרוף לאפליקציה' : 'ביטול צירוף לאפליקציה'
+			}}</p-header>
+
+		<p
+				*ngIf="
+        joinAppContactModal.join && joinAppContactModal['supplierJournalItem']
+      "
+				style="padding: 17px 0px 0px 10px"
+		>
+			ללקוח יישלח מייל והודעת טקסט עם פרטי הכניסה לאפליקצית הצילום.
+		</p>
+		<p
+				*ngIf="
+        joinAppContactModal.join && joinAppContactModal['supplierJournalItem']
+      "
+				style="padding: 10px 0px 17px 10px"
+		>
+			הלקוח צריך להוריד לנייד את האפליקציה מחנות האפליקציות,
+			<br/>
+			שם המשתמש והסיסמה יהיו כתובת המייל שלו.
+		</p>
+		<p
+				*ngIf="
+        joinAppContactModal.join && !joinAppContactModal['supplierJournalItem']
+      "
+				style="padding: 17px 0px 17px 10px"
+		>
+			על מנת לצרף לאפליקצית הצילום, יש להוסיף
+			<br/>
+			את המוצר פקודות יומן ספקים ולקוחות לחברה.
+		</p>
+		<p *ngIf="!joinAppContactModal.join" style="padding: 17px 0px 17px 10px">
+			ללקוח יישלח מייל והודעת טקסט על ביטול השימוש באפליקציית הצילום
+		</p>
+		<p-footer>
+			<button
+					(click)="joinAppContactModalClose(joinAppContactModal['contact'])"
+					class="button-link"
+			>
+				{{ 'actions.cancellation' | translate }}
+			</button>
+			<button
+					(click)="joinAppContactFromModal(joinAppContactModal['contact'])"
+					class="button-dark"
+					style="width: 121px; height: 33px !important; padding: 0"
+			>
+				{{
+				joinAppContactModal.join &&
+				!joinAppContactModal['supplierJournalItem']
+						? 'הוספת מוצר'
+						: 'אישור'
+				}}
+			</button>
+		</p-footer>
+	</p-dialog>
+</ng-container>
+
+<ng-container *ngIf="authorizedSignerContactModal">
+	<p-dialog (visibleChange)=" authorizedSignerContactModalClose(contactSaved.contact)"
+	          [modal]="true"
+	          [resizable]="false"
+	          [visible]="(authorizedSignerContactModal)"
+	          appendTo="body"
+	          styleClass="joinAppContactModal"
+	>
+		<p-header> שליחת הסכם שימוש</p-header>
+
+		<p style="padding: 17px 0px 0px 10px">
+			הסכם השימוש ישלח ל{{
+			userService.appData.addContactModal.addContactForm.get('firstName')
+					.value
+			}}
+
+			{{
+			userService.appData.addContactModal.addContactForm.get('lastName').value
+			}}
+
+			לצורך אספקת שירותי bizibox ושמירת
+			<br/>
+			הנתונים
+		</p>
+
+		<p-footer>
+			<button
+					(click)="
+          authorizedSignerContactModalClose(
+            authorizedSignerContactModal['contact']
+          )
+        "
+					class="button-link"
+			>
+				{{ 'actions.cancellation' | translate }}
+			</button>
+			<button
+					(click)="
+          authorizedSignerContactFromModal(
+            authorizedSignerContactModal['contact']
+          )
+        "
+					class="button-dark"
+					style="width: 121px; height: 33px !important; padding: 0"
+			>
+				אישור
+			</button>
+		</p-footer>
+	</p-dialog>
+</ng-container>
+
+
+<ng-container *ngIf="showAddInfo">
+	<p-dialog
+			[(visible)]="showAddInfo"
+			[modal]="true"
+			[resizable]="false"
+			appendTo="body"
+			styleClass="showAddInfoModal"
+	>
+		<p-header>עדכון בשינויים רגולטוריים בעניין העברת מידע למייצגים</p-header>
+		<p>
+			חוק שירות מידע פיננסי, התשפ"ב-2021 וההוראות מכוחו
+		</p>
+		<p>
+			לקוח יקר,
+			<br>
+			בהמשך למסע המשותף שלנו במרוצת השנים הארוכות וכחלק מהחקיקה בנושא הבנקאות הפתוחה, אנו נדרשים למעורבותך על מנת לעמוד בדרישות הרגולטוריות.
+		</p>
+		<p>
+			שינויי רגולציה הוחלו בעת האחרונה על ידי רשות ניירות ערך על ענף שירותי המידע הפיננסי למייצגים המשפיעים על השירותים שמספקת bizibox לקהל לקוחותיה רואי החשבון ויועצי המס (להלן ביחד –
+			<strong style="font-weight: bold">המייצג(ים)</strong>
+			").
+		</p>
+		<p>
+			השינויים הרגולטורים הללו מחייבים:
+		</p>
+		<div>
+			<ol style="
+    list-style: decimal;
+    padding-right: 15px;
+">
+				<li>
+					את חתימת לקוחותיכם ,שלגביהם מתקבלים שירותים מ- bizibox, על נוסח חדש של מתן הסכמה ואישור מתן ייפוי כוח למייצג לשימוש בשירותי bizibox.
+					<br>
+					לשם כך, יצרנו אפשרות למשלוח הודעת וואטסאפ באופן אוטומטי ללקוחותיך המוגדרים במערכת, בהודעה זו ישלח לינק להחתמת הלקוח על הסכמה כנדרש בחוק.
+
+					<a target="_blank"
+					   href="https://bizibox.biz/%d7%90%d7%99%d7%a9%d7%95%d7%a8-%d7%9c%d7%9e%d7%aa%d7%9f-%d7%99%d7%99%d7%a4%d7%95%d7%99-%d7%9b%d7%97-%d7%9c%d7%a8%d7%95%d7%90%d7%94-%d7%97%d7%a9%d7%91%d7%95%d7%9f-%d7%99%d7%95%d7%a2%d7%a5-%d7%9e%d7%a1/">להלן דוגמא להסכם</a>
+				</li>
+			</ol>
+		</div>
+		<p>
+			לנוחיותך להלן קישורים להוראות הרלוונטיות באתר משרד האוצר/הרשות לניירות ערך שנקבעו מכוח חוק שירות מידע פיננסי, התשפ"ב-2021:
+			<br>
+			(1) ההוראה לבעלי רישיון למתן שירות מידע פיננסי בעניין העברת מידע לאחר
+			(<a target="_blank"
+			    href="https://www.isa.gov.il/%D7%97%D7%A7%D7%99%D7%A7%D7%94%20%D7%95%D7%90%D7%9B%D7%99%D7%A4%D7%94/Legislation/Rules%20under%20the%20supervision%20authority/financial_information/Documents/Financialinformation6422.pdf">לינק להוראה</a>)
+			<br>
+			(2) ההוראה המעודכנת למבקשי ובעלי רישיון למתן שירות מידע פיננסי
+			(<a target="_blank"
+			    href="https://www.isa.gov.il/%D7%97%D7%A7%D7%99%D7%A7%D7%94%20%D7%95%D7%90%D7%9B%D7%99%D7%A4%D7%94/Legislation/Rules%20under%20the%20supervision%20authority/financial_information/Documents/horaha15322.pdf">לינק להוראה</a>)
+		</p>
+		<p>
+			נודה לשיתוף פעולה מצדכם בעמידה בדרישות הרגולטוריות החדשות.
+			<br>
+			כמובן שאנחנו זמינים לכל שאלה שלך בנושא זה
+			<br>
+			תודה
+			<br>
+			צוות bizibox
+		</p>
+	</p-dialog>
+</ng-container>
+
+<ng-container *ngIf="userService.appData.submitAlertContact">
+	<p-dialog (visibleChange)="userService.appData.submitAlertContact = false"
+	          [closeOnEscape]="true"
+	          [draggable]="false"
+	          [modal]="true"
+	          (onHide)="userService.appData.submitAlertContact = false"
+	          position="top"
+	          [style]="{'margin-top':'198px'}"
+	          [resizable]="false"
+	          [visible]="(userService.appData.submitAlertContact)"
+	          appendTo="body"
+	          styleClass="companiesWithoutAgreement">
+		<p-header> שליחת הסכם התקשרות</p-header>
+		<div>
+			<div style="text-align: center; margin-top: 30px">
+				<i
+						class="fas fa-check-circle"
+						style="color: #73b573; font-size: 70px"
+				></i>
+			</div>
+			<div style="text-align: center; margin-top: 15px; margin-bottom: 30px">
+				<strong style="font-size: 24px; font-weight: 700">
+					ההסכם נשלח בהצלחה!
+				</strong>
+			</div>
+		</div>
+	</p-dialog>
+</ng-container>

@@ -1,0 +1,510 @@
+<h2 class="titlePage">הגדרות</h2>
+
+<ng-container
+		*ngIf="
+    !userService.appData?.userData?.accountant ||
+      (userService.appData?.userData?.accountant &&
+        userService.appData?.userData?.companySelect &&
+        userService.appData?.userData?.companySelect['METZALEM'] &&
+        !userService.appData?.userData?.companySelect[
+          'METZALEM_deskTrialExpired'
+        ]);
+    else accTabs
+  "
+>
+	<div class="settingsNav">
+		<ul class="tabs">
+			<li
+					#myAccLinkRef="routerLinkActive"
+					[routerLinkActiveOptions]="{ exact: false }"
+					[title]="'menu.customers.settings.myaccount' | translate"
+					class="text-ellipsis"
+					queryParamsHandling="preserve"
+					routerLink="./myaccount"
+					routerLinkActive="active"
+			>
+				{{ 'menu.customers.settings.myaccount' | translate }}
+			</li>
+			<li
+					#myBusinessLinkRef="routerLinkActive"
+					[routerLinkActiveOptions]="{ exact: false }"
+					[title]="'menu.customers.settings.businessDetails' | translate"
+					class="text-ellipsis"
+					queryParamsHandling="preserve"
+					routerLink="./businessDetails"
+					routerLinkActive="active"
+			>
+				{{ 'menu.customers.settings.businessDetails' | translate }}
+			</li>
+			<!--            <li class="text-ellipsis"-->
+			<!--                routerLink="./officeDetails"-->
+			<!--                -->
+			<!--                routerLinkActive="active"-->
+			<!--                [routerLinkActiveOptions]="{ exact: false }"-->
+			<!--                #myBusinessLinkRef="routerLinkActive"-->
+			<!--                [title]="('menu.customers.settings.officeDetails'| translate)">-->
+			<!--                {{('menu.customers.settings.officeDetails'| translate)}}-->
+			<!--            </li>-->
+			<li
+					#officeUsersRef="routerLinkActive"
+					[ngStyle]="{
+          display: userService.appData?.userData?.accountant ? 'block' : 'none'
+        }"
+					[routerLinkActiveOptions]="{ exact: false }"
+					[title]="'menu.customers.settings.officeUsers' | translate"
+					class="text-ellipsis"
+					queryParamsHandling="preserve"
+					routerLink="./officeUsers"
+					routerLinkActive="active"
+			>
+				{{ 'menu.customers.settings.officeUsers' | translate }}
+				<span
+						*ngIf="
+            (userService.appData &&
+              userService.appData?.isAdmin &&
+              userService.appData.userDataAdmin?.officePriv) ||
+            (userService.appData &&
+              !userService.appData?.isAdmin &&
+              userService.appData?.userData?.officePriv)
+          ">({{officeUsersCount}})</span>
+			</li>
+			<li
+					[routerLinkActiveOptions]="{ exact: false }"
+					[title]="'menu.customers.settings.alerts' | translate"
+					class="text-ellipsis"
+					queryParamsHandling="preserve"
+					routerLink="./alerts"
+					routerLinkActive="active"
+			>
+				{{ 'menu.customers.settings.alerts' | translate }}
+			</li>
+			<li
+					#usersLinkRef="routerLinkActive"
+					[routerLinkActiveOptions]="{ exact: false }"
+					[title]="'menu.customers.settings.users' | translate"
+					class="text-ellipsis"
+					queryParamsHandling="preserve"
+					routerLink="./users"
+					routerLinkActive="active"
+			>
+				{{ 'menu.customers.settings.users' | translate }}
+			</li>
+			<li
+					#bankAccountsRef="routerLinkActive"
+					[routerLinkActiveOptions]="{ exact: false }"
+					[title]="'menu.customers.settings.bankAccounts' | translate"
+					queryParamsHandling="preserve"
+					routerLink="./bankAccounts"
+					routerLinkActive="active"
+			>
+				{{ 'menu.customers.settings.bankAccounts' | translate }}
+			</li>
+			<li
+					#creditCardAccountsRef="routerLinkActive"
+					[routerLinkActiveOptions]="{ exact: false }"
+					[title]="'menu.customers.settings.creditCards' | translate"
+					class="text-ellipsis"
+					queryParamsHandling="preserve"
+					routerLink="./creditCard"
+					routerLinkActive="active"
+			>
+				{{ 'menu.customers.settings.creditCards' | translate }}
+			</li>
+			<li
+					#slikaAccountsRef="routerLinkActive"
+					[routerLinkActiveOptions]="{ exact: false }"
+					[title]="'menu.customers.settings.slikaAccounts' | translate"
+					class="text-ellipsis"
+					queryParamsHandling="preserve"
+					routerLink="./slikaAccounts"
+					routerLinkActive="active"
+			>
+				{{ 'menu.customers.settings.slikaAccounts' | translate }}
+			</li>
+			<li
+					*ngIf="
+          (selectedCompany$ | async)
+            ? (selectedCompany$ | async).biziboxType !== 'regular'
+            : false
+        "
+					[routerLinkActiveOptions]="{ exact: false }"
+					[title]="'menu.customers.settings.bookKeepingAccounts' | translate"
+					class="text-ellipsis"
+					queryParamsHandling="preserve"
+					routerLink="./bookKeepingAccounts"
+					routerLinkActive="active"
+			>
+				{{ 'menu.customers.settings.bookKeepingAccounts' | translate }}
+			</li>
+		</ul>
+	</div>
+	
+	<ng-container
+			*ngIf="
+      myAccLinkRef &&
+      !myAccLinkRef.isActive &&
+      officeUsersRef &&
+      !officeUsersRef.isActive
+    "
+	>
+		<!--    <ng-container *ngIf="(myAccLinkRef && !myAccLinkRef.isActive)">-->
+		<div
+				#rowOfCompanies
+				*ngIf="arrCompanies$ | async as arrCompanies"
+				[class.companies-visible]="arrCompanies.length > 1"
+				[style.display]="(userEditStateSelected$ | async) ? 'none' : null"
+				[style.margin-bottom.px]="
+        arrCompanies.length < 2 &&
+        ((bankAccountsRef && bankAccountsRef.isActive) ||
+          (creditCardAccountsRef && creditCardAccountsRef.isActive) ||
+          (slikaAccountsRef && slikaAccountsRef.isActive))
+          ? 0
+          : 10
+      "
+				class="rowOfCompanies">
+<!-- 			<ng-container *ngIf="(selectedCompany$)| async as selectedCompany"> -->
+<!-- 				{{selectedCompany.companyName}} -->
+<!-- 			</ng-container> -->
+			<p-dropdown *ngIf="arrCompanies.length > 5"
+			            [options]="arrCompanies"
+			            [style]="{
+					'width': '246px'
+			}"
+			            [ngModel]="(selectedCompany$)| async"
+			            (onChange)="selectedCompany$.next($event.value)"
+			            [dropdownIcon]="'p-dropdown-icon'"
+			            placeholder="{{'actions.company' | translate}}"
+			            optionLabel="companyName">
+				<ng-template let-company pTemplate="item">
+					<div class="ui-helper-clearfix">
+						<div>{{company.companyName}}</div>
+					</div>
+				</ng-template>
+			</p-dropdown>
+			
+			<ul *ngIf="arrCompanies.length > 1 && arrCompanies.length <= 5">
+				<li
+						(click)="selectedCompany$.next(item)"
+						*ngFor="let item of arrCompanies"
+						[class.active]="item === (selectedCompany$ | async)"
+				>
+					{{ item.companyName }}
+				</li>
+			</ul>
+			<!--</ng-container>-->
+			
+			<button
+					(click)="createCompanyPrompt.show()"
+					*ngIf="myBusinessLinkRef.isActive"
+					class="button-link"
+			>
+				<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/add.png"/>&nbsp;{{ 'הוספת חברה חדשה' }}
+			</button>
+			
+			<button
+					*ngIf="
+          usersLinkRef &&
+          usersLinkRef.isActive &&
+          (isUsersTabAvailableForSelectedCompany$ | async)
+        "
+					[routerLink]="['./users/new']"
+					class="button-link"
+					queryParamsHandling="preserve"
+			>
+				<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/add.png"/>&nbsp;{{ 'הוספת משתמש חדש' }}
+			</button>
+			
+			<button
+					(click)="componentRefChild.addTokenPrompt.show()"
+					*ngIf="
+          bankAccountsRef && bankAccountsRef.isActive && arrCompanies.length > 1
+        "
+					class="button-link"
+			>
+				<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/add.png"/>&nbsp;{{
+				'actions.addAccount' | translate
+				}}
+			</button>
+			
+			<button
+					(click)="
+          !exampleCompany ? componentRefChild.addTokenPrompt.show() : null
+        "
+					*ngIf="
+          creditCardAccountsRef &&
+          creditCardAccountsRef.isActive &&
+          arrCompanies.length > 1
+        "
+					[ngStyle]="{ opacity: exampleCompany ? 0.6 : 1 }"
+					class="button-link"
+			>
+				<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/add.png"/>&nbsp;{{
+				'actions.addNonBankCreditCard' | translate
+				}}
+			</button>
+			
+			<button
+					(click)="
+          !exampleCompany ? componentRefChild.addTokenPrompt.show() : null
+        "
+					*ngIf="
+          slikaAccountsRef &&
+          slikaAccountsRef.isActive &&
+          arrCompanies.length > 1
+        "
+					[ngStyle]="{ opacity: exampleCompany ? 0.6 : 1 }"
+					class="button-link"
+			>
+				<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/add.png"/>&nbsp;{{
+				'actions.addSlikaAccount' | translate
+				}}
+			</button>
+		</div>
+	</ng-container>
+</ng-container>
+<ng-template #accTabs>
+	<div class="settingsNav">
+		<ul class="tabs">
+			<li
+					#myAccLinkRef="routerLinkActive"
+					[routerLinkActiveOptions]="{ exact: false }"
+					[title]="'menu.customers.settings.myaccount' | translate"
+					class="text-ellipsis"
+					queryParamsHandling="preserve"
+					routerLink="./myaccount"
+					routerLinkActive="active"
+			>
+				{{ 'menu.customers.settings.myaccount' | translate }}
+			</li>
+			<!--            <li class="text-ellipsis"-->
+			<!--                routerLink="./businessDetails"-->
+			<!--                -->
+			<!--                routerLinkActive="active"-->
+			<!--                [routerLinkActiveOptions]="{ exact: false }"-->
+			<!--                #myBusinessLinkRef="routerLinkActive"-->
+			<!--                [title]="('menu.customers.settings.businessDetails'| translate)">-->
+			<!--                {{('menu.customers.settings.businessDetails'| translate)}}-->
+			<!--            </li>-->
+			<li
+					#myBusinessLinkRef="routerLinkActive"
+					[routerLinkActiveOptions]="{ exact: false }"
+					[title]="'menu.customers.settings.officeDetails' | translate"
+					class="text-ellipsis"
+					queryParamsHandling="preserve"
+					routerLink="./officeDetails"
+					routerLinkActive="active"
+			>
+				{{ 'menu.customers.settings.officeDetails' | translate }}
+			</li>
+			<li
+					#officeUsersRef="routerLinkActive"
+					[ngStyle]="{
+          display: userService.appData?.userData?.accountant ? 'block' : 'none'
+        }"
+					[routerLinkActiveOptions]="{ exact: false }"
+					[title]="'menu.customers.settings.officeUsers' | translate"
+					class="text-ellipsis"
+					queryParamsHandling="preserve"
+					routerLink="./officeUsers"
+					routerLinkActive="active"
+			>
+				{{ 'menu.customers.settings.officeUsers' | translate }}
+				<span
+						*ngIf="
+            (userService.appData &&
+              userService.appData?.isAdmin &&
+              userService.appData.userDataAdmin?.officePriv) ||
+            (userService.appData &&
+              !userService.appData?.isAdmin &&
+              userService.appData?.userData?.officePriv)
+          "
+				>({{officeUsersCount}})</span
+				>
+			</li>
+		</ul>
+	</div>
+	
+	<ng-container
+			*ngIf="
+      myAccLinkRef &&
+      !myAccLinkRef.isActive &&
+      officeUsersRef &&
+      !officeUsersRef.isActive &&
+      myBusinessLinkRef &&
+      !myBusinessLinkRef.isActive
+    "
+	>
+		<!--    <ng-container *ngIf="(myAccLinkRef && !myAccLinkRef.isActive)">-->
+		<div
+				#rowOfCompanies
+				*ngIf="arrCompanies$ | async as arrCompanies"
+				[class.companies-visible]="arrCompanies.length > 1"
+				[style.display]="(userEditStateSelected$ | async) ? 'none' : null"
+				[style.margin-bottom.px]="10"
+				class="rowOfCompanies"
+		>
+			<!--<ng-container *ngIf="(settingsComponent.selectedCompany$)| async as selectedCompany">-->
+			
+			<p-dropdown *ngIf="arrCompanies.length > 5"
+			            [options]="arrCompanies"
+			            [style]="{
+					'width': '246px'
+			}"
+			            [ngModel]="(selectedCompany$)| async"
+			            (ngModelChange)="selectedCompany$.next($event)"
+			            [dropdownIcon]="'p-dropdown-icon'"
+			            placeholder="{{'actions.company' | translate}}"
+			            optionLabel="companyName">
+				<ng-template let-company pTemplate="item">
+					<div class="ui-helper-clearfix">
+						<div>{{company.companyName}}</div>
+					</div>
+				</ng-template>
+			</p-dropdown>
+			
+			<ul *ngIf="arrCompanies.length > 1 && arrCompanies.length <= 5">
+				<li
+						(click)="selectedCompany$.next(item)"
+						*ngFor="let item of arrCompanies"
+						[class.active]="item === (selectedCompany$ | async)"
+				>
+					{{ item.companyName }}
+				</li>
+			</ul>
+			<!--</ng-container>-->
+			
+			<button
+					(click)="createCompanyPrompt.show()"
+					*ngIf="myBusinessLinkRef.isActive"
+					class="button-link"
+			>
+				<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/add.png"/>&nbsp;{{ 'הוספת חברה חדשה' }}
+			</button>
+			
+			<!--       <button -->
+			<!--         class="button-link" -->
+			<!--         *ngIf=" -->
+			<!--           usersLinkRef && -->
+			<!--           usersLinkRef.isActive && -->
+			<!--           (isUsersTabAvailableForSelectedCompany$ | async) -->
+			<!--         " -->
+			<!--         [routerLink]="['./users/new']" -->
+			<!--       > -->
+			<!--         <img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/add.png" />&nbsp;{{ 'הוספת משתמש חדש' }} -->
+			<!--       </button> -->
+			
+			<!--       <button -->
+			<!--         class="button-link" -->
+			<!--         *ngIf=" -->
+			<!--           bankAccountsRef && bankAccountsRef.isActive && arrCompanies.length > 1 -->
+			<!--         " -->
+			<!--         (click)="componentRefChild.addTokenPrompt.show()" -->
+			<!--       > -->
+			<!--         <img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/add.png" />&nbsp;{{ -->
+			<!--           'actions.addAccount' | translate -->
+			<!--         }} -->
+			<!--       </button> -->
+			
+			<!--       <button -->
+			<!--         class="button-link" -->
+			<!--         [ngStyle]="{ opacity: exampleCompany ? 0.6 : 1 }" -->
+			<!--         (click)=" -->
+			<!--           !exampleCompany ? componentRefChild.addTokenPrompt.show() : null -->
+			<!--         " -->
+			<!--         *ngIf=" -->
+			<!--           creditCardAccountsRef && -->
+			<!--           creditCardAccountsRef.isActive && -->
+			<!--           arrCompanies.length > 1 -->
+			<!--         " -->
+			<!--       > -->
+			<!--         <img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/add.png" />&nbsp;{{ -->
+			<!--           'actions.addNonBankCreditCard' | translate -->
+			<!--         }} -->
+			<!--       </button> -->
+			
+			<!--       <button -->
+			<!--         class="button-link" -->
+			<!--         [ngStyle]="{ opacity: exampleCompany ? 0.6 : 1 }" -->
+			<!--         (click)=" -->
+			<!--           !exampleCompany ? componentRefChild.addTokenPrompt.show() : null -->
+			<!--         " -->
+			<!--         *ngIf=" -->
+			<!--           slikaAccountsRef && -->
+			<!--           slikaAccountsRef.isActive && -->
+			<!--           arrCompanies.length > 1 -->
+			<!--         " -->
+			<!--       > -->
+			<!--         <img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/add.png" />&nbsp;{{ -->
+			<!--           'actions.addSlikaAccount' | translate -->
+			<!--         }} -->
+			<!--       </button> -->
+		</div>
+	</ng-container>
+</ng-template>
+
+<router-outlet (activate)="onActivate($event)"></router-outlet>
+
+<p-dialog (visibleChange)="createCompanyPrompt.visible = false"
+          *ngIf="createCompanyPrompt.visible"
+
+          [modal]="true"
+
+          [resizable]="false"
+          [styleClass]="'create-company-dlg'"
+          [visible]="(createCompanyPrompt?.visible)"
+          appendTo="body"
+>
+	<p-header> {{ 'הוספת חברה' }} </p-header>
+	<h1 class="mat-h1">{{ 'פרטי העסק' }}</h1>
+	<form
+			(ngSubmit)="createCompanyPrompt.onSubmit()"
+			[formGroup]="createCompanyPrompt.form"
+			novalidate
+	>
+		<app-company-editor [business]="createCompanyPrompt.form">
+		</app-company-editor>
+		<button
+				[disabled]="createCompanyPrompt.form.invalid"
+				style="display: none"
+				type="submit"
+		></button>
+		<!--{{createMovementData.form.valid}}-->
+	</form>
+	<p-footer>
+		<div style="width: 100%; display: flex; justify-content: center">
+			<a
+					(click)="createCompanyPrompt.visible = false"
+					class="button-white button-link"
+					href="#"
+					role="button"
+			>
+				{{ 'actions.cancellation' | translate }}
+			</a>
+			<button
+					(click)="createCompanyPrompt.onSubmit()"
+					[disabled]="
+          (createCompanyPrompt.form.dirty &&
+            createCompanyPrompt.form.invalid) ||
+          createCompanyPrompt.processing
+        "
+					class="button-dark"
+			>
+				<i
+						*ngIf="createCompanyPrompt.processing"
+						class="fas fa-fw fa-circle-notch fa-spin"
+				></i>
+				{{ 'הוספת חשבון בנק' }}
+			</button>
+		</div>
+	</p-footer>
+</p-dialog>
+
+<app-token-create-dialog
+		(openCallService)="sharedComponent.showOpenTicket()"
+		*ngIf="addTokenPrompt.visible"
+		[(display)]="addTokenPrompt.visible"
+		[companyId]="(selectedCompany$ | async).companyId"
+		[settings]="addTokenPrompt.form"
+		[title]="'הוספת חברה'"
+		[type]="tokenTypes.ACCOUNT">
+</app-token-create-dialog>

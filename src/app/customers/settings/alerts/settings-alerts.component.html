@@ -1,0 +1,119 @@
+<div
+  id="settingsAlerts"
+  [appScrollHeight]="alertsContainer.getBoundingClientRect().top + 5"
+  class="scrollbar-dynamic"
+  #alertsContainer
+>
+  <ng-container
+    *ngIf="
+      selectedCompanyAlertSettings$ | async as companyAlertSettings;
+      else loader
+    "
+  >
+    <ng-container *ngIf="!(loading$ | async); else loader">
+      <section>
+        <i class="fas fa-fw fa-exclamation-triangle alert-1"></i>
+        <em>{{ 'התראות קריטיות יישלחו לסלולר כל יום בשעה' }}</em>
+        <p-calendar
+          [formControl]="fcPushTimeToSend"
+          [timeOnly]="true"
+          [stepMinute]="30"
+          [readonlyInput]="true"
+          [minDate]="alertTimeRange.min"
+          [maxDate]="alertTimeRange.max"
+        ></p-calendar>
+        <button
+          type="button"
+          class="button-link"
+          (click)="resetAlertSettingsToDefault()"
+        >
+          {{ 'שיחזור ברירת מחדל לכל ההתראות' }}
+        </button>
+      </section>
+      <ul *ngIf="companyAlertSettings.list && companyAlertSettings.list.length">
+        <ng-container
+          *ngFor="
+            let msgCat of companyAlertSettings.list;
+            trackBy: messageTypeCategoryTrack
+          "
+        >
+          <li [class.expanded]="msgCat.expanded">
+            <header (click)="msgCat.expanded = !msgCat.expanded">
+              <i
+                class="fas fa-fw"
+                [ngClass]="'fa-angle-' + (msgCat.expanded ? 'up' : 'down')"
+              ></i>
+              {{ msgCat.messageTypeCatName }}
+            </header>
+            <section *ngIf="msgCat.expanded">
+              <div class="message-types-container">
+                <div class="message-types-container-header">
+                  <div>{{ 'הודעה' }}</div>
+                  <div>
+                    {{ msgCat.messages[0].mail ? 'הפעלה' : 'התראה בסלולר' }}
+                  </div>
+                </div>
+                <div class="message-types-container-body">
+                  <div
+                    class="message-types-row"
+                    *ngFor="
+                      let msgType of msgCat.messages;
+                      trackBy: messageTypeTrack
+                    "
+                  >
+                    <div>
+                      <ng-container
+                        *ngIf="msgType.alert !== 3; else systemAlert"
+                      >
+                        <i
+                          class="fas fa-fw fa-exclamation-triangle"
+                          [ngClass]="'alert-' + msgType.alert"
+                        ></i>
+                      </ng-container>
+                      <em>{{ msgType.messageTypeName }}</em>
+                    </div>
+                    <div>
+                      <p-checkbox checkboxIcon="fa fa-check"
+                        [formControl]="msgCat.form.get(msgType.messageTypeId)"
+                        [binary]="true"
+                      ></p-checkbox>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <button
+                  class="button-link"
+                  type="button"
+                  (click)="markAllIn(msgCat)"
+                >
+                  {{ 'בחר הכל' }}
+                </button>
+                <button
+                  class="button-link"
+                  type="button"
+                  (click)="unmarkAllIn(msgCat)"
+                >
+                  {{ 'בטל הכל' }}
+                </button>
+              </div>
+            </section>
+          </li>
+        </ng-container>
+      </ul>
+    </ng-container>
+  </ng-container>
+</div>
+
+<ng-template #systemAlert>
+  <img
+    fill ngSrc="/assets/images/fb-logo-bizibox-32-32.png"
+    style="width: auto; height: 1em; position: relative;"
+  />
+</ng-template>
+
+<ng-template #loader>
+  <div class="loader">
+    <div class="circle"></div>
+  </div>
+</ng-template>

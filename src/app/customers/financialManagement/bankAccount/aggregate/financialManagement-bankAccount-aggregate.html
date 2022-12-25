@@ -1,0 +1,543 @@
+<div id="bankAccountAggregateView">
+	<div #filterRow class="filterRow">
+		<app-acc-select
+				(changedTrigger)="changeAcc($event)"
+				[accounts]="userService.appData.userData.accounts"
+		></app-acc-select>
+		<app-account-dates></app-account-dates>
+		<!--<app-acc-dates [option]="'days'" (changedTrigger)="filterDates($event)"></app-acc-dates>-->
+		
+		<div class="exports">
+			<!--<button (click)="printTransactions()"><img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/to-printer.png" height="21" width="24"/></button>-->
+			<button
+					(click)="reportMailSubmitterToggle = true"
+					[matTooltip]="'appWalk.customers.report.mailBtn' | translate"
+					matTooltipPosition="above"
+			>
+				<img height="21" ngSrc="/assets/images/to-mail.png" width="24"/>
+				<app-report-mail-scheduler
+						(recipientApproved)="sendTransactions($event)"
+						[visible]="(reportMailSubmitterToggle)"
+				></app-report-mail-scheduler>
+			</button>
+			<!--<button (click)="exportTransactions('PDF')"><img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/to-pdf.png" height="21" width="24"/></button>-->
+			<button
+					(click)="exportTransactions('EXCEL')"
+					[matTooltip]="'appWalk.customers.report.excelBtn' | translate"
+					matTooltipPosition="above"
+			>
+				<img height="21" ngSrc="/assets/images/to-excel.png" width="24"/>
+			</button>
+		</div>
+		
+		<ul class="tabs navTabs" style="margin: 0">
+			<li
+					[matTooltip]="
+          'appWalk.customers.financialManagement.bankAccount.viewSwitchAggregate'
+            | translate
+        "
+					[routerLinkActiveOptions]="{ exact: false }"
+					id="navToAggregateView"
+					matTooltipPosition="above"
+					routerLink="../aggregate"
+					queryParamsHandling="preserve"
+					routerLinkActive="active"
+			>
+				{{ 'filters.consolidated' | translate }}
+			</li>
+			<li
+					[matTooltip]="
+          'appWalk.customers.financialManagement.bankAccount.viewSwitchDetails'
+            | translate
+        "
+					[routerLinkActiveOptions]="{ exact: false }"
+					id="navToDetailsView"
+					matTooltipPosition="above"
+					routerLink="../details"
+					queryParamsHandling="preserve"
+					routerLinkActive="active"
+			>
+				{{ 'filters.detailed' | translate }}
+			</li>
+			<li
+					[matTooltip]="
+          'appWalk.customers.financialManagement.bankAccount.viewSwitchChart'
+            | translate
+        "
+					[routerLinkActiveOptions]="{ exact: false }"
+					id="navToGraphView"
+					matTooltipPosition="above"
+					routerLink="../graph"
+					queryParamsHandling="preserve"
+					routerLinkActive="active"
+			>
+				<img height="13" ngSrc="/assets/images/chart.png" width="22"/>
+			</li>
+		</ul>
+	</div>
+	
+<!-- 	[ngStyle]=" -->
+<!-- 	!loader && -->
+<!-- 	dataTableAll?.length <= 2 && -->
+<!-- 	dataTableAll[0]?.accountTransactions?.length > 1 && { display: 'flex' } -->
+<!-- 	" -->
+	<div
+
+			class="wrap-aggregate"
+	>
+		<div *ngIf="loader" class="loader">
+			<div class="circle"></div>
+		</div>
+		<div
+				*ngIf="
+        !loader &&
+        (!dataTableAll?.length ||
+          dataTableAll?.length === 1 ||
+          !dataTableAll[0].accountTransactions?.length)
+      "
+				class="no-rows-found"
+		>
+			<ng-container *ngIf="!dataTableAll?.length">
+				{{ 'expressions.selectAccount' | translate }}
+			</ng-container>
+			<ng-container
+					*ngIf="
+          dataTableAll?.length === 1 ||
+          (dataTableAll?.length && !dataTableAll[0].accountTransactions?.length)
+        "
+			>
+				{{ 'expressions.noDataFoundForCriteria' | translate }},
+				{{ 'expressions.changeCriteria' | translate }}
+			</ng-container>
+		</div>
+		<div class="prevScroll">
+			<img
+					(click)="prevScroll(aggregate)"
+					*ngIf="viewPort && viewPort['_totalContentSize'] &&viewPort['_viewportSize']&& (viewPort['_totalContentSize'] > viewPort['_viewportSize']) && cardHandlesScrollIndex !== 0 && viewPort.measureScrollOffset('right') > 505"
+					alt="next"
+					height="43"
+					ngSrc="/assets/images/arrowNexPrev.png"
+					width="42"
+			/>
+		</div>
+		<cdk-virtual-scroll-viewport
+				[ngStyle]="{'height': (window.innerHeight - filterRow.getBoundingClientRect().bottom) +'px'}"
+				itemSize="505"
+				orientation="horizontal">
+			<ul
+					#aggregate
+					(cdkDropListDropped)="drop($event)"
+					cdkDropList
+					cdkDropListOrientation="horizontal"
+					class="aggregate-columns scroll-chrome wrap-aggregate-table"
+					id="sortable"
+			>
+				<ng-container
+						*cdkVirtualFor="let item of dataTableAll; let i = index; trackBy: trackById">
+					<li
+							#accountHandles
+							(keyup.ArrowLeft)="stepCard(1, $event)"
+							(keyup.ArrowRight)="stepCard(-1, $event)"
+							cdkDrag
+							[cdkDragDisabled]="item.accountUuid === null || dataTableAll.length <= 2"
+							[class.hover]="item.hover && item.accountUuid !== null"
+							[class.p-disabled]="
+            item.accountUuid === null || dataTableAll.length <= 2
+          "
+							[ngStyle]="
+            !item.accountUuid &&
+            (dataTableAll.length <= 2 ||
+              dataTableAll[1].accountTransactions.length !==
+                item.accountTransactions.length) && { display: 'none' }
+          "
+							[tabindex]="
+            item.accountUuid === null
+              ? 0
+              : sortableIdGr?.indexOf(item.accountUuid) + 1
+          "
+							class="p-state-default aggregate-columns-li"
+					>
+						<div class="account-header">
+							<div
+									(mouseleave)="item.hover = false"
+									(mouseover)="item.hover = true"
+									class="title_col"
+							>
+								<div
+										cdkDragHandle
+										*ngIf="item.accountUuid === null"
+										class="p-g topTitles flexWrap nameAccWrap"
+								>
+									<p class="nameAcc">
+										{{ 'filters.allSelectedAccounts' | translate }}
+									</p>
+									<!--<p style="font-size: 15px; margin-right: auto;">{{'expressions.excludingForexAndOutdatedAccounts'| translate}}</p>-->
+								</div>
+								<ng-container
+										*ngIf="
+                  item.accountUuid && (item.accountUuid | asBankAccount);
+                  let itemAcc
+                "
+								>
+									<div
+											[class.cursorAllScroll]="dataTableAll.length > 2"
+											[class.redBg]="
+                    (itemAcc.balanceUse < 0 &&
+                      !isForexAccount(item.accountUuid)) ||
+                    (itemAcc.creditLimit < 0 &&
+                      isForexAccount(item.accountUuid)) ||
+                    (!itemAcc.isUpToDate && !itemAcc.outdatedBecauseNotFound)
+                  "
+											class="topTitles flexWrap"
+											style="justify-content: space-between"
+									>
+										<div class="flexWrap nameAccWrap">
+											<img
+													[alt]="itemAcc.accountNickname"
+													style="height: auto; width: auto; position: relative;" fill [ngSrc]="itemAcc.bankId | toIconSrc: 'bank'"
+											/>
+											<p class="nameAcc">{{ itemAcc.accountNickname }}</p>
+										</div>
+										
+										<div
+												*ngIf="isForexAccount(item.accountUuid)"
+												class="exchange flexWrap"
+										>
+											<img
+													alt="global"
+													height="22"
+													src="/assets/images/global.png"
+													width="22"
+											/>
+											<ng-container
+													*ngIf="!itemAcc.isUpToDate; else fullForexMessage"
+											>
+												({{ itemAcc.currency | currencySymbol }})
+											</ng-container>
+											<ng-template #fullForexMessage>
+												{{ 'sumsTitles.account' | translate }}
+												{{ 'sumsTitles.forex' | translate }} ({{
+												itemAcc.currency | currencySymbol
+												}})
+											</ng-template>
+										</div>
+										
+										<div
+												*ngIf="
+                      itemAcc.isUpToDate &&
+                      ((itemAcc.balanceUse < 0 &&
+                        !isForexAccount(item.accountUuid)) ||
+                        (itemAcc.creditLimit < 0 &&
+                          isForexAccount(item.accountUuid)))
+                    "
+												class="alert-deviation flexWrap"
+										>
+											<i class="fas fa-exclamation-triangle"></i>
+											<div>{{ 'sumsTitles.accountExceeded' | translate }}</div>
+										</div>
+										
+										<div
+												*ngIf="
+                      !itemAcc.isUpToDate && !itemAcc.outdatedBecauseNotFound
+                    "
+												class="accountSelectOneNotUpdate flexWrap"
+												style="justify-self: flex-end"
+										>
+											<app-account-outdated-view
+													[account]="itemAcc"
+											></app-account-outdated-view>
+											<!--<app-token-credentials-update-button-->
+											<!--[balanceLastUpdatedDate]="(item.accountUuid| asBankAccount).balanceLastUpdatedDate"-->
+											<!--[tokenData]="{-->
+											<!--companyId: userService.appData.userData.companySelect.companyId,-->
+											<!--tokenId: (item.accountUuid| asBankAccount).token-->
+											<!--}">-->
+											<!--</app-token-credentials-update-button>-->
+										</div>
+									</div>
+								</ng-container>
+								<div class="titlesSums">
+									<div
+											*ngIf="item.accountUuid === null && dataTableAll.length > 1"
+											class="sums"
+									>
+										<div
+												[matTooltip]="
+                      'appWalk.customers.financialManagement.bankAccount.aggregate.monthCashFlowState'
+                        | translate
+                    "
+												class="sum-data"
+												matTooltipPosition="above"
+										>
+											<h3 [translate]="'sumsTitles.accountBalance'"></h3>
+											<p
+													*ngIf="accountBalance !== null; else accountBalanceNan"
+													[class.red]="
+                        accountBalance <
+                        (creditLimit !== null ? creditLimit : 0)
+                      "
+											>
+                      <span class="sum">{{ accountBalance | sum: true }}</span
+                      >&nbsp;{{
+												getInfoAcc(dataTableAll[1].accountUuid, 'currency')
+														| currencySymbol
+												}}
+											</p>
+											<ng-template #accountBalanceNan>
+												<p class="sum-nan"></p>
+											</ng-template>
+										</div>
+										<div class="operator">+</div>
+										<div class="sum-data">
+											<h3 [translate]="'sumsTitles.creditLimit'"></h3>
+											<p *ngIf="creditLimitAbs !== null; else creditLimitNan">
+                      <span class="sum">{{ creditLimitAbs | sum: true }}</span
+                      >&nbsp;{{
+												getInfoAcc(dataTableAll[1].accountUuid, 'currency')
+														| currencySymbol
+												}}
+											</p>
+											<ng-template #creditLimitNan>
+												<p class="sum-nan"></p>
+											</ng-template>
+										</div>
+										<div class="operator">=</div>
+										<div class="sum-data">
+											<h3>{{ 'sumsTitles.balanceUse' | translate }}</h3>
+											
+											<p
+													*ngIf="balanceUse !== null; else balanceUseNan"
+													[class.red]="
+                        balanceUse < (creditLimit !== null ? creditLimit : 0)
+                      "
+											>
+                      <span class="sum">{{ balanceUse | sum: true }}</span
+                      >&nbsp;{{
+												getInfoAcc(dataTableAll[1].accountUuid, 'currency')
+														| currencySymbol
+												}}
+											</p>
+											<ng-template #balanceUseNan>
+												<p class="sum-nan"></p>
+											</ng-template>
+										</div>
+									</div>
+									<div
+											*ngIf="item.accountUuid | asBankAccount as itemAcc"
+											class="sums"
+									>
+										<div class="sum-data">
+											<h3
+													[translateParams]="{
+                        upTo: itemAcc.isShowItrot
+                          ? (itemAcc.balanceLastUpdatedDate
+                            | todayRelativeHumanize: 'itraHeader')
+                          : ''
+                      }"
+													[translate]="
+                        itemAcc.isShowItrot
+                          ? 'sumsTitles.accountBalanceOnDatePattern'
+                          : 'sumsTitles.accountBalanceOne'
+                      "
+											></h3>
+											<p
+													*ngIf="
+                        itemAcc.accountBalance !== null && itemAcc.isShowItrot;
+                        else accountBalanceNan
+                      "
+													[class.red]="
+                        getInfoAcc(item.accountUuid, 'accountBalance') <
+                        (getInfoAcc(item.accountUuid, 'creditLimit', false) !=
+                        null
+                          ? getInfoAcc(item.accountUuid, 'creditLimit', false)
+                          : 0)
+                      "
+											>
+                      <span class="sum">{{
+	                      itemAcc.accountBalance | sum: true
+	                      }}</span
+                      >&nbsp;{{
+												getInfoAcc(item.accountUuid, 'currency')
+														| currencySymbol
+												}}
+											</p>
+											<ng-template #accountBalanceNan>
+												<p class="sum-nan"></p>
+											</ng-template>
+										</div>
+										<div class="operator">+</div>
+										<div class="sum-data">
+											<h3 [translate]="'sumsTitles.creditLimitOne'"></h3>
+											<p
+													*ngIf="
+                        getInfoAcc(item.accountUuid, 'creditLimit') !== null;
+                        else creditLimitNan
+                      "
+											>
+                      <span class="sum">{{
+	                      getInfoAcc(item.accountUuid, 'creditLimit') | sum: true
+	                      }}</span
+                      >&nbsp;{{
+												getInfoAcc(item.accountUuid, 'currency')
+														| currencySymbol
+												}}
+											</p>
+											<ng-template #creditLimitNan>
+												<p class="sum-nan"></p>
+											</ng-template>
+										</div>
+										<div class="operator">=</div>
+										<div class="sum-data">
+											<h3>{{ 'sumsTitles.balanceUse' | translate }}</h3>
+											
+											<p
+													*ngIf="
+                        itemAcc.balanceUse !== null && itemAcc.isShowItrot;
+                        else balanceUseNan
+                      "
+													[class.red]="
+                        itemAcc.balanceUse <
+                        (getInfoAcc(item.accountUuid, 'creditLimit', false) !=
+                        null
+                          ? getInfoAcc(item.accountUuid, 'creditLimit', false)
+                          : 0)
+                      "
+											>
+                      <span class="sum">{{
+	                      itemAcc.balanceUse | sum: true
+	                      }}</span
+                      >&nbsp;{{
+												getInfoAcc(item.accountUuid, 'currency')
+														| currencySymbol
+												}}
+											</p>
+											<ng-template #balanceUseNan>
+												<p class="sum-nan"></p>
+											</ng-template>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="p-g rows_banks title_col_row">
+								<div class="p-g-3">{{ 'titles.date' | translate }}</div>
+								<div class="p-g-3">{{ 'titles.income' | translate }}</div>
+								<div class="p-g-3">{{ 'titles.expense' | translate }}</div>
+								<div class="p-g-3" style="padding-right: 15px !important">
+									{{ 'titles.balance' | translate }}
+								</div>
+							</div>
+						</div>
+						<div  [appScrollHeight]="410" class="scrollbar-dynamic">
+							<div
+									(mouseenter)="hoveredRow = i1"
+									(mouseleave)="hoveredRow = -1"
+									*ngFor="let itemChild of item?.accountTransactions; index as i1"
+									[class.hover]="i1 === hoveredRow"
+									[class.today]="itemChild.transDate | isToday: true:false"
+									class="p-g accountTransactions"
+							>
+								<div class="p-g-3">
+									<ng-container
+											*ngIf="
+                    !(itemChild.transDate | isToday: true:false);
+                    else todayDateCell
+                  "
+									>
+										{{ itemChild.transDate | todayRelativeHumanize: 'dd/MM/yy' }}
+									</ng-container>
+									<ng-template #todayDateCell>
+										{{ 'expressions.todayQuestionable' | translate }}&nbsp;
+										<i
+												[matTooltip]="
+                      'appWalk.customers.financialManagement.bankAccount.questionableDisclaimer'
+                        | translate
+                    "
+												class="fas fa-fw fa-info-circle"
+												matTooltipPosition="after"
+										></i>
+									</ng-template>
+								</div>
+								<div
+										*ngIf="itemChild.zhut !== null"
+										[class.sum-credit]="itemChild.zhut"
+										class="p-g-3 ltrNum sum-credit"
+								>
+									<app-tooltip-list
+											(changed)="
+                    goToFinancialManagementBankAccountDetailsComponent($event)
+                  "
+											(clickOpen)="
+                    tooltipToggleFor(item, itemChild, false, $event)
+                  "
+											[data]="dataTableInside"
+											[title]="[item.accountUuid, false, itemChild.transDate]"
+									>
+										<app-sum-view [sum]="itemChild.zhut"></app-sum-view>
+									</app-tooltip-list>
+								</div>
+								<div *ngIf="itemChild.zhut === null" class="p-g-3 ltrNum">
+									{{ item.accountUuid ? '-' : '' }}
+								</div>
+								<div
+										*ngIf="itemChild.hova !== null"
+										[class.sum-debit]="itemChild.hova"
+										class="p-g-3 ltrNum"
+								>
+									<app-tooltip-list
+											(changed)="
+                    goToFinancialManagementBankAccountDetailsComponent($event)
+                  "
+											(clickOpen)="
+                    tooltipToggleFor(item, itemChild, true, $event)
+                  "
+											[data]="dataTableInside"
+											[title]="[item.accountUuid, true, itemChild.transDate]"
+									>
+										<app-sum-view
+												[sum]="toAbsolute(itemChild.hova)"
+										></app-sum-view>
+									</app-tooltip-list>
+								</div>
+								<div *ngIf="itemChild.hova === null" class="p-g-3 ltrNum">
+									{{ item.accountUuid ? '-' : '' }}
+								</div>
+								<div
+										*ngIf="itemChild.itra !== null"
+										[class.sum-debit]="
+                  (item.accountUuid === null &&
+                    creditLimit !== null &&
+                    creditLimit > itemChild.itra) ||
+                  (item.accountUuid !== null &&
+                    getInfoAcc(item.accountUuid, 'creditLimit') !== null &&
+                    getInfoAcc(item.accountUuid, 'creditLimit', false) >
+                      itemChild.itra)
+                "
+										class="p-g-3 ltrNum sum-itra"
+								>
+									<app-sum-view [sum]="itemChild.itra"></app-sum-view>
+								</div>
+								<div
+										*ngIf="itemChild.itra === null"
+										class="p-g-3 ltrNum"
+										style="padding-right: 15px !important"
+								>
+									{{ item.accountUuid ? '-' : '' }}
+								</div>
+							</div>
+						</div>
+					</li>
+				</ng-container>
+			</ul>
+		</cdk-virtual-scroll-viewport>
+		<div class="nextScroll">
+			<img
+					(click)="nextScroll(aggregate)"
+					*ngIf="viewPort && viewPort['_totalContentSize'] &&viewPort['_viewportSize']&&  viewPort['_totalContentSize'] > viewPort['_viewportSize'] && viewPort.measureScrollOffset('end') > 25"
+					alt="next"
+					height="43"
+					ngSrc="/assets/images/arrowNexPrev.png"
+					width="42"
+			/>
+		</div>
+	</div>
+</div>

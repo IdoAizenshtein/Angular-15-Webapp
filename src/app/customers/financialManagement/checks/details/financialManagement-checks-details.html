@@ -1,0 +1,1228 @@
+<div #containerHost id="bankAccountDetailsView" style="position: relative">
+    <div class="filterRow">
+        <ul class="tabs navTabs rightSide">
+            <li
+                    [routerLinkActiveOptions]="{ exact: false }"
+                    [title]="'filters.inChecks' | translate"
+                    id="navToAggregateView"
+                    queryParamsHandling="preserve"
+                    routerLink="../in-checks"
+
+                    routerLinkActive="active"
+            >
+                {{ 'filters.inChecks' | translate }}
+            </li>
+            <li
+                    [routerLinkActiveOptions]="{ exact: false }"
+                    [title]="'filters.outChecks' | translate"
+                    id="navToDetailsView"
+                    queryParamsHandling="preserve"
+                    routerLink="../out-checks"
+
+                    routerLinkActive="active"
+            >
+                {{ 'filters.outChecks' | translate }}
+            </li>
+        </ul>
+        <app-acc-select
+            #accountSelector
+            (changedTrigger)="changeAcc($event)"
+            [accounts]="userService.appData.userData.accounts"
+        ></app-acc-select>
+
+        <app-checks-dates></app-checks-dates>
+        <!--<app-acc-dates [option]="'monthChecks'" (changedTrigger)="filterDates($event)"></app-acc-dates>-->
+
+        <div class="search">
+            <input
+                    [formControl]="filterInput"
+                    [value]="queryString"
+                    autocomplete="off"
+                    id="containTextFilter"
+                    placeholder="{{ 'filters.search' | translate }}"
+                    type="text"
+            />
+        </div>
+
+        <div id="groupBtnLeftAddChecks">
+            <button
+                    (click)="onAddCheckClick($event)"
+                    [matTooltip]="
+          'appWalk.customers.financialManagement.checks.addIncomeCheckBtn'
+            | translate
+        "
+                    class="relax"
+                    id="addIncomeCheck"
+                    matTooltipPosition="above"
+            >
+                {{ 'filters.inCheck' | translate }}
+            </button>
+            <button
+                    (click)="onAddCheckClick($event)"
+                    [matTooltip]="
+          'appWalk.customers.financialManagement.checks.addOutcomeCheckBtn'
+            | translate
+        "
+                    class="relax"
+                    id="addOutChecks"
+                    matTooltipPosition="above"
+            >
+                {{ 'filters.outCheck' | translate }}
+            </button>
+        </div>
+    </div>
+    <div
+            [ngClass]="{
+      'sums-deviation':
+        accountSelectOneNotUpdate || accountSelectInDeviation?.length
+    }"
+            id="sumsFilters"
+    >
+        <div
+                (click)="
+        queryStatus = router.url.includes('in-checks')
+          ? 'not_paid'
+          : 'mechake_lehafkada';
+        filtersAll()
+      "
+                *ngIf="
+        (router.url.includes('in-checks') && statusTotals?.not_paid) ||
+        (router.url.includes('out-checks') && statusTotals?.mechake_lehafkada)
+      "
+                [class.active]="
+        queryStatus === 'not_paid' ||
+        (queryStatus === 'mechake_lehafkada' &&
+          !router.url.includes('in-checks'))
+      "
+                class="clickable"
+                tabindex="-1"
+        >
+            <h3>{{ 'sumsTitles.notRepaid' | translate }}</h3>
+            <p *ngIf="userService.appData.userData.accountSelect?.length">
+        <span class="currency">{{
+            userService.appData.userData.accountSelect[0].currency
+                | currencySymbol
+            }}</span>
+                {{
+                (router.url.includes('in-checks')
+                        ? statusTotals.not_paid
+                        : statusTotals.mechake_lehafkada
+                ) | sum: true
+                }}
+            </p>
+        </div>
+        <div
+                *ngIf="
+        (router.url.includes('in-checks') &&
+          statusTotals?.not_paid &&
+          statusTotals?.mechake_lehafkada) ||
+        (router.url.includes('out-checks') &&
+          statusTotals?.mechake_lehafkada &&
+          statusTotals?.future_due_date)
+      "
+                class="operator"
+        >
+            =
+        </div>
+        <div
+                (click)="
+        queryStatus = router.url.includes('in-checks')
+          ? 'mechake_lehafkada'
+          : 'future_due_date';
+        filtersAll()
+      "
+                *ngIf="
+        (router.url.includes('in-checks') && statusTotals?.mechake_lehafkada) ||
+        (router.url.includes('out-checks') && statusTotals?.future_due_date)
+      "
+                [class.active]="
+        (queryStatus === 'mechake_lehafkada' &&
+          router.url.includes('in-checks')) ||
+        queryStatus === 'future_due_date'
+      "
+                class="clickable"
+        >
+            <h3>
+                {{
+                (router.url.includes('in-checks')
+                        ? 'sumsTitles.notDeposited'
+                        : 'sumsTitles.futureMaturityDate'
+                ) | translate
+                }}
+            </h3>
+            <p *ngIf="userService.appData.userData.accountSelect?.length">
+        <span class="currency">{{
+            userService.appData.userData.accountSelect[0].currency
+                | currencySymbol
+            }}</span>
+                {{
+                (router.url.includes('in-checks')
+                        ? statusTotals.mechake_lehafkada
+                        : statusTotals.future_due_date
+                ) | sum: true
+                }}
+            </p>
+        </div>
+        <div
+                *ngIf="
+        (router.url.includes('in-checks') && statusTotals?.mechake_lehafkada) ||
+        (router.url.includes('out-checks') && statusTotals?.future_due_date)
+      "
+                class="operator"
+        >
+            +
+        </div>
+        <div
+                (click)="
+        queryStatus = router.url.includes('in-checks')
+          ? 'mishmeret_babank'
+          : 'past_due_date';
+        filtersAll()
+      "
+                *ngIf="
+        (router.url.includes('in-checks') && statusTotals?.mishmeret_babank) ||
+        (router.url.includes('out-checks') && statusTotals?.past_due_date)
+      "
+                [class.active]="
+        queryStatus === 'mishmeret_babank' || queryStatus === 'past_due_date'
+      "
+                class="clickable"
+        >
+            <h3>
+                {{
+                (router.url.includes('in-checks')
+                        ? 'sumsTitles.depositedSafekeeping'
+                        : 'sumsTitles.repaymentPassed'
+                ) | translate
+                }}
+            </h3>
+            <p *ngIf="userService.appData.userData.accountSelect?.length">
+        <span class="currency">{{
+            userService.appData.userData.accountSelect[0].currency
+                | currencySymbol
+            }}</span>
+                {{
+                (router.url.includes('in-checks')
+                        ? statusTotals.mishmeret_babank
+                        : statusTotals.past_due_date
+                ) | sum: true
+                }}
+            </p>
+        </div>
+        <div *ngIf="statusTotals?.ufkad_veshulam" class="separator">&nbsp;</div>
+        <div
+                (click)="queryStatus = 'ufkad_veshulam'; filtersAll()"
+                *ngIf="statusTotals?.ufkad_veshulam"
+                [class.active]="queryStatus === 'ufkad_veshulam'"
+                class="clickable"
+        >
+            <h3>{{ 'sumsTitles.repaid' | translate }}</h3>
+            <p *ngIf="userService.appData.userData.accountSelect?.length">
+        <span class="currency">{{
+            userService.appData.userData.accountSelect[0].currency
+                | currencySymbol
+            }}</span>
+                {{ statusTotals.ufkad_veshulam | sum: true }}
+            </p>
+        </div>
+
+        <!--<div class="separator"-->
+        <!--*ngIf="statusTotals?.nimhak_aliadei_user || ((router.url.includes('in-checks') && statusTotals?.lenicaion) || (router.url.includes('out-checks') && statusTotals?.nimhak_aliadei_user)) && statusTotals?.ufkad_veshulam">-->
+        <!--&nbsp;-->
+        <!--</div>-->
+        <div
+                *ngIf="router.url.includes('in-checks') && statusTotals?.lenicaion"
+                class="separator"
+        >
+            &nbsp;
+        </div>
+        <div
+                (click)="queryStatus = 'lenicaion'; filtersAll()"
+                *ngIf="router.url.includes('in-checks') && statusTotals?.lenicaion"
+                [class.active]="queryStatus === 'lenicaion'"
+                class="clickable"
+        >
+            <h3>{{ 'sumsTitles.discount' | translate }}</h3>
+            <p *ngIf="userService.appData.userData.accountSelect?.length">
+        <span class="currency">{{
+            userService.appData.userData.accountSelect[0].currency
+                | currencySymbol
+            }}</span>
+                {{ statusTotals.lenicaion | sum: true }}
+            </p>
+        </div>
+
+        <div *ngIf="statusTotals?.nimhak_aliadei_user" class="separator">
+            &nbsp;
+        </div>
+        <div
+                (click)="queryStatus = 'nimhak_aliadei_user'; filtersAll()"
+                *ngIf="statusTotals?.nimhak_aliadei_user"
+                [class.active]="queryStatus === 'nimhak_aliadei_user'"
+                class="clickable"
+        >
+            <h3>{{ 'sumsTitles.manuallyDeleted' | translate }}</h3>
+            <p *ngIf="userService.appData.userData.accountSelect?.length">
+        <span class="currency">{{
+            userService.appData.userData.accountSelect[0].currency
+                | currencySymbol
+            }}</span>
+                {{ statusTotals.nimhak_aliadei_user | sum: true }}
+            </p>
+        </div>
+
+        <div
+                *ngIf="
+        (router.url.includes('in-checks') &&
+          (statusTotals?.ufkad_vehazar ||
+            statusTotals?.huavar_lesapak_vehazar)) ||
+        (router.url.includes('out-checks') && statusTotals?.return_check)
+      "
+                class="separator"
+        >
+            &nbsp;
+        </div>
+        <div
+                (click)="
+        queryStatus = router.url.includes('in-checks')
+          ? 'ufkad_vehazar'
+          : 'return_check';
+        filtersAll()
+      "
+                *ngIf="
+        (router.url.includes('in-checks') &&
+          (statusTotals?.ufkad_vehazar ||
+            statusTotals?.huavar_lesapak_vehazar)) ||
+        (router.url.includes('out-checks') && statusTotals?.return_check)
+      "
+                [class.active]="
+        queryStatus === 'ufkad_vehazar' || queryStatus === 'return_check'
+      "
+                class="clickable"
+        >
+            <h3>
+                {{
+                (router.url.includes('in-checks')
+                        ? 'sumsTitles.comeBack'
+                        : 'sumsTitles.notHonored'
+                ) | translate
+                }}
+            </h3>
+            <p
+                    *ngIf="userService.appData.userData.accountSelect?.length"
+                    style="color: #eb4040"
+            >
+        <span class="currency" style="color: #eb4040">{{
+            userService.appData.userData.accountSelect[0].currency
+                | currencySymbol
+            }}</span>
+                {{
+                (router.url.includes('in-checks')
+                        ? (statusTotals?.ufkad_vehazar ? statusTotals?.ufkad_vehazar : 0) +
+                        (statusTotals?.huavar_lesapak_vehazar
+                            ? statusTotals?.huavar_lesapak_vehazar
+                            : 0)
+                        : statusTotals?.return_check
+                ) | sum: true
+                }}
+            </p>
+        </div>
+
+        <!--<div class="separator"-->
+        <!--*ngIf="accountSelectInDeviation.length || accountSelectOneNotUpdate">&nbsp;-->
+        <!--</div>-->
+
+        <div
+                *ngIf="accountSelectInDeviation && accountSelectInDeviation.length > 1"
+                class="alert-deviation-multi"
+        >
+            <i class="fas fa-exclamation-triangle"></i>
+            <div>
+                {{ 'expressions.cardsDataOutdated0' | translate }}
+                {{ accountSelectInDeviation.length }}
+                {{ 'filters.accounts' | translate }}
+            </div>
+            <div class="separatorInsider"></div>
+            <div (click)="tooltipAccDeviation.toggle($event)" class="link">
+                {{ 'sumsTitles.forDetails' | translate }}
+                <p-overlayPanel
+                    #tooltipAccDeviation
+                    [style]="{ transform: 'translate(-50%, 10px)', width: 'auto' }"
+                    appendTo="body"
+                    styleClass="tooltip-bottom tooltip-acc-deviation"
+                >
+                    <ul class="scroll-chrome">
+                        <li
+                                (click)="
+                selectAccountInDeviation(accountSelector, acc);
+                tooltipAccDeviation.hide()
+              "
+                                *ngFor="let acc of accountSelectInDeviation"
+                        >
+              <span>{{ acc.accountNickname }}</span
+              >&nbsp;&#8722;&nbsp;
+                            <span class="sum-debit">{{
+                                'filters.outdated' | translate
+                                }}</span>
+                        </li>
+                    </ul>
+                </p-overlayPanel>
+            </div>
+        </div>
+        <div
+                *ngIf="accountSelectInDeviation && accountSelectInDeviation.length === 1"
+        >
+            <!--<app-account-outdated-view [account]="accountSelectInDeviation[0]"></app-account-outdated-view>-->
+            <span class="sum-debit"
+            ><i class="fa fa-fw fa-exclamation-triangle"></i>
+                {{ 'expressions.cardsDataOutdated0' | translate }}</span
+            >
+            <span
+                    (click)="
+          selectAccountInDeviation(accountSelector, accountSelectInDeviation[0])
+        "
+                    class="link"
+            >
+        {{ accountSelectInDeviation[0].accountNickname }}</span
+            >
+        </div>
+
+        <div
+                *ngIf="
+        accountSelectOneNotUpdate &&
+        userService.appData.userData.accountSelect?.length
+      "
+        >
+            <app-account-outdated-view
+                    [account]="userService.appData.userData.accountSelect[0]"
+            ></app-account-outdated-view>
+            <!--<app-token-credentials-update-button-->
+            <!--[balanceLastUpdatedDate]="userService.appData.userData.accountSelect[0].balanceLastUpdatedDate"-->
+            <!--[tokenData]="{-->
+            <!--companyId: userService.appData.userData.companySelect.companyId,-->
+            <!--tokenId: userService.appData.userData.accountSelect[0].token-->
+            <!--}">-->
+            <!--</app-token-credentials-update-button>-->
+        </div>
+
+        <div class="exports">
+            <button
+                    (click)="printTransactions()"
+                    [matTooltip]="'appWalk.customers.report.printBtn' | translate"
+                    matTooltipPosition="above"
+            >
+                <img height="21" ngSrc="/assets/images/to-printer.png" width="24"/>
+            </button>
+            <button
+                    (click)="reportMailSubmitterToggle = true"
+                    [matTooltip]="'appWalk.customers.report.mailBtn' | translate"
+                    matTooltipPosition="above"
+            >
+                <img height="21" ngSrc="/assets/images/to-mail.png" width="24"/>
+                <app-report-mail-scheduler
+                        (recipientApproved)="sendTransactions($event)"
+                        [visible]="(reportMailSubmitterToggle)"
+                ></app-report-mail-scheduler>
+            </button>
+            <button
+                    (click)="exportTransactions('PDF')"
+                    [matTooltip]="'appWalk.customers.report.pdfBtn' | translate"
+                    matTooltipPosition="above"
+            >
+                <img height="21" ngSrc="/assets/images/to-pdf.png" width="24"/>
+            </button>
+            <button
+                    (click)="exportTransactions('EXCEL')"
+                    [matTooltip]="'appWalk.customers.report.excelBtn' | translate"
+                    matTooltipPosition="above"
+            >
+                <img height="21" ngSrc="/assets/images/to-excel.png" width="24"/>
+            </button>
+        </div>
+    </div>
+
+    <div
+            class="bank-acc-details-table-container checksTable"
+            style="position: relative"
+    >
+        <div #tableHeader class="bank-acc-details-table-header">
+            <div *ngIf="statusTotals?.nimhak_aliadei_user && queryStatus === 'nimhak_aliadei_user'">
+                <p-checkbox (onChange)="selecteAllFilesEvent()"
+                            [(ngModel)]="selcetAllFiles"
+                            [binary]="true"
+                            checkboxIcon="fa fa-check">
+                </p-checkbox>
+            </div>
+            <div
+                    (click)="sortPipeFilter('dueDate')"
+                    class="bank-acc-details-column-1"
+            >
+                {{ 'titles.repaymentDate' | translate }}
+                <ng-container
+                        *ngIf="sortColumn === 'dueDate'; else sortAvailableForColumn"
+                >
+                    <img
+                            [src]="
+              '/assets/images/sort-' +
+              (sortPipeDir === 'smaller' ? 'desc' : 'asc') +
+              '.png'
+            " style="height: auto; width: auto; position: relative;margin: 0 3px -3px 0"
+
+                    />
+                </ng-container>
+            </div>
+            <div class="bank-acc-details-column-2">
+                <div>{{ 'titles.account' | translate }}</div>
+            </div>
+            <div
+                    class="bank-acc-details-column-beneficiary"
+                    style="overflow: visible"
+            >
+                <app-tooltip-category
+                        (changed)="filterBeneficiaries($event)"
+                        [data]="beneficiaryFilterOptions"
+                        [filter]="true"
+                        [type]="'biziboxMutavId'"
+                >
+                    <img fill ngSrc="/assets/images/beneficiary-header-icon.png"
+                         style="height: auto; width: auto; position: relative;"/>
+                </app-tooltip-category>
+            </div>
+            <div class="bank-acc-details-column-3">
+                <div>{{ 'titles.description' | translate }}</div>
+            </div>
+            <div class="bank-acc-details-column-4">
+                {{ 'titles.status' | translate }}
+            </div>
+            <div class="bank-acc-details-column-5" style="overflow: visible">
+                <div>
+                    <app-tooltip-category
+                            (changed)="filterCategory($event)"
+                            [data]="transTypesArr"
+                            [title]="'titles.category' | translate"
+                            [type]="'transType'"
+                    ></app-tooltip-category>
+                </div>
+            </div>
+            <div class="bank-acc-details-column-6">
+                <div (click)="sortPipeFilter('chequeNo')">
+                    {{ 'titles.checkNumber' | translate }}
+                    <ng-container
+                            *ngIf="sortColumn === 'chequeNo'; else sortAvailableForColumn"
+                    >
+                        <img
+                                [src]="
+                '/assets/images/sort-' +
+                (sortPipeDir === 'smaller' ? 'desc' : 'asc') +
+                '.png'
+              "
+                                style="height: auto; width: auto; position: relative;margin: 0 3px -3px 0"
+
+                        />
+                    </ng-container>
+                </div>
+            </div>
+            <div class="bank-acc-details-column-7" style="overflow: visible">
+                <div>
+                    <app-tooltip-category
+                            (changed)="filterProgram($event)"
+                            [data]="programNameArr"
+                            [title]="'titles.sourceCheck' | translate"
+                            [type]="'programName'"
+                    ></app-tooltip-category>
+                </div>
+            </div>
+            <div class="bank-acc-details-column-8">
+                <div>{{ 'titles.comments' | translate }}</div>
+            </div>
+            <div class="bank-acc-details-column-9">
+                <div>{{ 'titles.sum' | translate }}</div>
+            </div>
+        </div>
+        <ng-template #sortAvailableForColumn>
+            <i class="fas fa-sm fa-rotate-270 fa-exchange-alt"></i>
+        </ng-template>
+        <div
+            #scrollContainer
+            (scroll)="onContainerScroll()"
+            [appScrollHeight]="
+        tableHeader.getBoundingClientRect().bottom +
+        (paginator?.pageLinks?.length > 1 ? 45 : 5) +
+        tableFooter.getBoundingClientRect().height
+      "
+            class="scrollbar-dynamic bank-acc-details-table-body"
+            style="position: relative"
+        >
+            <div *ngIf="loader" class="loader">
+                <div class="circle"></div>
+            </div>
+            <div *ngIf="dataTable && dataTable.length">
+                <div
+                        *ngFor="
+            let item of dataTable
+              | slice
+                : currentPage * entryLimit
+                : currentPage * entryLimit + entryLimit;
+            let i = index;
+            trackBy: trackById
+          "
+                >
+                    <div
+                            (click)="selectedTransaction = item"
+                            (focus)="selectedTransaction = item"
+                            [class.bank-acc-details-row-selected]="selectedTransaction === item"
+                            class="bank-acc-details-row transactionsRow"
+                            tabindex="-1"
+                    >
+                        <div *ngIf="statusTotals?.nimhak_aliadei_user && queryStatus === 'nimhak_aliadei_user'" style="
+    display: flex;
+    align-items: center;
+">
+                            <p-checkbox (onChange)="item['selcetFile'] = !item['selcetFile']; checkSelected()"
+                                        [binary]="true"
+                                        style="vertical-align: middle;"
+                                        [ngModel]="item['selcetFile']"
+                                        checkboxIcon="fa fa-check">
+                            </p-checkbox>
+                        </div>
+                        <div
+                                class="bank-acc-details-column-1"
+                                style="
+                display: flex;
+                display: -ms-flex;
+                align-items: baseline;
+                align-content: baseline;
+              "
+                        >
+                            <div
+                                    [innerHTML]="
+                  item.transDateHumanizedStr
+                    | highlight: (searchInDates ? queryString : '')
+                "
+                                    [ngClass]="
+                  item.isEditable['dueDateAsDate']
+                    ? 'seamless-edit-prepare'
+                    : 'non-editable-but-justified'
+                "
+                                    class="text-ellipsis"
+                            ></div>
+                            <p-calendar
+                                #inputBoxCalendar
+                                (onFocus)="startDescriptionEditAt(item)"
+                                (onSelect)="submitChanges($event, 'dueDateAsDate')"
+                                *ngIf="item.isEditable['dueDateAsDate']"
+                                [(ngModel)]="item.dueDateAsDate"
+                                [locale]="'langCalendar' | translate"
+                                [required]="true"
+                                appendTo="body"
+                                dateFormat="dd/mm/y"
+                                placeholder="{{ 'titles.date' | translate }}"
+                            >
+                            </p-calendar>
+                        </div>
+                        <div class="bank-acc-details-column-2">
+                            <div
+                                    [ngClass]="
+                  item.isEditable['account']
+                    ? 'seamless-edit-prepare'
+                    : 'non-editable-but-justified'
+                "
+                                    class="bank-acc-visuals-container"
+                                    style="min-width: 0"
+                            >
+                                <img
+                                        [src]="!item.bankId ? '' : (item.bankId | toIconSrc: 'bank')"
+                                        style="height: auto; width: auto; position: relative;"
+                                />
+                                <p
+                                        [pTooltip]="item.accountNickname"
+                                        class="text-ellipsis"
+                                        style="min-width: 0"
+                                        tooltipPosition="top"
+                                >
+                                    {{ item.accountNickname }}
+                                </p>
+                            </div>
+
+                            <p-dropdown
+                                #accountsDD
+                                (onChange)="submitChanges($event, 'account')"
+                                (onFocus)="startDescriptionEditAt(item)"
+                                *ngIf="item.isEditable['account']"
+                                [(ngModel)]="item.account"
+                                [dropdownIcon]="'p-dropdown-icon'"
+                                [options]="accountsSelectableForEdit"
+                                [scrollHeight]="'14em'"
+                                [style]="{ width: '100%' }"
+
+                                appendTo="body"
+                                optionLabel="accountNickname"
+                                placeholder="{{ 'actions.account' | translate }}"
+                            >
+                                <ng-template let-item pTemplate="selectedItem">
+                                    <div
+                                            style="
+                      display: flex;
+                      display: -ms-flexbox;
+                      align-items: center;
+                    "
+                                    >
+                                        <img
+                                                [src]="
+                        !item.bankId
+                          ? ''
+                          : (item.bankId | toIconSrc: 'bank')
+                      "
+                                        />&nbsp;
+                                        <div
+                                                [pTooltip]="item.label"
+                                                class="text-ellipsis"
+                                                style="min-width: 0"
+                                                tooltipPosition="top"
+                                        >
+                                            {{ item?.accountNickname }}
+                                        </div>
+                                    </div>
+                                </ng-template>
+                                <ng-template let-option pTemplate="item">
+                                    <div
+                                            style="
+                      position: relative;
+                      display: flex;
+                      display: -ms-flexbox;
+                      align-items: center;
+                    "
+                                    >
+                                        <img
+                                                [ngSrc]="
+                        (!option.bankId ? '' : option.bankId)
+                          | toIconSrc: 'bank'
+                      " fill style="height: auto; width: auto; position: relative;"
+                                        />&nbsp;
+                                        <div
+                                                [pTooltip]="option.accountNickname"
+                                                class="text-ellipsis"
+                                                tooltipPosition="top"
+                                        >
+                                            {{ option.accountNickname }}
+                                        </div>
+                                    </div>
+                                </ng-template>
+                            </p-dropdown>
+                        </div>
+
+                        <div class="bank-acc-details-column-beneficiary">
+                            <ng-container *ngIf="item.mutavNames?.length">
+                                <img
+                                        [pTooltip]="item.mutavNames.join(', ')"
+                                        src="/assets/images/beneficiary-row-icon.png"
+                                        tooltipPosition="top"
+                                />
+                            </ng-container>
+                        </div>
+
+                        <div class="bank-acc-details-column-3" style="display: flex">
+                            <i
+                                    [class.fa-info-circle]="
+                  item.secondDescription &&
+                  item.secondDescription !== item.mainDescription &&
+                  ['BANK_CHEQUE', 'ERP_CHEQUE'].includes(item.targetType)
+                "
+                                    [escape]="false"
+                                    [pTooltip]="appearsInBankTooltip(item)"
+                                    class="fa fa-fw"
+                                    style="
+                  flex: 0 0 16px;
+                  color: #5c728c;
+                  font-size: 80%;
+                  align-self: center;
+                "
+                                    tooltipPosition="bottom"
+                            ></i>
+
+                            <div
+                                    [innerHTML]="item.mainDescription | highlight: queryString"
+                                    [ngClass]="{
+                  'seamless-edit-prepare': item.targetType !== 'BANK_TRANS'
+                }"
+                                    [pTooltip]="item.mainDescription"
+                                    class="seamless-edit-prepare text-ellipsis"
+                                    tooltipPosition="top"
+                            ></div>
+
+                            <input
+                                #inputBox
+                                (blur)="submitChanges($event, 'mainDescription')"
+                                (focus)="startDescriptionEditAt(item, inputBox)"
+                                (keyup.enter)="submitChanges($event, 'mainDescription')"
+                                (keyup.esc)="cancelChanges('mainDescription'); inputBox.blur()"
+                                *ngIf="item.targetType !== 'BANK_TRANS'"
+                                [(ngModel)]="item.mainDescription"
+                                [pTooltip]="item.mainDescription"
+                                tooltipPosition="top"
+                                type="text"
+                            />
+                        </div>
+                        <div
+                                [innerHTML]="item.statusText | highlight: queryString"
+                                class="bank-acc-details-column-4"
+                        ></div>
+                        <div
+                            #categoryContainer
+                            [ngStyle]="
+                editingTransaction === item && {
+                  overflow: 'visible',
+                  'min-width': '0'
+                }
+              "
+                            [pTooltip]="
+                item.transTypeName || ('expressions.noTransType' | translate)
+              "
+                            [showDelay]="300"
+                            [tooltipDisabled]="catDesc.clientWidth >= catDesc.scrollWidth"
+                            appendTo="body"
+                            class="bank-acc-details-column-5"
+                            tooltipPosition="top"
+                        >
+                            <div
+                                #catDesc
+                                [innerHTML]="
+                  item.transTypeName || ('expressions.noTransType' | translate)
+                    | highlight: queryString
+                "
+                                [pTooltip]="
+                  item.transTypeName || ('expressions.noTransType' | translate)
+                "
+                                class="seamless-edit-prepare text-ellipsis"
+                                tooltipPosition="top"
+                            ></div>
+                            <div
+                                    (click)="startCategoryEditAt(item, $event)"
+                                    *ngIf="!(editingTransaction === item && showCategoryDropDown)"
+                                    class="dropdown-stub"
+                            >
+                <span
+                        [pTooltip]="
+                    item.transTypeName ||
+                    ('expressions.noTransType' | translate)
+                  "
+                        class="text-ellipsis"
+                        tooltipPosition="top"
+                >
+                  {{ item.transTypeName }}</span
+                >
+                                <i class="fas fa-fw fa-angle-down"></i>
+                            </div>
+                            <ng-container
+                                    *ngIf="editingTransaction === item && showCategoryDropDown"
+                            >
+                                <app-category-select
+                                    #categorySelector
+                                    (cancelChanges)="cancelChanges()"
+                                    (changed)="item.selectedTransType = $event.value; submitChanges($event)"
+                                    [categories]="companyTransTypes"
+                                    [companyId]="companyId"
+                                    [filterBy]="'transTypeName'"
+                                    [filter]="false"
+                                    [ngModelVal]="item.selectedTransType"
+                                    [showAuto]="true"
+                                    [style]="{ width: '100%', 'margin-top': '2px' }"
+                                >
+                                </app-category-select>
+                            </ng-container>
+                        </div>
+
+                        <!--<div class="ltrNum" [innerHTML]="item.chequeNo| highlight: queryString"></div>-->
+                        <div class="bank-acc-details-column-6">
+                            <div
+                                    [appTransactionAdditionalTrigger]="item"
+                                    [innerHTML]="item.chequeNo | highlight: queryString"
+                                    [ngClass]="{
+                  'non-editable-but-justified': !item.isEditable['chequeNo'],
+                  'seamless-edit-prepare': item.isEditable['chequeNo'],
+                  'bank-acc-details-link': item.pictureLink
+                }"
+                                    [pTooltip]="item.chequeNo"
+                                    class="text-ellipsis"
+                                    tooltipPosition="top"
+                            ></div>
+
+                            <input
+                                #inputBoxChequeNo
+                                (blur)="submitChanges($event, 'chequeNo')"
+                                (focus)="startDescriptionEditAt(item, inputBoxChequeNo)"
+                                (keyup.enter)="submitChanges($event, 'chequeNo')"
+                                (keyup.esc)="cancelChanges('chequeNo'); inputBoxChequeNo.blur()"
+                                *ngIf="item.isEditable['chequeNo']"
+                                [(ngModel)]="item.chequeNo"
+                                [appTransactionAdditionalTrigger]="item"
+                                [ngClass]="{ 'bank-acc-details-link': item.pictureLink }"
+                                [pTooltip]="item.chequeNo"
+                                appNumbersOnly="positiveInt"
+                                tooltipPosition="top"
+                                type="text"
+                            />
+                        </div>
+
+                        <div
+                                [innerHTML]="item.programName | highlight: queryString"
+                                [pTooltip]="item.programName"
+                                class="text-ellipsis bank-acc-details-column-7"
+                                tooltipPosition="top"
+                        ></div>
+
+                        <ng-container *ngIf="item.systemMessage; else regularComment">
+                            <div
+                                    class="bank-acc-details-column-8"
+                                    style="display: flex; display: -ms-flex; align-items: baseline"
+                            >
+                                <i
+                                        [class.fa-info-circle]="item.chequeComment"
+                                        [escape]="false"
+                                        [pTooltip]="item.systemMessage"
+                                        class="fa fa-fw"
+                                        style="
+                    flex: 0 0 16px;
+                    color: #5c728c;
+                    font-size: 80%;
+                    align-self: center;
+                  "
+                                        tooltipPosition="bottom"
+                                ></i>
+
+                                <div
+                                        [innerHTML]="
+                    item.chequeComment || item.systemMessage
+                      | highlight: queryString
+                  "
+                                        [ngClass]="
+                    item.targetType !== 'BANK_TRANS'
+                      ? 'seamless-edit-prepare'
+                      : 'text-item'
+                  "
+                                        [pTooltip]="item.chequeComment || item.systemMessage"
+                                        class="text-ellipsis"
+                                        tooltipPosition="top"
+                                ></div>
+
+                                <input
+                                    #inputBox1
+                                    (blur)="submitChanges($event, 'chequeComment')"
+                                    (focus)="startDescriptionEditAt(item, inputBox1)"
+                                    (keyup.enter)="submitChanges($event, 'chequeComment')"
+                                    (keyup.esc)="cancelChanges('chequeComment'); inputBox1.blur()"
+                                    *ngIf="item.targetType !== 'BANK_TRANS'"
+                                    [(ngModel)]="item.chequeComment"
+                                    [pTooltip]="item.chequeComment || item.systemMessage"
+                                    [placeholder]="item.systemMessage"
+                                    tooltipPosition="top"
+                                    type="text"
+                                />
+                            </div>
+                        </ng-container>
+                        <ng-template #regularComment>
+                            <div class="bank-acc-details-column-8">
+                                <div class="non-editable-but-justified" style="min-width: 0">
+                                    <div
+                                            [innerHTML]="item.chequeComment | highlight: queryString"
+                                            [ngClass]="
+                      item.targetType !== 'BANK_TRANS'
+                        ? 'seamless-edit-prepare'
+                        : 'text-item'
+                    "
+                                            [pTooltip]="item.chequeComment"
+                                            class="text-ellipsis"
+                                            tooltipPosition="top"
+                                    ></div>
+
+                                    <input
+                                        #inputBox1
+                                        (blur)="submitChanges($event, 'chequeComment')"
+                                        (focus)="startDescriptionEditAt(item, inputBox1)"
+                                        (keyup.enter)="submitChanges($event, 'chequeComment')"
+                                        (keyup.esc)="
+                      cancelChanges('chequeComment'); inputBox1.blur()
+                    "
+                                        *ngIf="item.targetType !== 'BANK_TRANS'"
+                                        [(ngModel)]="item.chequeComment"
+                                        [pTooltip]="item.chequeComment"
+                                        tooltipPosition="top"
+                                        type="text"
+                                    />
+                                </div>
+                            </div>
+                        </ng-template>
+
+
+                        <div class="bank-acc-details-column-9">
+                            <div>
+                                <div
+                                        [class.sum-credit]="router.url.includes('in-checks')"
+                                        [class.sum-debit]="router.url.includes('out-checks')"
+                                        [ngClass]="
+                    item.isEditable['total']
+                      ? 'seamless-edit-prepare'
+                      : 'non-editable-but-justified'
+                  "
+                                        class="ltrNum"
+                                >
+                                    <app-sum-view
+                                            [highlight]="queryString"
+                                            [sum]="item.total"
+                                    ></app-sum-view>
+                                </div>
+
+                                <input
+                                    #inputBoxTotal
+                                    (blur)="submitChanges($event, 'total')"
+                                    (change)="item.total = $event.target.value"
+                                    (focus)="startDescriptionEditAt(item, inputBoxTotal)"
+                                    (keyup.enter)="submitChanges($event, 'total')"
+                                    (keyup.esc)="cancelChanges('total'); inputBoxTotal.blur()"
+                                    *ngIf="item.isEditable['total']"
+                                    [ngModel]="item.total | noComma"
+                                    appNumbersOnly
+                                    type="text"
+                                />
+                            </div>
+
+                            <div [id]="'deleteRowHandler' + i">
+                                <img (click)="onRowRestoreClick(item)"
+                                     *ngIf="statusTotals?.nimhak_aliadei_user && item.status === 'NIMHAK_ALIADEI_USER'"
+                                     class="trash"
+                                     src="/assets/images/restore.png"
+                                     style="height: auto; width: 19px; position: relative;vertical-align: middle"
+                                />
+                                <!--<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/clock.png" alt="clock">-->
+                                <img
+                                        (click)="onRowDeleteClick(item)"
+                                        *ngIf="item.isRemovable"
+                                        alt="trash"
+                                        class="trash"
+                                        src="/assets/images/trash.png"
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!--[style]="{'visibility': !userService.appData.userData.accountSelect?.length || loader || !dataTable.length || dataTable.length < 50 ? 'collapse':'visible'}"-->
+            </div>
+            <ng-container *ngIf="!loader && !dataTable?.length">
+                <div class="no-rows-found">
+                    <ng-container
+                            *ngIf="
+              !dataTableAll.length &&
+              !userService.appData.userData.accountSelect?.length
+            "
+                    >
+                        {{ 'expressions.selectAccount' | translate }}
+                    </ng-container>
+                    <ng-container
+                            *ngIf="userService.appData.userData.accountSelect?.length"
+                    >
+                        {{ 'expressions.noChecksFoundForCriteria' | translate }},
+                        {{ 'expressions.changeCriteria' | translate }}
+                    </ng-container>
+                </div>
+            </ng-container>
+        </div>
+        <div #tableFooter class="bank-acc-details-table-header">
+            <div *ngIf="statusTotals?.nimhak_aliadei_user && queryStatus === 'nimhak_aliadei_user'">
+
+            </div>
+            <div class="bank-acc-details-column-1">
+                סה״כ {{ dataTable ? dataTable.length : '' }} שיקים
+            </div>
+            <div class="bank-acc-details-column-2">
+                <div></div>
+            </div>
+            <div
+                    class="bank-acc-details-column-beneficiary"
+                    style="overflow: visible"
+            ></div>
+            <div class="bank-acc-details-column-3">
+                <div></div>
+            </div>
+            <div class="bank-acc-details-column-4"></div>
+            <div class="bank-acc-details-column-5" style="overflow: visible">
+                <div></div>
+            </div>
+            <div class="bank-acc-details-column-6"></div>
+            <div class="bank-acc-details-column-7" style="overflow: visible">
+                <div></div>
+            </div>
+            <div class="bank-acc-details-column-8">
+                <div></div>
+            </div>
+            <div class="bank-acc-details-column-9">
+                <div>
+                    <div
+                            [ngClass]="'non-editable-but-justified'"
+                            class="ltrNum"
+                            style="color: #022258 !important"
+                    >
+                        <app-sum-view [sum]="sumTotalAll"></app-sum-view>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <app-paginator
+            #paginator
+            (onPageChange)="paginate($event)"
+            [alwaysShow]="false"
+            [rowsPerPageOptions]="[20, 50, 100]"
+            [rows]="entryLimit"
+            [totalRecords]="dataTable.length"
+        >
+        </app-paginator>
+    </div>
+
+    <div *ngIf="showBottomBtnRestore"
+         class="showBottomBtnRestore"
+         style="
+    position: absolute;
+    bottom: 130px;
+    left: 50%;
+">
+        <button (click)="onRowRestoreClick()">
+            שחזור צ׳קים
+        </button>
+    </div>
+</div>
+
+<p-dialog (visibleChange)="deleteConfirmationPrompt.visible = false"
+          [contentStyle]="{ overflow: 'visible' }"
+          [modal]="true"
+          [visible]="(deleteConfirmationPrompt.visible)"
+          appendTo="body"
+          styleClass="deleteChequeDialog"
+>
+    <p-header>{{
+        'actions.deleteMovement.titlePtrn'
+            | translate: {itemType: ('paymentTypes.Checks' | translate)}
+        }}
+    </p-header>
+
+    <div class="mat-h2">{{ 'guides.checkNumber.title' | translate }}!</div>
+
+    <div [innerHTML]="deleteConfirmationPrompt?.message" class="mat-h3"></div>
+
+    <p-footer>
+        <div style="width: 100%; display: flex; justify-content: center">
+            <button
+                    (click)="deleteConfirmationPrompt.visible = false"
+                    class="button-white button-link"
+            >
+                {{ 'actions.cancellation' | translate }}
+            </button>
+            <button
+                    (click)="deleteConfirmationPrompt.onApprove()"
+                    [disabled]="deleteConfirmationPrompt?.processing"
+                    class="button-dark"
+            >
+                <i
+                        *ngIf="deleteConfirmationPrompt?.processing"
+                        class="fas fa-fw fa-circle-notch fa-spin"
+                ></i>
+                {{ 'actions.remove' | translate }}
+            </button>
+        </div>
+    </p-footer>
+</p-dialog>
+
+<ng-container *ngIf="restorePrompt.visible">
+    <p-dialog (visibleChange)="restorePrompt.visible = false"
+              [contentStyle]="{ overflow: 'visible' }"
+              [modal]="true"
+              [visible]="(restorePrompt.visible)"
+              appendTo="body"
+              styleClass="deleteChequeDialog"
+    >
+        <p-header
+        >שחזור
+            {{
+            restorePrompt.item.length > 1 ? 'צ׳קים' : 'צ׳ק'
+            }}
+        </p-header>
+
+        <div [innerHTML]="restorePrompt?.message" class="mat-h3" style="
+    padding: 20px 0px 20px 5px;
+"></div>
+
+        <p-footer>
+            <div style="width: 100%; display: flex; justify-content: flex-end">
+                <button
+                        (click)="restorePrompt.visible = false"
+                        class="button-white button-link"
+                >
+                    {{ 'actions.cancellation' | translate }}
+                </button>
+                <button
+                        (click)="restorePrompt.onApprove()"
+                        [disabled]="restorePrompt?.processing"
+                        class="button-dark"
+                >
+                    <i
+                            *ngIf="restorePrompt?.processing"
+                            class="fas fa-fw fa-circle-notch fa-spin"
+                    ></i>
+                    {{ 'actions.approve' | translate }}
+                </button>
+            </div>
+        </p-footer>
+    </p-dialog>
+</ng-container>
+
+<p-dialog (visibleChange)="addChequesDialog.visible = false"
+          [modal]="true"
+          [resizable]="false"
+          [style]="{width: 800 + 'px'}"
+          [visible]="(addChequesDialog.visible)"
+          appendTo="body"
+          styleClass="payment-create"
+>
+    <p-header>{{ addChequesDialog.title }}</p-header>
+
+    <form *ngIf="addChequesDialog.visible" [formGroup]="addChequesDialog.form">
+        <app-checks-addition
+            #checksAddition
+            [accounts]="addChequesDialog.accounts"
+            [allowPaymentTypeChange]="false"
+            [form]="addChequesDialog.form"
+            [typeId]="this.addChequesDialog.receiptTypeId"
+        ></app-checks-addition>
+    </form>
+
+    <p-footer style="justify-content: space-between">
+        <div style="font-weight: 600; line-height: 40px">
+            * צ'ק ללא מספר אסמכתא לא יוצג במסך צ'קים
+        </div>
+        <div>
+            <a
+                    (click)="addChequesDialog.visible = false"
+                    class="button-white button-link"
+                    href="#"
+                    role="button"
+            >
+                {{ 'actions.cancellation' | translate }}
+            </a>
+            <button
+                    (click)="paymentCreateWs(false)"
+                    [disabled]="disabledAfterCreate"
+                    class="button-dark"
+                    type="submit"
+            >
+                {{ 'actions.saveAndAddCheque' | translate }}
+            </button>
+            <button
+                    (click)="paymentCreateWs(true)"
+                    [disabled]="disabledAfterCreate"
+                    class="button-dark"
+                    type="submit"
+            >
+                {{ 'actions.saveAndClose' | translate }}
+            </button>
+        </div>
+    </p-footer>
+</p-dialog>

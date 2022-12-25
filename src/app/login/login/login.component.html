@@ -1,0 +1,335 @@
+<div class="Login container">
+	<div class="Login__card">
+		<div class="Login__card-header">
+			<img   src="/assets/images/logo-big.png" alt="bizibox"/>
+			<h1 class="Login__title">
+				{{
+				(state === loginState.OTP_LOGIN
+								? 'formLogin.oneMoreStep'
+								: 'formLogin.login'
+				) | translate
+				}}
+			</h1>
+		</div>
+		
+		<div class="Login__card-body">
+			<ng-container *ngIf="state === loginState.OTP_LOGIN; else regLogin">
+				<div class="Login__otp">
+					<!--<h1 class="Login__title">{{'formLogin.oneMoreStep' | translate}}</h1>-->
+					<ng-container
+							*ngIf="formLoginOtp.hasError('incorrect'); else otpValidationForm"
+					>
+						<div
+								class="Login__info"
+								style="text-align: center"
+								[innerHTML]="
+                'validation.unableToContinueIdentificationProcess' | translate
+              "
+						></div>
+						<div class="Login__submit" style="text-align: center">
+							<a
+									mat-raised-button
+									color="primary"
+									type="button"
+									(click)="reloadSelf()"
+							>
+								{{ 'formLogin.backToLoginPage' | translate }}
+							</a>
+						</div>
+					</ng-container>
+					<ng-template #otpValidationForm>
+						<div class="Login__info">
+							<p>{{ 'formLogin.otpInfoText1' | translate }}</p>
+							<p>{{ 'formLogin.otpInfoText2' | translate: translateParams }}</p>
+							<p>{{ 'formLogin.otpInfoText3' | translate }}</p>
+						</div>
+						
+						<form
+								[formGroup]="formLoginOtp"
+								(ngSubmit)="loginOtp(formLoginOtp.value, formLoginOtp.valid)"
+								class="Form"
+								novalidate
+								autocomplete="off"
+						>
+							<div class="Login__control">
+								<!--<label>{{'formLogin.typeTheCode' | translate}}</label>-->
+								<!--<div [ngClass]="{'Form__group': true, 'Form__group&#45;&#45;err': (!formLoginOtp.get('code')?.valid && !formLoginOtp.get('code')?.pristine || formLoginOtp.errors?.incorrect)}">-->
+								<!--<input type="text" id="code" class="forceLTR" formControlName="code">-->
+								
+								<!--<div class="Form__feedback Form__feedback&#45;&#45;warning" *ngIf="!formLoginOtp.errors?.incorrect">-->
+								<!--<i class='fa fa-exclamation-triangle'></i> {{'formLogin.codeContainsNumbersOnly' | translate}}-->
+								<!--</div>-->
+								
+								<!--              <div class="Form__feedback" *ngIf="formLoginOtp.errors?.incorrect">-->
+								<!--              {{'validation.codeNotValid' | translate}}-->
+								<!--              </div>-->
+								<!--</div>-->
+								<mat-form-field hideRequiredMarker="true">
+									<mat-label>{{
+										'formLogin.typeTheCode' | translate
+										}}</mat-label>
+									<input
+											matInput
+											autocomplete="off"
+											type="text"
+											id="code"
+											class="forceLTR"
+											formControlName="code"
+											[errorStateMatcher]="matcher"
+									/>
+									
+									<mat-hint
+											*ngIf="
+                      (!formLoginOtp.hasError('wrongCode') &&
+                        !formLoginOtp.hasError('incorrect')) ||
+                      formLoginOtp.pristine
+                    "
+									>
+										<i class="fa fa-exclamation-triangle"></i>
+										{{ 'formLogin.codeContainsNumbersOnly' | translate }}
+									</mat-hint>
+									<mat-error
+											*ngIf="
+                      !formLoginOtp.hasError('wrongCode') &&
+                      !formLoginOtp.hasError('incorrect') &&
+                      formLoginOtp.touched &&
+                      formLoginOtp.invalid
+                    "
+									>
+										<i class="fa fa-exclamation-triangle"></i>
+										{{ 'formLogin.codeContainsNumbersOnly' | translate }}
+									</mat-error>
+									<mat-error
+											*ngIf="
+                      formLoginOtp.hasError('wrongCode') &&
+                      !formLoginOtp.hasError('incorrect') &&
+                      formLoginOtp.touched &&
+                      formLoginOtp.invalid
+                    "
+									>
+										{{ 'validation.codeNotValid' | translate }}
+									</mat-error>
+								</mat-form-field>
+							</div>
+							
+							<div class="Login__submit">
+								<button
+										mat-raised-button
+										color="primary"
+										type="submit"
+										id="loginOtpSubmit"
+										[disabled]="!formLoginOtp.valid || formInProgress"
+								>
+									<mat-spinner
+											diameter="20"
+											color="accent"
+											*ngIf="formInProgress"
+									></mat-spinner>
+									<span *ngIf="!formInProgress">{{
+										'formLogin.submit' | translate
+										}}</span>
+								</button>
+							</div>
+							
+							<div class="Login__options" *ngIf="tokenInfo.smsRemained">
+								<p>
+									{{ 'formLogin.didNotReceiveTheCode' | translate }}
+									<a id="resendSms" [routerLink]="" (click)="resendSms()">{{
+										'formLogin.tryAgain' | translate
+										}}</a>
+								</p>
+							</div>
+						</form>
+					</ng-template>
+				</div>
+			</ng-container>
+			<ng-template #regLogin>
+				<div>
+					<form
+							[formGroup]="formLogin"
+							(ngSubmit)="login(formLogin.value, formLogin.valid)"
+							class="Form"
+							novalidate
+							autocomplete="off"
+					>
+						<div class="Login__control" formGroupName="formUser">
+							<mat-form-field hideRequiredMarker="true">
+								<mat-label>{{ 'formLogin.username' | translate }}</mat-label>
+								<input
+										matInput
+										autocomplete="off"
+										id="username"
+										class="forceLTR"
+										formControlName="username"
+										(focus)="handleFocusUsername()"
+										(keypress)="handleKeyPress($event)"
+										(keydown)="handleKeyDown($event)"
+										tabindex="1"
+								/>
+								<mat-error *ngIf="formLogin.get('formUser.username').invalid">
+									{{
+									(formLogin.get('formUser.username').value
+													? 'validation.emailError'
+													: 'formLogin.enterYouEmail'
+									) | translate
+									}}
+								</mat-error>
+								<!--<mat-hint *ngIf="isCapsLock || isHebrew">-->
+								<!--<i class="fa fa-exclamation-triangle"></i> {{('validation.' + (isHebrew ? 'isHebrew' : 'capsLockIsOn'))| translate}}-->
+								<!--</mat-hint>-->
+							</mat-form-field>
+							<!--<label>{{'formLogin.username' | translate}}</label>-->
+							<!--<div-->
+							<!--[ngClass]="{'Form__group': true, 'Form__group&#45;&#45;err': formLogin.get('formUser')['controls'].username?.invalid && formLogin.get('formUser')['controls'].username.touched}">-->
+							<!--<input type="text" id="username" class="forceLTR" formControlName="username"-->
+							<!--(focus)="handleFocusUsername()" tabindex="1"-->
+							<!--[ngStyle]="{'border-color': containsFailedAttemptCredentials ? '#bd2c22' : null}">-->
+							
+							<!--<div class="Form__feedback" *ngIf="!formLogin.get('formUser.username').value">{{'formLogin.enterYouEmail' | translate}}</div>-->
+							<!--<div class="Form__feedback" *ngIf="formLogin.get('formUser.username').value">{{'validation.emailError' | translate}}</div>-->
+							<!--</div>-->
+						</div>
+						
+						<div class="Login__control" formGroupName="formUser">
+							<mat-form-field hideRequiredMarker="true">
+								<mat-label>{{ 'formLogin.password' | translate }}</mat-label>
+								<input
+										matInput
+										autocomplete="off"
+										[type]="hide ? 'password' : 'text'"
+										class="forceLTR"
+										id="password"
+										formControlName="password"
+										(keypress)="handleKeyPress($event)"
+										(keydown)="handleKeyDown($event)"
+										tabindex="2"
+								/>
+								<mat-icon
+										matSuffix
+										(click)="hide = !hide"
+										[svgIcon]="
+                    'bizibox_' + (hide ? 'visibility_off' : 'visibility')
+                  "
+								></mat-icon>
+							</mat-form-field>
+							<!--<label>{{'formLogin.password' | translate}}</label>-->
+							<!--<div-->
+							<!--[ngClass]="{'Form__group Form__group&#45;&#45;icon Form__group&#45;&#45;password': true, 'Form__group&#45;&#45;err': !formLogin.get('formUser.password').valid && !formLogin.get('formUser.password').pristine}">-->
+							<!--<i (click)="hide = !hide" [ngClass]="{'fa': true, 'fa-eye': hide, 'fa-eye-slash': !hide}"></i>-->
+							<!--<input [type]="hide ? 'password' : 'text'" class="forceLTR" id="password" formControlName="password" tabindex="2"-->
+							<!--[ngStyle]="{'border-color': containsFailedAttemptCredentials ? '#bd2c22' : null}">-->
+							
+							<div class="Form__feedback">
+								{{ 'validation.enterYouPassword' | translate }}
+							</div>
+							
+							<div class="Login__options">
+								<mat-checkbox formControlName="rememberMe" color="primary">{{
+									'formLogin.rememberMe' | translate
+									}}</mat-checkbox>
+								<!--<p-checkbox checkboxIcon="fa fa-check" formControlName="rememberMe"-->
+								<!--label="{{'formLogin.rememberMe' | translate}}"-->
+								<!--[binary]="true"-->
+								<!--id="rememberMe"></p-checkbox>-->
+								<a [routerLink]="['/reset-password']" id="resetPasswordLink">{{
+									'formLogin.forgotPassword' | translate
+									}}</a>
+							</div>
+							<span
+									class="Login__remember-info-text"
+									[style.visibility]="
+                  formLogin.get('formUser.rememberMe').value === true
+                    ? 'visible'
+                    : 'collapse'
+                "
+							>
+                {{ 'formLogin.rememberMeInfo' | translate }}
+              </span>
+							<!--</div>-->
+						</div>
+						
+						<div class="Login__control" *ngIf="isCapsLock || isHebrew">
+							<div
+									class="Form__feedback Form__feedback--warning Form__feedback--warning--block"
+							>
+								<i class="fa fa-exclamation-triangle"></i>
+								{{
+								'validation.' + (isHebrew ? 'isHebrew' : 'capsLockIsOn')
+										| translate
+								}}
+							</div>
+						</div>
+						
+						<div class="Login__submit">
+							<div
+									class="Form__feedback Form__feedback--err"
+									style="overflow: visible; white-space: nowrap"
+							>
+                <span *ngIf="formLogin.get('formUser').errors?.incorrect">{{
+	                'validation.errorFromServer' | translate
+	                }}</span>
+								<span *ngIf="loginIsBlocked">{{
+									'validation.loginBlocked' | translate: translateParams
+									}}</span>
+							</div>
+							
+							<button
+									mat-raised-button
+									color="primary"
+									type="submit"
+									id="loginSubmit"
+									tabindex="3"
+									[disabled]="formInProgress || containsFailedAttemptCredentials"
+							>
+								<mat-spinner
+										diameter="20"
+										color="accent"
+										*ngIf="formInProgress"
+								></mat-spinner>
+								<span *ngIf="!formInProgress">{{
+									'formLogin.login' | translate
+									}}</span>
+							</button>
+						</div>
+					</form>
+				</div>
+			</ng-template>
+			
+			<div class="Login__footer">
+				<img
+						src="/assets/images/128BIT-gray.png"
+						alt="128bit"
+						style="-webkit-filter: grayscale(1); filter: grayscale(1)"
+				/>
+				<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/ASTARO-gray.png" alt="Fortinet"/>
+				<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/VERISIGN-gray.png" alt="Verisign"/>
+			</div>
+			
+			<div class="Login__links">
+				<p *ngIf="state !== loginState.OTP_LOGIN">
+					{{ 'formLogin.notYetRegistered' | translate }}
+					<a [routerLink]="['/signup']">{{
+						'formLogin.signUpNow' | translate
+						}}</a>
+				</p>
+				<p *ngIf="state === loginState.OTP_LOGIN">
+					<a [routerLink]="" (click)="setScreenState(loginState.LOGIN)">{{
+						'formLogin.backToLoginPage' | translate
+						}}</a>
+				</p>
+				<p>
+					{{ 'formLogin.needHelp' | translate }}
+					<a href="https://bizibox.biz/contact-us/" target="_blank">{{
+						'formLogin.talkToUs' | translate
+						}}</a>
+				</p>
+				<p>
+					{{ 'formLogin.download' | translate }}
+					<a href="http://898.tv/bizibox" target="_blank">{{
+						'formLogin.teamViewer' | translate
+						}}</a>
+				</p>
+			</div>
+		</div>
+	</div>
+</div>

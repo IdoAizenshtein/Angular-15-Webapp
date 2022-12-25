@@ -1,0 +1,960 @@
+{
+  "toolbar": {
+    "textRoh": "Accountants",
+    "textCus": "Business"
+  },
+  "lang": {
+    "ENG": "ENG",
+    "HEB": "HEB"
+  },
+  "primeng": {
+    "startsWith": "Starts with",
+    "contains": "Contains",
+    "notContains": "Not contains",
+    "endsWith": "Ends with",
+    "equals": "Equals",
+    "notEquals": "Not equals",
+    "noFilter": "No Filter",
+    "lt": "Less than",
+    "lte": "Less than or equal to",
+    "gt": "Greater than",
+    "gte": "Greater than or equal to",
+    "is": "Is",
+    "isNot": "Is not",
+    "before": "Before",
+    "after": "After",
+    "dateIs": "Date is",
+    "dateIsNot": "Date is not",
+    "dateBefore": "Date is before",
+    "dateAfter": "Date is after",
+    "clear": "Clear",
+    "apply": "Apply",
+    "matchAll": "Match All",
+    "matchAny": "Match Any",
+    "addRule": "Add Rule",
+    "removeRule": "Remove Rule",
+    "accept": "Yes",
+    "reject": "No",
+    "choose": "Choose",
+    "upload": "Upload",
+    "cancel": "Cancel",
+    "dayNames": ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+    "dayNamesShort": ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+    "dayNamesMin": ["Su","Mo","Tu","We","Th","Fr","Sa"],
+    "monthNames": ["January","February","March","April","May","June","July","August","September","October","November","December"],
+    "monthNamesShort": ["Jan", "Feb", "Mar", "Apr", "May", "Jun","Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+    "dateFormat": "mm/dd/yy",
+    "firstDayOfWeek": 0,
+    "today": "Today",
+    "weekHeader": "Wk",
+    "weak": "Weak",
+    "medium": "Medium",
+    "strong": "Strong",
+    "passwordPrompt": "Enter a password",
+    "emptyMessage": "No results found",
+    "emptyFilterMessage": "No results found"
+  },
+  "menu": {
+    "new": "New",
+    "customers": {
+      "general": "Overview",
+      "financialManagement": {
+        "parent": "Financial Management",
+        "bankAccount": {
+          "main": "Bank Accounts",
+          "charts": {
+            "balance": "Balance chart",
+            "expenses": "Expenses and revenues chart",
+            "revenuesName": "Revenues",
+            "expensesName": "Expenses",
+            "difference": "Difference"
+          }
+        },
+        "creditsCard": {
+          "main": "Credits Card"
+        },
+        "checks": {
+          "main": "Checks"
+        },
+        "slika": {
+          "main": "Defrayment"
+        }
+      },
+      "tazrim": {
+        "parent": "Cash Flow",
+        "daily": "Daily flow",
+        "file": "Flow from a file",
+        "bankmatch": "Bank Adjustments",
+        "fixedMovements": "Fixed Movements"
+      },
+      "accountancy": {
+        "parent": "Accountancy",
+        "trialBalance": "Trial balance",
+        "bookKeepingAnalyze": "Book-keeping analyze",
+        "profitAndLoss": "Profit and loss"
+      },
+      "settings": {
+        "parent": "Settings",
+        "myaccount": "My account",
+        "businessDetails": "Business details"
+      },
+      "budget": "Budget"
+    },
+    "accountants": {
+      "main": {
+        "parent": "Main",
+        "daily": "Daily flow",
+        "file": "Flow from a file",
+        "bankmatch": "Bank Adjustments",
+        "fixedMovements": "Fixed Movements"
+      },
+      "companies": {
+        "parent": "Companies",
+        "daily": "Daily flow",
+        "file": "Flow from a file",
+        "bankmatch": "Bank Adjustments",
+        "fixedMovements": "Fixed Movements"
+      },
+      "reports": {
+        "parent": "Reports",
+        "daily": "Daily flow",
+        "file": "Flow from a file",
+        "bankmatch": "Bank Adjustments",
+        "fixedMovements": "Fixed Movements"
+      }
+    }
+  },
+  "formLogin": {
+    "login": "Login",
+    "username": "Username",
+    "password": "Password",
+    "submit": "Submit",
+    "reset": "Reset",
+    "rememberMe": "Remember me",
+    "forgotPassword": "Forgot password",
+    "notYetRegistered": "Not yet registered?",
+    "signUpNow": "Sign up now",
+    "needHelp": "Need help?",
+    "talkToUs": "Talk to us",
+    "teamViewer": "TeamViewer",
+    "download": "Download",
+    "oneMoreStep": "Another little step...",
+    "otpInfoText1": "One-time sign-in verification code sent to",
+    "otpInfoText2": "Phone {{phone}}",
+    "otpInfoText3": "Please note that the code is only valid for 10 minutes",
+    "typeTheCode": "Type the code",
+    "didNotReceiveTheCode": "Did not you get the code?",
+    "tryAgain": "Try again",
+    "codeContainsNumbersOnly": "Please note that the code contains numbers only",
+    "backToLoginPage": "Back to login page",
+    "rememberMeInfo": "Logout will disable the automatic logon"
+  },
+  "validation": {
+    "required": "Required",
+    "errorFromServer": "The password entered is incorrect. Please try again.",
+    "action": "Close",
+    "categoryExists": "Category already exists",
+    "dateRangeInvalid": "Invalid dates range. Please, select date from earlier or equals to date till",
+    "dateRangeInFuture": "Invalid date. Please, select date earlier or equals to today",
+    "codeNotValid": "Code does not match sent code, please check it and try again",
+    "loginBlocked": "",
+    "isHebrew": "",
+    "capsLockIsOn": "",
+    "unableToContinueIdentificationProcess": "3 incorrect entry attempts were made. Unable to continue identification process",
+    "dateRangeInFutureCards": "Please select up to one month from the current date, please change the selection"
+  },
+  "alertErrorUploadExcel": {
+    "sum": "Amount field can not be empty",
+    "payment": "Payment field can not be empty",
+    "paymentFormat": "Payment field does not match the required format",
+    "typePay": "Missing detail of Expenditure/income",
+    "desc": "Field Description can not be empty",
+    "dateFormat": "Date format malfunction should be registered with marks - Or . Or / between year / month / day",
+    "date": "Date field can not be empty",
+    "row": "Line #"
+  },
+  "actions": {
+    "settings": "Settings",
+    "logOut": "LogOut",
+    "logIn": "LogIn",
+    "lang": "Language",
+    "select": "Select",
+    "company": "Select a company",
+    "account": "Select a account",
+    "creditCard": "Select a credit card",
+    "clearingAgency": "Select a clearing agency",
+    "search": "Search in company data",
+    "searchNotActive": "Select a company to search data",
+    "counterLoads": {
+      "def": "Valid export accounts",
+      "load": "Updating additional data"
+    },
+    "updateData": "Update",
+    "add": "Add",
+    "update": "Update",
+    "cancel": "Cancel",
+    "more": "More...",
+    "displayValues": "Display values",
+    "expandAll": "Expand all",
+    "collapseAll": "Collapse all",
+    "addPayments": "Add payments",
+    "saveAndAddExpense": "Save and Add Expense",
+    "saveAndInsertRevenue": "Save and Insert Revenue",
+    "saveAndClose": "Save and Close",
+    "edit": "Edit",
+    "remove": "Remove",
+    "selectFile": "Select file...",
+    "import": "Import",
+    "use": "Use",
+    "inFileFormat": "In the file format of",
+    "runOlderData": "Run older data from previous import",
+    "found": "Found",
+    "dataRows": "Data rows"
+  },
+  "filters": {
+    "search": "Search",
+    "credit": "Credit",
+    "debit": "Debit",
+    "all": "All",
+    "consolidated": "Consolidated",
+    "detailed": "Detailed",
+    "checksPayable": "Checks payable",
+    "allAccounts": "All accounts",
+    "allSelectedAccounts": "All selected accounts",
+    "accounts": "Accounts",
+    "lastMonth": "Last Month",
+    "lastMonths": "Last few months",
+    "lastDay": "Last Day",
+    "lastDays": "Last few days",
+    "nextDay": "Next Day",
+    "nextDays": "Next few days",
+    "until": {
+      "until": "Until",
+      "today": "Up to day",
+      "month": "Up to month"
+    },
+    "from": {
+      "from": "From",
+      "until": "Until",
+      "today": "From day",
+      "month": "From month"
+    },
+    "day": "Day",
+    "month": "Month",
+    "year": "Year",
+    "fromUntilDate": {
+      "from": "From date",
+      "until": "Up to date"
+    },
+    "filter": "Filter",
+    "outdated": "outdated",
+    "multiSelection": "multi-selection",
+    "allCreditCards": "All cards",
+    "allClearingAgencies": "All clearing agencies",
+    "inChecks": "Income checks",
+    "outChecks": "Expense Checks",
+    "inCheck": "Income check",
+    "outCheck": "Expense Check"
+  },
+  "months": [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December"
+  ],
+  "paymentTypes": {
+    "DirectDebit": "Direct debit",
+    "Checks": "Checks",
+    "Bankfees": "Bank fees",
+    "credit": "Credit",
+    "Loans": "Loans",
+    "Deposits": "Deposits",
+    "cash": "Cash",
+    "Expected": "Expected",
+    "Nocategory": "No category",
+    "Institutes": "Institutes",
+    "BankTransfer": "Bank Transfer",
+    "Bouncedcheck": "Bounced check"
+  },
+  "banks": {
+    "4": "Yahav",
+    "9": "Postal Bank",
+    "10": "Leumi Le-Israel",
+    "11": "Discount Bank",
+    "12": "Hapoalim",
+    "13": "Union Bank",
+    "14": "Otsar Ha-hayal",
+    "17": "Mercantile Discount Bank",
+    "20": "Mizrahi Tefahot",
+    "26": "UBank",
+    "31": "The First International",
+    "46": "Massad",
+    "52": "Poaley Agudat Israel",
+    "54": "Bank of Jerusalem",
+    "68": "Dexia"
+  },
+  "creditCards": {
+    "21": "Visa C.C.I",
+    "22": "Isracard",
+    "23": "Master Card",
+    "24": "Leumi Card",
+    "25": "American Express",
+    "26": "Diners"
+  },
+  "clearingAgencies": {
+    "80": "Leumi Card",
+    "81": "Visa C.C.I",
+    "82": "Isracard",
+    "83": "Diners",
+    "88": "MasterCard",
+    "89": "Tzameret Mimunim",
+    "90": "Gama",
+    "91": "Yatzil Finance"
+  },
+  "sumsTitles": {
+    "total": "Total",
+    "accountBalanceOne": "Balance for the morning",
+    "balanceInclude": "Balance (including trailers)",
+    "creditLimitOne": "Line of credit",
+    "accountBalance": "Total balances for the morning",
+    "creditLimit": "Total credit facilities",
+    "balanceUse": "Total balance available",
+    "accountExceeded": "Account exceeded",
+    "account": "Account",
+    "forAccount": "For account",
+    "accounts": "Accounts",
+    "exceeding": "Exceeding",
+    "forDetails": "For details",
+    "accountsExceeded": "Accounts Exceeded",
+    "forex": "Forex",
+    "notUpdates": "Data is out of date",
+    "lastUpdate": "Last update",
+    "yesterday": "Yesterday",
+    "before": "before",
+    "days": "days",
+    "dragged": "dragged",
+    "updateData": "Update data",
+    "lastUpdated": "last updated at",
+    "today": "Today",
+    "creditLine": "Total credit line",
+    "availableFrame": "Available frame",
+    "billingDate": "Billing date",
+    "notReached": "Not reached",
+    "ofTheMonth": "Of the month",
+    "nonBank": "Non-bank",
+    "overallForPeriod": "",
+    "notRepaid": "Not yet repaid",
+    "notDeposited": "Have not yet been deposited",
+    "depositedSafekeeping": "Deposited for safekeeping",
+    "repaid": "Repaid",
+    "discount": "Discount",
+    "manuallyDeleted": "Manually deleted",
+    "comeBack": "Come back",
+    "futureMaturityDate": "Future Maturity Date",
+    "repaymentPassed": "The repayment date has passed",
+    "notHonored": "Were not honored",
+    "none": "None",
+    "notYetRepaid": "Not yet repaid / not adjusted",
+    "care": "Take care",
+    "cashFlowStatus": "Cash flow status for the coming month",
+    "unexpectedDeviation": "Unexpected deviation",
+    "expectedDateExceeded": "Expected date exceeded",
+    "expectedExceeded": "Expected exceeded for-",
+    "match": "Match"
+  },
+  "titles": {
+    "notFinal": "Not final",
+    "date": "Date",
+    "expectedToDate": "Expected to date",
+    "account": "Account",
+    "transactionDate": "Transaction date",
+    "card": "Card",
+    "transactionSum": "Transaction sum",
+    "billingAmount": "Billing amount",
+    "comments": "Comments",
+    "description": "Description",
+    "sourceCheck": "Source of the check",
+    "methodsOfPayment": "Methods of Payment",
+    "category": "Category",
+    "reference": "Reference",
+    "income": "Income",
+    "expense": "Expense",
+    "expectedBalance": "Expected balance",
+    "expectedBalanceForTomorrow": "Expected balance for tomorrow",
+    "balance": "Balance",
+    "categories": "Categories",
+    "bank": "Bank",
+    "branch": "Branch",
+    "accountFull": "Account",
+    "accountNumber": "Account no.",
+    "checkNumber": "Check no.",
+    "dueDate": "Due date",
+    "depositDate": "Deposit date",
+    "sum": "Sum",
+    "sumILS": "Sum at ILS",
+    "note": "Note",
+    "beneficiaryName": "Beneficiary name",
+    "transferExecutor": "Transfer executor",
+    "transferEssence": "Transfer essence",
+    "transferDetails": "Transfer details",
+    "repaymentDate": "Repayment date",
+    "status": "Status",
+    "expectedIncome": "Expected income",
+    "expectedExpense": "Expected expense",
+    "balanceForUse": "Balance for use"
+  },
+  "expressions": {
+    "questionable": "not final",
+    "todayQuestionable": "today (not final)",
+    "todayNigrarot": "(nigrarot)",
+    "nigrarot": "nigrarot",
+    "questionableTransactions": "Non-final transactions",
+    "pastMovements": "Past movements",
+    "movementsOutstandingNotAdjusted": "Movements outstanding / not adjusted (dragged)",
+    "futureMovements": "Future movements (expected)",
+    "appearsInBankAs": "appears in bank as ",
+    "transactionDescription": "transaction description",
+    "noDataFound": "No data found",
+    "noDataFoundForCriteria": "No data found for this criteria",
+    "noChecksFoundForCriteria": "No checks found for this criteria",
+    "changeCriteria": "Try another criteria",
+    "selectAccount": "Select account to get data",
+    "checks": "cheques",
+    "transfers": "transfers",
+    "traverseChecksMessage0": "Select row to view check image. Use arrow keys",
+    "traverseChecksMessageKeysConcat": " and ",
+    "traverseChecksMessage1": "to traverse rows.",
+    "noImageExistsForCheck": "No scan available for cheque",
+    "noDetailsForTransfer": "No details found for transfer",
+    "noDetailsForCheque": "No details available for cheque",
+    "excludingForexAndOutdatedAccounts": "Excluding foreign currency/outdated accounts",
+    "enterCategoryName": "Enter category name...",
+    "toFullInfo": "Full information",
+    "toAllTransactions": "To all transactions",
+    "selectCreditCard": "Select credit card to get data",
+    "selectSolek": "Select solek",
+    "forexTransaction": "Foreign currency transaction",
+    "select": "Select",
+    "backToMainPage": "Back to main page",
+    "goBack": "Back",
+    "optionalField": "Not required",
+    "or": "or",
+    "bankName": "Bank name",
+    "ifExists": "if exists"
+  },
+  "ddPays": {
+    "check": "Check",
+    "transfer": "Transfer",
+    "other": "Other"
+  },
+  "signup": {
+    "mainTitle": "Register to bizibox business",
+    "whatWeDo": [
+      "All financial information in one place, all bank accounts and all credit cards",
+      "Manage cash flow that allows you to anticipate expected balances and plan ahead",
+      "New and convenient interface"
+    ],
+    "disclaimerRegistrationCancel": "Registration is free and can be canceled at any time",
+    "disclaimerSecure": "The system is secured by banking standards",
+    "disclaimerHelp": "Have you encountered a problem?",
+    "disclaimerSupport": "Call 03-5610382 and we'll be happy to help",
+    "referents": [
+      {
+        "name": "Tomer Perry",
+        "occupation": "Accounts Manager",
+        "picture": "Tomer.png",
+        "quote": "את כל הפגישות שלי מול הלקוחות אני מקיים רק עם bizibox, אני מציג להם בצורה מאד פשוטה וחוויתית את תמונת מצב העסק שלהם. התוכנה הפכה אותי למקצועי יותר וחוסכת לי המון זמן."
+      },
+      {
+        "name": "Yael Tzach",
+        "occupation": "Franchise Shop Mania",
+        "picture": "yael.png",
+        "quote": "bizibox brought about many changes in my business, from the state of handling notes and papers, we managed to organize and create order that brought us to significant economic efficiency"
+      },
+      {
+        "name": "Doron Paz",
+        "occupation": "D.P net",
+        "picture": "doron.png",
+        "quote": "bizibox is the only business management software that meets all my requirements. One place where I see all my financial data anytime and anywhere! Even from the smartphone - as far as I am concerned, the availability of immediate data is the most important thing"
+      },
+      {
+        "name": "Ofer Sussman",
+        "occupation": "\"In Hebrew\" SEO",
+        "picture": "ofer.png",
+        "quote": "Since Bizibox has entered our lives, something amazing happened in the business - everything is controlled and without surprises, and the software is friendly and easy to operate. warmly recommended"
+      },
+      {
+        "name": "Avi Shmuel",
+        "occupation": "The hairdresser",
+        "picture": "avi.png",
+        "quote": "Not only does bizibox save me precious time every day, it also gives me a future picture of my cash flow situation and allows me to deal with the suppliers more correctly. No doubt a makeover!"
+      }
+    ],
+    "startFreeTrial": "Start a free trial",
+    "personalInfoStep": {
+      "title": "Personal Information",
+      "subtitle": "You can add more users below",
+      "firstName": "First name",
+      "lastName": "Last name",
+      "email": "E-mail",
+      "cell": "Cellphone",
+      "cell-placeholder": "For password recovery only"
+    },
+    "businessInfoStep": {
+      "title": "Business Details",
+      "subtitle": "You can add additional branches or businesses later",
+      "name": "Business name",
+      "id": "Number of h.p. Or an identity card",
+      "idAlreadyRegistered": "This number exists in the system. Call 03-5610382 and we'll be happy to help",
+      "profile": "Profile of business"
+    },
+    "accountLinkStep": {
+      "title": "Link to a bank account",
+      "subtitle": "Linking to your bank account will allow you to get a real snapshot of your business. You can add additional accounts below.",
+      "skipToDemoBusiness": "Skip to the company for example"
+    },
+    "tokenTrackStep": {
+      "waitingMessage": "Verifying details, please wait ...",
+      "tokenSuccess": {
+        "title": "Excellent!",
+        "subtitle": "We've been able to connect and the system is attracting data,<br>It usually takes 5-10 minutes. <br> <br> We will update the alarm bell when we finish the system data."
+      },
+      "tokenUpdateAndRetry": {
+        "title": "Failed to connect to bank",
+        "subtitle": "Since the entered details do not match the bank's login details.<br> Please make sure that your password is current and that there are no typographical errors."
+      },
+      "tokenFailed": {
+        "title": "Failed to connect to bank",
+        "subtitle": "At the moment, there is a technical problem. We will continue to try and update you as soon as possible"
+      },
+      "tokenTimedOut": {
+        "title": "Oops...",
+        "subtitle": "Something unplanned happens to us ...",
+        "keepWaiting": "Take the time, I have no problem waiting ...",
+        "stopWaiting": "Keep trying, I'm going to continue with an example company"
+      }
+    }
+  },
+  "foreignCredentials": {
+    "banks": {
+      "4": [
+        {
+          "key": "username",
+          "label": "Username",
+          "controlType": "text",
+          "minLength": 4,
+          "maxLength": 16,
+          "pattern": "alphanumeric",
+          "rules": [
+            "Latin letters and numbers only"
+          ]
+        },
+        {
+          "key": "userId",
+          "label": "ID",
+          "controlType": "text",
+          "minLength": 9,
+          "maxLength": 9,
+          "pattern": "numeric",
+          "rules": [
+            "9 digits"
+          ]
+        },
+        {
+          "key": "userPassword",
+          "label": "Password",
+          "controlType": "password",
+          "minLength": 6,
+          "maxLength": 16,
+          "pattern": "alphanumeric",
+          "rules": [
+            "Latin letters and numbers only"
+          ]
+        }
+      ],
+      "9": [
+        {
+          "key": "username",
+          "label": "שם משתמש",
+          "controlType": "text",
+          "minLength": 5,
+          "maxLength": 10,
+          "pattern": "alphanumeric",
+          "rules": [
+            "(Small) latin letters and numbers, and is 5 to 10 characters long"
+          ]
+        },
+        {
+          "key": "userId",
+          "label": "ID",
+          "controlType": "text",
+          "minLength": 9,
+          "maxLength": 9,
+          "pattern": "numeric",
+          "rules": [
+            "9 digits"
+          ]
+        },
+        {
+          "key": "userPassword",
+          "label": "Password",
+          "controlType": "password",
+          "minLength": 8,
+          "maxLength": 15,
+          "pattern": "alphanumeric",
+          "rules": [
+            "15-8 characters including letters and numbers"
+          ]
+        }
+      ],
+      "10": [
+        {
+          "key": "username",
+          "label": "User ID",
+          "controlType": "text",
+          "minLength": 5,
+          "maxLength": 10,
+          "pattern": "alphanumeric",
+          "rules": [
+            "Latin letters and numbers"
+          ]
+        },
+        {
+          "key": "userPassword",
+          "label": "Password",
+          "controlType": "password",
+          "minLength": 6,
+          "maxLength": 12,
+          "pattern": "alphanumeric",
+          "rules": [
+            "15-8 characters including letters and numbers"
+          ]
+        }
+      ],
+      "11": [
+        {
+          "key": "userId",
+          "label": "ID",
+          "controlType": "text",
+          "minLength": 9,
+          "maxLength": 10,
+          "pattern": "numeric",
+          "rules": [
+            "10-digit ID number"
+          ]
+        },
+        {
+          "key": "userPassword",
+          "label": "Password",
+          "controlType": "password",
+          "minLength": 8,
+          "maxLength": 14,
+          "pattern": "alphanumeric",
+          "rules": [
+            "8-14 characters from numbers and / or letters in English"
+          ]
+        },
+        {
+          "key": "userCode",
+          "label": "ID code",
+          "controlType": "text",
+          "minLength": 8,
+          "maxLength": 14,
+          "pattern": "alphanumeric",
+          "rules": [
+            "8-14 numbers and / or letters in English"
+          ]
+        }
+      ],
+      "12": [
+        {
+          "key": "username",
+          "label": "User code",
+          "controlType": "text",
+          "minLength": 6,
+          "maxLength": 14,
+          "pattern": "alphanumeric",
+          "rules": [
+            "6-14 numbers and / or letters in English"
+          ]
+        },
+        {
+          "key": "userPassword",
+          "label": "Password",
+          "controlType": "password",
+          "minLength": 6,
+          "maxLength": 16,
+          "pattern": "alphanumeric",
+          "rules": [
+            "numbers and / or letters in English"
+          ]
+        }
+      ],
+      "13": [
+        {
+          "key": "username",
+          "label": "User ID",
+          "controlType": "text",
+          "minLength": 6,
+          "maxLength": 14,
+          "pattern": "alphanumeric",
+          "rules": [
+            "Latin letters and numbers"
+          ]
+        },
+        {
+          "key": "userPassword",
+          "label": "Password",
+          "controlType": "password",
+          "minLength": 6,
+          "maxLength": 12,
+          "pattern": "alphanumeric",
+          "rules": [
+            "Latin letters and numbers only ללא רווחים"
+          ]
+        }
+      ],
+      "14": [
+        {
+          "key": "username",
+          "label": "User code",
+          "controlType": "text",
+          "minLength": 6,
+          "maxLength": 14,
+          "pattern": "alphanumeric",
+          "rules": [
+            "Latin letters and numbers"
+          ]
+        },
+        {
+          "key": "userPassword",
+          "label": "Password",
+          "controlType": "password",
+          "minLength": 6,
+          "maxLength": 8,
+          "pattern": "alphanumeric",
+          "rules": [
+            "Latin letters and numbers only, no spaces"
+          ]
+        }
+      ],
+      "17": [
+        {
+          "key": "userId",
+          "label": "ID",
+          "controlType": "text",
+          "minLength": 9,
+          "maxLength": 10,
+          "pattern": "numeric",
+          "rules": [
+            "10-digit ID number"
+          ]
+        },
+        {
+          "key": "userPassword",
+          "label": "Password",
+          "controlType": "password",
+          "minLength": 8,
+          "maxLength": 14,
+          "pattern": "alphanumeric",
+          "rules": [
+            "8-14 numbers and / or letters in English"
+          ]
+        },
+        {
+          "key": "userCode",
+          "label": "ID code",
+          "controlType": "text",
+          "minLength": 8,
+          "maxLength": 14,
+          "pattern": "alphanumeric",
+          "rules": [
+            "8-14 numbers and / or letters in English"
+          ]
+        }
+      ],
+      "20": [
+        {
+          "key": "username",
+          "label": "User number",
+          "controlType": "text",
+          "minLength": 9,
+          "maxLength": 10,
+          "pattern": "numeric",
+          "rules": [
+            "Up to 10 digits including a control digit"
+          ]
+        },
+        {
+          "key": "userPassword",
+          "label": "Password",
+          "controlType": "password",
+          "minLength": 6,
+          "maxLength": 15,
+          "pattern": "alphanumeric",
+          "rules": [
+            "English letters and / or numbers only up to 15 characters"
+          ]
+        }
+      ],
+      "31": [
+        {
+          "key": "username",
+          "label": "User code",
+          "controlType": "text",
+          "minLength": 6,
+          "maxLength": 14,
+          "pattern": "alphanumeric",
+          "rules": [
+            "Latin letters and numbers"
+          ]
+        },
+        {
+          "key": "userPassword",
+          "label": "Password",
+          "controlType": "password",
+          "minLength": 6,
+          "maxLength": 8,
+          "pattern": "alphanumeric",
+          "rules": [
+            "Latin letters and numbers only"
+          ]
+        }
+      ],
+      "46": [
+        {
+          "key": "username",
+          "label": "קוד משתמש",
+          "controlType": "text",
+          "minLength": 6,
+          "maxLength": 14,
+          "pattern": "alphanumeric",
+          "rules": [
+            "Latin letters and numbers"
+          ]
+        },
+        {
+          "key": "userPassword",
+          "label": "Password",
+          "controlType": "password",
+          "minLength": 6,
+          "maxLength": 8,
+          "pattern": "alphanumeric",
+          "rules": [
+            "6-8 letters and / or digits only"
+          ]
+        }
+      ],
+      "52": [
+        {
+          "key": "username",
+          "label": "User code",
+          "controlType": "text",
+          "minLength": 6,
+          "maxLength": 14,
+          "pattern": "alphanumeric",
+          "rules": [
+            "Latin letters and numbers"
+          ]
+        },
+        {
+          "key": "userPassword",
+          "label": "Password",
+          "controlType": "password",
+          "minLength": 6,
+          "maxLength": 8,
+          "pattern": "alphanumeric",
+          "rules": [
+            "Latin letters and numbers only"
+          ]
+        }
+      ],
+      "54": [
+        {
+          "key": "username",
+          "label": "שם משתמש",
+          "controlType": "text",
+          "minLength": 6,
+          "maxLength": 14,
+          "pattern": "alphanumeric",
+          "rules": [
+            "Latin letters and numbers"
+          ]
+        },
+        {
+          "key": "userPassword",
+          "label": "Password",
+          "controlType": "password",
+          "minLength": 8,
+          "maxLength": 8,
+          "pattern": "alphanumeric",
+          "rules": [
+            "8 Latin letters and numbers only"
+          ]
+        }
+      ],
+      "122": {
+        "name": "Poalim business",
+        "otp": true,
+        "regularParent": "12",
+        "message": "For working accounts, \"bizibox\" must have a 'view only' permission.<br> Please contact us at * 2365 * to transfer the relevant forms or open a service call on the top toolbar"
+      },
+      "157": {
+        "name": "Discount plus for business",
+        "description": "Discode",
+        "otp": true,
+        "regularParent": "11",
+        "otpTypes": [
+          {
+            "label": "Fixed installation code",
+            "value": "constant",
+            "description": "A one-time entry of the installation code will enable automatic data retrieval on a daily basis and will save a daily code entry for withdrawal",
+            "code": {
+              "minLength": 16,
+              "maxLength": 16,
+              "pattern": "numeric",
+              "rules": [
+                "16 digits"
+              ]
+            }
+          },
+          {
+            "label": "Application / physical key",
+            "value": "application",
+            "description": "Enter the discard code only if there are at least 20 seconds remaining before it is replaced",
+            "code": {
+              "minLength": 6,
+              "maxLength": 6,
+              "pattern": "numeric",
+              "rules": [
+                "6 digits"
+              ]
+            }
+          },
+          {
+            "label": "Message from the Bank's website",
+            "value": "message",
+            "description": "A one-time mobile code linked to the account will be sent once clicked. Please make sure that the connected mobile is available. After receiving the message, there will be only 30 seconds to enter the code.",
+            "response": {
+              "timeout": 20,
+              "minLength": 8,
+              "maxLength": 8,
+              "pattern": "alphanumeric",
+              "rules": [
+                "8 Latin letters and numbers only"
+              ]
+            }
+          }
+        ]
+      }
+    }
+  }
+}

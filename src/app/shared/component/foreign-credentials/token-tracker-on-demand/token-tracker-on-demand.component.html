@@ -1,0 +1,63 @@
+<ng-container *ngIf="tokenStatusToShow$ | async as statusToShow">
+	<!--{{statusToShow| json}}-->
+	<ng-container [ngSwitch]="statusToShow.tokenStatus">
+		<div
+				class="top-toast-container priority-2 success"
+				*ngSwitchCase="
+        tokenService.isTokenStatusProgressing(statusToShow.tokenStatus)
+          ? statusToShow.tokenStatus
+          : ''
+      "
+		>
+			<div>
+				{{
+				(statusToShow.tokenStatus | toTokenStatusEnumValue) ===
+				TokenStatus.ALMOST_DONE
+						? 'כבר מסיימים'
+						: 'מושך נתונים'
+				}}...
+			</div>
+			&nbsp;
+			<mat-progress-bar
+					[mode]="'determinate'"
+					[value]="
+          tokenService.tokenStatusToCompletionPercentage(
+            statusToShow.tokenStatus
+          )
+        "
+			></mat-progress-bar
+			>&nbsp;
+			<div>
+				{{
+				tokenService.tokenStatusToCompletionPercentage(
+						statusToShow.tokenStatus
+				)
+				}}%
+			</div>
+		</div>
+		
+		<!--<div class="top-toast-container priority-2 success" *ngSwitchDefault>-->
+		<div
+				class="top-toast-container priority-2 success"
+				*ngSwitchCase="
+        [
+          TokenStatus.AboutToExpire,
+          TokenStatus.Valid,
+          TokenStatus.VALIDPOALIMBAASAKIM
+        ].includes(statusToShow.tokenStatus | toTokenStatusEnumValue)
+          ? statusToShow.tokenStatus
+          : ''
+      "
+		>
+			<div class="icon" style="align-self: baseline">
+				<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/check-white.png"/>
+			</div>
+			&nbsp;
+			<div>{{ 'tokenTracker.expressions.successMessage.0' | translate }}</div>
+			&nbsp;
+			<div class="button-link" (click)="reload()">
+				{{ 'הצג נתונים מעודכנים' }}
+			</div>
+		</div>
+	</ng-container>
+</ng-container>

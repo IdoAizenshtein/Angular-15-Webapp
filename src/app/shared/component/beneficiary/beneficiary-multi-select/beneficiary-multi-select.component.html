@@ -1,0 +1,250 @@
+<button
+    #trigger
+    (click)="toggleSelector($event, beneficiariesMultiSelector)"
+    [attr.id]="inputId"
+    class="p-dropdown-trigger"
+    type="button"
+>
+    <ng-container *ngIf="value; else beneficiariesPlaceholder">
+        <ng-template
+                [ngTemplateOutletContext]="{ $implicit: value }"
+                [ngTemplateOutlet]="value.length > 1 ? moreThanOne : singleOrNone"></ng-template>
+    </ng-container>
+    <i
+            (click)="clear(); $event.stopPropagation()"
+            *ngIf="value && !disabled"
+            class="fa fa-fw fa-times"
+    ></i>
+    <i #hook
+       (click)="!disabled && showSelector($event, beneficiariesMultiSelector); $event.stopPropagation()"
+       class="p-dropdown-icon"
+       style="margin-left: 5px;"
+    ></i>
+</button>
+<div #beneficiarySelectionGuideOvPOpenBtn
+     (click)="beneficiarySelectionGuideOvP.show($event, hook);"
+     id="beneficiarySelectionGuideOvPOpenBtn"
+     style="display: none"></div>
+
+<p-overlayPanel
+        #beneficiariesMultiSelector
+        (onHide)="detachOverlayHideListener()"
+        (onShow)="centralizeHorizontally(beneficiariesMultiSelector); attachOverlayHideListener()"
+        [dismissable]="false"
+        [showCloseIcon]="false"
+        appendTo="body"
+        styleClass="beneficiariesMultiSelectorOverlay"
+>
+    <a
+            (click)="beneficiariesMultiSelector.hide()"
+            class="p-dialog-header-icon p-dialog-header-close p-corner-all"
+            role="button"
+    >
+        <span class="fa fa-fw fa-times"></span>
+    </a>
+    <ng-container *ngIf="beneficiariesMultiSelector.overlayVisible">
+        <div class="beheficiaries-table-container">
+            <div class="header">
+                <div></div>
+                <div>{{ 'titles.beneficiary' | translate }}</div>
+                <div>{{ 'titles.category' | translate }}</div>
+                <div>{{ 'titles.sum' | translate }}</div>
+                <div></div>
+            </div>
+
+            <div [appScrollHeight]="180" appendTo="parent" class="scroll-chrome">
+                <ng-container *ngFor="let editBnf of editForm.controls; index as i">
+                    <div [formGroup]="editBnf" class="row">
+                        <div>{{ i + 1 }}.</div>
+                        <div>
+                            <app-beneficiary-select
+                                    (changed)="editBnf.get('beneficiary').patchValue($event.value);"
+                                    [createWith]="createWith"
+                                    [exclusions]="exclusions"
+                                    [inputId]="'beneficiary_' + i"
+                                    [ngModelVal]="editBnf.get('beneficiary').value"
+                                    [placeholder]="'actions.select' | translate"
+                                    [showBtnAddBeneficiary]="
+                  !dontAllowAddition &&
+                  userService.appData?.userData?.accountant
+                "
+                                    [showGuide]="false"
+                                    [style]="{ width: '100%' }"
+                            >
+                            </app-beneficiary-select>
+                        </div>
+                        <div>
+                            <app-category-select
+                                    (changed)="editBnf.get('transType').patchValue($event.value);"
+                                    [autoDisplayFirst]="false"
+
+                                    [categories]="companyTransTypes"
+
+
+                                    [companyId]="
+                  userService.appData?.userData?.companySelect?.companyId
+                "
+                                    [disabled]="editBnf.get('transType').disabled"
+                                    [filterBy]="'transTypeName'"
+                                    [filter]="false"
+                                    [inputId]="'transType_' + i"
+                                    [ngModelVal]="editBnf.get('transType').value"
+                                    [placeholder]="'actions.select' | translate"
+                                    [style]="{ width: '100%' }"
+                            ></app-category-select>
+                        </div>
+                        <div>
+                            <input
+                                    [formControl]="editBnf.get('total')"
+                                    [id]="'total_' + i"
+                                    appNumbersOnly="positive"
+                                    type="text"
+                            />
+                        </div>
+                        <div>
+                            <button
+                                    (click)="removeBeneficiary(editBnf); editForm.removeAt(i)"
+                                    [disabled]="editForm.length < 2"
+                                    [hidden]="editForm.length < 2"
+                                    class="button-link"
+                            >
+                                <img
+                                        src="/assets/images/trash.png"
+                                        style="width: 16px; height: auto"
+                                />
+                            </button>
+                        </div>
+                    </div>
+                    <ng-container *ngIf="config?.showApplyRetroactivelyOption">
+                        <div
+                                style="display: flex; display: -ms-flexbox; padding-top: 0.4em"
+                        >
+                            <div style="flex: 124"></div>
+                            <div style="flex: 224; font-size: 0.8em; padding-right: 2.6em">
+                                <p-checkbox [binary]="true"
+                                            [formControl]="editBnf.get('applyTransTypeRetroactively')"
+                                            [labelStyleClass]="'p-checkbox-label-wrappable'"
+                                            [label]="
+                    'formFixedMovement.applyCategorySelectionToPastText'
+                      | translate
+                  "
+                                            [ngStyle]="{
+                    display: 'flex',
+                    'align-content': 'baseline',
+                    'align-items': 'flex-start',
+                    'line-height': '1.2em',
+                    'max-width': '80ch'
+                  }"
+                                            checkboxIcon="fa fa-check"
+                                ></p-checkbox>
+                            </div>
+                        </div>
+                    </ng-container>
+                </ng-container>
+                <div *ngIf="config?.allowAddition" style="margin-top: 0.5em">
+                    <button
+                            (click)="addBeneficiary()"
+                            [disabled]="!config?.allowAddition"
+                            class="button-link"
+                            id="addBeneficiary"
+                    >
+                        <i class="fas fa-fw fa-plus-circle"></i
+                        >{{ 'מוטב נוסף' | translate }}
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div
+                (click)="submitChanges()"
+                style="
+        display: flex;
+        display: -ms-flexbox;
+        justify-content: flex-end;
+        margin-top: 0.5em;
+      "
+        >
+            <button
+                    class="button-dark"
+                    style="padding: 0 2em; font-size: 1.05em; font-weight: 600"
+            >
+                {{ 'actions.approve' | translate }}
+            </button>
+        </div>
+
+        <ng-container
+                *ngIf="config?.traceSelectedBeneficiariesWithExistingTransactions"
+        >
+            <ng-container
+                    *ngIf="
+          selectedBeneficiariesWithExistingTransactions$
+            | async as selectedBeneficiariesWithExistingTransactions
+        "
+            >
+                <div
+                        [innerHTML]="
+            'expressions.selectedBeneficiariesWithExistingTransactionsWarningPtrn'
+              | translate
+                : { names: selectedBeneficiariesWithExistingTransactions }
+          "
+                        id="selectedBeneficiariesWithExistingTransactionsWarning"
+                        style="display: flex; display: -ms-flexbox; margin-top: 0.5em"
+                ></div>
+            </ng-container>
+        </ng-container>
+    </ng-container>
+</p-overlayPanel>
+
+<p-overlayPanel
+    #beneficiarySelectionGuideOvP
+    (onHide)="onBeneficiarySelectionGuideHide()"
+    (onShow)="centralizeHorizontally(beneficiarySelectionGuideOvP)"
+    [dismissable]="true"
+    appendTo="body"
+    styleClass="beneficiarySelectionGuideDialog"
+>
+    <div class="p-dialog-header p-helper-clearfix p-corner-top">
+    <span
+            class="p-dialog-title ng-tns-c13-48 ng-star-inserted"
+            id="p-dialog-3-label"
+    >
+      <div>{{ 'guides.beneficiary.title' | translate }}</div>
+    </span>
+        <a
+                (click)="beneficiarySelectionGuideOvP.hide()"
+                class="p-dialog-header-icon p-dialog-header-close p-corner-all"
+                role="button"
+        >
+            <span class="fa fa-fw fa-times"></span>
+        </a>
+    </div>
+    <div class="p-dialog-content mat-typography">
+        <h3 [innerHTML]="'guides.beneficiary.content' | translate"></h3>
+    </div>
+    <div class="p-dialog-footer">
+        <p-checkbox [(ngModel)]="beneficiarySelectionGuide.stopIt"
+                    [binary]="true"
+                    [label]="'guides.beneficiary.stopDisplaying' | translate"
+                    checkboxIcon="fa fa-check"
+        ></p-checkbox>
+        <button (click)="beneficiarySelectionGuideOvP.hide()" class="button-dark">
+            {{ 'guides.beneficiary.gotIt' | translate }}
+        </button>
+    </div>
+</p-overlayPanel>
+
+<ng-template #beneficiariesPlaceholder>
+    <span class="p-placeholder">{{ placeholder }}</span>
+</ng-template>
+
+<ng-template #moreThanOne let-value>
+  <span
+          [escape]="false"
+          [pTooltip]="valueDetailed"
+          class="button-link"
+          style="padding: 0"
+          tooltipPosition="bottom">{{ value.length + ' מוטבים' }}</span>
+</ng-template>
+
+<ng-template #singleOrNone let-value>
+    <span>{{ value.length ? value[0].beneficiary?.accountMutavName : '' }}</span>
+</ng-template>

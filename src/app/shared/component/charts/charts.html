@@ -1,0 +1,46 @@
+<div
+        *ngIf="scrollHeight && !scrollHeight.height"
+        [appScrollHeight]="scrollHeight"
+        [chart]="chart"
+></div>
+<div
+        *ngIf="scrollHeight === undefined"
+        [chart]="chart"
+        style="height: 148px; width: 479px"
+></div>
+<div *ngIf="scrollHeight === false" [chart]="chart" style="height: 230px"></div>
+<div
+        (mouseleave)="mouseoutPoint($event)"
+        (mousemove)="mousemovePoint($event)"
+        *ngIf="scrollHeight && scrollHeight.height"
+        [chart]="chart"
+        [ngStyle]="{ height: scrollHeight.height + 'px' }"
+></div>
+
+<div style="position: relative">
+    <button
+            (click)="nextPoint(false)"
+            (mouseleave)="clearIntervalAll($event)"
+            (mouseover)="nextPoint(true)"
+            *ngIf="
+      chartPoints.side === 'right' &&
+      chartPoints.finish !== 0 &&
+      chartPoints.finish < chartPoints.max - 1
+    "
+            id="nextPoint"
+    >
+        <img alt="next" fill ngSrc="/assets/images/nextPoint.png"
+             style="height: auto; width: auto; position: relative;"/>
+    </button>
+    <button
+            (click)="prevPoint(false)"
+            (mouseleave)="clearIntervalAll($event)"
+            (mouseover)="prevPoint(true)"
+            *ngIf="chartPoints.side === 'left' && chartPoints.start !== 0"
+            id="prevPoint"
+    >
+        <img alt="next" fill ngSrc="/assets/images/prevPoint.png"
+             style="height: auto; width: auto; position: relative;"/>
+    </button>
+</div>
+

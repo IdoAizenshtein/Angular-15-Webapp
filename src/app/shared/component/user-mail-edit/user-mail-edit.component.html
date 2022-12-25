@@ -1,0 +1,147 @@
+<div class="user-mail-edit">
+	<ng-container
+			*ngIf="!(lastUserMailUpdate | async) || (lastUserMailUpdate | async)?.error"
+	>
+		<div class="disclaimer">
+			<div style="margin-bottom: 1em">
+				<p>
+					<strong> שימו לב, </strong>
+				</p>
+				<p>עדכון כתובת המייל תשנה את פרטי הכניסה למערכת bizibox</p>
+				<p>והכניסה תתבצע בעזרת המייל החדש והסיסמה.</p>
+			</div>
+			<div>
+				<p>לאישור החלפת כתובת המייל אנא הזינו את הסיסמה למערכת</p>
+				<p>ואת המייל החדש</p>
+			</div>
+		</div>
+		
+		<form
+				[formGroup]="mailReplacementForm"
+				novalidate
+				autocomplete="off"
+				(ngSubmit)="submitMailReplacementForm()"
+		>
+			<input style="display: none" type="text" name="fakeToPreventAutofill"/>
+			<div class="Login__control">
+				<mat-form-field hideRequiredMarker="true" id="mailValidateExistenceContainer">
+					<mat-label>{{ 'מייל' }}</mat-label>
+					<input
+							matInput
+							autocomplete="off"
+							type="email"
+							[formControl]="mailReplacementForm.get('address')"
+							id="mail"
+							name="mail"
+					/>
+				</mat-form-field>
+			</div>
+			
+			<div class="Login__control">
+				<mat-form-field hideRequiredMarker="true">
+					<mat-label>{{ 'סיסמת כניסה ל-bizibox' }}</mat-label>
+					<input
+							matInput
+							[type]="passwordHide ? 'password' : 'text'"
+							formControlName="password"
+							id="password"
+							#pwdInp
+							name="password"
+							(keypress)="handleKeyPress($event)"
+							(keydown)="handleKeyDown($event)"
+							autocomplete="new-password"
+					/>
+					<mat-icon
+							matSuffix
+							(click)="passwordHide = !passwordHide"
+							[svgIcon]="
+              'bizibox_' + (passwordHide ? 'visibility_off' : 'visibility')
+            "
+					></mat-icon>
+					<mat-hint
+							*ngIf="isHebrew && pwdInp.ownerDocument.activeElement === pwdInp"
+					>
+						<i class="fa fa-exclamation-triangle"></i>
+						{{ 'validation.isHebrew' | translate }}
+					</mat-hint>
+				</mat-form-field>
+			</div>
+			
+			<div
+					class="Form__feedback Form__feedback--err"
+					*ngIf="mailReplacementForm.get('address').hasError('alreadyExists')"
+			>
+				<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/alertIc.png"/>
+				{{ 'כתובת מייל זו כבר משויכת למשתמש במערכת bizibox.' }} <br/>
+				{{ 'זה המייל שלי!' }}
+				<button
+						class="button-link"
+						style="font-size: inherit; padding: 0"
+						(click)="sharedComponent.showOpenTicket()"
+				>
+					{{ 'פתיחת קריאת שירות' }}
+				</button>
+			</div>
+			<div
+					class="Form__feedback Form__feedback--err"
+					*ngIf="(lastUserMailUpdate | async)?.error"
+			>
+				<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/alertIc.png"/>
+				{{ 'סיסמא לא תואמת, אנא נסו שוב' }}
+			</div>
+			
+			<div
+					*ngIf="
+          !(lastUserMailUpdate | async) || (lastUserMailUpdate | async)?.error
+        "
+					class="Login__submit"
+			>
+				<button
+						type="reset"
+						class="button-link"
+						(click)="changeApplied.emit(false)"
+				>
+					ביטול
+				</button>
+				<button
+						type="submit"
+						class="button-dark"
+						[disabled]="mailReplacementForm.invalid"
+				>
+					<i
+							class="fas fa-fw fa-circle-notch fa-spin"
+							*ngIf="processingMailUpdate | async"
+					></i>
+					עדכון כתובת המייל
+				</button>
+			</div>
+		</form>
+	</ng-container>
+	
+	<div
+			*ngIf="
+      mailReplacementForm.valid &&
+      (lastUserMailUpdate | async) &&
+      !(lastUserMailUpdate | async)?.error
+    "
+			class="disclaimer-success mat-typography"
+	>
+		<h1><img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/vSign.png"/> {{ 'מצויין!' }}</h1>
+		<h2>
+			המייל הוחלף בהצלחה.
+			<br/>
+			מייל אימות נשלח לכתובת
+			<bdi
+			><strong>{{ mailReplacementForm.get('address').value }}</strong></bdi
+			>
+		</h2>
+		<!--<p>-->
+		<!--להזכירך יש לאמת את כתובת המייל תוך 24 שעות-->
+		<!--<br>-->
+		<!--על מנת שהמערכת לא תיחסם.-->
+		<!--</p>-->
+		<button (click)="changeApplied.emit(true)" class="button-dark">
+			סגירה
+		</button>
+	</div>
+</div>

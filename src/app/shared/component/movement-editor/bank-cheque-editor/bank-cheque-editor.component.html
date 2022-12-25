@@ -1,0 +1,208 @@
+<div
+		*ngFor="let fld of fields"
+		[formGroup]="form"
+		class="HorizontalForm__group"
+		[class.has-errors]="form.get(fld.name).invalid"
+		[style.display]="!shouldDisplay(fld) ? 'none' : ''"
+>
+	<ng-container [ngSwitch]="fld.name">
+		<ng-container *ngSwitchCase="'companyAccountId'">
+			<label [for]="fld.name">{{
+				'formFixedMovement.field.' + fld.name | translate
+				}}</label>
+			<p-dropdown
+					[options]="userService.appData.userData.accounts"
+					[formControlName]="fld.name"
+					dataKey="companyAccountId"
+					optionLabel="accountNickname"
+					[inputId]="fld.name"
+					[placeholder]="('actions.select' | translate) + '...'"
+					[dropdownIcon]="'p-dropdown-icon'"
+					[autoDisplayFirst]="false"
+			>
+				<ng-template let-item pTemplate="selectedItem">
+					<div style="display: flex; display: -ms-flexbox; align-items: center">
+						<img
+								style="height: auto; width: 24px; position: relative;"  [src]="
+                !item.bankId
+                  ? ''
+                  : (item.bankId | toIconSrc: 'bank')
+              "
+						/>&nbsp;
+						<div class="text-ellipsis">{{ item?.accountNickname }}</div>
+					</div>
+				</ng-template>
+				<ng-template let-option pTemplate="item">
+					<div
+							style="
+              position: relative;
+              display: flex;
+              display: -ms-flexbox;
+              align-items: center;
+            "
+					>
+						<img
+								style="height: auto; width: 24px; position: relative;" fill [ngSrc]="
+                (!option.bankId ? '' : option.bankId)
+                  | toIconSrc: 'bank'
+              "
+						/>&nbsp;
+						<div class="text-ellipsis">{{ option.accountNickname }}</div>
+					</div>
+				</ng-template>
+			</p-dropdown>
+			<!--<pre>{{form.get(fld.name).value| json}}</pre>-->
+		</ng-container>
+		
+		<ng-container *ngSwitchCase="'transName'">
+			<label [for]="fld.name">{{
+				'formFixedMovement.field.' + fld.name | translate
+				}}</label>
+			<input
+					type="text"
+					[id]="fld.name"
+					[name]="fld.name"
+					[formControlName]="fld.name"
+					[style.max-width]="'100%'"
+					autocomplete="off"
+			/>
+		</ng-container>
+		
+		<ng-container *ngSwitchCase="'transTypeId'">
+			<label [for]="fld.name">{{
+				'formFixedMovement.field.' + fld.name | translate
+				}}</label>
+			<app-category-select
+					[categories]="companyTransTypes"
+					[companyId]="companyId"
+					[ngModelVal]="form.get(fld.name).value"
+					(changed)="form.get(fld.name).patchValue($event.value);"
+					[disabled]="form.get(fld.name).disabled"
+					
+					[inputId]="fld.name"
+					[autoDisplayFirst]="false"
+					[filter]="false"
+					[filterBy]="'transTypeName'"
+					[placeholder]="('actions.select' | translate) + '...'"
+			>
+			</app-category-select>
+		</ng-container>
+		
+		<ng-container *ngSwitchCase="'paymentDesc'">
+			<label [for]="fld.name">{{
+				'formFixedMovement.field.' + fld.name | translate
+				}}</label>
+			<p-dropdown
+					[options]="fld.options"
+					[formControlName]="fld.name"
+					[inputId]="fld.name"
+					[dropdownIcon]="'p-dropdown-icon'"
+					[autoDisplayFirst]="false"
+					[placeholder]="('actions.select' | translate) + '...'"
+			>
+			</p-dropdown>
+			<!--<pre>{{form.get(fld.name).value| json}}</pre>-->
+		</ng-container>
+		
+		<ng-container *ngSwitchCase="'transDate'">
+			<label [for]="fld.name">{{
+				'formFixedMovement.field.' + fld.name | translate
+				}}</label>
+			<p-calendar
+					[formControlName]="fld.name"
+					[inputId]="fld.name"
+					[inputStyle]="{ 'max-width': '121px' }"
+					[locale]="'langCalendar' | translate"
+					dateFormat="dd/mm/y"
+					[minDate]="today"
+					[readonlyInput]="true"
+					(onFocus)="scrollTillSelectable()"
+					#transDateSelector
+			></p-calendar>
+			<!--<pre>{{form.get(fld.name).value}}</pre>-->
+		</ng-container>
+		
+		<ng-container *ngSwitchCase="'total'">
+			<label [for]="fld.name">{{
+				'formFixedMovement.field.' + fld.name | translate
+				}}</label>
+			<input
+					type="text"
+					[id]="fld.name"
+					[name]="fld.name"
+					[formControlName]="fld.name"
+					[style.max-width]="'18ch'"
+					appNumbersOnly
+					autocomplete="off"
+			/>
+		</ng-container>
+		
+		<ng-container *ngSwitchCase="'asmachta'">
+			<label [for]="fld.name">{{
+				'formFixedMovement.field.' + fld.name | translate
+				}}</label>
+			<input
+					type="text"
+					[id]="fld.name"
+					[name]="fld.name"
+					[formControlName]="fld.name"
+					[style.max-width]="'18ch'"
+					appNumbersOnly="positiveInt"
+					autocomplete="off"
+			/>
+		</ng-container>
+		
+		<ng-container *ngSwitchCase="'autoUpdateTypeName'">
+			<label [for]="fld.name">{{
+				'formFixedMovement.field.' + fld.name | translate
+				}}</label>
+			<div
+					style="display: flex; display: -ms-flexbox; flex-flow: column nowrap"
+			>
+				<ul>
+					<li
+							*ngFor="let opt of fld.options"
+							[class.has-errors]="
+              opt.value === 'USER_DEFINED_TOTAL' && form.get('total').invalid
+            "
+							style="
+              display: flex;
+              display: -ms-flexbox;
+              white-space: nowrap;
+              align-items: baseline;
+              align-content: baseline;
+            "
+					>
+						<p-radioButton
+								[name]="fld.name"
+								[formControlName]="fld.name"
+								[value]="opt.value"
+								[label]="opt.label"
+								[inputId]="opt.label"
+								[style]="{ 'font-weight': 'bold' }"
+						></p-radioButton>
+						<ng-container
+								*ngIf="
+                opt.value === 'USER_DEFINED_TOTAL' &&
+                mode === EditingType.Series
+              "
+						>
+							&nbsp;<input
+								type="text"
+								[id]="'total'"
+								[name]="'total'"
+								formControlName="total"
+								[style.max-width]="'8ch'"
+								[required]="form.get(fld.name).value === opt.value"
+								(focus)="form.get(fld.name).setValue(opt.value)"
+								appNumbersOnly
+								autocomplete="off"
+						/>
+							<!--<span>&nbsp;{{'ILS'|currencySymbol}}</span>-->
+						</ng-container>
+					</li>
+				</ul>
+			</div>
+		</ng-container>
+	</ng-container>
+</div>

@@ -1,0 +1,196 @@
+<div class="recommendation-calendar-container">
+	<!--{{rangeSelection$| async | json}}-->
+	<!--{{accountSelection$| async | json}}-->
+	<!--{{recommendations$| async | json}}-->
+	<div id="step-1" *ngIf="currentStep === 'step-1'">
+		<img  ngSrc="/assets/images/recommendation-calc.png" height="56" width="108"/>
+		
+		<form novalidate [formGroup]="step1Inputs" (ngSubmit)="proceedToStep2()">
+			<div
+					class="row"
+					[class.err]="step1Inputs.get('sum').invalid && step1Inputs.dirty"
+			>
+				<label for="step1Sum">סכום</label>
+				<input
+						type="text"
+						formControlName="sum"
+						appNumbersOnly
+						id="step1Sum"
+						name="step1Sum"
+				/>
+			</div>
+			
+			<div
+					class="row"
+					[class.err]="step1Inputs.get('account').invalid && step1Inputs.dirty"
+			>
+				<label [for]="'step1Account'">חשבון בנק</label>
+				<p-dropdown
+						formControlName="account"
+						[options]="accountsUpToDate | async"
+						[scrollHeight]="'135px'"
+						[required]="true"
+						optionLabel="accountNickname"
+						[placeholder]="'actions.select' | translate"
+						[inputId]="'step1Account'"
+						[name]="'step1Account'"
+				>
+					<ng-template let-item pTemplate="selectedItem">
+						<div
+								style="display: flex; display: -ms-flexbox; align-items: center"
+						>
+							<img
+									style="height: auto; width: 24px; position: relative;"  [src]="
+                  !item.bankId
+                    ? ''
+                    : (item.bankId | toIconSrc: 'bank')
+                "
+							/>&nbsp;
+							<div class="text-ellipsis">{{ item?.accountNickname }}</div>
+							<div>&#40;{{ item.currency | currencySymbol }}&#41;</div>
+						</div>
+					</ng-template>
+					<ng-template let-option pTemplate="item">
+						<div
+								style="
+                position: relative;
+                display: flex;
+                display: -ms-flexbox;
+                align-items: center;
+              "
+						>
+							<img
+									style="height: auto; width: 24px; position: relative;" fill [ngSrc]="
+                  (!option.bankId ? '' : option.bankId)
+                    | toIconSrc: 'bank'
+                "
+							/>&nbsp;
+							<div class="text-ellipsis">{{ option.accountNickname }}</div>
+							<div>&#40;{{ option.currency | currencySymbol }}&#41;</div>
+						</div>
+					</ng-template>
+				</p-dropdown>
+			</div>
+			
+			<div
+					class="row"
+					[class.err]="step1Inputs.get('targetType').invalid && step1Inputs.dirty"
+			>
+				<label [for]="'step1TargetType'">אמצעי תשלום</label>
+				<p-dropdown
+						[options]="targetTypes"
+						formControlName="targetType"
+						
+						[autoDisplayFirst]="false"
+						[placeholder]="'actions.select' | translate"
+						[inputId]="'step1TargetType'"
+						[name]="'step1TargetType'"
+				></p-dropdown>
+			</div>
+			
+			<div
+					class="row"
+					[class.err]="step1Inputs.get('month').invalid && step1Inputs.dirty"
+			>
+				<label [for]="'step1Month'">חודש</label>
+				<p-dropdown
+						[options]="months"
+						formControlName="month"
+						
+						[autoDisplayFirst]="false"
+						[placeholder]="'actions.select' | translate"
+						[inputId]="'step1Month'"
+						[name]="'step1Month'"
+				></p-dropdown>
+			</div>
+			
+			<div class="row">
+				<button type="submit" class="button-dark">
+					{{ 'formLogin.continue' | translate }}
+				</button>
+			</div>
+		</form>
+	</div>
+	
+	<div id="step-2" *ngIf="currentStep === 'step-2'">
+		<div id="header-panel">
+			<form novalidate [formGroup]="rcmndtnInputs">
+				<input
+						type="text"
+						formControlName="sum"
+						#sumInp
+						appNumbersOnly
+						(keyup.enter)="sumInp.blur()"
+				/>
+				<div>
+					{{ rcmndtnInputs.get('account').value?.currency | currencySymbol }}
+				</div>
+				<p-dropdown
+						formControlName="account"
+						[options]="accountsUpToDate | async"
+						[scrollHeight]="'135px'"
+						[required]="true"
+						optionLabel="accountNickname"
+						
+						[style]="{ width: '228px' }"
+						[dropdownIcon]="'p-dropdown-icon'"
+						placeholder="{{ 'actions.account' | translate }}"
+				>
+					<ng-template let-item pTemplate="selectedItem">
+						<div
+								style="display: flex; display: -ms-flexbox; align-items: center"
+						>
+							<img
+									style="height: auto; width: 24px; position: relative;" [src]="
+                  !item.bankId
+                    ? ''
+                    : (item.bankId | toIconSrc: 'bank')
+                "
+							/>&nbsp;
+							<div class="text-ellipsis">{{ item?.accountNickname }}</div>
+							<div>&#40;{{ item.currency | currencySymbol }}&#41;</div>
+						</div>
+					</ng-template>
+					<ng-template let-option pTemplate="item">
+						<div
+								style="
+                position: relative;
+                display: flex;
+                display: -ms-flexbox;
+                align-items: center;
+              "
+						>
+							<img
+									style="height: auto; width: 24px; position: relative;" fill [ngSrc]="
+                  (!option.bankId ? '' : option.bankId)
+                    | toIconSrc: 'bank'
+                "
+							/>&nbsp;
+							<div class="text-ellipsis">{{ option.accountNickname }}</div>
+							<div>&#40;{{ option.currency | currencySymbol }}&#41;</div>
+						</div>
+					</ng-template>
+				</p-dropdown>
+			</form>
+		</div>
+		
+		<app-recommendation-calendar-inline
+				#recCal
+				[presetData]="rcmndtnInput$ | async"
+		></app-recommendation-calendar-inline>
+		
+		<div class="buttons-row">
+			<a role="button" class="button-white button-link" (click)="cancel()">
+				{{ 'actions.cancellation' | translate }}
+			</a>
+			<button
+					type="button"
+					class="button-dark"
+					[disabled]="!recCal.selectedDate"
+					(click)="apply()"
+			>
+				המשיכו להוספת הוצאה
+			</button>
+		</div>
+	</div>
+</div>

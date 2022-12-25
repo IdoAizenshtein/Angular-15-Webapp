@@ -1,0 +1,78 @@
+<p-dialog (visibleChange)="visible = false"
+		[visible]="(visible)"
+		appendTo="body"
+		modal="true"
+		resizable="false"
+		styleClass="beneficiary-category-change-prompt-dialog"
+		(onHide)="hidden.next()"
+>
+	<p-header>{{ 'beneficiaryCategoryChangePrompt.title' | translate }}</p-header>
+	
+	<ng-container [ngSwitch]="mode">
+		<ng-container *ngSwitchCase="'optionalFuture'">
+			<div
+					class="mat-h3"
+					[innerHTML]="
+          'beneficiaryCategoryChangePrompt.contentPtrn' | translate: data
+        "
+			>
+				<!--{{('actions.deleteMovement.body.' + deleteConfirmationPrompt?.type + '.content')| translate: deleteConfirmationPrompt}}-->
+			</div>
+			<ul>
+				<li *ngFor="let opt of changeTypes; index as i">
+					<p-radioButton
+							name="changeOption"
+							[label]="
+              'beneficiaryCategoryChangePrompt.options.' + opt | translate
+            "
+							[value]="opt"
+							[inputId]="'deleteOption' + i"
+							[formControl]="changeTypeControl"
+					></p-radioButton>
+					<!--<p-checkbox checkboxIcon="fa fa-check" name="deleteOption" [label]="opt.label" [(ngModel)]="opt.value" [inputId]="'deleteOption'+ i"-->
+					<!--[binary]="true"></p-checkbox>-->
+					<!--{{opt}}-->
+				</li>
+			</ul>
+		</ng-container>
+		
+		<ng-container *ngSwitchDefault>
+			<div
+					class="mat-h3"
+					[innerHTML]="
+          'beneficiaryCategoryChangePrompt.contentPtrn1'
+            | translate
+              : {
+                  accountMutavName: data.transName,
+                  transTypeName: data.transTypeName
+                }
+        "
+			></div>
+			
+			<p-checkbox checkboxIcon="fa fa-check"
+			            [binary]="true"
+			            [formControl]="doRetroactively"
+			            [label]="'beneficiaryCategoryChangePrompt.options1' | translate"
+			>
+			</p-checkbox>
+		</ng-container>
+	</ng-container>
+	<p-footer>
+		<div style="width: 100%; display: flex; justify-content: center">
+			<button class="button-white button-link" (click)="visible = false">
+				{{ 'actions.cancellation' | translate }}
+			</button>
+			<button
+					class="button-dark"
+					(click)="apply()"
+					[disabled]="processing$ | async"
+			>
+				<i
+						class="fas fa-fw fa-circle-notch fa-spin"
+						*ngIf="processing$ | async"
+				></i>
+				{{ 'actions.approve' | translate }}
+			</button>
+		</div>
+	</p-footer>
+</p-dialog>

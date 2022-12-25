@@ -1,0 +1,262 @@
+<div>
+  <small class="mat-body" style="font-size: 15px">{{
+    'signup.accountLinkStep.subtitle' | translate
+  }}</small>
+</div>
+<div style="margin: 0.5em 0">
+  <small class="mat-body" style="font-size: 15px; font-weight: 600"
+    >{{ 'signup.accountLinkStep.disclaimerEncryptedConnection' | translate }}
+  </small>
+</div>
+
+<form novalidate [formGroup]="account" (ngSubmit)="onSubmit()">
+  <div class="Signup__control mat-selector-alike">
+    <a
+      mat-button
+      style="display: flex; display: -ms-flex; justify-content: space-between"
+      color="primary"
+      (click)="toggleBankSelectContainer()"
+    >
+      <ng-container
+        *ngIf="account.get('bank').value as bank; else bankPlaceholder"
+      >
+        <span style="line-height: 100%; display: flex; display: -ms-flex">
+          <img [src]="(bank.value ? bank.value : '') | toIconSrc: 'bank'"
+          />&nbsp;{{ bank.label }}
+        </span>
+      </ng-container>
+      <ng-template #bankPlaceholder>
+        <span>{{ 'expressions.bankName' | translate }}</span>
+      </ng-template>
+      <mat-icon matSuffix class="mat-icon-rtl-mirror">chevron_right</mat-icon>
+    </a>
+    <!--<mat-form-field hideRequiredMarker="true">-->
+    <!--<mat-select [placeholder]="'expressions.bankName'| translate" formControlName="bank" name="bank" id="bank" #banksSelect-->
+    <!--(selectionChange)="setBankControlsFor($event.value ? $event.value.value : null)"-->
+    <!--(openedChange)="setupOverlay(banksSelect)">-->
+    <!--<mat-select-trigger>-->
+    <!--<div *ngIf="account.get('bank').value as bank"-->
+    <!--class="text-ellipsis"-->
+    <!--style="position: relative; display: flex; display: -ms-flexbox; align-items: center;">-->
+    <!--<img style="height: auto; width: auto; position: relative;" fill [ngSrc]="(bank.value ? bank.value : '')| toIconSrc:'bank'"/>&nbsp;{{bank.label}}-->
+    <!--</div>-->
+    <!--</mat-select-trigger>-->
+    <!--<mat-option *ngFor="let bank of banks" [value]="bank">-->
+    <!--<div class="text-ellipsis"-->
+    <!--style="position: relative; display: flex; display: -ms-flexbox; align-items: center;">-->
+    <!--<img style="height: auto; width: auto; position: relative;" fill [ngSrc]="(bank.value ? bank.value : '')| toIconSrc:'bank'"/>&nbsp;{{bank.label}}-->
+    <!--</div>-->
+    <!--</mat-option>-->
+    <!--</mat-select>-->
+    <!--</mat-form-field>-->
+  </div>
+
+  <!--<div style="min-height: 4em;">-->
+  <!--<app-bank-foreign-credentials [bankCredentialsGroup]="account" [useMaterialComponents]="true"-->
+  <!--[settings]="banksCredentialSettings"></app-bank-foreign-credentials>-->
+  <!--</div>-->
+  <div
+    class="Signup__control"
+    *ngFor="let fc of foreignControls"
+    [formGroup]="account"
+  >
+    <mat-form-field hideRequiredMarker="true">
+      <mat-label>{{ fc.label }}</mat-label>
+      <input
+        matInput
+        [type]="
+          fc.controlType !== 'password'
+            ? fc.controlType
+            : !passwordHide
+            ? 'text'
+            : fc.controlType
+        "
+        [id]="fc.key"
+        [name]="fc.key"
+        [formControlName]="fc.key"
+        [autocomplete]="
+          fc.controlType === 'password' && passwordHide
+            ? 'new-password'
+            : 'nope'
+        "
+      />
+      <mat-icon
+        matSuffix
+        *ngIf="fc.controlType === 'password'"
+        (click)="passwordHide = !passwordHide"
+        [svgIcon]="
+          'bizibox_' + (passwordHide ? 'visibility_off' : 'visibility')
+        "
+      ></mat-icon>
+      <mat-error
+        *ngIf="account.get(fc.key).invalid && account.get(fc.key).dirty"
+      >
+        <ng-container *ngFor="let rule of fc.rules">
+          <i class="fa fa-fw fa-exclamation-triangle"></i> {{ rule }}
+        </ng-container>
+      </mat-error>
+    </mat-form-field>
+  </div>
+
+  <ng-container
+    *ngIf="
+      account.get('bank').value
+        ? banksCredentialSettings[account.get('bank').value.value]
+        : null as selectedSettings
+    "
+  >
+    <div *ngIf="selectedSettings.otp" class="Form__foreignOtpTypes">
+      <div
+        *ngIf="
+          account.get('bank').value.value === '157' ||
+          account.get('bank').value.value === '158'
+        "
+        [formGroup]="account"
+        class="mat-typography"
+      >
+        <div class="selected-desc">{{ selectedSettings.description }}</div>
+        <div
+          *ngFor="let otpType of selectedSettings.otpTypes; first as isFirst"
+          class="otp-credential-option"
+          [style.background]="
+            account.get('otpType').value === otpType.value
+              ? '#f7f7f7'
+              : 'transparent'
+          "
+        >
+          <p-radioButton
+            name="otpType"
+            formControlName="otpType"
+            [value]="otpType.value"
+            [label]="otpType.label"
+            [style]="{ 'font-weight': 'bold' }"
+          ></p-radioButton>
+          <span *ngIf="isFirst" class="tag success">מומלץ!</span>
+          <i
+            class="fas fa-info-circle"
+            [pTooltip]="otpType.info"
+            [escape]="false"
+            [tooltipPosition]="'top'"
+            app
+          ></i>
+          <div
+            class="Signup__control"
+            style="padding: 0 2em"
+            *ngIf="account.get('otpType').value === otpType.value"
+          >
+            <p>{{ otpType.description }}</p>
+
+            <mat-form-field hideRequiredMarker="true"
+              *ngIf="
+                otpType.value === 'constant' || otpType.value === 'application'
+              "
+            >
+              <input
+                matInput
+                autocomplete="off"
+                type="text"
+                formControlName="otpCode"
+              />
+              <mat-error
+                *ngIf="account.get('otpCode').invalid && account.get('otpCode')"
+              >
+                <ng-container *ngFor="let rule of otpType.code.rules">
+                  <i class="fa fa-fw fa-exclamation-triangle"></i> {{ rule }}
+                </ng-container>
+              </mat-error>
+            </mat-form-field>
+          </div>
+        </div>
+      </div>
+      <div
+        *ngIf="account.get('bank').value.value === '122'"
+        class="mat-typography"
+      >
+        <p [innerHTML]="selectedSettings.message"></p>
+      </div>
+    </div>
+  </ng-container>
+
+  <div
+    class="Form__feedback Form__feedback--warning Form__feedback--warning--block"
+    [style.visibility]="
+      account.invalid || account.get('bank').value.value === '122'
+        ? 'hidden'
+        : 'visible'
+    "
+  >
+    <i class="fa fa-fw fa-exclamation-triangle"></i>
+    {{
+      'foreignCredentialsUpdate.expressions.disconnectBankSiteWarn' | translate
+    }}
+  </div>
+  <div class="Signup__control">
+    <button
+      mat-raised-button
+      style="width: 100%"
+      color="primary"
+      type="submit"
+      [id]="'submitStep'"
+      [disabled]="
+        !account ||
+        !account.get('bank')?.value ||
+        account.get('bank')?.value < 0 ||
+        !account.valid ||
+        (parent.formInProgress$ | async)
+      "
+    >
+      <mat-spinner
+        diameter="20"
+        color="accent"
+        *ngIf="parent.formInProgress$ | async"
+      ></mat-spinner>
+      <span *ngIf="!(parent.formInProgress$ | async)">
+        <!--                {{'signup.startFreeTrial'| translate}}-->
+        {{
+          parent.agreementId !== '11'
+            ? 'לחודש התנסות בחינם'
+            : 'ל-3 חודשים התנסות בחינם'
+        }}</span
+      >
+    </button>
+  </div>
+</form>
+
+<div
+  style="
+    display: flex;
+    display: -ms-flexbox;
+    align-items: center;
+    flex-flow: wrap;
+    align-content: space-between;
+    width: 100%;
+    margin-top: 0.5em;
+  "
+>
+  <hr style="flex: 1 1 auto" />
+  <div style="flex: 0 0 8ch; -ms-flex: 0 0 8ch; text-align: center">
+    {{ 'expressions.or' | translate }}
+  </div>
+  <hr style="flex: 1 1 auto; -ms-flex: 1 1 auto" />
+  <a
+    mat-button
+    style="
+      flex: 2 1 100%;
+      -ms-flex: 2 1 100%;
+      padding: 0 0.5em;
+      min-height: 2.35em;
+    "
+    color="primary"
+    (click)="parent.onSkipToDemoCompanyClick()"
+  >
+    <mat-spinner
+      diameter="20"
+      color="accent"
+      *ngIf="parent.formInProgress$ | async"
+    ></mat-spinner>
+    <span *ngIf="!(parent.formInProgress$ | async)">
+      {{ 'signup.accountLinkStep.skipToDemoBusiness' | translate }}
+      <i class="fa fa-fw fa-chevron-left"></i>
+    </span>
+  </a>
+</div>

@@ -1,0 +1,331 @@
+<ng-container *ngIf="tokenStatusLoad$ | async as tokenStatuses">
+	<ng-container
+			*ngIf="
+      (!tokenStatuses || !tokenStatuses.length) && showToast;
+      else tokensDefined
+    "
+	>
+		<div class="token-tracker-view mat-h3 warning">
+			<div>
+				{{ 'tokenTracker.expressions.dummyDataDisclaimer.0' | translate }}
+			</div>
+			<div class="link" (click)="addTokenPrompt.visible = true">
+				{{ 'tokenTracker.expressions.dummyDataDisclaimer.1' | translate }}
+			</div>
+		</div>
+		<app-token-create-dialog
+				*ngIf="addTokenPrompt.visible"
+				[(display)]="addTokenPrompt.visible"
+				[settings]="addTokenPrompt.form"
+				[companyId]="companyId"
+				[type]="TokenType.ACCOUNT"
+				(creationSuccess)="addTokenPrompt.visible = false; tokenAdded()"
+		>
+		</app-token-create-dialog>
+	</ng-container>
+	<ng-template #tokensDefined>
+		<ng-container *ngIf="statusToShow$ | async as statusToShow">
+			<!--{{statusToShow| json}}-->
+			<ng-container [ngSwitch]="statusToShow.tokenStatus">
+				<div
+						class="token-tracker-view mat-h3 success"
+						*ngSwitchCase="
+            tokenService.isTokenStatusProgressing(statusToShow.tokenStatus)
+              ? statusToShow.tokenStatus
+              : ''
+          "
+				>
+					<div>
+						{{
+						(statusToShow.tokenStatus | toTokenStatusEnumValue) ===
+						TokenStatus.ALMOST_DONE
+								? 'כבר מסיימים'
+								: 'מושך נתונים'
+						}}...
+					</div>
+					<mat-progress-bar
+							[mode]="'determinate'"
+							[value]="
+              tokenService.tokenStatusToCompletionPercentage(
+                statusToShow.tokenStatus
+              )
+            "
+					></mat-progress-bar>
+					<div>
+						{{
+						tokenService.tokenStatusToCompletionPercentage(
+								statusToShow.tokenStatus
+						)
+						}}%
+					</div>
+				</div>
+				
+				<div
+						*ngSwitchCase="
+            (statusToShow.tokenStatus | toTokenStatusEnumValue) ===
+            TokenStatus.LoginFailed
+              ? statusToShow.tokenStatus
+              : ''
+          "
+						class="token-tracker-view mat-h3 warning"
+				>
+					<div class="icon">
+						<img style="height: auto; width: auto; position: relative;" fill [ngSrc]="statusToShow.tokenStatus | tokenStatusAsIconSrc"/>
+					</div>
+					<div
+							class="text"
+							[innerHTML]="
+              'tokenTracker.statusHumanized.' + statusToShow.tokenStatus
+                | translate
+            "
+					></div>
+					<button
+							class="button-dark"
+							(click)="onUpdatePasswordClick()"
+							*ngIf="!(statusToShow.hasPrivs === false)"
+					>
+						{{
+						(statusToShow.tokenStatus === 'OTP_WAS_NOT_PROVIDED'
+										? 'foreignCredentialsUpdate.expressions.updatePassword_otp'
+										: 'foreignCredentialsUpdate.expressions.updatePassword'
+						) | translate
+						}}
+					</button>
+				</div>
+				
+				<div
+						*ngSwitchCase="
+            (statusToShow.tokenStatus | toTokenStatusEnumValue) ===
+            TokenStatus.Blocked
+              ? statusToShow.tokenStatus
+              : ''
+          "
+						class="token-tracker-view mat-h3 warning"
+				>
+					<div class="icon">
+						<img style="height: auto; width: auto; position: relative;" fill [ngSrc]="statusToShow.tokenStatus | tokenStatusAsIconSrc"/>
+					</div>
+					<div
+							class="text"
+							[innerHTML]="
+              'tokenTracker.statusHumanized.' + statusToShow.tokenStatus
+                | translate
+            "
+					></div>
+					<button
+							class="button-dark"
+							(click)="onUpdatePasswordClick()"
+							*ngIf="!(statusToShow.hasPrivs === false)"
+					>
+						{{ 'foreignCredentialsUpdate.expressions.unBlock' | translate }}
+					</button>
+				</div>
+				
+				<div
+						*ngSwitchCase="
+            (statusToShow.tokenStatus | toTokenStatusEnumValue) ===
+            TokenStatus.Expired
+              ? statusToShow.tokenStatus
+              : ''
+          "
+						class="token-tracker-view mat-h3 warning"
+				>
+					<div class="icon">
+						<img style="height: auto; width: auto; position: relative;" fill [ngSrc]="statusToShow.tokenStatus | tokenStatusAsIconSrc"/>
+					</div>
+					<div
+							class="text"
+							[innerHTML]="
+              'tokenTracker.statusHumanized.' + statusToShow.tokenStatus
+                | translate
+            "
+					></div>
+					<button
+							class="button-dark"
+							(click)="onUpdatePasswordClick()"
+							*ngIf="!(statusToShow.hasPrivs === false)"
+					>
+						{{
+						(statusToShow.tokenStatus === 'OTP_WAS_NOT_PROVIDED'
+										? 'foreignCredentialsUpdate.expressions.updatePassword_otp'
+										: 'foreignCredentialsUpdate.expressions.updatePassword'
+						) | translate
+						}}
+					</button>
+				</div>
+				
+				<div
+						*ngSwitchCase="
+            (statusToShow.tokenStatus | toTokenStatusEnumValue) ===
+            TokenStatus.TechnicalProblem
+              ? statusToShow.tokenStatus
+              : ''
+          "
+						class="token-tracker-view mat-h3 warning"
+				>
+					<div class="icon">
+						<img style="height: auto; width: auto; position: relative;" fill [ngSrc]="statusToShow.tokenStatus | tokenStatusAsIconSrc"/>
+					</div>
+					<div
+							class="text"
+							[innerHTML]="
+              'foreignCredentials.statusHumanized.' + statusToShow.tokenStatus
+                | translate
+            "
+					></div>
+				</div>
+				
+				<ng-container
+						*ngSwitchCase="
+            [
+              TokenStatus.AboutToExpire,
+              TokenStatus.Valid,
+              TokenStatus.VALIDPOALIMBAASAKIM
+            ].includes(statusToShow.tokenStatus | toTokenStatusEnumValue)
+              ? statusToShow.tokenStatus
+              : ''
+          "
+				>
+					<ng-container *ngIf="exampleCompanyPoll$ | async as companyCfl">
+						<div
+								class="token-tracker-view mat-h3 success"
+								*ngIf="
+                companyCfl.exampleCompany === false;
+                else stillExampleCompany
+              "
+						>
+							<div class="icon" style="align-self: baseline">
+								<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/check-white.png"/>
+							</div>
+							<div>
+								{{ 'tokenTracker.expressions.successMessage.0' | translate }}
+							</div>
+							<div class="link" (click)="reloadPrompt.rollout()">
+								{{ 'tokenTracker.expressions.successMessage.1' | translate }}
+							</div>
+							
+							<p-dialog (visibleChange)="reloadPrompt.visible = false"
+									*ngIf="reloadPrompt.visible"
+									[visible]="(reloadPrompt.visible)"
+									(onHide)="reloadPrompt.countdownCompleteSub.unsubscribe()"
+									styleClass="token-tracker-reloadDialog"
+									appendTo="body"
+									[modal]="true"
+							>
+								<p-header>
+									<div class="header mat-h2">
+										{{
+										'tokenTracker.expressions.reloadPrompt.title' | translate
+										}}
+									</div>
+								</p-header>
+								
+								<div
+										class="subheader mat-h4"
+										[innerHTML]="
+                    'tokenTracker.expressions.reloadPrompt.subtitle' | translate
+                  "
+								></div>
+								<div class="counter">
+									<ng-container
+											*ngIf="
+                      reloadPrompt.countdownTimer$ | async as counter;
+                      else placeholder
+                    "
+									>
+										{{ counter }}
+									</ng-container>
+									<ng-template #placeholder>&nbsp;</ng-template>
+								</div>
+								<p-footer>
+									<button
+											class="link"
+											(click)="
+                      reloadPrompt.visible = false;
+                      reloadPrompt.countdownCompleteSub.unsubscribe()
+                    "
+									>
+										{{
+										'tokenTracker.expressions.reloadPrompt.postpone'
+												| translate
+										}}
+									</button>
+									<button
+											class="button-dark"
+											(click)="
+                      reloadPrompt.visible = false; reloadPrompt.onApprove()
+                    "
+									>
+										{{
+										'tokenTracker.expressions.reloadPrompt.approve'
+												| translate
+										}}
+									</button>
+								</p-footer>
+							</p-dialog>
+						</div>
+						<ng-template #stillExampleCompany>
+							<div class="token-tracker-view mat-h3 success">
+								<div>מושך נתונים מהבנק</div>
+								<mat-progress-bar
+										[mode]="'determinate'"
+										[value]="90"
+								></mat-progress-bar>
+								<div>90%</div>
+							</div>
+						</ng-template>
+					</ng-container>
+				</ng-container>
+				
+				<!--<div class="token-tracker-view mat-h3 success"-->
+				<!--*ngSwitchCase="[TokenStatus.AboutToExpire, TokenStatus.Valid].includes((statusToShow.tokenStatus| toTokenStatusEnumValue)) ? statusToShow.tokenStatus : ''">-->
+				<!--<ng-container *ngIf="exampleCompanyPoll$| async">-->
+				<!--<div class="icon" style="align-self: baseline;">-->
+				<!--<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/check-white.png"/>-->
+				<!--</div>-->
+				<!--<div>{{'tokenTracker.expressions.successMessage.0'| translate}}</div>-->
+				<!--<div class="link" (click)="reloadPrompt.rollout()">{{'tokenTracker.expressions.successMessage.1'| translate}}</div>-->
+				<!--</ng-container>-->
+				
+				<!--<p-dialog (visibleChange)="aaa = false" *ngIf="reloadPrompt.visible" [visible]="reloadPrompt.visible" (onHide)="reloadPrompt.countdownCompleteSub.unsubscribe();"-->
+				<!--styleClass="token-tracker-reloadDialog" appendTo="body"-->
+				<!--[modal]="true">-->
+				<!--<p-header>-->
+				<!--<div class="header mat-h2">{{'tokenTracker.expressions.reloadPrompt.title'| translate}}</div>-->
+				<!--</p-header>-->
+				
+				<!--<div class="subheader mat-h4" [innerHTML]="'tokenTracker.expressions.reloadPrompt.subtitle'| translate"></div>-->
+				<!--<div class="counter">-->
+				<!--<ng-container *ngIf="reloadPrompt.countdownTimer$| async as counter; else placeholder">-->
+				<!--{{counter}}-->
+				<!--</ng-container>-->
+				<!--<ng-template #placeholder>&nbsp;</ng-template>-->
+				<!--</div>-->
+				<!--<p-footer>-->
+				<!--<button class="link" (click)="reloadPrompt.visible = false; reloadPrompt.countdownCompleteSub.unsubscribe();">-->
+				<!--{{'tokenTracker.expressions.reloadPrompt.postpone'| translate}}-->
+				<!--</button>-->
+				<!--<button class="button-dark" (click)="reloadPrompt.visible = false; reloadPrompt.onApprove();">{{'tokenTracker.expressions.reloadPrompt.approve'| translate}}</button>-->
+				<!--</p-footer>-->
+				
+				<!--</p-dialog>-->
+				<!--</div>-->
+				
+				<div *ngSwitchDefault class="token-tracker-view"></div>
+			</ng-container>
+			
+			<app-bank-update-foreign-credentials-dialog
+					*ngIf="updatePromptVisible"
+					#credsUpdateDlg
+					[(display)]="updatePromptVisible"
+					(displayChange)="
+          $event === false &&
+            onUpdateDialogVisibilityChange(credsUpdateDlg.state)
+        "
+					[tokenData]="statusToShow"
+					[companyId]="companyId"
+			>
+			</app-bank-update-foreign-credentials-dialog>
+		</ng-container>
+	</ng-template>
+</ng-container>

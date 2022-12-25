@@ -1,0 +1,1137 @@
+<div>
+	<ng-container *ngIf="!isModal && isModalFromCompaniesScreen">
+		<!--        <p >-->
+		
+		<!--&lt;!&ndash;            על-פי הנחיות ממשלה חדשות,&ndash;&gt;-->
+		<!--&lt;!&ndash;            שמירת נתונים ב-bizibox מחייב את אישורו של בית העסק.&ndash;&gt;-->
+		<!--&lt;!&ndash;            שימו לב: רק אנשי קשר מורשי חתימה יכולים&ndash;&gt;-->
+		<!--&lt;!&ndash;            <br>&ndash;&gt;-->
+		<!--&lt;!&ndash;            לחתום על ההסכם&ndash;&gt;-->
+		<!--        </p>-->
+		
+		<p #title style="padding: 12px 0px 6px 0px">
+			בהמשך להודעה שנשלחה במייל אנא עדכנו מורשי חתימה למתן ייפוי כוח
+		</p>
+	</ng-container>
+	<form [formGroup]="contacts" novalidate>
+		<div class="contactsRows" formArrayName="contactsRows">
+			<div
+					#header
+					[class.isModalFromCompaniesScreen]="isModalFromCompaniesScreen"
+					[class.isModalRows]="isModal"
+					class="header-contact"
+			>
+				<ng-container *ngIf="!isModal && !isModalFromCompaniesScreen">
+					<div>
+						<div class="paddingRight">שם פרטי</div>
+					</div>
+					<div class="separator">&nbsp;</div>
+					<div>
+						<div class="paddingRight">שם משפחה</div>
+					</div>
+					<div class="separator">&nbsp;</div>
+					<div>
+						<div class="paddingRight">מספר נייד</div>
+					</div>
+					<div class="separator">&nbsp;</div>
+					<div>
+						<div class="paddingRight">מספר טלפון</div>
+					</div>
+					<div class="separator">&nbsp;</div>
+					<div>
+						<div class="paddingRight">אימייל</div>
+					</div>
+					<div class="separator">&nbsp;</div>
+					<div>
+						<div class="paddingRight">תפקיד</div>
+					</div>
+					<div class="separator">&nbsp;</div>
+					<div>צרוף לאפליקציה</div>
+					<div>מורשה חתימה</div>
+					<div class="separator">&nbsp;</div>
+					<div>סטטוס אישור ייפוי כוח והסכם שימוש</div>
+					<div>&nbsp;</div>
+				</ng-container>
+				<ng-container *ngIf="isModal">
+					<div>
+						<div class="paddingRight">שם פרטי</div>
+					</div>
+					<div class="separator">&nbsp;</div>
+					<div>
+						<div class="paddingRight">שם משפחה</div>
+					</div>
+					<div class="separator">&nbsp;</div>
+					<div>
+						<div class="paddingRight">אימייל</div>
+					</div>
+					<div class="separator">&nbsp;</div>
+					<div>
+						<div class="paddingRight">מספר נייד</div>
+					</div>
+					<div class="separator">&nbsp;</div>
+					<div>צרוף לאפליקציה</div>
+					<div>&nbsp;</div>
+				</ng-container>
+				<ng-container *ngIf="!isModal && isModalFromCompaniesScreen">
+					<!--                    <div>-->
+					<!--                        <div class="paddingRight">-->
+					<!--                            סמן לשליחה-->
+					<!--                        </div>-->
+					<!--                    </div>-->
+					<!--                    <div class="separator">-->
+					<!--                        &nbsp;-->
+					<!--                    </div>-->
+					<div>
+						<div class="paddingRight">שם פרטי</div>
+					</div>
+					<div class="separator">&nbsp;</div>
+					<div>
+						<div class="paddingRight">שם משפחה</div>
+					</div>
+					<div class="separator">&nbsp;</div>
+					<div>
+						<div class="paddingRight">מספר נייד</div>
+					</div>
+					<div class="separator">&nbsp;</div>
+					<div>
+						<div class="paddingRight">אימייל</div>
+					</div>
+					<div class="separator">&nbsp;</div>
+					<div>צרוף לאפליקציה</div>
+					<div class="separator">&nbsp;</div>
+					<div>מורשה חתימה</div>
+				</ng-container>
+			</div>
+			<ng-container
+					*ngIf="(!isModal && !isModalFromCompaniesScreen) || isModal"
+			>
+				<div
+						[appScrollByChildrenContent]="true"
+						[appScrollHeight]="
+            !isModal
+              ? header.getBoundingClientRect().bottom +
+                5 +
+                footer.getBoundingClientRect().height +
+                40
+              : 800
+          "
+						class="scrollPage scrollbar-dynamic"
+						style="position: relative"
+				>
+					<div *ngIf="loader" class="loader">
+						<div class="circle"></div>
+					</div>
+					<ng-container *ngIf="!isModal && !isModalFromCompaniesScreen">
+						<ng-container
+								*ngFor="
+                let contact of arr.controls;
+                let i = index;
+                trackBy: trackById
+              "
+						>
+							<div
+									(click)="
+                  activeRow = i; activeRowClick(); $event.stopPropagation()
+                "
+									[class.active]="activeRow === i"
+									[formGroupName]="i"
+									[id]="'idRow_' + i"
+									class="row-contact"
+							>
+								<div class="text-ellipsis">
+									<input
+											#inputElement
+											(blur)="updateContact(contact)"
+											(keyup.enter)="updateContact(contact)"
+											[class.error]="
+                      contact.touched && !contact.get('firstName').value
+                    "
+											[pTooltip]="contact.get('firstName').value"
+											[tooltipDisabled]="
+                      inputElement.offsetWidth >= inputElement.scrollWidth
+                    "
+											[tooltipStyleClass]="'p-tooltip-one-line'"
+											class="text-ellipsis"
+											formControlName="firstName"
+											type="text"
+									/>
+									<div
+											*ngIf="contact.touched && !contact.get('firstName').value"
+											class="invalidAlert"
+									>
+										שדה חובה
+									</div>
+								</div>
+								<div class="separator">&nbsp;</div>
+								<div class="text-ellipsis">
+									<input
+											#inputElement
+											(blur)="updateContact(contact)"
+											(keyup.enter)="updateContact(contact)"
+											[class.error]="
+                      contact.touched && !contact.get('lastName').value
+                    "
+											[pTooltip]="contact.get('lastName').value"
+											[tooltipDisabled]="
+                      inputElement.offsetWidth >= inputElement.scrollWidth
+                    "
+											[tooltipStyleClass]="'p-tooltip-one-line'"
+											class="text-ellipsis"
+											formControlName="lastName"
+											type="text"
+									/>
+									<div
+											*ngIf="contact.touched && !contact.get('lastName').value"
+											class="invalidAlert"
+									>
+										שדה חובה
+									</div>
+								</div>
+								<div class="separator">&nbsp;</div>
+								<div class="text-ellipsis">
+									<input
+											#inputElement
+											(blur)="updateContact(contact)"
+											(keyup.enter)="updateContact(contact)"
+											[class.error]="
+                      contact.touched &&
+                      (contact.get('cellPhone').invalid ||
+                        contact.get('cellPhone').hasError('forbiddenCellPhone'))
+                    "
+											[pTooltip]="contact.get('cellPhone').value"
+											[tooltipDisabled]="
+                      inputElement.offsetWidth >= inputElement.scrollWidth
+                    "
+											[tooltipStyleClass]="'p-tooltip-one-line'"
+											appNumbersOnly="phoneNo"
+											class="text-ellipsis"
+											formControlName="cellPhone"
+											type="text"
+									/>
+									<div
+											*ngIf="contact.touched && !contact.get('cellPhone').value"
+											class="invalidAlert"
+									>
+										שדה חובה
+									</div>
+									<div
+											*ngIf="
+                      contact.get('cellPhone').dirty &&
+                      contact.get('cellPhone').value &&
+                      contact.get('cellPhone').invalid &&
+                      !contact.get('cellPhone').hasError('forbiddenCellPhone')
+                    "
+											class="invalidAlert"
+									>
+										המספר לא תקין
+									</div>
+									<div
+											*ngIf="
+                      contact.get('cellPhone').dirty &&
+                      contact.get('cellPhone').value &&
+                      contact.get('cellPhone').invalid &&
+                      contact.get('cellPhone').hasError('forbiddenCellPhone')
+                    "
+											class="invalidAlert"
+									>
+										מספר הנייד כבר קיים
+									</div>
+								</div>
+								<div class="separator">&nbsp;</div>
+								<div class="text-ellipsis">
+									<!--                                <input class="input-show text-ellipsis"-->
+									<!--                                       style="cursor: text;"-->
+									<!--                                 -->
+									<!--                                       [pTooltip]="item.get('details').value"-->
+									<!--                                       [size]="item.get('details').value ? item.get('details').value.length : 26"-->
+									<!--                                       tooltipPosition="top"-->
+									<!--                                       [readonly]="!inputElement.elemNotReadonly"-->
+									<!--                                       (click)="inputElement.elemNotReadonly = true; inputElement.focus()"-->
+									<!--                                       (blur)="inputElement.elemNotReadonly = false"-->
+									<!--                                       formControlName="details"-->
+									<!--                                       autocomplete="off">-->
+									<input
+											#inputElement
+											(blur)="updateContact(contact)"
+											(keyup.enter)="updateContact(contact)"
+											[class.error]="
+                      contact.touched &&
+                     contact.get('phoneNum').value && (contact.get('phoneNum').invalid ||
+                        contact.get('phoneNum').hasError('forbiddenCellPhone'))
+                    "
+											[pTooltip]="contact.get('phoneNum').value"
+											[tooltipDisabled]="
+                      inputElement.offsetWidth >= inputElement.scrollWidth
+                    "
+											[tooltipStyleClass]="'p-tooltip-one-line'"
+											appNumbersOnly="phoneNo"
+											class="text-ellipsis"
+											formControlName="phoneNum"
+											type="text"
+									/>
+									<div
+											*ngIf="
+                      contact.get('phoneNum').dirty &&
+                      contact.get('phoneNum').value &&
+                      contact.get('phoneNum').invalid &&
+                      !contact.get('phoneNum').hasError('forbiddenCellPhone')
+                    "
+											class="invalidAlert"
+									>
+										המספר לא תקין
+									</div>
+									<div
+											*ngIf="
+                      contact.get('phoneNum').dirty &&
+                      contact.get('phoneNum').value &&
+                      contact.get('phoneNum').invalid &&
+                      contact.get('phoneNum').hasError('forbiddenCellPhone')
+                    "
+											class="invalidAlert"
+									>
+										מספר הטלפון קיים
+									</div>
+								</div>
+								<div class="separator">&nbsp;</div>
+								<div class="text-ellipsis">
+									<input
+											#inputElement
+											(blur)="updateContactMail(contact)"
+											(keyup.enter)="updateContactMail(contact)"
+											[class.error]="
+                      contact.touched &&
+                      (contact.get('email').invalid ||
+                        contact.get('email').hasError('forbiddenMail'))
+                    "
+											[disabled]="contact.get('joinApp').value"
+											[pTooltip]="contact.get('email').value"
+											[tooltipDisabled]="
+                      inputElement.offsetWidth >= inputElement.scrollWidth
+                    "
+											[tooltipStyleClass]="'p-tooltip-one-line'"
+											class="text-ellipsis"
+											formControlName="email"
+											type="email"
+									/>
+									<div
+											*ngIf="contact.touched && !contact.get('email').value"
+											class="invalidAlert"
+									>
+										שדה חובה
+									</div>
+									<div
+											*ngIf="
+                      contact.get('email').dirty &&
+                      contact.get('email').value &&
+                      contact.get('email').invalid &&
+                      !contact.get('email').hasError('forbiddenMail')
+                    "
+											class="invalidAlert"
+									>
+										כתובת המייל לא תקינה
+									</div>
+									<div
+											*ngIf="
+                      contact.get('email').dirty &&
+                      contact.get('email').value &&
+                      contact.get('email').invalid &&
+                      contact.get('email').hasError('forbiddenMail')
+                    "
+											class="invalidAlert"
+									>
+										כתובת המייל כבר קיימת בחברה
+									</div>
+								</div>
+								<div class="separator">&nbsp;</div>
+								<div class="text-ellipsis">
+									<input
+											#inputElement
+											(blur)="updateContact(contact)"
+											(keyup.enter)="updateContact(contact)"
+											[pTooltip]="contact.get('position').value"
+											[tooltipDisabled]="
+                      inputElement.offsetWidth >= inputElement.scrollWidth
+                    "
+											[tooltipStyleClass]="'p-tooltip-one-line'"
+											class="text-ellipsis"
+											formControlName="position"
+											type="text"
+									/>
+								</div>
+								<div class="separator">&nbsp;</div>
+								<div>
+									<img
+											*ngIf="
+                      contact.get('joinApp').value === false &&
+                      (!contact.get('email').value ||
+                        (contact.get('email').value &&
+                          contact.get('email').invalid) ||
+                        !contact.get('cellPhone').value ||
+                        (contact.get('cellPhone').value &&
+                          contact.get('cellPhone').invalid))
+                    "
+											[matTooltip]="
+                      'לחיבור הלקוח לאפליקציה יש להזין את \n  מספר הנייד והמייל שלו'
+                    "
+											height="15"
+											matTooltipClass="allow-cr"
+											matTooltipPosition="below"
+											src="/assets/images/infoTooltip.png"
+											style="
+                      margin-left: 10px;
+                      margin-right: -25px;
+                      cursor: pointer;
+                      margin-top: 2px;
+                    "
+											width="15"
+									/>
+									
+									<p-checkbox (onChange)="joinAppContact(contact)"
+									            [binary]="true"
+									            [disabled]="
+                      (isModal && contact.invalid) ||
+                      (!isModal &&
+                        contact.get('joinApp').value === false &&
+                        (!contact.get('email').value ||
+                          (contact.get('email').value &&
+                            contact.get('email').invalid) ||
+                          !contact.get('cellPhone').value ||
+                          (contact.get('cellPhone').value &&
+                            contact.get('cellPhone').invalid)))
+                    "
+									            checkboxIcon="fa fa-check"
+									            formControlName="joinApp"
+									>
+									</p-checkbox>
+								</div>
+								<div>
+									<p-checkbox
+											[disabled]="
+                  (!contact.get('email').value ||
+                          (contact.get('email').value &&
+                            contact.get('email').invalid) ||
+                          !contact.get('cellPhone').value ||
+                          (contact.get('cellPhone').value &&
+                            contact.get('cellPhone').invalid)
+                                  ||
+                           (contact.get('phoneNum').value && (contact.get('phoneNum').invalid || contact.get('phoneNum').hasError('forbiddenCellPhone')))
+                            )
+                    "
+											(onChange)="
+                      contact.markAsTouched(); authorizedSignerContact(contact)
+                    "
+									            [binary]="true"
+									            checkboxIcon="fa fa-check"
+									            formControlName="authorizedSigner"
+									>
+									</p-checkbox>
+								</div>
+								<div class="separator">&nbsp;</div>
+								<div>
+									<p
+											*ngIf="contact.value.agreementConfirmationDate"
+											class="agreementConfirmationDate"
+									>
+										<mat-icon
+												[svgIcon]="'tick'"
+												style="
+                        height: 100%;
+                        color: #ffffff;
+                        width: 14px;
+                        margin-left: 6px;
+                      "
+										>
+										</mat-icon>
+										נחתם ב-{{
+										contact.value.agreementConfirmationDate | date: 'dd/MM/yy'
+										}}
+									</p>
+									<p
+											*ngIf="
+                      contact.value.agreementSendDate &&
+                      !contact.value.agreementConfirmationDate
+                    "
+											class="agreementSendDate"
+									>
+										<i class="fas fa-history" style="margin-left: 4px"></i>
+										נשלח לאחרונה
+										{{withinTwentyFourHours(contact.value.agreementSendDate) <= 24 ? (
+											'לפני '
+											+
+											withinTwentyFourHoursMin(contact.value.agreementSendDate) +
+											
+											(withinTwentyFourHours(contact.value.agreementSendDate) >= 1 ? ' שעות' :
+													' דקות')
+									) : 'ב-' + (contact.value.agreementSendDate | date: 'dd/MM/yy')}}
+									</p>
+								</div>
+								<div>
+									<button
+											(click)="deleteContact(i, contact)"
+											*ngIf="!isModal || (isModal && i > 0)"
+											class="button-link"
+											type="button"
+									>
+										<img class="showHover" style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/trash.png"/>
+									</button>
+								</div>
+								
+								<div
+										*ngIf="isModal && arr.controls[i].get('joinApp').value"
+										class="modalJoinAppAlert"
+								>
+									לאיש הקשר יישלח מייל והודעת טקסט עם פרטי הכניסה לאפליקציית
+									הצילום
+								</div>
+							</div>
+						</ng-container>
+					</ng-container>
+					<ng-container *ngIf="isModal">
+						<ng-container
+								*ngFor="
+                let contact of arr.controls;
+                let i = index;
+                trackBy: trackById
+              "
+						>
+							<div
+									(click)="
+                  activeRow = i; activeRowClick(); $event.stopPropagation()
+                "
+									[class.active]="activeRow === i"
+									[formGroupName]="i"
+									[id]="'idRow_' + i"
+									class="row-contact isModalRows"
+							>
+								<div class="text-ellipsis">
+									<input
+											#inputElement
+											(blur)="updateContact(contact)"
+											(keyup.enter)="updateContact(contact)"
+											[class.error]="
+                      contact.touched && !contact.get('firstName').value
+                    "
+											[pTooltip]="contact.get('firstName').value"
+											[tooltipDisabled]="
+                      inputElement.offsetWidth >= inputElement.scrollWidth
+                    "
+											[tooltipStyleClass]="'p-tooltip-one-line'"
+											class="text-ellipsis"
+											formControlName="firstName"
+											type="text"
+									/>
+									<div
+											*ngIf="contact.touched && !contact.get('firstName').value"
+											class="invalidAlert"
+									>
+										שדה חובה
+									</div>
+								</div>
+								<div class="separator">&nbsp;</div>
+								<div class="text-ellipsis">
+									<input
+											#inputElement
+											(blur)="updateContact(contact)"
+											(keyup.enter)="updateContact(contact)"
+											[class.error]="
+                      contact.touched && !contact.get('lastName').value
+                    "
+											[pTooltip]="contact.get('lastName').value"
+											[tooltipDisabled]="
+                      inputElement.offsetWidth >= inputElement.scrollWidth
+                    "
+											[tooltipStyleClass]="'p-tooltip-one-line'"
+											class="text-ellipsis"
+											formControlName="lastName"
+											type="text"
+									/>
+									<div
+											*ngIf="contact.touched && !contact.get('lastName').value"
+											class="invalidAlert"
+									>
+										שדה חובה
+									</div>
+								</div>
+								<div class="separator">&nbsp;</div>
+								
+								<div class="text-ellipsis">
+									<input
+											#inputElement
+											(blur)="updateContactMail(contact)"
+											(keyup.enter)="updateContactMail(contact)"
+											[class.error]="
+                      contact.touched &&
+                      (contact.get('email').invalid ||
+                        contact.get('email').hasError('forbiddenMail'))
+                    "
+											[disabled]="contact.get('joinApp').value"
+											[pTooltip]="contact.get('email').value"
+											[tooltipDisabled]="
+                      inputElement.offsetWidth >= inputElement.scrollWidth
+                    "
+											[tooltipStyleClass]="'p-tooltip-one-line'"
+											class="text-ellipsis"
+											formControlName="email"
+											type="email"
+									/>
+									
+									<div
+											*ngIf="contact.touched && !contact.get('email').value"
+											class="invalidAlert"
+									>
+										שדה חובה
+									</div>
+									<div
+											*ngIf="
+                      contact.get('email').dirty &&
+                      contact.get('email').value &&
+                      contact.get('email').invalid &&
+                      !contact.get('email').hasError('forbiddenMail')
+                    "
+											class="invalidAlert"
+									>
+										כתובת המייל לא תקינה
+									</div>
+									<div
+											*ngIf="
+                      contact.get('email').dirty &&
+                      contact.get('email').value &&
+                      contact.get('email').invalid &&
+                      contact.get('email').hasError('forbiddenMail')
+                    "
+											class="invalidAlert"
+									>
+										כתובת המייל כבר קיימת בחברה
+									</div>
+								</div>
+								<div class="separator">&nbsp;</div>
+								
+								<div class="text-ellipsis">
+									<input
+											#inputElement
+											(blur)="updateContact(contact)"
+											(keyup.enter)="updateContact(contact)"
+											[class.error]="
+                      contact.touched &&
+                      (contact.get('cellPhone').invalid ||
+                        contact.get('cellPhone').hasError('forbiddenCellPhone'))
+                    "
+											[pTooltip]="contact.get('cellPhone').value"
+											[tooltipDisabled]="
+                      inputElement.offsetWidth >= inputElement.scrollWidth
+                    "
+											[tooltipStyleClass]="'p-tooltip-one-line'"
+											appNumbersOnly="phoneNo"
+											class="text-ellipsis"
+											formControlName="cellPhone"
+											type="text"
+									/>
+									<div
+											*ngIf="contact.touched && !contact.get('cellPhone').value"
+											class="invalidAlert"
+									>
+										שדה חובה
+									</div>
+									<div
+											*ngIf="
+                      contact.get('cellPhone').dirty &&
+                      contact.get('cellPhone').value &&
+                      contact.get('cellPhone').invalid &&
+                      !contact.get('cellPhone').hasError('forbiddenCellPhone')
+                    "
+											class="invalidAlert"
+									>
+										המספר לא תקין
+									</div>
+									<div
+											*ngIf="
+                      contact.get('cellPhone').dirty &&
+                      contact.get('cellPhone').value &&
+                      contact.get('cellPhone').invalid &&
+                      contact.get('cellPhone').hasError('forbiddenCellPhone')
+                    "
+											class="invalidAlert"
+									>
+										מספר הנייד כבר קיים
+									</div>
+								</div>
+								<div class="separator">&nbsp;</div>
+								<div>
+									<!--                            <img *ngIf="(contact.get('joinApp').value === false &&-->
+									<!--                                    ( (!contact.get('email').value || (contact.get('email').value && contact.get('email').invalid))-->
+									<!--                                     ||-->
+									<!--                                     (!contact.get('cellPhone').value || (contact.get('cellPhone').value && contact.get('cellPhone').invalid))))"-->
+									<!--                                 style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/infoTooltip.png"-->
+									<!--                                 matTooltipClass="allow-cr"-->
+									<!--                                 style="-->
+									<!--    margin-left: 10px;-->
+									<!--    margin-right: -25px;-->
+									<!--    cursor: pointer;-->
+									<!--    margin-top: 2px;-->
+									<!--"-->
+									<!--                                 [matTooltip]="'לחיבור הלקוח לאפליקציה יש להזין את \n  מספר הנייד והמייל שלו'"-->
+									<!--                                 matTooltipPosition="below"-->
+									<!--                                 width="15"-->
+									<!--                                 height="15">-->
+									
+									<p-checkbox (onChange)="joinAppContact(contact)"
+									            [binary]="true"
+									            [disabled]="contact.invalid"
+									            checkboxIcon="fa fa-check"
+									            formControlName="joinApp"
+									>
+									</p-checkbox>
+								</div>
+								<div>
+									<button
+											(click)="deleteContact(i, contact)"
+											*ngIf="!isModal || (isModal && i > 0)"
+											class="button-link"
+											type="button"
+									>
+										<img class="showHover" style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/trash.png"/>
+									</button>
+								</div>
+								
+								<div
+										*ngIf="isModal && arr.controls[i].get('joinApp').value"
+										class="modalJoinAppAlert"
+								>
+									לאיש הקשר יישלח מייל והודעת טקסט עם פרטי הכניסה לאפליקציית
+									הצילום
+								</div>
+							</div>
+						</ng-container>
+					</ng-container>
+				</div>
+			</ng-container>
+			<ng-container *ngIf="!isModal && isModalFromCompaniesScreen">
+				<div
+						class="scrollPage scrollbar-dynamic scroll-chrome"
+						style="
+            position: relative;
+            max-height: 240px;
+            overflow: auto;
+            min-height: 240px;
+          "
+				>
+					<div *ngIf="loader" class="loader">
+						<div class="circle"></div>
+					</div>
+					<ng-container
+							*ngFor="
+              let contact of arr.controls;
+              let i = index;
+              trackBy: trackById
+            "
+					>
+						<div
+								(click)="
+                activeRow = i; activeRowClick(); $event.stopPropagation()
+              "
+								[class.active]="activeRow === i"
+								[formGroupName]="i"
+								[id]="'idRow_' + i"
+								class="row-contact rowModalContact"
+						>
+							<!--                            <div class="text-ellipsis">-->
+							<!--                                <p-checkbox checkboxIcon="fa fa-check" [binary]="true"-->
+							<!--                                            [disabled]="contact.get('authorizedSigner').value === false || (contact.get('cellPhone').invalid) || ((contact.get('email').invalid || contact.get('email').hasError('forbiddenMail')))"-->
+							<!--                                            formControlName="companyContactIdsMark">-->
+							<!--                                </p-checkbox>-->
+							<!--                            </div>-->
+							<!--                            <div class="separator">-->
+							<!--                                &nbsp;-->
+							<!--                            </div>-->
+							
+							<div class="text-ellipsis">
+								<input
+										#inputElement
+										(blur)="updateContact(contact)"
+										(keyup.enter)="updateContact(contact)"
+										[class.error]="
+                    contact.touched && !contact.get('firstName').value
+                  "
+										[pTooltip]="contact.get('firstName').value"
+										[tooltipDisabled]="
+                    inputElement.offsetWidth >= inputElement.scrollWidth
+                  "
+										[tooltipStyleClass]="'p-tooltip-one-line'"
+										class="text-ellipsis"
+										formControlName="firstName"
+										type="text"
+								/>
+								<div
+										*ngIf="contact.touched && !contact.get('firstName').value"
+										class="invalidAlert"
+								>
+									שדה חובה
+								</div>
+							</div>
+							<div class="separator">&nbsp;</div>
+							<div class="text-ellipsis">
+								<input
+										#inputElement
+										(blur)="updateContact(contact)"
+										(keyup.enter)="updateContact(contact)"
+										[class.error]="
+                    contact.touched && !contact.get('lastName').value
+                  "
+										[pTooltip]="contact.get('lastName').value"
+										[tooltipDisabled]="
+                    inputElement.offsetWidth >= inputElement.scrollWidth
+                  "
+										[tooltipStyleClass]="'p-tooltip-one-line'"
+										class="text-ellipsis"
+										formControlName="lastName"
+										type="text"
+								/>
+								<div
+										*ngIf="contact.touched && !contact.get('lastName').value"
+										class="invalidAlert"
+								>
+									שדה חובה
+								</div>
+							</div>
+							<div class="separator">&nbsp;</div>
+							<div class="text-ellipsis">
+								<input
+										#inputElement
+										(blur)="updateContact(contact)"
+										(keyup.enter)="updateContact(contact)"
+										[class.error]="
+                    contact.touched &&
+                    (contact.get('cellPhone').invalid ||
+                      contact.get('cellPhone').hasError('forbiddenCellPhone'))
+                  "
+										[pTooltip]="contact.get('cellPhone').value"
+										[tooltipDisabled]="
+                    inputElement.offsetWidth >= inputElement.scrollWidth
+                  "
+										[tooltipStyleClass]="'p-tooltip-one-line'"
+										appNumbersOnly="phoneNo"
+										class="text-ellipsis"
+										formControlName="cellPhone"
+										type="text"
+								/>
+								<div
+										*ngIf="contact.touched && !contact.get('cellPhone').value"
+										class="invalidAlert"
+								>
+									שדה חובה
+								</div>
+								<div
+										*ngIf="
+                    contact.get('cellPhone').dirty &&
+                    contact.get('cellPhone').value &&
+                    contact.get('cellPhone').invalid &&
+                    !contact.get('cellPhone').hasError('forbiddenCellPhone')
+                  "
+										class="invalidAlert"
+								>
+									המספר לא תקין
+								</div>
+								<div
+										*ngIf="
+                    contact.get('cellPhone').dirty &&
+                    contact.get('cellPhone').value &&
+                    contact.get('cellPhone').invalid &&
+                    contact.get('cellPhone').hasError('forbiddenCellPhone')
+                  "
+										class="invalidAlert"
+								>
+									מספר הנייד כבר קיים
+								</div>
+							</div>
+							<div class="separator">&nbsp;</div>
+							<div class="text-ellipsis">
+								<input
+										#inputElement
+										(blur)="updateContactMail(contact)"
+										(keyup.enter)="updateContactMail(contact)"
+										[class.error]="
+                    contact.touched &&
+                    (contact.get('email').invalid ||
+                      contact.get('email').hasError('forbiddenMail'))
+                  "
+										[disabled]="contact.get('joinApp').value"
+										[pTooltip]="contact.get('email').value"
+										[tooltipDisabled]="
+                    inputElement.offsetWidth >= inputElement.scrollWidth
+                  "
+										[tooltipStyleClass]="'p-tooltip-one-line'"
+										class="text-ellipsis"
+										formControlName="email"
+										type="email"
+								/>
+								<div
+										*ngIf="contact.touched && !contact.get('email').value"
+										class="invalidAlert"
+								>
+									שדה חובה
+								</div>
+								<div
+										*ngIf="
+                    contact.get('email').dirty &&
+                    contact.get('email').value &&
+                    contact.get('email').invalid &&
+                    !contact.get('email').hasError('forbiddenMail')
+                  "
+										class="invalidAlert"
+								>
+									כתובת המייל לא תקינה
+								</div>
+								<div
+										*ngIf="
+                    contact.get('email').dirty &&
+                    contact.get('email').value &&
+                    contact.get('email').invalid &&
+                    contact.get('email').hasError('forbiddenMail')
+                  "
+										class="invalidAlert"
+								>
+									כתובת המייל כבר קיימת בחברה
+								</div>
+							</div>
+							<div class="separator">&nbsp;</div>
+							<div>
+								<p-checkbox (onChange)="joinAppContact(contact)"
+								            [binary]="true"
+								            [disabled]="contact.invalid"
+								            checkboxIcon="fa fa-check"
+								            formControlName="joinApp"
+								>
+								</p-checkbox>
+							</div>
+							<div class="separator">&nbsp;</div>
+							<div
+									style="
+                  justify-content: space-between;
+                  display: flex;
+                  align-items: center;
+                  align-content: center;
+                "
+							>
+								<p-checkbox (onChange)="
+                    contact.markAsTouched(); authorizedSignerContact(contact, i)
+                  "
+								            [binary]="true"
+								            checkboxIcon="fa fa-check"
+								            formControlName="authorizedSigner"
+								>
+								</p-checkbox>
+								<button
+										[disabled]="
+                  (!contact.get('email').value ||
+                          (contact.get('email').value &&
+                            contact.get('email').invalid) ||
+                          !contact.get('cellPhone').value ||
+                          (contact.get('cellPhone').value &&
+                            contact.get('cellPhone').invalid))
+                    "
+										(click)="deleteContact(i, contact)"
+										*ngIf="!isModal || (isModal && i > 0)"
+										class="button-link"
+										style="
+                    position: absolute;
+                    left: 0;
+                    padding-left: 7px;
+                    padding-top: 8px;
+                  "
+										type="button"
+								>
+									<img class="showHover" style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/trash.png"/>
+								</button>
+							</div>
+						</div>
+					</ng-container>
+				</div>
+			</ng-container>
+			
+			<div #footer class="addContact">
+				<button
+						(click)="addContact()"
+						[disabled]="isModal && contacts.invalid"
+						class="linkAdd"
+				>
+					<img
+							src="/assets/images/add.png"
+							style="
+              align-self: center;
+              flex: 0 0 auto;
+              -ms-flex: 0 0 auto;
+              margin: 0 0px 0px 4px;
+            "
+					/>
+					<label> הוספת איש קשר חדש </label>
+				</button>
+				
+				<!--                <ng-container *ngIf="!isModal && isModalFromCompaniesScreen">-->
+				<!--                    <div class="btns-footer">-->
+				<!--                        <button class="button-link" (click)="closeModal.emit(true)">-->
+				<!--                            {{'actions.cancellation'| translate}}-->
+				<!--                        </button>-->
+				<!--                        <button class="button-dark"-->
+				<!--                                style="width: 121px; height: 33px !important; padding: 0;"-->
+				<!--                                (click)="sendLandingPageMessages(); closeModal.emit(true)">-->
+				<!--                            שליחה-->
+				<!--                        </button>-->
+				<!--                    </div>-->
+				<!--                </ng-container>-->
+			</div>
+		</div>
+	</form>
+</div>
+
+<ng-container *ngIf="deleteContactModal">
+	<p-dialog (visibleChange)="deleteContactModal = false"
+			[visible]="(deleteContactModal)"
+			
+			[modal]="true"
+			[resizable]="false"
+			appendTo="body"
+			styleClass="deleteContactModal"
+	>
+		<p-header>{{ 'מחיקת איש קשר' }}</p-header>
+		
+		<p style="padding: 17px 0px 17px 10px">
+			שימו לב,
+			<br/>
+			איש הקשר ימחק והשימוש שלו באפליקציית צילום חשבוניות ומסמכים תחסם.
+		</p>
+		
+		<p-footer>
+			<button (click)="deleteContactModal = false" class="button-link">
+				{{ 'actions.cancellation' | translate }}
+			</button>
+			<button
+					(click)="
+          deleteContactFromModal(
+            deleteContactModal['index'],
+            deleteContactModal['contact']
+          )
+        "
+					class="button-dark"
+					style="width: 121px; height: 33px !important; padding: 0"
+			>
+				אישור
+			</button>
+		</p-footer>
+	</p-dialog>
+</ng-container>
+
+<ng-container *ngIf="joinAppContactModal">
+	<p-dialog
+			(visibleChange)="joinAppContactModalClose(contactSaved.contact)"
+			[visible]="(joinAppContactModal)"
+			
+			[modal]="true"
+			[resizable]="false"
+			appendTo="body"
+			styleClass="joinAppContactModal"
+	>
+		<p-header>{{
+			joinAppContactModal.join ? 'צרוף לאפליקציה' : 'ביטול צירוף לאפליקציה'
+			}}</p-header>
+		
+		<p
+				*ngIf="
+        joinAppContactModal.join && joinAppContactModal['supplierJournalItem']
+      "
+				style="padding: 17px 0px 0px 10px"
+		>
+			ללקוח יישלח מייל והודעת טקסט עם פרטי הכניסה לאפליקצית הצילום.
+		</p>
+		<p
+				*ngIf="
+        joinAppContactModal.join && joinAppContactModal['supplierJournalItem']
+      "
+				style="padding: 10px 0px 17px 10px"
+		>
+			הלקוח צריך להוריד לנייד את האפליקציה מחנות האפליקציות,
+			<br/>
+			שם המשתמש והסיסמה יהיו כתובת המייל שלו.
+		</p>
+		<p
+				*ngIf="
+        joinAppContactModal.join && !joinAppContactModal['supplierJournalItem']
+      "
+				style="padding: 17px 0px 17px 10px"
+		>
+			על מנת לצרף לאפליקצית הצילום, יש להוסיף
+			<br/>
+			את המוצר פקודות יומן ספקים ולקוחות לחברה.
+		</p>
+		<p *ngIf="!joinAppContactModal.join" style="padding: 17px 0px 17px 10px">
+			ללקוח יישלח מייל והודעת טקסט על ביטול השימוש באפליקציית הצילום
+		</p>
+		<p-footer>
+			<button
+					(click)="joinAppContactModalClose(joinAppContactModal['contact'])"
+					class="button-link"
+			>
+				{{ 'actions.cancellation' | translate }}
+			</button>
+			<button
+					(click)="joinAppContactFromModal(joinAppContactModal['contact'])"
+					class="button-dark"
+					style="width: 121px; height: 33px !important; padding: 0"
+			>
+				{{
+				joinAppContactModal.join &&
+				!joinAppContactModal['supplierJournalItem']
+						? 'הוספת מוצר'
+						: 'אישור'
+				}}
+			</button>
+		</p-footer>
+	</p-dialog>
+</ng-container>
+
+<ng-container *ngIf="authorizedSignerContactModal">
+	<p-dialog
+			(visibleChange)="authorizedSignerContactModalClose(contactSaved.contact)"
+			[visible]="(authorizedSignerContactModal)"
+			
+			[modal]="true"
+			[resizable]="false"
+			appendTo="body"
+			styleClass="joinAppContactModal"
+	>
+		<p-header> שליחת הסכם שימוש</p-header>
+		
+		<p style="padding: 17px 0px 0px 10px">
+			הסכם השימוש ישלח ל{{ contactSaved.contact.get('firstName').value }}
+			
+			{{ contactSaved.contact.get('lastName').value }}
+			
+			לצורך אספקת שירותי bizibox ושמירת
+			<br/>
+			הנתונים
+		</p>
+		
+		<p-footer>
+			<button
+					(click)="
+          authorizedSignerContactModalClose(
+            authorizedSignerContactModal['contact']
+          )
+        "
+					class="button-link"
+			>
+				{{ 'actions.cancellation' | translate }}
+			</button>
+			<button
+					(click)="
+          authorizedSignerContactFromModal(
+            authorizedSignerContactModal['contact']
+          )
+        "
+					class="button-dark"
+					style="width: 121px; height: 33px !important; padding: 0"
+			>
+				אישור
+			</button>
+		</p-footer>
+	</p-dialog>
+</ng-container>

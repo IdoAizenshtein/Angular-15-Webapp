@@ -1,0 +1,40 @@
+<div class="menu-dd menu-with-panel">
+	<button
+			id="account-dates-selector"
+			class="buttonDD"
+			(click)="togglePanel()"
+			[class.opened]="showPanelDD"
+			#selector
+			[matTooltip]="title"
+			matTooltipPosition="above"
+	>
+		<ng-container *ngIf="selectedPreset; else noPreset">
+			{{ selectedPreset.from.toDate() | date: 'dd/MM/yy' }} -
+			{{ selectedPreset.till.toDate() | date: 'dd/MM/yy' }}
+		</ng-container>
+		<ng-template #noPreset>
+			{{ title }}
+		</ng-template>
+	</button>
+	<div
+			id="account-dates-panel"
+			class="panelDD datesPanel"
+			*ngIf="showPanelDD"
+			[@slideInOutDD]
+			appClickDocument
+			(closed)="showPanelDD = false"
+	>
+		<div class="range-calendar-container">
+			<app-range-calendar
+					[min]="minSelectable"
+					[max]="maxSelectable"
+					[selectionType]="RangeSelectionType.DAYS"
+					[selection]="customDatesPreset"
+			>
+			</app-range-calendar>
+			<button class="button-dark" (click)="setDates(); showPanelDD = false">
+				{{ 'actions.approve' | translate }}
+			</button>
+		</div>
+	</div>
+</div>

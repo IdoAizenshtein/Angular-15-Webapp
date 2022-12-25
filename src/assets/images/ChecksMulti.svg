@@ -1,0 +1,11 @@
+<svg width="30" height="29" viewBox="0 0 30 29" fill="none" xmlns="http://www.w3.org/2000/svg">
+	<path d="M18 18C20.991 18 25 18 25 18V5H1V18H12" stroke="#3A90C2" class="elemStrokeColor"/>
+	<path d="M26 16H27V3H4V4" stroke="#3A90C2" class="elemStrokeColor"/>
+	<path d="M28.0222 14H29V1H7V2.04" stroke="#3A90C2" class="elemStrokeColor"/>
+	<path d="M3 12.6107H5C6 12.1107 6.32841 10.5786 6.5 11.1107C7.12907 13.0612 7.36241 13.7847 7.44896 14.0531C7.48217 14.156 7.53509 14.1645 7.6 14.078L8.91 12.3313C8.96666 12.2558 9.05127 12.2113 9.1457 12.2113C11.5193 12.2113 20.3246 12.2113 23 12.2113"
+	      stroke="#3A90C2" class="elemStrokeColor"/>
+	<path d="M21.4412 27.2696L9.69637 15.5248L9.33521 12.3352L12.5248 12.6964L24.2696 24.4412C24.4649 24.6364 24.4649 24.953 24.2696 25.1483L22.1483 27.2696C21.953 27.4649 21.6364 27.4649 21.4412 27.2696Z"
+	      stroke="#3A90C2" class="elemStrokeColor"/>
+	<path d="M9.58908 16.1246L13.1246 12.5891" stroke="#3A90C2" class="elemStrokeColor"/>
+	<path d="M19.2057 25.7412L22.7412 22.2057" stroke="#3A90C2" class="elemStrokeColor"/>
+</svg>

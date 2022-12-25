@@ -1,0 +1,13 @@
+<h2 class="titlePage">
+  <i
+    [matTooltip]="
+      'appWalk.customers.tazrim.daily.' +
+        activated.snapshot.firstChild.url.join('') +
+        '.pageTitle' | translate
+    "
+    matTooltipPosition="after"
+  >
+    {{ 'menu.customers.tazrim.daily' | translate }}</i
+  >
+</h2>
+<router-outlet></router-outlet>

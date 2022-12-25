@@ -1,0 +1,196 @@
+<div
+		style="
+    margin-bottom: 0.5em;
+    display: flex;
+    display: -ms-flexbox;
+    justify-content: center;
+    justify-items: center;
+  "
+		*ngIf="allowMultimode"
+>
+	<ul class="tabs">
+		<li
+				[class.active]="mode === EditingType.Single"
+				(click)="mode = EditingType.Single"
+				[title]="'תנועה זו בלבד'"
+				[innerText]="'תנועה זו בלבד'"
+		></li>
+		<li
+				[class.active]="mode === EditingType.Series"
+				(click)="mode = EditingType.Series"
+				[title]="'התנועה הקבועה כולה'"
+				[innerText]="'התנועה הקבועה כולה'"
+		></li>
+	</ul>
+</div>
+<!--{{source?.targetType}}-->
+
+<div
+		*ngIf="
+    source?.targetType === 'WIRE_TRANSFER' ||
+    source?.targetType === 'CHEQUE' ||
+    source?.targetType === 'OTHER'
+  "
+		style="/*height: 16em !important;*/ min-width: 18em !important"
+>
+	<app-other-editor
+			[form]="form"
+			[show_applyCategorySelectionToPastCntrl]="
+      show_applyCategorySelectionToPastCntrl
+    "
+			[source]="actualSource"
+			[companyTransTypes]="companyTransTypes"
+			[companyId]="companyId"
+			[setDateFromMessage]="setDateFromMessage"
+			[mode]="mode"
+	>
+	</app-other-editor>
+</div>
+
+<div
+		*ngIf="source?.targetType === 'ERP_CHEQUE'"
+		style="min-height: 14em !important; min-width: 18em !important"
+>
+	<app-erp-cheque-editor
+			[form]="form"
+			[show_applyCategorySelectionToPastCntrl]="
+      show_applyCategorySelectionToPastCntrl
+    "
+			[source]="actualSource"
+			[companyTransTypes]="companyTransTypes"
+			[companyId]="companyId"
+			[mode]="mode"
+	></app-erp-cheque-editor>
+</div>
+
+<div
+		*ngIf="source?.targetType === 'BANK_CHEQUE'"
+		style="min-height: 14em !important; min-width: 18em !important"
+>
+	<app-bank-cheque-editor
+			[form]="form"
+			[show_applyCategorySelectionToPastCntrl]="
+      show_applyCategorySelectionToPastCntrl
+    "
+			[source]="actualSource"
+			[companyTransTypes]="companyTransTypes"
+			[companyId]="companyId"
+			[mode]="mode"
+	></app-bank-cheque-editor>
+</div>
+
+<div
+		*ngIf="source?.targetType === 'CASH'"
+		style="min-height: 14em !important; min-width: 18em !important"
+>
+	<app-cash-editor
+			[form]="form"
+			[show_applyCategorySelectionToPastCntrl]="
+      show_applyCategorySelectionToPastCntrl
+    "
+			[source]="actualSource"
+			[companyTransTypes]="companyTransTypes"
+			[companyId]="companyId"
+			[mode]="mode"
+	></app-cash-editor>
+</div>
+
+<div
+		*ngIf="source?.targetType === 'DIRECTD'"
+		style="min-height: 14em !important; min-width: 18em !important"
+>
+	<app-directd-editor
+			[form]="form"
+			[show_applyCategorySelectionToPastCntrl]="
+      show_applyCategorySelectionToPastCntrl
+    "
+			[source]="actualSource"
+			[companyTransTypes]="companyTransTypes"
+			[companyId]="companyId"
+			[mode]="mode"
+	></app-directd-editor>
+</div>
+
+<div
+		*ngIf="source?.targetType === 'CYCLIC_TRANS'"
+		style="min-height: 26em !important; min-width: 18em !important"
+>
+	<app-cyclic-editor
+			[form]="form"
+			[show_applyCategorySelectionToPastCntrl]="
+      show_applyCategorySelectionToPastCntrl
+    "
+			[dontAllowAddition]="dontAllowAddition"
+			[source]="actualSource"
+			[companyTransTypes]="companyTransTypes"
+			[companyId]="companyId"
+			[mode]="mode"
+	></app-cyclic-editor>
+</div>
+
+<div
+		*ngIf="source?.targetType === 'CCARD_TAZRIM'"
+		style="min-height: 20em !important; min-width: 18em !important"
+>
+	<app-card-editor
+			[form]="form"
+			[show_applyCategorySelectionToPastCntrl]="
+      show_applyCategorySelectionToPastCntrl
+    "
+			[source]="actualSource"
+			[companyTransTypes]="companyTransTypes"
+			[companyId]="companyId"
+			[mode]="mode"
+	></app-card-editor>
+</div>
+
+<div
+		*ngIf="source?.targetType === 'LOAN_TAZRIM'"
+		style="min-height: 20.5em !important; min-width: 18em !important"
+>
+	<app-loan-editor
+			[form]="form"
+			[show_applyCategorySelectionToPastCntrl]="
+      show_applyCategorySelectionToPastCntrl
+    "
+			[source]="actualSource"
+			[companyTransTypes]="companyTransTypes"
+			[companyId]="companyId"
+			[mode]="mode"
+	></app-loan-editor>
+</div>
+
+<div
+		*ngIf="source?.targetType === 'SOLEK_TAZRIM'"
+		style="min-height: 16em !important; max-width: 22em !important"
+>
+	<app-slika-editor
+			[form]="form"
+			[show_applyCategorySelectionToPastCntrl]="
+      show_applyCategorySelectionToPastCntrl
+    "
+			[source]="actualSource"
+			[companyTransTypes]="companyTransTypes"
+			[companyId]="companyId"
+			[mode]="mode"
+	></app-slika-editor>
+</div>
+
+<div
+		*ngIf="['SOLEK_TAZRIM'].includes(source?.targetType)"
+		style="font-size: 92%; margin-top: 0.5em"
+		[style.visibility]="
+    mode === EditingType.Series &&
+    form.contains('autoUpdateTypeName') &&
+    form.get('autoUpdateTypeName').value &&
+    form.get('autoUpdateTypeName').value.includes('USER_DEFINED_TOTAL')
+      ? 'visible'
+      : 'collapse'
+  "
+>
+	<i class="fa fa-fw fa-exclamation-triangle" style="color: #f4cb07"></i>
+	{{
+	'formFixedMovement.movementDisclaimerIfUserDefinedTotalSelect.' +
+	source.targetType | translate
+	}}
+</div>

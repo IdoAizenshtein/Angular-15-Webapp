@@ -1,0 +1,138 @@
+<p-dialog (visibleChange)="display = false"
+		[visible]="(display)"
+		appendTo="body"
+		[modal]="true"
+		[resizable]="false"
+		
+		[styleClass]="'otp-credentials-update'"
+>
+	<ng-container *ngIf="step === OtpUpdateDialogStep.PROMPT">
+		<h2>טעינת פועלים בעסקים</h2>
+		
+		<p class="prompt">
+			<span>שימו לב,</span><br/>
+			יש להתנתק מאתר הבנק לפני הפעלת הטעינה.<br/>
+			יש להכניס את הקוד תוך 5 דקות.<br/>
+			(הקוד יישלח אל הנייד שמוגדר בבנק כמקבל מסרונים)
+		</p>
+		<button
+				class="button-dark"
+				(click)="setStep(OtpUpdateDialogStep.AWAIT_CONN)"
+				style="padding: 0 2em; font-size: 1.01em; margin: 2em 0"
+		>
+			{{ 'המשך' }}
+		</button>
+		<!--
+			<button class="button-dark" (click)="createAwaitConnectionObs(); setStep(OtpUpdateDialogStep.CODE_PROMPT)"
+					style="padding: 0 2em; font-size: 1.01em; margin: 2em 0;">
+			{{'המשך'}}
+			</button>
+	-->
+	</ng-container>
+	
+	<ng-container *ngIf="step === OtpUpdateDialogStep.AWAIT_CONN">
+		<div class="await-conn">
+			<img ngSrc="/assets/images/bizb-loading.gif" height="74" width="107"/>
+			<p>ממתין לחיבור</p>
+			<ng-container *ngIf="awaitConnection$ | async"></ng-container>
+		</div>
+	</ng-container>
+	
+	<ng-container *ngIf="step === OtpUpdateDialogStep.CODE_PROMPT">
+		<h2>טעינת פועלים בעסקים</h2>
+		
+		<form
+				class="Signup__control"
+				[formGroup]="otpForm"
+				(ngSubmit)="otpForm.valid && submitOtpCode()"
+		>
+			<p>יש להזין את הקוד שקיבלתם מאתר הבנק</p>
+			<div
+					[ngClass]="{
+          Form__group: true,
+          'Form__group--err':
+            tokenLastPollResult?.tokenStatus === 'WRONG_OTP_CODE'
+        }"
+			>
+				<input
+						type="text"
+						formControlName="code"
+						placeholder="מספר הקוד"
+						class="tokenStatusInputOTP"
+				/>
+				<div
+						class="Form__feedback Form__feedback--warning Form__feedback--warning--block"
+						style="width: 100%; margin: 0; color: red; text-align: center"
+						[style.visibility]="
+            tokenLastPollResult?.tokenStatus === 'WRONG_OTP_CODE'
+              ? 'visible'
+              : 'hidden'
+          "
+				>
+					קוד הזיהוי החד פעמי אינו תואם, אנא
+					<span class="linkP" (click)="appTokenStatus()"> נסו שוב </span>
+				</div>
+			</div>
+			<button
+					class="button-dark"
+					type="submit"
+					[disabled]="
+          otpForm.value?.pending ||
+          tokenLastPollResult?.tokenStatus === 'WRONG_OTP_CODE'
+        "
+					style="padding: 0 4em; font-size: 1.01em; margin: 2em 0"
+			>
+				{{ 'אישור' }}
+			</button>
+		</form>
+		<ng-container *ngIf="otpCodeApply$ | async"></ng-container>
+	</ng-container>
+	
+	<ng-container *ngIf="step === OtpUpdateDialogStep.MONITORING">
+		<div
+				class="monitoring"
+				style="
+        font-size: 1.2em;
+        line-height: 1.5em;
+        padding-bottom: 2em;
+        padding-bottom: 0;
+      "
+		>
+			<ng-container
+					*ngIf="
+          !tokenLastPollResult ||
+            tokenLastPollResult.tokenStatus === 'TECHNICALPROBLEM';
+          else stillMonitoring
+        "
+			>
+				<img
+						style="height: auto; width: auto; position: relative;margin: 0 auto; display: block; margin-top: 25px" fill ngSrc="/assets/images/GENERAL_ERROR.png"
+				/>
+				<h2
+						style="
+            font-weight: bold;
+            font-size: 1.5em;
+            line-height: 1em;
+            margin-bottom: 0;
+            margin-top: 20px;
+          "
+				>
+					התעוררה תקלה טכנית
+				</h2>
+				<p style="text-align: center; padding-bottom: 35px">
+					<span class="linkP" (click)="display = false"> נסו שנית </span>
+				</p>
+			</ng-container>
+			<ng-template #stillMonitoring>
+				<ng-container *ngIf="monitoring$ | async"></ng-container>
+				<img ngSrc="/assets/images/bizb-loading.gif" height="74" width="107"/>
+				<p style="padding-bottom: 20px">
+					{{
+					'foreignCredentials.statusHumanized.' +
+					tokenLastPollResult.tokenStatus | translate
+					}}
+				</p>
+			</ng-template>
+		</div>
+	</ng-container>
+</p-dialog>

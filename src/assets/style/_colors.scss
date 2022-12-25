@@ -1,0 +1,83 @@
+$white: #ffffff;
+$border-gray: #e1e1e1;
+$border-dark: #6787a6;
+$base-green: #26b92a;
+$base-red: #f21a1a;
+$red-error: #df0000;
+$base-yellow: #f4cb07;
+$base-red-sum: #cd1010; // #f21a1a;
+$base-green-sum: #229f88; //#05ae09;
+$color-base-font: #022258; // #0f3860;
+$color-base-font-white: $white;
+$color-base-font-small: #637e97;
+$color-base-font-link: #038ed6;
+$color-base-font-titles: $color-base-font;
+$color-base-font-decimal-digits: #a7a3a3;
+
+$bg-table-title: #dde7f1; // #ced7e0;
+$bg-table-row: $white;
+$bg-table-row-hover: #ddfaf4;
+$bg-table-row-selected: #c9eae3;
+
+$bg-button-dark: #022258; //#2c546c;
+$bg-button-dark-hover: $bg-button-dark; //#21465d;
+$bg-button-dark-active: #193a4f;
+$bg-button-dark-disabled: #abc0cd;
+
+$color-button-dark: $white;
+$color-button-dark-disabled: #d8e2e8;
+
+$bg-button-white: $white;
+$bg-button-white-hover: #d7e9f3;
+$bg-button-white-active: #b7d3e2;
+$bg-button-white-disabled: $white;
+
+$color-button-white: $bg-button-dark;
+$color-button-white-disabled: #adbdc6;
+
+$color-border-button-white: #346a8a;
+$color-border-button-white-disabled: #b0c5d2;
+
+$bg-tab: $white;
+$bg-tab-selected: #73879e;
+$bg-tab-hover: #d7e4ec;
+
+$bg-menu-accountants: #3a90c2;
+$bg-menu-accountants-hover: #2878a6;
+$bg-menu-accountants-active: #19628c;
+$bg-menu-accountants-internal-active: $white;
+$bg-menu-accountants-arrow: #2574a2;
+
+$bg-menu-customers: #42a6a4;
+$bg-menu-customers-hover: #308a88;
+$bg-menu-customers-active: #1e6e6c;
+$bg-menu-customers-internal-active: $white;
+$bg-menu-customers-arrow: #308a88;
+
+$bg-progress-base: #aec6e1;
+$bg-progress-fill: $color-base-font-titles;
+
+$color-place-holder: #c3cad2;
+
+$scroll-bg: #d3dbe4;
+$font-select-color: #1f456b;
+$def-blue: #193559;
+
+$icon-base: #73879e;
+$icon-hover: #5b6e84;
+$icon-active: #475a6f;
+$icon-disabled: #bdccd5;
+
+$dialog-header-bg-color: $white; //#cdd7df;
+$dialog-header-fg-color: rgb(18, 56, 96);
+
+$list-item-hover-bg-color: #d4e4ed;
+
+$bg-login-header: #edf0f2;
+$color-login-text: #003863;
+$color-login-err: #bd2c22;
+$color-login-link: #007ebf;
+$color-password-dot: #009f9c;
+
+$add-check-in: #4cab4e;
+$add-check-out: #eb4040;

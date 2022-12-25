@@ -1,0 +1,30 @@
+<h2 class="titlePage">
+  {{ 'menu.customers.financialManagement.slika.main' | translate }}
+</h2>
+<ng-container
+  *ngIf="
+    !userService.appData?.userData?.slika ||
+      userService.appData.userData.slika.length;
+    else noAccountAvailable
+  "
+>
+  <router-outlet></router-outlet>
+</ng-container>
+<ng-template #noAccountAvailable>
+  <div class="nothing-available-yet">
+    <img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/clearing-agencies.svg" />
+    <em>{{ 'לא נמצאו חשבונות סליקה המקושרים למערכת' }}</em>
+
+    <button
+      class="button-dark"
+      [routerLink]="[
+        !userService.appData.userData.accountant
+          ? '/cfl/settings/slikaAccounts'
+          : '/accountants/companies/settings/slikaAccounts'
+      ]"
+      [queryParamsHandling]="'preserve'"
+    >
+      {{ 'הוספת חשבון' }}
+    </button>
+  </div>
+</ng-template>

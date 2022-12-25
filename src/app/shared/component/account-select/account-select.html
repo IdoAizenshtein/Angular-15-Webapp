@@ -1,0 +1,198 @@
+<div class="menu-dd menu-with-panel">
+	<button
+			class="buttonDD no-selection"
+			*ngIf="
+      accountsByCurrencyGroups?.length === 1 &&
+        selectedGroup &&
+        selectedGroup.accounts &&
+        selectedGroup.accounts.length === 1;
+      else selectionAvailable
+    "
+			[id]="'account-selector'"
+	>
+		<img
+				style="height: auto; width: auto; position: relative;" fill [ngSrc]="
+        selectedGroup.selected[0].bankId
+          ? (selectedGroup.selected[0].bankId | toIconSrc: 'bank')
+          : ''
+      "
+				alt="{{ selectedGroup.selected[0].accountNickname }}"
+		/>
+		<p *ngIf="!isBankAndCreditScreen">
+			{{ selectedGroup.selected[0].accountNickname }}&nbsp;({{
+			selectedGroup.currency | currencySymbol
+			}}
+			)
+		</p>
+		<p *ngIf="isBankAndCreditScreen">
+			{{ selectedGroup.selected[0].accountNickname
+			}}{{
+			selectedGroup.selected[0].izuCustId
+					? ' - ' + selectedGroup.selected[0].izuCustId
+					: ''
+			}}
+		</p>
+	</button>
+	<ng-template #selectionAvailable>
+		<button
+				class="buttonDD"
+				[disabled]="disabled"
+				[class.unFocus]="unFocus"
+				(click)="
+        showPanelDD = !showPanelDD;
+        !unFocus && showPanelDD && panelTooltip.show(0)
+      "
+				[class.opened]="showPanelDD"
+				[id]="'account-selector'"
+				#panelTooltip="matTooltip"
+				[matTooltip]="
+        !unFocus
+          ? ('appWalk.customers.accountSelect' +
+              (showPanelDD ? '-outdatedHint' : '') | translate)
+          : ''
+      "
+				matTooltipPosition="above"
+		>
+			<ng-container *ngIf="!selectedGroup">
+				{{ 'actions.account' | translate }}
+			</ng-container>
+			<ng-container *ngIf="selectedGroup && selectedGroup.selectedCount === 1">
+				<img
+						style="height: auto; width: auto; position: relative;" fill [ngSrc]="
+            selectedGroup.selected[0].bankId
+              ? (selectedGroup.selected[0].bankId | toIconSrc: 'bank')
+              : ''
+          "
+						alt="{{ selectedGroup.selected[0].accountNickname }}"
+				/>
+				<p *ngIf="!isBankAndCreditScreen">
+					{{ selectedGroup.selected[0].accountNickname }}&nbsp;({{
+					selectedGroup.currency | currencySymbol
+					}}
+					)
+				</p>
+				<p *ngIf="isBankAndCreditScreen">
+					{{ selectedGroup.selected[0].accountNickname
+					}}{{
+					selectedGroup.selected[0].izuCustId
+							? ' - ' + selectedGroup.selected[0].izuCustId
+							: ''
+					}}
+				</p>
+			</ng-container>
+			<ng-container
+					*ngIf="
+          selectedGroup &&
+          selectedGroup.selectedCount > 1 &&
+          selectedGroup.selectedCount < selectedGroup.maxMultiSelectionCount
+        "
+			>
+				<p>
+					{{ 'filters.multiSelection' | translate }}&nbsp;({{
+					selectedGroup.currency | currencySymbol
+					}})
+				</p>
+			</ng-container>
+			<ng-container
+					*ngIf="
+          selectedGroup &&
+          selectedGroup.selectedCount > 1 &&
+          selectedGroup.selectedCount === selectedGroup.maxMultiSelectionCount
+        "
+			>
+				<p>
+					{{ 'filters.allAccounts' | translate }}&nbsp;({{
+					selectedGroup.currency | currencySymbol
+					}})
+				</p>
+			</ng-container>
+		</button>
+	</ng-template>
+	<div class="panelDD accountsPanel" *ngIf="showPanelDD" [@slideInOutDD]>
+		<ul
+				class="scroll-chrome"
+				tabindex="-1"
+				(keydown.enter)="showPanelDD = false"
+		>
+			<li *ngFor="let crncyGroup of accountsByCurrencyGroups">
+				<div
+						[class.isDisabled]="
+            !crncyGroup.selectable ||
+            (selectedGroup && selectedGroup !== crncyGroup)
+          "
+				>
+					<p-checkbox checkboxIcon="fa fa-check"
+					            [inputId]="'group_' + crncyGroup.currency"
+					            [binary]="true"
+					            [disabled]="
+              !crncyGroup.selectable ||
+              (selectedGroup && selectedGroup !== crncyGroup)
+            "
+					            [ngModel]="crncyGroup.select"
+					            (onChange)="changeSelectionAt(crncyGroup, -1)"
+					            [label]="
+              ('filters.allAccounts' | translate) +
+              ' (' +
+              (crncyGroup.currency | currencySymbol) +
+              ')'
+            "
+					>
+					</p-checkbox>
+				</div>
+				<ul>
+					<li *ngFor="let item of crncyGroup.accounts; index as i">
+						<div
+								[class.isDisabled]="
+                (!item.checked && !crncyGroup.maySelectAt(i)) ||
+                (selectedGroup && selectedGroup !== crncyGroup)
+              "
+						>
+							<p-checkbox checkboxIcon="fa fa-check"
+							            [inputId]="'n' + item?.companyAccountId"
+							            [binary]="true"
+							            [disabled]="
+                  (!item.checked && !crncyGroup.maySelectAt(i)) ||
+                  (selectedGroup && selectedGroup !== crncyGroup)
+                "
+							            [ngModel]="item.checked"
+							            (onChange)="changeSelectionAt(crncyGroup, i)"
+							>
+							</p-checkbox>
+							<label [for]="'n' + item?.companyAccountId">
+								<img
+										style="height: auto; width: auto; position: relative;"  [src]="item?.bankId ? (item.bankId | toIconSrc: 'bank') : ''"
+										alt="{{
+                    userService.appData.userData.accountSelect.accountNickname
+                  }}"
+								/>
+								
+								<p>
+									{{ item.accountNickname }}&nbsp;({{
+									crncyGroup.currency | currencySymbol
+									}})
+									<span *ngIf="!item.isUpToDate" class="outdated">
+                    <!--                  <span *ngIf="!item.alertStatus && !item.isUpToDate" class="outdated">-->
+                    <span style="color: #0f3860">-</span>&nbsp;{{
+										'filters.outdated' | translate
+										}}
+                  </span>
+									<span
+											*ngIf="
+                      item.alertStatus
+                        | alertStatusHumanize as alertStatusHumanized
+                    "
+											class="outdated"
+									>
+                    <span style="color: #0f3860">-</span>&nbsp;{{
+										alertStatusHumanized
+										}}
+                  </span>
+								</p>
+							</label>
+						</div>
+					</li>
+				</ul>
+			</li>
+		</ul>
+	</div>
+</div>

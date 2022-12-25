@@ -1,0 +1,220 @@
+<p-dialog (visibleChange)="visible = false"
+		[visible]="(visible)"
+		appendTo="body"
+		[modal]="modal"
+		styleClass="popUpLoansAndDeposit {{ loanId ? ' loanId' : '' }}"
+		(onHide)="hideLoan.next($event)"
+>
+	<p-header> פרטי הלוואות</p-header>
+	<ng-template #loader>
+		<div class="loader">
+			<div class="circle"></div>
+		</div>
+	</ng-template>
+	<div
+			class="bodyPopUp loanDetails"
+			*ngIf="loanDetails$ | async as loanDetails; else loader"
+	>
+		<div>
+			<div class="title">
+				נמצאו
+				{{ loanDetails.length }}
+				הלוואות
+			</div>
+			<div class="list" *ngIf="loanDetails.length">
+				<ul [appScrollHeight]="200" appendTo="parent" class="scrollbar-dynamic">
+					<li
+							*ngFor="let loan of loanDetails"
+							[class.active]="loan === (selectedItem$ | async)"
+							(click)="selectedItemId$.next(loan.loanId)"
+					>
+						<div
+								class="text-ellipsis"
+								[pTooltip]="loan.loanName"
+								tooltipPosition="top"
+								style="
+                display: -ms-flex;
+                display: -ms-flexbox;
+                min-width: 0;
+                flex: 100%;
+              "
+						>
+							{{ loan.loanName }}
+						</div>
+						<div
+								style="
+                display: -ms-flex;
+                display: -ms-flexbox;
+                min-width: 8ch;
+                margin-right: 1ch;
+              "
+						>
+							{{ loan.loanIntrest }}
+							%
+						</div>
+					</li>
+				</ul>
+			</div>
+		</div>
+		<div>
+			<ng-container *ngIf="selectedItem$ | async as selectedItem">
+				<div>
+					<div>
+						<div>
+							<div>
+								<div>מס’ חשבון</div>
+								<div>
+									<ng-container
+											*ngIf="
+                      selectedItem.companyAccountId | asBankAccount as itemAcc
+                    "
+									>
+										<!--{{(('banks.' + itemAcc.bankId)| translate) + ' '}}-->
+										<app-bank-view
+												[bankNumber]="itemAcc.bankId"
+										></app-bank-view>
+									</ng-container>
+									{{ selectedItem.bankAccountId }}
+								</div>
+							</div>
+							<div>
+								<div>תאריך התחלה</div>
+								<div>
+									{{ selectedItem.loanDate | date: 'dd/MM/yy' }}
+								</div>
+							</div>
+							<div>
+								<div>תאריך סיום</div>
+								<div>
+									{{ selectedItem.loanFinish | date: 'dd/MM/yy' }}
+								</div>
+							</div>
+							<div>
+								<div>ריבית שנתית</div>
+								<div>{{ selectedItem.loanIntrest }}%</div>
+							</div>
+						</div>
+						<div>
+							<ng-container *ngIf="selectedItem$ | async as selectedItem">
+								<div
+										class="pieContainer"
+										*ngIf="selectedItem.loanPayments !== null"
+								>
+									<div id="numnersCenter" class="forceLTR">
+										<!--<div id="numnersCenter" *ngIf="showItemPop.paymentsNumberLeft || showItemPop.loanPayments">-->
+										{{
+										selectedItem.paymentsNumberLeft === null
+												? 0
+												: selectedItem.loanPayments -
+												selectedItem.paymentsNumberLeft
+										}}
+										/{{
+										selectedItem.loanPayments === null
+												? 0
+												: selectedItem.loanPayments
+										}}
+									</div>
+									<div class="pieBackground"></div>
+									<div class="pieInside"></div>
+									<div
+											id="pieSliceBlue{{ i + 1 }}"
+											class="hold"
+											*ngFor="let slice of selectedItem.arrSlices; index as i"
+											[class.active]="slice"
+									>
+										<div class="pie"></div>
+									</div>
+								</div>
+							</ng-container>
+						</div>
+					</div>
+					<div>
+						<div>
+							<div>סכום הלוואה</div>
+							<div>
+								{{ selectedItem.loanOriginalTotal | sum: true }}
+							</div>
+							<div>יתרה לסיום</div>
+							<div>
+								{{ selectedItem.loanTotalLeft | sum: true }}
+							</div>
+						</div>
+						<div>
+							<div>תשלומים</div>
+							<div>
+								{{ selectedItem.loanPayments }}
+							</div>
+							<div>תשלומים שנותרו</div>
+							<div>
+								{{ selectedItem.paymentsNumberLeft }}
+							</div>
+						</div>
+						<div>
+							<div>תאריך התשלום הבא</div>
+							<div>
+								{{ selectedItem.loanNextPaymentDate | date: 'dd/MM/yy' }}
+							</div>
+							<div>סכום התשלום הבא</div>
+							<div>
+								{{ selectedItem.nextPaymentTotal | sum: true }}
+							</div>
+						</div>
+					</div>
+				</div>
+				
+				<div class="removeFromSystem" *ngIf="!loanId">
+					ההלוואה נפדתה?
+					<button
+							class="button-link"
+							(click)="popUpRemovePrompt = true"
+							[disabled]="processing$ | async"
+					>
+						הסרה מהמערכת
+					</button>
+				</div>
+				<div class="removeFromSystem" *ngIf="loanId">
+					<button class="button-link">לוח סילוקין</button>
+				</div>
+			</ng-container>
+		</div>
+	</div>
+</p-dialog>
+
+<p-dialog (visibleChange)="popUpRemovePrompt = false"
+		*ngIf="popUpRemovePrompt"
+		[visible]="(popUpRemovePrompt)"
+		appendTo="body"
+		[modal]="true"
+		styleClass="popUpRemoveLoansAndDeposit"
+>
+	<p-header> מחיקת הלוואה</p-header>
+	<div class="bodyPopUp">
+		<h3>שימו לב!</h3>
+		<p>
+			ההלוואה
+			<strong>
+				{{ (selectedItem$ | async).loanName }}
+			</strong>
+			תימחק מהמערכת ללא אפשרות שיחזור
+		</p>
+		<p>האם להמשיך?</p>
+	</div>
+	<p-footer>
+		<a
+				href="javascript:void(0)"
+				role="button"
+				class="button-white button-link"
+				style="color: #337dba !important"
+				(click)="popUpRemovePrompt = false"
+		>
+			ביטול
+		</a>
+		<button
+				class="button-dark"
+				(click)="removeSelectedLoan()"
+				[disabled]="processing$ | async"
+		>
+			מחיקת הלוואה
+		</button>
+	</p-footer>
+</p-dialog>

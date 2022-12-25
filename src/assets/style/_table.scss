@@ -1,0 +1,5295 @@
+@import 'base';
+@import 'colors';
+@import 'fonts';
+@import 'lang';
+@import 'buttons';
+
+@mixin dirTable($lang) {
+  $left: get-side($lang, left);
+  $right: get-side($lang, right);
+
+  .no-rows-found {
+    text-align: center;
+    padding-top: 2em;
+    line-height: 2em;
+    color: $color-base-font-titles;
+    font-weight: getFont(bold);
+  }
+
+  .no-rows-found.no-rows-found-lg {
+    text-align: center;
+    line-height: 2.5em;
+    font-size: 2.5em;
+    font-weight: getFont(normal);
+  }
+
+  .ltrNum {
+    text-align: $right;
+    direction: ltr;
+  }
+
+  .bank-acc-details-table-container {
+    display: flex;
+    flex-direction: column;
+    @include font(regular, 15px, 15px);
+    color: $color-base-font-titles;
+
+    .bank-acc-details-table-header,
+    .bank-acc-details-table-footer {
+      flex: 0 auto;
+      -ms-flex: 0 auto;
+
+      display: flex;
+      background: $bg-table-title;
+      color: $color-base-font-titles;
+      font-weight: getFont('bold');
+      //line-height: 33px;
+      min-height: $row-table-title-height;
+      height: $row-table-title-height;
+
+      .seamless-edit-prepare,
+      .text-item {
+        //border: 2px solid transparent;
+        //border-radius: 3px;
+        //line-height: 30px;
+        //height: 100%;
+        & {
+          padding-#{$right}: 9px;
+        }
+      }
+    }
+
+    .bank-acc-details-table-body {
+      flex: 1 auto;
+      -ms-flex: 1 auto;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .bank-acc-details-row,
+    .bank-acc-details-row-sum {
+      flex: 0 auto;
+      -ms-flex: 0 auto;
+
+      display: flex;
+      height: 35px;
+      min-height: 35px;
+      line-height: 2em;
+    }
+
+    .bank-acc-details-row {
+      //min-height: 3.6em;
+      &:hover,
+      &:focus,
+      &.bank-acc-details-row-selected {
+        input[type='text'],
+        .p-dropdown {
+          //display: block;
+          display: flex;
+          align-items: center;
+          min-height: 1.8em;
+
+          .p-dropdown-trigger {
+            height: auto;
+          }
+        }
+
+        .seamless-edit-prepare {
+          display: none;
+        }
+
+        .dropdown-stub {
+          display: flex;
+        }
+      }
+
+      z-index: 0;
+
+      &:hover:not(:focus-within):not(.bank-acc-details-row-selected):not(.titleRow) {
+        //background: #e7fbf7; //$bg-table-row;
+        box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.12),
+          -1px -1px 4px 0 rgba(0, 0, 0, 0.08), 1px 1px 8px 0 rgba(0, 0, 0, 0.12),
+          2px 2px 4px 0 rgba(0, 0, 0, 0.08);
+        z-index: 1;
+        border-bottom-color: transparent;
+      }
+
+      //&:not(:hover, .bank-acc-details-row-selected) .bank-acc-details-column-9 {
+      //  background-color: rgba(237, 240, 242, 0.5294117647058824);
+      //}
+      &:not(.titleRow) {
+        color: #4f4e4e;
+        border-bottom: 2px solid #e5e5e5;
+      }
+
+      &.titleRow {
+        min-height: 2.6em;
+        font-weight: getFont(semi-bold);
+        cursor: pointer;
+        //border-bottom: 2px solid #ced7e0;
+        &:not(.bank-acc-details-row-questionable) {
+          background: #eff6fd; //#dae7f3;
+          &:hover,
+          &.opened {
+            background: #edf4fb !important;
+          }
+        }
+      }
+
+      &.transactionsRow {
+      }
+
+      input[type='text'] {
+        border-bottom: 1px solid $color-base-font;
+        font-weight: getFont(semi-bold);
+        @include color-placeholder($color-place-holder);
+        background: transparent;
+        //border: 2px solid $border-gray;
+        //@include border-radius(3px);
+        @include padding-box(0, 12px, 0, 12px);
+        //line-height: 2rem;
+        flex: 1 1 100%;
+        -ms-flex: 1 1 100%;
+        //max-width: 19ch;
+        min-width: 0;
+        display: none;
+      }
+
+      app-category-select {
+        width: 100%;
+        line-height: 2rem;
+      }
+
+      // input[type=text]:focus,
+      //.p-dropdown.p-state-focus {
+      //  border-color: #73879e !important;
+      //}
+
+      .p-dropdown {
+        //margin-top: 2px;
+        display: none;
+      }
+
+      //.p-dropdown-open.p-dropdown, .p-dropdown:hover:not(.p-disabled) {
+      //  background-color: #fff !important;
+      //  color: #0f3860 !important;
+      //  .p-dropdown-label {
+      //    color: #0f3860 !important;
+      //  }
+      //  .p-dialog-content {
+      //    border-color: #73879e !important;
+      //  }
+      //}
+
+      .p-dropdown,
+      input[type='text'] {
+        font-size: inherit !important;
+        line-height: 1em;
+        color: $color-base-font;
+        //background: none;
+        //line-height: 33px !important;
+        //height: 30px !important;dropdown-stub
+        .p-inputtext {
+          //font-size: inherit !important;
+          //line-height: 28px !important;
+          //height: 28px !important;
+          //margin-top: -2px;
+        }
+
+        //.p-dropdown-trigger {
+        //  //line-height: 28px !important;
+        //  line-height: inherit;
+        //}
+        & {
+          padding-#{$right}: 7px;
+        }
+      }
+
+      .p-dropdown {
+        border-top: none;
+        border-left: none;
+        border-right: none;
+        border-bottom: 1px solid transparent;
+      }
+
+      .seamless-edit-prepare,
+      .text-item {
+        //border: 2px solid transparent;
+        //border-radius: 3px;
+        //line-height: 26px;
+        //height: 30px;
+        & {
+          padding-#{$right}: 7px;
+        }
+      }
+
+      .dropdown-stub {
+        @extend .seamless-edit-prepare;
+        //border-color: $border-gray;
+        //background: $white;
+        display: none;
+        //justify-items: baseline;
+        //justify-content: space-between;
+        align-items: center;
+        min-width: 0;
+        cursor: pointer;
+        //line-height: 28px;
+        //height: 30px;
+        //margin-top: 2px;
+        //max-width: 20ch;
+        width: 100%;
+
+        .fa,
+        .fas {
+          //margin-#{$right}: auto;
+          font-size: 120%;
+          -webkit-text-stroke: 1px white;
+          //& {
+          //  padding-#{$left}: 7px;
+          //}
+        }
+      }
+
+      img {
+        align-self: center;
+        flex: 0 0 auto;
+        -ms-flex: 0 0 auto;
+        margin: 0 4px;
+        //width: 14px
+      }
+
+      .bank-acc-details-link {
+        color: #038ed6;
+        cursor: pointer;
+
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+
+      .bank-acc-visuals-container {
+        display: flex;
+        display: -ms-flexbox;
+        align-items: center;
+      }
+    }
+
+    .bank-acc-details-row-selected:not(.bank-acc-details-row-questionable) {
+      background: #e9f1f6; // rgba(233,241,246,0.7019607843137254); // #d9f0eb; //$bg-table-row-selected;
+    }
+
+    .bank-acc-details-row:focus:not(.bank-acc-details-row-questionable) {
+      background: #e9f1f6; // #d9f0eb; //$bg-table-row-selected;
+    }
+
+    //.bank-acc-details-row:focus-within:not(.bank-acc-details-row-questionable) {
+    //  background: #e9f1f6; // #d9f0eb; //$bg-table-row-selected;
+    //}
+
+    .bank-acc-details-row.titleRow:not(.opened) {
+      border-bottom: 2px solid #ced7e0;
+    }
+
+    .bank-acc-details-row-sum {
+      font-weight: getFont(bold);
+      background: #e2e9f1; // #edf0f2; //$bg-table-title;
+      min-height: 2.6em;
+    }
+
+    [class*='bank-acc-details-column-'],
+    [class*='bank-acc-details-row-sum-column-'] {
+      padding: 0 0.5em;
+      box-sizing: border-box;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      overflow: hidden;
+      display: flex;
+      display: -ms-flex;
+      align-items: center; // baseline;
+      min-width: 0;
+    }
+
+    //.bank-acc-details-row [class*="bank-acc-details-column-"] {
+    //  border-top: 1px solid $border-gray;
+    //}
+    .bank-acc-details-column-1 {
+      flex: 9;
+      -ms-flex: 9;
+    }
+
+    .bank-acc-details-column-2 {
+      flex: 14;
+      -ms-flex: 14;
+    }
+
+    .bank-acc-details-column-3 {
+      flex: 22;
+      -ms-flex: 22;
+    }
+
+    .bank-acc-details-column-4 {
+      flex: 16;
+      -ms-flex: 16;
+    }
+
+    .bank-acc-details-column-5 {
+      flex: 12;
+      -ms-flex: 12;
+    }
+
+    .bank-acc-details-column-6 {
+      flex: 11;
+      -ms-flex: 11;
+    }
+
+    .bank-acc-details-column-7,
+    .bank-acc-details-column-8,
+    .bank-acc-details-column-9,
+    .bank-acc-details-row-sum-column-2,
+    .bank-acc-details-row-sum-column-3,
+    .bank-acc-details-row-sum-column-4 {
+      flex: 10;
+      -ms-flex: 10;
+    }
+
+    .bank-acc-details-column-10,
+    .bank-acc-details-row-sum-column-5 {
+      font-size: small;
+      flex: 0 0 4em;
+      -ms-flex: 0 0 4em;
+      text-align: center;
+    }
+
+    .bank-acc-details-column-beneficiary {
+      flex: 0 0 24px;
+      -ms-flex: 0 0 24px;
+      padding: 0 !important;
+    }
+
+    .bank-acc-details-row-sum-column-1 {
+      flex: 2 1 52.2em;
+      -ms-flex: 2 1 52.2em;
+    }
+
+    .bank-acc-details-questionable-header {
+      flex: 0 0 auto;
+      -ms-flex: 0 0 auto;
+
+      display: flex;
+      background-color: #eff6fd; // #edf4fb;
+      line-height: 2em;
+      //border-top: 1px solid $border-dark;
+      //border-right: 1px solid $border-dark;
+      //border-left: 1px solid $border-dark;
+      //border-bottom: 1px solid $bg-table-title; //1px solid $border-dark;
+      border-bottom: 2px solid #ced7e0;
+
+      .message-container {
+        position: absolute;
+        top: 0;
+        width: 60%;
+        display: flex;
+        overflow: hidden;
+        white-space: nowrap;
+
+        > span:first-child {
+          font-weight: getFont(semi-bold);
+          cursor: pointer;
+        }
+
+        > span:last-child {
+          & {
+            margin-#{$right}: auto;
+          }
+        }
+      }
+    }
+
+    .bank-acc-details-row-questionable {
+      background-color: #fefaee;
+    }
+
+    .bank-acc-details-row-questionable.bank-acc-details-row-selected,
+    .bank-acc-details-row-questionable:focus-within {
+      background-color: #fcecbe;
+    }
+
+    .bank-acc-details-column-1,
+    .bank-acc-details-row-sum-column-1 {
+      & {
+        padding-#{$right}: 15px;
+      }
+    }
+
+    .bank-acc-details-row > div {
+      min-width: 0;
+    }
+  }
+
+  .additional-details-container {
+    position: absolute;
+    z-index: 1000; // 99999999;
+    background: $white;
+    border: 1px solid $border-gray;
+    @include font(normal, 15px, 30px);
+    @include border-radius(4px);
+    @extend %box-sizing-border;
+    //box-shadow: -2px 2px 4px 1px #cecece;
+    box-shadow: 0 15px 30px 0 rgba(0, 0, 0, 0.11),
+      0 5px 15px 0 rgba(0, 0, 0, 0.08);
+    @include padding-box(18px, 15px, 18px, 15px);
+
+    //font-size: 15px;
+    color: $color-base-font-titles;
+    display: flex;
+    flex-flow: column nowrap;
+
+    //&.tooltip {
+    //  font-size: 15px !important;
+    //  font-weight: normal !important;
+    //}
+
+    .fa-times.button-link {
+      font-size: 150%;
+      -webkit-text-stroke: 3px white;
+      color: #73879e;
+    }
+
+    .header-container {
+      flex: 0 0 auto;
+      -ms-flex: 0 0 auto;
+
+      background: $bg-table-title;
+
+      &.body-has-scroll {
+        padding-#{$left}: 12px;
+      }
+    }
+
+    .body-container {
+      //flex: 1 1 100%;
+      //-ms-flex: 1 1 100%;
+
+      @extend .scroll-chrome;
+    }
+
+    .footer-container {
+      & {
+        padding-#{$right}: 1em;
+      }
+
+      font-weight: getFont(bold); // bold;
+      background: #dde7f1; // #edf0f2; //lighten($bg-table-title, 5%);
+      flex: 0 0 auto;
+      -ms-flex: 0 0 auto;
+
+      display: flex;
+      flex-flow: row nowrap;
+
+      > :first-child {
+        flex: 1 1 100%;
+        -ms-flex: 1 1 100%;
+
+        padding: 0 4px;
+      }
+
+      > :last-child {
+        flex: 0 0 6em;
+        -ms-flex: 0 0 6em;
+
+        padding: 0 4px;
+      }
+
+      &.isCustIdCards {
+        > :last-child {
+          flex: 0 0 14.6em;
+          -ms-flex: 0 0 14.6em;
+        }
+      }
+
+      &.isCustIdCardsCheck {
+        > :last-child {
+          flex: 0 0 259px !important;
+          -ms-flex: 0 0 259px !important;
+        }
+      }
+
+      &.body-has-scroll {
+        padding-#{$left}: 12px;
+      }
+    }
+
+    .header-row,
+    .body-row {
+      flex: 0 0 auto;
+      -ms-flex: 0 0 auto;
+      display: flex;
+      flex-flow: row nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      @extend %box-sizing-border;
+
+      & {
+        padding-#{$right}: 1em;
+      }
+    }
+
+    .body-row {
+      border-top: 1px solid $border-gray;
+      background: $white;
+    }
+
+    .header-row {
+      background: $bg-table-title;
+      font-weight: bold;
+    }
+
+    .body-row:hover:not(.body-row-selected) {
+      //background: #e7fbf7; //$bg-table-row-hover;
+      -webkit-filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.32));
+      filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.32));
+      border-bottom-color: transparent;
+    }
+
+    .body-row-selected {
+      background: #e9f1f6; // #d9f0eb; //$bg-table-row-selected;
+    }
+
+    .additional-details-check {
+      flex: 1 1 100%;
+      -ms-flex: 1 1 100%;
+      min-height: 0;
+
+      display: flex;
+      display: -ms-flexbox;
+      flex-flow: column nowrap;
+
+      [class*='cell-'] {
+        padding: 0 4px;
+      }
+
+      .cell-1 {
+        flex: 0 0 9em;
+        -ms-flex: 0 0 9em;
+      }
+
+      .cell-2 {
+        flex: 0 0 3em;
+        -ms-flex: 0 0 3em;
+        min-width: 0;
+      }
+
+      .cell-3 {
+        flex: 0 0 6em;
+        -ms-flex: 0 0 6em;
+
+        min-width: 0;
+      }
+
+      .cell-4 {
+        flex: 0 0 6em;
+        -ms-flex: 0 0 6em;
+
+        min-width: 0;
+      }
+
+      .cell-5 {
+        flex: 1 1 100%;
+        -ms-flex: 1 1 100%;
+
+        min-width: 0;
+      }
+
+      .cell-6 {
+        flex: 0 0 6em;
+        -ms-flex: 0 0 6em;
+
+        min-width: 0;
+      }
+    }
+
+    .additional-details-checks {
+      flex: 1 1 100%;
+      -ms-flex: 1 1 100%;
+      min-height: 0;
+
+      display: flex;
+      display: -ms-flexbox;
+      flex-flow: column nowrap;
+
+      .p-dropdown {
+        border-top: none;
+        border-left: none;
+        border-right: none;
+        border-bottom: 1px solid transparent;
+
+        .p-dropdown-label {
+          width: auto;
+        }
+      }
+
+      [class*='cell-'] {
+        padding: 0 4px;
+      }
+
+      .cell-1 {
+        flex: 0 0 119px;
+        -ms-flex: 0 0 119px;
+      }
+
+      .cell-2 {
+        flex: 0 0 101px;
+        -ms-flex: 0 0 101px;
+        min-width: 0;
+      }
+
+      .cell-3 {
+        flex: 0 0 40px;
+        -ms-flex: 0 0 40px;
+
+        min-width: 0;
+      }
+
+      .cell-4 {
+        flex: 0 0 95px;
+        -ms-flex: 0 0 95px;
+
+        min-width: 0;
+      }
+
+      .cell-5 {
+        flex: 1 1 106px;
+        -ms-flex: 1 1 106px;
+
+        min-width: 0;
+      }
+
+      .cell-6 {
+        flex: 0 0 85px;
+        -ms-flex: 0 0 85px;
+
+        min-width: 0;
+      }
+
+      .cell-7 {
+        flex: 0 0 80px;
+        -ms-flex: 0 0 80px;
+
+        min-width: 0;
+      }
+
+      .cell-8 {
+        flex: 0 0 50px;
+        -ms-flex: 0 0 50px;
+
+        min-width: 0;
+      }
+
+      .cell-isCustIdCards {
+        flex: 0 0 120px;
+        -ms-flex: 0 0 120px;
+        min-width: 0;
+      }
+    }
+
+    .additional-details-transfer {
+      display: flex;
+      display: -ms-flexbox;
+      flex-flow: column nowrap;
+
+      > div {
+        min-height: 0;
+
+        &.body-container {
+          flex: 100%;
+        }
+      }
+
+      .body-row,
+      .header-row {
+        display: flex;
+        display: -ms-flexbox;
+        padding-#{$left}: 0.5em;
+
+        .p-dropdown {
+          border-bottom-color: transparent;
+        }
+      }
+
+      .footer-container {
+        padding-#{$left}: 2.5em;
+      }
+
+      .body-row {
+        line-height: 2.5em;
+        align-items: center;
+      }
+
+      [class*='cell-'] {
+        padding: 0 4px;
+        min-width: 0;
+      }
+
+      .cell-1 {
+        flex: 0 0 9em;
+        -ms-flex: 0 0 9em;
+      }
+
+      .cell-2 {
+        flex: 0 0 7em;
+        -ms-flex: 0 0 7em;
+      }
+
+      .cell-3 {
+        flex: 0 0 3em;
+        -ms-flex: 0 0 3em;
+      }
+
+      .cell-4 {
+        flex: 0 0 5em;
+        -ms-flex: 0 0 5em;
+      }
+
+      .cell-5 {
+        flex: 0 0 9em;
+        -ms-flex: 0 0 9em;
+      }
+
+      .cell-6 {
+        flex: 1 1 100%;
+        -ms-flex: 1 1 100%;
+      }
+
+      .cell-7 {
+        flex: 0 0 6em;
+        -ms-flex: 0 0 6em;
+      }
+
+      .cell-8 {
+        flex: 0 0 2em;
+        -ms-flex: 0 0 2em;
+      }
+
+      .cell-isCustIdCards {
+        flex: 0 0 8em;
+        -ms-flex: 0 0 8em;
+      }
+    }
+
+    .additional-details-transfer-one {
+      display: flex;
+      flex-flow: column nowrap;
+
+      .header {
+        font-size: 1.1em;
+        line-height: 1.1em;
+        font-weight: bold;
+        background-color: $bg-table-title;
+        padding: 0.5em 1em;
+      }
+
+      .body {
+        display: flex;
+        flex-flow: row wrap;
+
+        & > div {
+          flex: 1;
+          -ms-flex: 1;
+          min-width: 0;
+          flex-flow: column nowrap;
+        }
+
+        & > div:not(:last-child) {
+          & {
+            padding-#{$left}: 1em;
+          }
+        }
+
+        .row {
+          display: flex;
+          padding-top: 0.5em;
+          padding-bottom: 0.5em;
+          border-bottom: 1px solid $border-gray;
+          &.sumToPrint {
+            display: none;
+
+            &.sumToPrintFlex {
+              display: flex;
+            }
+          }
+
+          & {
+            padding-#{$right}: 1em;
+          }
+
+          .label {
+            flex: 0 0 14ch;
+            -ms-flex: 0 0 14ch;
+          }
+
+          .value {
+            //font-weight: getFont(semi-bold);
+            min-width: 0;
+            flex: 1 1 100%;
+            -ms-flex: 1 1 100%;
+
+            &:not(.value-html-inlined) {
+              @extend .text-ellipsis;
+            }
+
+            app-sum-view {
+              .sum-fraction {
+                color: #022258;
+              }
+            }
+          }
+        }
+
+        .html-inlined {
+          border: 1px solid $border-gray;
+          border-radius: 3px;
+        }
+      }
+    }
+
+    .image-container {
+      @extend .scroll-chrome;
+      //flex: none !important;
+      //-ms-flex: 0 1 100%;
+      //height: 214px;
+      min-height: 0;
+      border: 1px solid $border-gray;
+      border-radius: 3px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      align-content: flex-start;
+      overflow: auto;
+
+      img {
+        width: 100%;
+        height: auto;
+        object-fit: fill;
+      }
+    }
+
+    .browser-view {
+      & {
+        margin-#{$right}: 20px;
+      }
+
+      flex: 0 0 380px;
+      -ms-flex: 0 0 380px;
+
+      display: flex;
+      flex-flow: column nowrap;
+
+      > :first-child {
+        flex: 0 0 auto;
+        -ms-flex: 0 0 auto;
+      }
+
+      > :last-child {
+        flex: 1 1 100%;
+        -ms-flex: 1 1 100%;
+      }
+
+      .p-dropdown {
+        border-bottom: none;
+
+        .p-dropdown-label.p-placeholder {
+          background: url('/assets/images/to-printer-sm.png') #{$right} center no-repeat !important;
+          background-size: 20px !important;
+          padding-#{$right}: 26px !important;
+        }
+      }
+    }
+
+    $arrow-size: 14px;
+    $arrow-border-size: 1.5px;
+
+    .arrow {
+      position: absolute;
+      width: 0;
+      height: 0;
+      border: $arrow-size solid transparent;
+      z-index: 8;
+      @extend %box-sizing-border;
+    }
+
+    &.arrow-down .arrow {
+      border-top-color: $border-gray;
+      border-bottom: none;
+
+      &:after {
+        position: absolute;
+        content: ' ';
+        bottom: $arrow-border-size;
+        #{$left}: $arrow-border-size - $arrow-size;
+        //transform: translateX(-50% -200%);
+        width: 0;
+        height: 0;
+        border: $arrow-size - $arrow-border-size solid transparent;
+        @extend %box-sizing-border;
+        border-top-color: $white;
+        border-bottom: none;
+      }
+    }
+
+    &.arrow-up .arrow {
+      border-top: none;
+      border-bottom-color: $border-gray;
+
+      &:after {
+        position: absolute;
+        content: ' ';
+        top: $arrow-border-size;
+        #{$right}: $arrow-border-size - $arrow-size;
+        //transform: translateX(-50%);
+        width: 0;
+        height: 0;
+        border: $arrow-size - $arrow-border-size solid transparent;
+        @extend %box-sizing-border;
+        border-top: none;
+        border-bottom-color: $white;
+      }
+    }
+  }
+
+  .search-highlight {
+    background-color: #fff600;
+  }
+
+  .bank-acc-details-table-container.cardTable {
+    display: block;
+
+    .scroll-element.scroll-y.scroll-scrolly_visible {
+      opacity: 1;
+      height: auto;
+      -webkit-transition: opacity 1s ease-in-out;
+      -moz-transition: opacity 1s ease-in-out;
+      -ms-transition: opacity 1s ease-in-out;
+      -o-transition: opacity 1s ease-in-out;
+      transition: opacity 1s ease-in-out;
+    }
+
+    &.hideScroll {
+      .scroll-element.scroll-y.scroll-scrolly_visible {
+        opacity: 0;
+        height: 0;
+        overflow: hidden;
+      }
+    }
+
+    .bank-acc-details-table-header,
+    .bank-acc-details-row.transactionsRow,
+    .bank-acc-details-row.titleRow {
+      display: -webkit-box;
+      display: -ms-flexbox;
+      display: flex;
+      -ms-flex-preferred-size: 0;
+      flex-basis: 0;
+      //-webkit-box-pack: normal;
+      //-ms-flex-pack: normal;
+      justify-content: normal;
+      -webkit-box-align: center;
+      -ms-flex-align: center;
+      align-items: center;
+
+      > div {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        //      padding: 0 0.5em;
+        min-width: 0;
+
+        input {
+          max-width: 100%;
+        }
+      }
+
+      > div + div {
+        padding-#{$right}: 5px;
+      }
+    }
+
+    .bank-acc-details-row.transactionsRow {
+      min-height: 50px;
+      //& + .bank-acc-details-row.transactionsRow {
+      //  border-top: 1px solid $border-gray;
+      //}
+    }
+
+    .bank-acc-details-table-header,
+    .bank-acc-details-row.transactionsRow {
+      > div {
+        &:nth-child(1) {
+          flex: 8;
+          -ms-flex: 8;
+          padding-#{$right}: 15px;
+        }
+
+        &:nth-child(2) {
+          flex: 11;
+          -ms-flex: 11;
+        }
+
+        &:nth-child(3) {
+          flex: 10;
+          -ms-flex: 10;
+        }
+
+        &:nth-child(4) {
+          flex: 14;
+          -ms-flex: 14;
+        }
+
+        &:nth-child(5) {
+          flex: 10;
+          -ms-flex: 10;
+        }
+
+        &:nth-child(6) {
+          flex: 12;
+          -ms-flex: 12;
+        }
+
+        &:nth-child(7) {
+          flex: 12;
+          -ms-flex: 12;
+        }
+
+        &:nth-child(8) {
+          flex: 9;
+          -ms-flex: 9;
+        }
+      }
+    }
+
+    .bank-acc-details-row.titleRow {
+      > div {
+        &:nth-child(1) {
+          flex: 67;
+          -ms-flex: 67;
+        }
+
+        &:nth-child(2) {
+          flex: 12;
+          -ms-flex: 12;
+
+          padding-#{$right}: 10px;
+          font-weight: getFont(bold);
+        }
+
+        &:nth-child(3) {
+          flex: 9;
+          -ms-flex: 9;
+
+          font-weight: getFont(bold);
+        }
+      }
+    }
+  }
+
+  .bank-acc-details-table-container.solekTable {
+    display: block;
+
+    .lite {
+      color: #aeaeae;
+      cursor: pointer;
+
+      &:hover {
+        color: #f3ca35;
+      }
+
+      display: flex;
+      align-items: center;
+
+      img {
+        margin-left: 5px;
+      }
+    }
+
+    .bank-acc-details-row.transactionsRow {
+      height: 50px;
+      //& + .bank-acc-details-row.transactionsRow {
+      //  border-top: 1px solid $border-gray;
+      //}
+    }
+
+    .bank-acc-details-table-header,
+    .bank-acc-details-row.transactionsRow {
+      display: -webkit-box;
+      display: -ms-flexbox;
+      display: flex;
+      -ms-flex-preferred-size: 0;
+      flex-basis: 0;
+      //-webkit-box-pack: normal;
+      //-ms-flex-pack: normal;
+      justify-content: normal;
+      -webkit-box-align: center;
+      -ms-flex-align: center;
+      align-items: center;
+
+      > div {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        padding: 0 0.5em;
+
+        &:nth-child(1) {
+          flex: 14;
+          -ms-flex: 14;
+        }
+
+        &:nth-child(2) {
+          flex: 13.5;
+          -ms-flex: 13.5;
+        }
+
+        &:nth-child(3) {
+          flex: 9;
+          -ms-flex: 9;
+        }
+
+        &:nth-child(4) {
+          flex: 11.5;
+          -ms-flex: 11.5;
+        }
+
+        &:nth-child(5) {
+          flex: 11.5;
+          -ms-flex: 11.5;
+        }
+
+        &:nth-child(6) {
+          flex: 11.5;
+          -ms-flex: 11.5;
+        }
+
+        &:nth-child(7) {
+          flex: 11.5;
+          -ms-flex: 11.5;
+        }
+
+        &:nth-child(8) {
+          flex: 11.5;
+          -ms-flex: 11.5;
+        }
+      }
+    }
+
+    .bank-acc-details-row.titleRow {
+      display: -webkit-box;
+      display: -ms-flexbox;
+      display: flex;
+      -ms-flex-preferred-size: 0;
+      flex-basis: 0;
+      //-webkit-box-pack: normal;
+      //-ms-flex-pack: normal;
+      justify-content: normal;
+      -webkit-box-align: center;
+      -ms-flex-align: center;
+      align-items: center;
+
+      > div {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        padding: 0 0.5em;
+
+        &:nth-child(1) {
+          flex: 36.5;
+          -ms-flex: 36.5;
+          padding-#{$left}: 2.5em;
+        }
+
+        &:nth-child(2) {
+          flex: 11.5;
+          -ms-flex: 11.5;
+        }
+
+        &:nth-child(3) {
+          flex: 11.5;
+          -ms-flex: 11.5;
+        }
+
+        &:nth-child(4) {
+          flex: 11.5;
+          -ms-flex: 11.5;
+        }
+
+        &:nth-child(5) {
+          flex: 11.5;
+          -ms-flex: 11.5;
+        }
+
+        &:nth-child(6) {
+          flex: 11.5;
+          -ms-flex: 11.5;
+        }
+      }
+    }
+  }
+
+  .bank-acc-details-table-container.checksTable {
+    display: block;
+
+    .bank-acc-details-table-header,
+    .bank-acc-details-row.transactionsRow {
+      display: -webkit-box;
+      display: -ms-flexbox;
+      display: flex;
+      -ms-flex-preferred-size: 0;
+      flex-basis: 0;
+      //-webkit-box-pack: normal;
+      //-ms-flex-pack: normal;
+      justify-content: normal;
+      -webkit-box-align: center;
+      -ms-flex-align: center;
+      align-items: center;
+
+      > div {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        padding: 0 0.5em;
+
+        .non-editable-but-justified {
+          padding-#{$right}: 9px;
+        }
+
+        //.p-inputtext {
+        //  background-color: $white;
+        //}
+
+        &.bank-acc-details-column-1 {
+          flex: 9;
+          -ms-flex: 9;
+        }
+
+        &.bank-acc-details-column-2 {
+          flex: 12;
+          -ms-flex: 12;
+        }
+
+        &.bank-acc-details-column-3 {
+          flex: 14;
+          -ms-flex: 14;
+        }
+
+        &.bank-acc-details-column-4 {
+          flex: 11.5;
+          -ms-flex: 11.5;
+        }
+
+        &.bank-acc-details-column-5 {
+          flex: 11.5;
+          -ms-flex: 11.5;
+        }
+
+        &.bank-acc-details-column-6 {
+          flex: 8.5;
+          -ms-flex: 8.5;
+        }
+
+        &.bank-acc-details-column-7 {
+          flex: 7.5;
+          -ms-flex: 7.5;
+        }
+
+        &.bank-acc-details-column-8 {
+          flex: 14;
+          -ms-flex: 14;
+
+          .non-editable-but-justified {
+            padding-#{$right}: 16px;
+          }
+        }
+
+        &.bank-acc-details-column-9 {
+          flex: 11.5;
+          -ms-flex: 11.5;
+        }
+
+        &.bank-acc-details-column-beneficiary {
+          flex: 0 0 32px;
+          -ms-flex: 0 0 32px;
+          padding: 0;
+
+          img {
+            margin: auto;
+          }
+
+          .menu-with-panel > div:not(.tooltip) {
+            display: flex;
+          }
+        }
+      }
+    }
+
+    .bank-acc-details-table-header > div {
+      &.bank-acc-details-column-2 > div {
+        padding-#{$right}: 17px;
+      }
+
+      &.bank-acc-details-column-3 > div {
+        padding-#{$right}: 25px;
+      }
+
+      &.bank-acc-details-column-5 > div {
+        padding-#{$right}: 9px;
+      }
+
+      &.bank-acc-details-column-6 > div {
+        padding-#{$right}: 8px;
+      }
+
+      &.bank-acc-details-column-8 > div {
+        padding-#{$right}: 24px;
+      }
+
+      &.bank-acc-details-column-9 > div {
+        padding-#{$right}: 8px;
+      }
+    }
+
+    .bank-acc-details-row.transactionsRow {
+      //border-bottom: 2px solid #f7f7f7;
+      //line-height: 48px;
+      //height: 48px;
+      .dropdown-stub {
+        margin-top: 0;
+      }
+
+      input[type='text'] {
+        width: 100%;
+      }
+
+      img.trash {
+        display: none;
+      }
+
+      &:hover {
+        img.trash {
+          display: inline-block !important;
+        }
+      }
+
+      &:focus-within {
+        img.trash {
+          display: inline-block !important;
+        }
+      }
+
+      &:focus {
+        img.trash {
+          display: inline-block !important;
+        }
+      }
+
+      > div {
+        &.bank-acc-details-column-9 {
+          display: flex;
+          display: -ms-flexbox;
+          justify-content: space-between;
+          align-content: baseline;
+
+          > div:last-child {
+            display: flex;
+            display: -ms-flexbox;
+            align-content: baseline;
+          }
+        }
+      }
+
+      &:hover,
+      &:focus,
+      &:focus-within {
+        //background: #e0faf5;
+        //box-shadow: 0px 0px 1px 1px #eaeaea;
+        img.trash {
+          display: inline-block !important;
+        }
+
+        div {
+          &.bank-acc-details-column-9 {
+            > div:last-child {
+              cursor: pointer;
+
+              img {
+                cursor: pointer;
+                display: inline-block !important;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .bank-acc-details-table-container.tableDaily {
+    //display: block;
+    .bank-acc-details-row {
+      //border-bottom: 2px solid #f7f7f7;
+
+      &.titleRow {
+        div.care {
+          text-align: $left;
+
+          button {
+            @extend %button-dark-ext;
+            //height: 26px !important;
+            line-height: 26px !important;
+            padding: 0 18px !important;
+            margin-#{$left}: 15px;
+          }
+        }
+      }
+
+      &.nigreretRow {
+        background: #fef8e7;
+      }
+    }
+
+    .bank-acc-details-table-header,
+    .bank-acc-details-row {
+      display: -webkit-box;
+      display: -ms-flexbox;
+      display: flex;
+      -ms-flex-preferred-size: 0;
+      flex-basis: 0;
+      //-webkit-box-pack: normal;
+      //-ms-flex-pack: normal;
+      justify-content: normal;
+      -webkit-box-align: center;
+      -ms-flex-align: center;
+      align-items: center;
+
+      //input[type=text], .p-dropdown {
+      //  display: block;
+      //  text-align: right;
+      //}
+      .dropdown-stub {
+        display: flex;
+      }
+
+      .note-active {
+        cursor: pointer;
+      }
+
+      .note-none {
+        cursor: pointer;
+      }
+
+      &:hover,
+      &:focus,
+      &.bank-acc-details-row-selected {
+        //input {
+        //  background: $white;
+        //}
+        .p-calendar > .p-inputtext {
+          background: transparent url(/assets/images/calendar.png) no-repeat
+            scroll 0px center;
+          //background: transparent url(/assets/images/calendar.png) no-repeat scroll 7px 1px;
+          //background: #ffffff url(/assets/images/calendar.png) no-repeat scroll 7px 5px;
+        }
+
+        .note-none {
+          visibility: visible;
+        }
+
+        //.p-dropdown {
+        //  border-color: #e1e1e1 !important;
+        //}
+        //.p-dropdown-open {
+        //  border-color: #73879e !important;
+        //}
+        > div:last-child {
+          > i {
+            display: block;
+          }
+        }
+      }
+
+      img {
+        margin-#{$left}: 4px;
+        margin-#{$right}: 0px;
+      }
+
+      > div {
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        padding: 0 0.5em;
+        overflow: visible;
+        min-width: 0;
+
+        input,
+        p-dropdown {
+          width: 100%;
+          min-width: 0;
+
+          .p-dropdown-label {
+            width: unset;
+            min-width: 0;
+          }
+        }
+
+        &.bank-acc-details-column-1 {
+          flex: 10.1111111111;
+          -ms-flex: 10.1111111111;
+        }
+
+        &.bank-acc-details-column-2 {
+          flex: 10.1111111111;
+          -ms-flex: 10.1111111111;
+        }
+
+        &.bank-acc-details-column-3 {
+          flex: 12.111111;
+          -ms-flex: 12.111111;
+        }
+
+        &.bank-acc-details-column-4 {
+          flex: 12.111111;
+          -ms-flex: 12.111111;
+        }
+
+        &.bank-acc-details-column-5 {
+          flex: 12.111111;
+          -ms-flex: 12.111111;
+        }
+
+        &.bank-acc-details-column-6 {
+          flex: 8.111111;
+          -ms-flex: 8.111111;
+        }
+
+        &.bank-acc-details-column-7 {
+          flex: 8.111111;
+          -ms-flex: 8.111111;
+        }
+
+        &.bank-acc-details-column-8 {
+          flex: 7.111111;
+          -ms-flex: 7.111111;
+        }
+
+        &.bank-acc-details-column-9 {
+          flex: 7.111111;
+          -ms-flex: 7.111111;
+        }
+
+        &.bank-acc-details-column-10 {
+          flex: 6.111111;
+          -ms-flex: 6.111111;
+          display: flex;
+          justify-content: flex-end;
+
+          > i {
+            cursor: pointer;
+            //color: #9aa3a6;
+            display: none;
+            margin-left: 10px;
+            margin-right: 29px;
+          }
+        }
+
+        &.bank-acc-details-column-beneficiary {
+          flex: 0 0 24px;
+          -ms-flex: 0 0 24px;
+          padding: 0;
+
+          img {
+            margin: auto;
+          }
+
+          .menu-with-panel > div:not(.tooltip) {
+            display: flex;
+          }
+        }
+      }
+
+      &.titleRow > div {
+        &:nth-child(1) {
+          flex: 64.666666;
+          -ms-flex: 64.666666;
+          padding-#{$left}: calc(7.5em + 24px);
+        }
+
+        &:nth-child(2),
+        &:nth-child(3) {
+          flex: 8.111111;
+          -ms-flex: 8.111111;
+          padding-#{$left}: 7px;
+        }
+
+        &:last-child {
+          flex: 11.222222;
+          -ms-flex: 11.222222;
+        }
+      }
+    }
+
+    .bank-acc-details-table-header {
+      > div {
+        &.bank-acc-details-column-1,
+        &.bank-acc-details-column-3 {
+          span:first-child {
+            padding-#{$right}: 0.5em;
+          }
+        }
+
+        &.bank-acc-details-column-2 {
+        }
+
+        &.bank-acc-details-column-4,
+        &.bank-acc-details-column-5 {
+          > div {
+            padding-#{$right}: 0.5em;
+          }
+        }
+
+        &.bank-acc-details-column-6,
+        &.bank-acc-details-column-7,
+        &.bank-acc-details-column-8 {
+          > div {
+            padding-right: 0.5em;
+          }
+        }
+
+        //&:last-child {
+        //  flex: 14.222222;
+        //  -ms-flex: 14.222222;
+        //}
+      }
+    }
+
+    .bank-acc-details-table-footer {
+      align-items: center;
+
+      > div {
+        padding: 0 0.5em;
+
+        &:nth-child(1) {
+          flex: 64.666666;
+          -ms-flex: 64.666666;
+          padding-#{$left}: calc(7.5em + 24px);
+        }
+
+        &:nth-child(2),
+        &:nth-child(3) {
+          flex: 8.111111;
+          -ms-flex: 8.111111;
+          padding-#{$left}: 7px;
+        }
+
+        &:last-child {
+          flex: 11.222222;
+          -ms-flex: 11.222222;
+        }
+      }
+    }
+  }
+
+  .bank-acc-details-table-container.fixedMovementsTable {
+    display: block;
+
+    .bank-acc-details-row.transactionsRow {
+      min-height: 50px;
+      //& + .bank-acc-details-row.transactionsRow {
+      //  border-top: 1px solid $border-gray;
+      //}
+
+      .rowHandle {
+        display: none;
+        cursor: pointer;
+        min-width: 0;
+        margin-#{$right}: auto;
+        align-self: center;
+        align-content: center;
+      }
+
+      &:focus,
+      &:hover {
+        .rowHandle {
+          display: flex;
+        }
+      }
+
+      &.deletedGr {
+        color: #cacaca;
+
+        .sum-debit,
+        .sum-credit {
+          color: #cacaca !important;
+        }
+
+        .rowHandle {
+          color: #4f4e4e;
+          cursor: pointer;
+        }
+      }
+
+      & .recommendationRowHandle {
+        > button {
+          padding: 0.1em 0.6em;
+
+          & + button {
+            margin-#{$right}: 0.5ch;
+          }
+        }
+      }
+    }
+
+    .bank-acc-details-table-header,
+    .bank-acc-details-row.transactionsRow {
+      display: -webkit-box;
+      display: -ms-flexbox;
+      display: flex;
+      -ms-flex-preferred-size: 0;
+      flex-basis: 0;
+      //-webkit-box-pack: normal;
+      //-ms-flex-pack: normal;
+      justify-content: normal;
+      -webkit-box-align: center;
+      -ms-flex-align: center;
+      align-items: center;
+
+      > div {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        min-width: 0;
+        padding: 0 0.5em;
+
+        &.bank-acc-details-column-1 {
+          flex: 14;
+          -ms-flex: 14;
+        }
+
+        &.bank-acc-details-column-2 {
+          flex: 18;
+          -ms-flex: 18;
+        }
+
+        &.bank-acc-details-column-3 {
+          flex: 10;
+          -ms-flex: 10;
+        }
+
+        &.bank-acc-details-column-4 {
+          flex: 15;
+          -ms-flex: 15;
+        }
+
+        &.bank-acc-details-column-5 {
+          flex: 14;
+          -ms-flex: 14;
+        }
+
+        &.bank-acc-details-column-6 {
+          flex: 12;
+          -ms-flex: 12;
+        }
+
+        &.bank-acc-details-column-7 {
+          flex: 10;
+          -ms-flex: 10;
+          align-items: flex-start;
+        }
+
+        &.bank-acc-details-column-8 {
+          flex: 11;
+          -ms-flex: 11;
+          padding-#{$left}: 16px;
+          display: flex;
+          justify-content: flex-end;
+        }
+
+        &.bank-acc-details-column-beneficiary {
+          flex: 0 0 32px;
+          -ms-flex: 0 0 32px;
+          padding: 0;
+
+          img {
+            margin: auto;
+          }
+
+          .menu-with-panel > div:not(.tooltip) {
+            display: flex;
+          }
+        }
+
+        &.multilinedCell,
+        .multilinedCell {
+          display: flex;
+          flex-flow: column nowrap;
+          align-content: center;
+          //justify-items: center;
+          > span {
+            min-height: 1.1em;
+            line-height: 1.1em;
+
+            &:first-child {
+              font-weight: getFont(semi-bold);
+            }
+
+            &:last-child {
+              font-size: 95%;
+              opacity: 0.8;
+            }
+          }
+        }
+      }
+    }
+
+    .bank-acc-details-row.titleRow {
+      display: -webkit-box;
+      display: -ms-flexbox;
+      display: flex;
+      -ms-flex-preferred-size: 0;
+      flex-basis: 0;
+      //-webkit-box-pack: normal;
+      //-ms-flex-pack: normal;
+      justify-content: normal;
+      -webkit-box-align: center;
+      -ms-flex-align: center;
+      align-items: center;
+
+      > div {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        padding: 0 0.5em;
+
+        &:nth-child(1) {
+          flex: 70;
+          -ms-flex: 70;
+          padding-#{$left}: calc(0.5em + 32px);
+        }
+
+        &:nth-child(2) {
+          flex: 12;
+          -ms-flex: 12;
+        }
+
+        &:nth-child(3) {
+          flex: 20;
+          -ms-flex: 20;
+        }
+      }
+    }
+  }
+
+  .bank-acc-details-table-container.tableBanktransForMatch {
+    display: block;
+
+    .p-disabled {
+      opacity: 0.2;
+    }
+
+    .bank-acc-details-row {
+      //border-bottom: 2px solid #f7f7f7;
+      line-height: 45px;
+      height: 46px;
+      position: relative;
+
+      &:hover,
+      &:focus,
+      &.bank-acc-details-row-selected {
+        > div:last-child {
+          i.fa-ellipsis-v {
+            display: block;
+          }
+        }
+      }
+
+      //&:hover {
+      //  background: #e7fbf7;
+      //}
+      //&:focus, &.bank-acc-details-row-selected {
+      //  background: #c9eae3;
+      //}
+
+      > div {
+        color: #0f3860;
+
+        &.bank-acc-details-column-1 {
+          white-space: nowrap;
+          text-overflow: ellipsis;
+          overflow: visible;
+
+          > div {
+            margin-#{$right}: 7px;
+            @include font(regular, 15px, 45px);
+
+            &.bank-acc-details-link {
+              color: #038ed6;
+              cursor: pointer;
+            }
+          }
+        }
+
+        &.bank-acc-details-column-2 {
+          > div {
+            line-height: 20px;
+            @include font(regular, 15px, 20px);
+            //&:nth-child(1) {
+            //  color: #0f3860;
+            //}
+            &:nth-child(2) {
+              color: #a7a3a3;
+            }
+          }
+        }
+
+        &.bank-acc-details-column-3 {
+          > div {
+            line-height: 20px;
+
+            &:nth-child(1) {
+              @include font(regular, 15px, 20px);
+              //color: #0f3860;
+            }
+
+            &:nth-child(2) {
+              @include font(regular, 14px, 20px);
+              color: #637e97;
+            }
+          }
+        }
+
+        &.bank-acc-details-column-4 {
+          display: flex;
+
+          > div {
+            &:nth-child(1) {
+              flex: 1 1 100%;
+              -ms-flex: 1 1 100%;
+            }
+
+            &:nth-child(2) {
+              flex: 0 0 2ch;
+              -ms-flex: 0 0 2ch;
+              display: flex;
+              -ms-flex-preferred-size: 0;
+              justify-content: normal;
+              -webkit-box-align: center;
+              -ms-flex-align: center;
+              align-items: center;
+
+              > i {
+                cursor: pointer;
+                //color: #9aa3a6;
+                display: none;
+              }
+
+              > img {
+                cursor: pointer;
+                display: none;
+              }
+            }
+          }
+        }
+      }
+
+      .arrow-right {
+        width: 0;
+        height: 0;
+        border-top: 16px solid transparent;
+        border-bottom: 16px solid transparent;
+        border-#{$left}: 16px solid #e1e1e1;
+        position: absolute;
+        #{$right}: 11em;
+        top: 7px;
+        padding: 0;
+
+        &:after {
+          position: absolute;
+          content: ' ';
+          top: -16px;
+          #{$right}: 2px;
+          width: 0;
+          height: 0;
+          z-index: 99999999;
+          border-top: 16px solid transparent;
+          border-bottom: 16px solid transparent;
+          border-#{$left}: 16px solid #ffffff;
+        }
+      }
+
+      .arrow-left {
+        width: 0;
+        height: 0;
+        border-top: 16px solid transparent;
+        border-bottom: 16px solid transparent;
+        border-#{$right}: 16px solid #e1e1e1;
+        position: absolute;
+        #{$left}: 36em;
+        top: 7px;
+        padding: 0;
+
+        &:after {
+          position: absolute;
+          content: ' ';
+          top: -16px;
+          #{$left}: 2px;
+          width: 0;
+          height: 0;
+          z-index: 99999999;
+          border-top: 16px solid transparent;
+          border-bottom: 16px solid transparent;
+          border-#{$right}: 16px solid #ffffff;
+        }
+      }
+    }
+
+    .bank-acc-details-table-header,
+    .bank-acc-details-row {
+      display: -webkit-box;
+      display: -ms-flexbox;
+      display: flex;
+      -ms-flex-preferred-size: 0;
+      flex-basis: 0;
+      //-webkit-box-pack: normal;
+      //-ms-flex-pack: normal;
+      justify-content: normal;
+      -webkit-box-align: center;
+      -ms-flex-align: center;
+      align-items: center;
+
+      input[type='text'] {
+        display: block;
+        text-align: $right;
+      }
+
+      //&:hover {
+      //  > div:last-child {
+      //    > i {
+      //      display: block;
+      //    }
+      //  }
+      //}
+      > div {
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        padding: 0 0.5em;
+        overflow: visible;
+
+        input {
+          width: 100%;
+        }
+
+        &.bank-acc-details-column-1 {
+          flex: 1;
+          -ms-flex: 1;
+          min-width: 0;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        &.bank-acc-details-column-2 {
+          flex: 0.8;
+          -ms-flex: 0.8;
+          display: block;
+        }
+
+        &.bank-acc-details-column-3 {
+          flex: 0.8;
+          -ms-flex: 0.8;
+          display: block;
+        }
+
+        &.bank-acc-details-column-4 {
+          flex: 0.9;
+          -ms-flex: 0.9;
+        }
+
+        &.bank-acc-details-column-beneficiary {
+          flex: 0 0 32px;
+          -ms-flex: 0 0 32px;
+          padding: 0;
+
+          img {
+            margin: auto;
+          }
+
+          .menu-with-panel > div:not(.tooltip) {
+            display: flex;
+          }
+        }
+      }
+    }
+
+    .bank-acc-details-table-header {
+      > div {
+        &.bank-acc-details-column-1 {
+          .text-ellipsis {
+            margin-#{$right}: 7px;
+          }
+        }
+
+        &.bank-acc-details-column-2 {
+        }
+
+        &.bank-acc-details-column-3 {
+        }
+
+        &.bank-acc-details-column-4 {
+        }
+      }
+    }
+
+    .additional-details-container {
+      #{$left}: auto;
+      #{$right}: 12em !important;
+      width: 660px;
+      height: 300px !important;
+      top: 50% !important;
+      bottom: auto;
+      margin-top: -150px;
+
+      &.rightSide {
+        #{$right}: -42em !important;
+      }
+
+      z-index: 1000; // 99999999;
+    }
+  }
+
+  .table-matched-movements {
+    margin-top: 23px;
+
+    .titlesColumn,
+    .titlesColumnInside,
+    .table-matched {
+      display: -webkit-box;
+      display: -ms-flexbox;
+      display: flex;
+      -ms-flex-preferred-size: 0;
+      flex-basis: 0;
+      //-webkit-box-pack: normal;
+      //-ms-flex-pack: normal;
+      justify-content: normal;
+      -webkit-box-align: center;
+      -ms-flex-align: center;
+
+      > div {
+        &:nth-child(1) {
+          flex: 1;
+          -ms-flex: 1;
+        }
+
+        &:nth-child(2) {
+          flex: 38;
+          -ms-flex: 38;
+        }
+
+        &:nth-child(3) {
+        }
+
+        &:nth-child(4) {
+          flex: 38;
+          -ms-flex: 38;
+        }
+
+        &:nth-child(5) {
+        }
+
+        &:nth-child(6) {
+          flex: 19;
+          -ms-flex: 19;
+        }
+
+        &:nth-child(7) {
+          flex: 1;
+          -ms-flex: 1;
+        }
+
+        &.separatorFlex {
+          flex: 1;
+          -ms-flex: 1;
+
+          > div {
+            width: 3px;
+            background: #ffffff;
+            border-right: 1px solid #ced7e0;
+            border-left: 1px solid #ced7e0;
+            height: 100%;
+          }
+        }
+      }
+    }
+
+    .titlesColumn {
+      height: 44px;
+      color: #0f3860;
+      @include font(bold, 18px, 44px);
+      background: #ecf0f2;
+
+      > div {
+        &:not(:last-child) {
+          position: relative;
+          //&:after {
+          //  position: absolute;
+          //  height: 100vh;
+          //  width: 5px;
+          //  background: #ffffff;
+          //  top: 0;
+          //  left: 0;
+          //  content: '';
+          //  bottom: 0;
+          //  z-index: 999;
+          //  border-right: 1px solid #ced7e0;
+          //  border-left: 1px solid #ced7e0;
+          //}
+        }
+
+        &:nth-child(1) {
+        }
+
+        &:nth-child(2) {
+        }
+      }
+    }
+
+    .titlesColumnInside {
+      height: 33px;
+      color: #0f3860;
+      @include font(bold, 16px, 33px);
+      background: #ced7e0;
+
+      > div {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-preferred-size: 0;
+        flex-basis: 0;
+        //-webkit-box-pack: normal;
+        //-ms-flex-pack: normal;
+        justify-content: normal;
+        -webkit-box-align: center;
+        -ms-flex-align: center;
+        align-items: center;
+
+        &:nth-child(2) {
+          > div {
+            &:nth-child(1) {
+              flex: 30;
+              -ms-flex: 30;
+            }
+
+            &:nth-child(2) {
+              flex: 25;
+              -ms-flex: 25;
+            }
+
+            &:nth-child(3) {
+              flex: 25;
+              -ms-flex: 25;
+            }
+
+            &:nth-child(4) {
+              flex: 20;
+              -ms-flex: 20;
+            }
+          }
+        }
+
+        &:nth-child(4) {
+          > div {
+            &:nth-child(1) {
+              flex: 30;
+              -ms-flex: 30;
+            }
+
+            &:nth-child(2) {
+              flex: 25;
+              -ms-flex: 25;
+            }
+
+            &:nth-child(3) {
+              flex: 25;
+              -ms-flex: 25;
+            }
+
+            &:nth-child(4) {
+              flex: 20;
+              -ms-flex: 20;
+            }
+          }
+        }
+
+        &:nth-child(6) {
+          > div {
+            &:nth-child(1) {
+              flex: 35;
+              -ms-flex: 35;
+            }
+
+            &:nth-child(2) {
+              flex: 35;
+              -ms-flex: 35;
+            }
+
+            &:nth-child(3) {
+              flex: 30;
+              -ms-flex: 30;
+            }
+          }
+        }
+      }
+    }
+
+    .table-matched {
+      border-bottom: 2px solid #eaeaea;
+      -webkit-box-sizing: border-box;
+      -moz-box-sizing: border-box;
+      box-sizing: border-box;
+      min-height: 54px;
+
+      > div {
+        display: -webkit-box;
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-preferred-size: 0;
+        flex-basis: 0;
+        //-webkit-box-pack: normal;
+        //-ms-flex-pack: normal;
+        justify-content: normal;
+        -webkit-box-align: center;
+        -ms-flex-align: center;
+        align-items: center;
+        background: #ffffff;
+        min-height: 54px;
+
+        &:nth-child(2) {
+          > div {
+            &:nth-child(1) {
+              flex: 30;
+              -ms-flex: 30;
+              @include font(regular, 15px);
+              color: #0f3860;
+            }
+
+            &:nth-child(2) {
+              flex: 25;
+              -ms-flex: 25;
+              @include font(regular, 15px);
+              color: #0f3860;
+            }
+
+            &:nth-child(3) {
+              flex: 25;
+              -ms-flex: 25;
+
+              > div {
+                &:nth-child(1) {
+                  @include font(regular, 15px);
+                  color: #0f3860;
+                }
+
+                &:nth-child(2) {
+                  @include font(regular, 14px);
+                  color: #637e97;
+                }
+              }
+            }
+
+            &:nth-child(4) {
+              @include font(regular, 15px);
+              flex: 20;
+              -ms-flex: 20;
+            }
+          }
+        }
+
+        &:nth-child(4) {
+          display: block;
+
+          > div {
+            display: -webkit-box;
+            display: -ms-flexbox;
+            display: flex;
+            -ms-flex-preferred-size: 0;
+            flex-basis: 0;
+            //-webkit-box-pack: normal;
+            //-ms-flex-pack: normal;
+            justify-content: normal;
+            -webkit-box-align: center;
+            -ms-flex-align: center;
+            align-items: center;
+            flex: 1;
+            -ms-flex: 1;
+            height: 54px;
+            position: relative;
+
+            &:not(:last-child) {
+              &:after {
+                position: absolute;
+                height: 2px;
+                width: auto;
+                background: #eaeaea;
+                #{$left}: 0;
+                #{$right}: -0.5em;
+                content: '';
+                bottom: 0;
+                z-index: 99;
+              }
+            }
+
+            > div {
+              &:nth-child(1) {
+                flex: 30;
+                -ms-flex: 30;
+                @include font(regular, 15px);
+                color: #0f3860;
+                overflow: hidden;
+                white-space: pre-line;
+                text-overflow: ellipsis;
+                max-height: 40px;
+              }
+
+              &:nth-child(2) {
+                flex: 25;
+                -ms-flex: 25;
+                @include font(regular, 15px);
+                color: #0f3860;
+              }
+
+              &:nth-child(3) {
+                flex: 25;
+                -ms-flex: 25;
+
+                > div {
+                  &:nth-child(1) {
+                    @include font(regular, 15px);
+                    color: #0f3860;
+                  }
+
+                  &:nth-child(2) {
+                    @include font(regular, 14px);
+                    color: #637e97;
+                  }
+                }
+              }
+
+              &:nth-child(4) {
+                flex: 20;
+                -ms-flex: 20;
+                @include font(regular, 15px);
+              }
+            }
+          }
+        }
+
+        &:nth-child(6) {
+          > div {
+            &:nth-child(1) {
+              flex: 35;
+              -ms-flex: 35;
+              @include font(regular, 15px);
+              color: #0f3860;
+            }
+
+            &:nth-child(2) {
+              flex: 35;
+              -ms-flex: 35;
+              @include font(regular, 15px);
+              color: #0f3860;
+            }
+
+            &:nth-child(3) {
+              flex: 30;
+              -ms-flex: 30;
+
+              > button {
+                padding: 0 0.3em;
+                overflow: hidden;
+                white-space: nowrap;
+              }
+            }
+          }
+        }
+      }
+
+      &:hover {
+        background: #e7fbf7;
+
+        > div {
+          background: #e7fbf7;
+
+          &.separatorFlex {
+            > div {
+              display: none;
+            }
+          }
+        }
+      }
+    }
+
+    .alertNotData {
+      color: #0f3860;
+      @include font(bold, 16px, 33px);
+      text-align: center;
+      padding-top: 2em;
+    }
+  }
+
+  .periodic-trans-indication {
+    flex: 0 0 20px;
+    -ms-flex: 0 0 20px;
+    margin-#{$right}: auto !important;
+    min-width: 0;
+    display: flex;
+    justify-content: center;
+    align-content: center;
+
+    img {
+      width: auto;
+      height: 12px;
+      margin: 0 !important;
+      align-self: center;
+    }
+  }
+
+  .bank-acc-details-table-container.transesTable {
+    display: block;
+
+    .bank-acc-details-row {
+      height: 50px;
+
+      //& + .bank-acc-details-row {
+      //  border-top: 1px solid $border-gray;
+      //}
+
+      .rowHandle {
+        display: none;
+        cursor: pointer;
+      }
+
+      &:focus,
+      &:hover {
+        .rowHandle {
+          display: inline-block;
+        }
+      }
+    }
+
+    .bank-acc-details-table-header,
+    .bank-acc-details-row {
+      display: -webkit-box;
+      display: -ms-flexbox;
+      display: flex;
+      -ms-flex-preferred-size: 0;
+      flex-basis: 0;
+      //-webkit-box-pack: normal;
+      //-ms-flex-pack: normal;
+      justify-content: normal;
+      -webkit-box-align: center;
+      -ms-flex-align: center;
+      align-items: center;
+
+      > div {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        min-width: 0;
+        padding: 0 0.5em;
+
+        &:nth-child(1) {
+          flex: 6;
+          -ms-flex: 6;
+        }
+
+        &:nth-child(2) {
+          flex: 18;
+          -ms-flex: 18;
+        }
+
+        &:nth-child(3) {
+          flex: 10;
+          -ms-flex: 10;
+        }
+
+        &:nth-child(4) {
+          flex: 15;
+          -ms-flex: 15;
+        }
+
+        &:nth-child(5) {
+          flex: 0 0 36px;
+          -ms-flex: 0 0 36px;
+        }
+      }
+    }
+
+    .bank-acc-details-row.titleRow {
+      display: -webkit-box;
+      display: -ms-flexbox;
+      display: flex;
+      -ms-flex-preferred-size: 0;
+      flex-basis: 0;
+      //-webkit-box-pack: normal;
+      //-ms-flex-pack: normal;
+      justify-content: normal;
+      -webkit-box-align: center;
+      -ms-flex-align: center;
+      align-items: center;
+
+      > div {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        padding: 0 0.5em;
+
+        &:nth-child(1) {
+          flex: 66;
+          -ms-flex: 66;
+        }
+
+        &:nth-child(2) {
+          flex: 12;
+          -ms-flex: 12;
+        }
+
+        &:nth-child(3) {
+          flex: 20;
+          -ms-flex: 20;
+        }
+      }
+    }
+  }
+
+  .tableAccounts {
+    .header,
+    .rowTitle,
+    .row {
+      display: -webkit-box;
+      display: -ms-flexbox;
+      display: flex;
+      -ms-flex-preferred-size: 0;
+      flex-basis: 0;
+      //-webkit-box-pack: normal;
+      //-ms-flex-pack: normal;
+      justify-content: normal;
+      -webkit-box-align: center;
+      -ms-flex-align: center;
+      align-items: center;
+
+      &:hover {
+        .showHover {
+          display: block;
+        }
+      }
+
+      > div {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+
+        &.separator {
+          flex: 1;
+          -ms-flex: 1;
+
+          &:first-child,
+          &:last-child {
+            flex: 5;
+            -ms-flex: 5;
+          }
+        }
+
+        &:not(.separator) {
+          &:nth-child(2) {
+            flex: 25;
+            -ms-flex: 25;
+          }
+
+          &:nth-child(4) {
+            flex: 244;
+            -ms-flex: 244;
+            display: flex;
+            display: -ms-flex;
+            align-items: baseline;
+            overflow: hidden;
+
+            &:nth-child(1) {
+              flex: 0 1 auto;
+              min-width: 0;
+            }
+
+            &:nth-child(2) {
+              flex: 0 0 auto;
+              min-width: 0;
+              overflow: hidden;
+            }
+          }
+
+          &:nth-child(6) {
+            flex: 80;
+            -ms-flex: 80;
+          }
+
+          &:nth-child(8) {
+            flex: 40;
+            -ms-flex: 40;
+          }
+
+          &:nth-child(10) {
+            flex: 120;
+            -ms-flex: 120;
+          }
+
+          &:nth-child(12) {
+            flex: 112;
+            -ms-flex: 112;
+          }
+
+          &:nth-child(14) {
+            flex: 102;
+            -ms-flex: 102;
+          }
+
+          &:nth-child(16) {
+            flex: 105;
+            -ms-flex: 105;
+          }
+
+          &:nth-child(18) {
+            flex: 105;
+            -ms-flex: 105;
+          }
+
+          &:nth-child(20) {
+            flex: 28;
+            -ms-flex: 28;
+            justify-content: space-between;
+          }
+        }
+
+        .showHover {
+          cursor: pointer;
+          display: none;
+        }
+      }
+    }
+    .fa-ellipsis-v {
+      visibility: hidden;
+      color: #022258;
+      font-size: 15px;
+      cursor: pointer;
+      align-self: center;
+    }
+    .header {
+      height: 33px;
+      background: #ced7e0;
+      color: #0f3860;
+      @include font(bold, 16px, 33px);
+    }
+
+    .rowTitle {
+      height: 40px;
+      background: #dae7f3;
+      border-bottom: 2px solid #ced7e0; // #ecf1f4;
+
+      > div.icon {
+        img {
+          display: block;
+        }
+      }
+
+      &:hover,
+      &:active,
+      &.opened {
+        background: #eff6fa;
+      }
+
+      color: #0f3860;
+      @include font(bold, 15px);
+
+      .pointer {
+        cursor: pointer;
+      }
+
+      //.text_status {
+      //  @include font(regular, 15px);
+      //}
+      //.status {
+      //  @include font(regular, 15px);
+      //}
+      //.VALID_text {
+      //  color: #038ed6;
+      //  @include font(regular, 15px);
+      //  cursor: pointer;
+      //}
+      //.INVALIDPASSWORD_text {
+      //  color: #123860;
+      //  @include font(regular, 15px);
+      //}
+      //.check_text {
+      //
+      //}
+      //
+      //.VALID_status {
+      //  color: #123860;
+      //  @include font(regular, 15px);
+      //}
+      //
+      //.INVALIDPASSWORD_status {
+      //  > button {
+      //    @extend %button-dark-ext;
+      //    padding: 0px 18px !important;
+      //    height: 32px !important;
+      //    @include font(semi-bold, 15px);
+      //    font-weight: 600 !important;
+      //  }
+      //}
+      app-token-status-view {
+        margin-#{$left}: 10px;
+        margin-#{$right}: auto;
+        font-weight: normal;
+        color: #0f3860;
+      }
+    }
+
+    .row {
+      height: 51px;
+      background: #ffffff;
+      @include font(regular, 15px);
+      border-bottom: 2px solid #f7f7f7;
+      &:hover,
+      &:focus,
+      &.active {
+        .fa-ellipsis-v {
+          visibility: visible;
+        }
+      }
+      :not(:hover),
+      :not(:focus) {
+        input {
+          display: none;
+        }
+      }
+
+      .nickname-with-currency {
+        display: flex;
+        display: -ms-flex;
+        line-height: 28px;
+        border: 2px solid transparent;
+        @include border-radius(3px);
+        @include padding-box(0, 7px, 0, 7px);
+        min-width: 0;
+
+        div:first-child {
+          min-width: 0;
+        }
+
+        div + div {
+          margin-#{$right}: 1ch;
+        }
+      }
+
+      &:focus {
+        background: #e9f1f6;
+      }
+
+      //&:hover, &:focus {
+      //  background: #e7fbf7;
+      //}
+
+      &:not(.deletedAccountRow):hover,
+      &:not(.deletedAccountRow):focus {
+        .nickname-with-currency {
+          display: none;
+        }
+
+        input {
+          display: inherit;
+        }
+      }
+
+      &:focus-within {
+        background: #e9f1f6; // #e7fbf7;
+      }
+
+      &:not(.deletedAccountRow):focus-within {
+        .nickname-with-currency {
+          display: none;
+        }
+
+        input {
+          display: inherit;
+        }
+      }
+
+      &:hover:not(:focus-within):not(.bank-acc-details-row-selected):not(.titleRow) {
+        //background: #e7fbf7; //$bg-table-row;
+        //box-shadow: 0 0 8px 0 rgba(0,0,0,0.12), -1px -1px 4px 0 rgba(0,0,0,0.08) ,  1px 1px 8px 0 rgba(0,0,0,0.12), 2px 2px 4px 0 rgba(0,0,0,0.08);
+        -webkit-filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.32));
+        filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.32));
+        border-bottom-color: transparent;
+      }
+    }
+
+    .row,
+    .rowTitle {
+      color: #0f3860;
+
+      input {
+        outline: none;
+        //@include font(regular, 15px);
+        font: inherit !important;
+        line-height: 28px !important;
+        //@include color-placeholder($color-place-holder);
+        border: 1px solid transparent;
+        background: transparent;
+        //color: #0f3860;
+        //@include border-radius(3px);
+        @include padding-box(0, 7px, 0, 7px);
+        min-width: 0;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+      }
+
+      &:hover,
+      &:focus {
+        input:not([disabled]) {
+          color: $color-base-font; // #0f3860;
+          border-color: $color-base-font; // $border-gray;
+          //background-color: $white;
+        }
+
+        input:not([disabled]):focus {
+          //color: #0f3860;
+          //border-color: #73879e;
+          color: $color-base-font;
+          border-color: $color-base-font;
+        }
+      }
+
+      &:focus-within {
+        input:not([disabled]) {
+          color: $color-base-font;
+          border-color: $color-base-font;
+          //color: #0f3860;
+          //border-color: $border-gray;
+          //background-color: $white;
+        }
+
+        input:not([disabled]):focus {
+          color: $color-base-font;
+          border-color: $color-base-font;
+          //color: #0f3860;
+          //border-color: #73879e;
+        }
+      }
+    }
+
+    .row.row-outdated {
+      & > div:not(.separator):nth-child(14) {
+        color: #f21a1a;
+      }
+
+      //background: #feecec;
+      //&:hover, &:focus {
+      //  background: darken(#feecec, 10%);
+      //}
+      //&:focus-within {
+      //  background: darken(#feecec, 10%);
+      //}
+    }
+
+    .row.deletedAccountRow {
+      color: #a7a3a3;
+      //background: $white;
+      input,
+      input:disabled {
+        color: inherit;
+      }
+
+      &:hover,
+      &:focus {
+        //background: #f6f7f8;
+        input {
+          border-color: transparent;
+          background-color: transparent;
+        }
+      }
+    }
+  }
+
+  .trialBalance {
+    .header,
+    .rowTitle,
+    .row,
+    .sumBalanceLast {
+      display: -webkit-box;
+      display: -ms-flexbox;
+      display: flex;
+      -ms-flex-preferred-size: 0;
+      flex-basis: 0;
+      //-webkit-box-pack: normal;
+      //-ms-flex-pack: normal;
+      justify-content: normal;
+      -webkit-box-align: center;
+      -ms-flex-align: center;
+      align-items: center;
+
+      > div {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+
+        &.separator {
+          flex: 8;
+          -ms-flex: 8;
+
+          &:first-child,
+          &:last-child {
+            flex: 5;
+            -ms-flex: 5;
+          }
+        }
+
+        &:not(.separator) {
+          &:nth-child(2) {
+            flex: 25;
+            -ms-flex: 25;
+          }
+
+          &:nth-child(4) {
+            flex: 195;
+            -ms-flex: 195;
+          }
+
+          &:nth-child(6) {
+            flex: 60;
+            -ms-flex: 60;
+          }
+
+          &:nth-child(8) {
+            flex: 135;
+            -ms-flex: 135;
+          }
+
+          &:nth-child(10) {
+            flex: 190;
+            -ms-flex: 190;
+          }
+
+          &:nth-child(12) {
+            flex: 125;
+            -ms-flex: 125;
+            direction: ltr;
+          }
+
+          &:nth-child(14) {
+            flex: 120;
+            -ms-flex: 120;
+            direction: ltr;
+          }
+
+          &:nth-child(16) {
+            flex: 125;
+            -ms-flex: 125;
+            direction: ltr;
+          }
+        }
+      }
+    }
+
+    .header {
+      height: 33px;
+      background: #ced7e0;
+      color: #0f3860;
+      @include font(bold, 16px, 33px);
+    }
+
+    .sumBalanceLast {
+      height: 36px;
+      background: #edf0f2;
+      color: #0f3860;
+      @include font(bold, 15px, 33px);
+      border-bottom: 3px solid #b9c3ce;
+    }
+
+    .rowTitle {
+      height: 40px;
+      background: #f6f7f8;
+      border-bottom: 2px solid #ced7e0;
+      cursor: pointer;
+
+      img {
+        display: block;
+      }
+
+      &:hover,
+      &:active,
+      &.opened {
+        background: #eff6fa;
+      }
+
+      color: #0f3860;
+      @include font(bold, 15px);
+    }
+
+    .row {
+      height: 51px;
+      background: #ffffff;
+      @include font(regular, 15px);
+      border-bottom: 2px solid #f7f7f7;
+      color: #0f3860;
+
+      position: relative;
+
+      > * {
+        z-index: 1;
+      }
+
+      &:after {
+        content: '';
+        display: block;
+        position: absolute;
+        z-index: -1;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+      }
+
+      &:hover {
+        &:after {
+          box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.12),
+            -1px -1px 4px 0 rgba(0, 0, 0, 0.08),
+            1px 1px 8px 0 rgba(0, 0, 0, 0.12), 2px 2px 4px 0 rgba(0, 0, 0, 0.08);
+          z-index: 0;
+        }
+
+        //background: #e7fbf7;
+      }
+    }
+  }
+
+  .profitAndLoss {
+    .header,
+    .rowTitle,
+    .row,
+    .sumBalanceLast {
+      display: -webkit-box;
+      display: -ms-flexbox;
+      display: flex;
+      -ms-flex-preferred-size: 0;
+      flex-basis: 0;
+      //-webkit-box-pack: normal;
+      //-ms-flex-pack: normal;
+      justify-content: normal;
+      -webkit-box-align: center;
+      -ms-flex-align: center;
+      align-items: center;
+
+      .fa.fa-fw {
+        width: auto;
+      }
+
+      > div {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+
+        &.separator {
+          flex: 8;
+          -ms-flex: 8;
+
+          &:first-child,
+          &:last-child {
+            flex: 5;
+            -ms-flex: 5;
+          }
+        }
+
+        &:not(.separator) {
+          flex: 60;
+          -ms-flex: 60;
+          direction: ltr;
+
+          &:nth-child(2) {
+            flex: 25;
+            -ms-flex: 25;
+          }
+
+          &:nth-child(4) {
+            flex: 190;
+            -ms-flex: 190;
+          }
+
+          &:nth-child(6) {
+            flex: 70;
+            -ms-flex: 70;
+          }
+        }
+      }
+    }
+
+    .header {
+      height: 45px;
+      background: #ced7e0;
+      color: #0f3860;
+      @include font(bold, 16px, 33px);
+
+      strong {
+        direction: rtl;
+        @include font(bold, 16px, 16px);
+        display: block;
+      }
+
+      p {
+        @include font(regular, 16px, 16px);
+        display: block;
+      }
+    }
+
+    .rowTitle {
+      height: 33px;
+      background: #ffffff;
+      border-bottom: 1px solid #eceff1;
+
+      &.pointer {
+        cursor: pointer;
+        //&:hover, &:active, &.opened {
+        //  background: #eff6fa;
+        //}
+        position: relative;
+
+        > * {
+          z-index: 1;
+        }
+
+        &:after {
+          content: '';
+          display: block;
+          position: absolute;
+          z-index: -1;
+          top: 0;
+          bottom: 0;
+          left: 0;
+          right: 0;
+        }
+
+        &:hover {
+          &:after {
+            box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.12),
+              -1px -1px 4px 0 rgba(0, 0, 0, 0.08),
+              1px 1px 8px 0 rgba(0, 0, 0, 0.12),
+              2px 2px 4px 0 rgba(0, 0, 0, 0.08);
+            z-index: 0;
+          }
+        }
+      }
+
+      &.odd {
+        background: #eff6fa;
+
+        .title {
+          color: #73879e;
+        }
+      }
+
+      &.radio2 {
+        height: 46px;
+      }
+
+      img {
+        display: block;
+      }
+
+      color: #0f3860;
+      @include font(semi-bold, 14px);
+
+      .first {
+        @include font(bold, 15px);
+      }
+    }
+
+    .row {
+      height: 33px;
+      background: #fafafb;
+      border-bottom: 1px solid #eceff1;
+      color: #0f3860;
+      @include font(semi-bold, 14px);
+
+      &.rowLast {
+        @include font(regular, 14px);
+      }
+
+      &.rowLastReg {
+        @include font(regular, 15px);
+        color: #0f3860;
+
+        > .semiBold {
+          @include font(semi-bold, 15px);
+        }
+      }
+
+      &.radio2 {
+        height: 46px;
+      }
+
+      &.pointer {
+        cursor: pointer;
+        //&:hover {
+        //  background: #e7fbf7;
+        //}
+        position: relative;
+
+        > * {
+          z-index: 1;
+        }
+
+        &:after {
+          content: '';
+          display: block;
+          position: absolute;
+          z-index: -1;
+          top: 0;
+          bottom: 0;
+          left: 0;
+          right: 0;
+        }
+
+        &:hover {
+          &:after {
+            box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.12),
+              -1px -1px 4px 0 rgba(0, 0, 0, 0.08),
+              1px 1px 8px 0 rgba(0, 0, 0, 0.12),
+              2px 2px 4px 0 rgba(0, 0, 0, 0.08);
+            z-index: 0;
+          }
+        }
+      }
+    }
+  }
+
+  .bookKeepingAnalyze {
+    .header,
+    .rowTitle,
+    .row,
+    .sumBalanceLast {
+      display: -webkit-box;
+      display: -ms-flexbox;
+      display: flex;
+      -ms-flex-preferred-size: 0;
+      flex-basis: 0;
+      //-webkit-box-pack: normal;
+      //-ms-flex-pack: normal;
+      justify-content: normal;
+      -webkit-box-align: center;
+      -ms-flex-align: center;
+      align-items: center;
+
+      .fa.fa-fw {
+        width: auto;
+      }
+
+      > div {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+
+        &.separator {
+          flex: 8;
+          -ms-flex: 8;
+
+          &:first-child,
+          &:last-child {
+            flex: 5;
+            -ms-flex: 5;
+          }
+        }
+
+        &:not(.separator) {
+          flex: 60;
+          -ms-flex: 60;
+          direction: ltr;
+
+          &:nth-child(2) {
+            flex: 25;
+            -ms-flex: 25;
+          }
+
+          &:nth-child(4) {
+            flex: 255;
+            -ms-flex: 255;
+          }
+
+          &:nth-child(6) {
+            flex: 70;
+            -ms-flex: 70;
+          }
+        }
+      }
+    }
+
+    .header {
+      height: 45px;
+      background: #ced7e0;
+      color: #0f3860;
+      @include font(bold, 16px, 33px);
+
+      strong {
+        direction: rtl;
+        @include font(bold, 16px, 16px);
+        display: block;
+      }
+
+      p {
+        @include font(regular, 16px, 16px);
+        display: block;
+      }
+    }
+
+    .rowTitle {
+      height: 33px;
+      background: #eff6fa;
+
+      &:not(.opened) {
+        border-bottom: 2px solid #ced7e0;
+      }
+
+      &.pointer {
+        cursor: pointer;
+        //&:hover, &:active, &.opened {
+        //  background: #eff6fa;
+        //}
+        > * {
+          z-index: 1;
+        }
+
+        &:after {
+          content: '';
+          display: block;
+          position: absolute;
+          z-index: -1;
+          top: 0;
+          bottom: 0;
+          left: 0;
+          right: 0;
+        }
+
+        &:hover {
+          position: relative;
+
+          &:after {
+            box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.12),
+              -1px -1px 4px 0 rgba(0, 0, 0, 0.08),
+              1px 1px 8px 0 rgba(0, 0, 0, 0.12),
+              2px 2px 4px 0 rgba(0, 0, 0, 0.08);
+            z-index: 0;
+          }
+        }
+      }
+
+      > div {
+        color: #0f3860;
+        @include font(semi-bold, 15px);
+
+        &.sumBold {
+          @include font(bold, 15px);
+        }
+      }
+
+      &.radio2 {
+        height: 46px;
+      }
+
+      img {
+        display: block;
+      }
+
+      color: #0f3860;
+      @include font(semi-bold, 14px);
+
+      .first {
+        @include font(bold, 15px);
+      }
+    }
+
+    .wrapBg {
+      border-bottom: 3px solid #b4bfcb;
+    }
+
+    .row {
+      height: 33px;
+      background: #fafafb;
+      border-bottom: 1px solid #eceff1;
+      color: #0f3860;
+      @include font(semi-bold, 15px);
+
+      > div {
+        color: #0f3860;
+        @include font(semi-bold, 15px);
+
+        &.sumBold {
+          @include font(bold, 15px);
+        }
+      }
+
+      &.opened {
+        border-bottom: 2px solid #ced7e0;
+      }
+
+      &.rowLastReg {
+        @include font(regular, 15px);
+        color: #0f3860;
+
+        > .semiBold {
+          @include font(semi-bold, 15px);
+        }
+      }
+
+      &.radio2 {
+        height: 46px;
+      }
+
+      &.pointer {
+        cursor: pointer;
+        //&:hover {
+        //  background: #e7fbf7;
+        //}
+        position: relative;
+
+        > * {
+          z-index: 1;
+        }
+
+        &:after {
+          content: '';
+          display: block;
+          position: absolute;
+          z-index: -1;
+          top: 0;
+          bottom: 0;
+          left: 0;
+          right: 0;
+        }
+
+        &:hover {
+          &:after {
+            box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.12),
+              -1px -1px 4px 0 rgba(0, 0, 0, 0.08),
+              1px 1px 8px 0 rgba(0, 0, 0, 0.12),
+              2px 2px 4px 0 rgba(0, 0, 0, 0.08);
+            z-index: 0;
+          }
+        }
+      }
+    }
+  }
+
+  .tableCards {
+    .header,
+    .rowTitle,
+    .row {
+      display: -webkit-box;
+      display: -ms-flexbox;
+      display: flex;
+      -ms-flex-preferred-size: 0;
+      flex-basis: 0;
+      //-webkit-box-pack: normal;
+      //-ms-flex-pack: normal;
+      justify-content: normal;
+      -webkit-box-align: center;
+      -ms-flex-align: center;
+      align-items: center;
+
+      &:hover {
+        .showHover {
+          display: block;
+        }
+      }
+
+      > div {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+
+        &.separator {
+          flex: 10;
+          -ms-flex: 10;
+
+          &:first-child,
+          &:last-child {
+            flex: 5;
+            -ms-flex: 5;
+          }
+        }
+
+        &:not(.separator) {
+          &:nth-child(2) {
+            flex: 25;
+            -ms-flex: 25;
+          }
+
+          &:nth-child(4) {
+            flex: 105;
+            -ms-flex: 105;
+          }
+
+          &:nth-child(6) {
+            flex: 90;
+            -ms-flex: 90;
+          }
+
+          &:nth-child(8) {
+            flex: 135;
+            -ms-flex: 135;
+          }
+
+          &:nth-child(10) {
+            flex: 120;
+            -ms-flex: 120;
+          }
+
+          &:nth-child(12) {
+            flex: 105;
+            -ms-flex: 105;
+          }
+
+          &:nth-child(14) {
+            flex: 110;
+            -ms-flex: 110;
+          }
+
+          &:nth-child(16) {
+            flex: 75;
+            -ms-flex: 75;
+          }
+
+          &:nth-child(18) {
+            flex: 112;
+            -ms-flex: 112;
+          }
+
+          &:nth-child(20) {
+            flex: 106;
+            -ms-flex: 106;
+          }
+
+          &:nth-child(22) {
+            flex: 20;
+            -ms-flex: 20;
+          }
+        }
+
+        .showHover {
+          cursor: pointer;
+          display: none;
+        }
+      }
+    }
+
+    .header {
+      height: 33px;
+      background: #ced7e0;
+      color: #0f3860;
+      @include font(bold, 16px, 33px);
+
+      > div {
+        &:not(.separator) {
+          .padding {
+            padding-#{$right}: 7px;
+          }
+
+          &:nth-child(16) {
+            flex: 187;
+            -ms-flex: 187;
+          }
+
+          &:nth-child(18) {
+            flex: 0;
+            -ms-flex: 0;
+          }
+
+          &:nth-child(20) {
+            flex: 106;
+            -ms-flex: 106;
+          }
+
+          &:nth-child(22) {
+            flex: 20;
+            -ms-flex: 20;
+          }
+        }
+      }
+    }
+
+    .rowTitle {
+      height: 40px;
+      background: #dae7f3;
+      border-bottom: 2px solid #ecf1f4;
+
+      //> div.icon {
+      //  img {
+      //    display: block;
+      //  }
+      //}
+      &:hover,
+      &:active,
+      &.opened {
+        background: #eff6fa;
+      }
+
+      color: #0f3860;
+      @include font(bold, 15px);
+
+      .pointer {
+        cursor: pointer;
+      }
+
+      //.text_status {
+      //  @include font(regular, 15px);
+      //}
+      //.status {
+      //  @include font(regular, 15px);
+      //}
+      //.VALID_text {
+      //  color: #038ed6;
+      //  @include font(regular, 15px);
+      //  cursor: pointer;
+      //}
+      //.INVALIDPASSWORD_text {
+      //  color: #123860;
+      //  @include font(regular, 15px);
+      //}
+      //.check_text {
+      //
+      //}
+      //
+      //.VALID_status {
+      //  color: #123860;
+      //  @include font(regular, 15px);
+      //}
+      //
+      //.INVALIDPASSWORD_status {
+      //  > button {
+      //    @extend %button-dark-ext;
+      //    padding: 0px 18px !important;
+      //    height: 32px !important;
+      //    @include font(semi-bold, 15px);
+      //    font-weight: 600 !important;
+      //  }
+      //}
+      app-token-status-view {
+        margin-#{$left}: 10px;
+        margin-#{$right}: auto;
+        font-weight: normal;
+      }
+    }
+
+    .row {
+      height: 51px;
+      background: #ffffff;
+      @include font(regular, 15px);
+      border-bottom: 2px solid #f7f7f7;
+      color: #022258; // #0f3860;
+
+      &:hover,
+      &:focus {
+        //background: #e7fbf7;
+        input[type='text'] {
+          display: block !important;
+        }
+
+        .seamless-edit-prepare {
+          display: none;
+        }
+
+        .dropdown-stub {
+          display: flex;
+        }
+
+        div.dropdownOnHover {
+          > span {
+            display: none;
+          }
+
+          > p-dropdown {
+            display: flex;
+            display: -ms-flexbox;
+          }
+        }
+      }
+
+      div.dropdownOnHover {
+        p-dropdown {
+          display: none;
+        }
+      }
+
+      //&:focus-within {
+      //  background: #e7fbf7;
+      //}
+      &:focus {
+        background: #e9f1f6;
+      }
+
+      &:focus-within {
+        background: #e9f1f6;
+      }
+
+      > div {
+        &:not(.separator) {
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          //
+          //input[type=text] {
+          //  @include font(regular, 15px);
+          //  @include color-placeholder($color-place-holder);
+          //  border: 2px solid $border-gray;
+          //  @include border-radius(3px);
+          //  @include padding-box(0, 7px, 0, 7px);
+          //  min-width: 0;
+          //  display: none;
+          //  line-height: 28px;
+          //}
+          //
+          //.seamless-edit-prepare, .text-item {
+          //  border: 2px solid transparent;
+          //  border-radius: 3px;
+          //  line-height: 28px;
+          //  height: 32px;
+          //  & {
+          //    padding-#{$right}: 7px;
+          //  }
+          //}
+          //
+          //input[type=text]:focus {
+          //  border-color: #73879e !important;
+          //}
+          //&.dropdownOnHover {
+          //  p-dropdown {
+          //    display: none;
+          //  }
+          //  &:hover, &:focus {
+          //    > span {
+          //      display: none;
+          //    }
+          //    > p-dropdown {
+          //      display: flex;
+          //      display: -ms-flexbox;
+          //    }
+          //  }
+          //}
+        }
+      }
+
+      .creditLimit-cell {
+        input:not(:focus) {
+          &::placeholder,
+          &:placeholder-shown {
+            color: #038ed6;
+          }
+
+          &::-ms-input-placeholder,
+          &:-ms-input-placeholder {
+            color: #038ed6;
+          }
+        }
+      }
+    }
+
+    .row:hover:not(:focus-within):not(.bank-acc-details-row-selected):not(.titleRow) {
+      //background: #e7fbf7; //$bg-table-row;
+      //box-shadow: 0 0 8px 0 rgba(0,0,0,0.12), -1px -1px 4px 0 rgba(0,0,0,0.08) ,  1px 1px 8px 0 rgba(0,0,0,0.12), 2px 2px 4px 0 rgba(0,0,0,0.08);
+      -webkit-filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.32));
+      filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.32));
+      border-bottom-color: transparent;
+    }
+
+    .row.row-outdated {
+      & > div:not(.separator):nth-child(16) {
+        color: #f21a1a;
+      }
+    }
+
+    .row.deletedCardRow {
+      color: #a7a3a3;
+      background: $white;
+
+      input,
+      input:disabled {
+        color: inherit;
+      }
+
+      &:hover,
+      &:focus {
+        background: #f6f7f8;
+
+        input {
+          border-color: transparent;
+          background-color: transparent;
+        }
+      }
+    }
+
+    .row,
+    .rowTitle {
+      input {
+        outline: none;
+        //@include font(regular, 15px);
+        font: inherit !important;
+        line-height: 28px !important;
+        //@include color-placeholder($color-place-holder);
+        border: 1px solid transparent;
+        background: transparent;
+        //color: #0f3860;
+        //@include border-radius(3px);
+        @include padding-box(0, 7px, 0, 7px);
+        min-width: 0;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+      }
+
+      &:hover,
+      &:focus {
+        input:not([disabled]) {
+          color: $color-base-font; // #0f3860;
+          border-color: $color-base-font; // $border-gray;
+          //background-color: $white;
+        }
+
+        input:not([disabled]):focus {
+          //color: #0f3860;
+          //border-color: #73879e;
+          color: $color-base-font;
+          border-color: $color-base-font;
+        }
+      }
+
+      &:focus-within {
+        input:not([disabled]) {
+          color: $color-base-font;
+          border-color: $color-base-font;
+          //color: #0f3860;
+          //border-color: $border-gray;
+          //background-color: $white;
+        }
+
+        input:not([disabled]):focus {
+          color: $color-base-font;
+          border-color: $color-base-font;
+          //color: #0f3860;
+          //border-color: #73879e;
+        }
+      }
+    }
+  }
+
+  .tableSlika {
+    .header,
+    .rowTitle,
+    .row {
+      display: -webkit-box;
+      display: -ms-flexbox;
+      display: flex;
+      -ms-flex-preferred-size: 0;
+      flex-basis: 0;
+      //-webkit-box-pack: normal;
+      //-ms-flex-pack: normal;
+      justify-content: normal;
+      -webkit-box-align: center;
+      -ms-flex-align: center;
+      align-items: center;
+
+      //.solek-info {
+      //  display: flex;
+      //  align-items: center;
+      //}
+      //
+      &:hover {
+        .showHover {
+          display: block;
+        }
+      }
+
+      > div {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+
+        &.separator {
+          flex: 10;
+          -ms-flex: 10;
+
+          &:first-child,
+          &:last-child {
+            flex: 5;
+            -ms-flex: 5;
+          }
+        }
+
+        &:not(.separator) {
+          &:nth-child(2) {
+            flex: 25;
+            -ms-flex: 25;
+          }
+
+          &:nth-child(4) {
+            flex: 140;
+            -ms-flex: 140;
+          }
+
+          &:nth-child(6) {
+            flex: 160;
+            -ms-flex: 160;
+          }
+
+          &:nth-child(8) {
+            flex: 110;
+            -ms-flex: 110;
+          }
+
+          //&:nth-child(10) {
+          //  flex: 110;
+          //  -ms-flex: 110;
+          //}
+          &:nth-child(10) {
+            flex: 150;
+            -ms-flex: 150;
+          }
+
+          &:nth-child(12) {
+            flex: 120;
+            -ms-flex: 120;
+          }
+
+          &:nth-child(14) {
+            flex: 110;
+            -ms-flex: 110;
+          }
+
+          &:nth-child(16) {
+            flex: 20;
+            -ms-flex: 20;
+          }
+
+          &:nth-child(18) {
+            flex: 20;
+            -ms-flex: 20;
+          }
+        }
+
+        .showHover {
+          cursor: pointer;
+          display: none;
+        }
+      }
+    }
+
+    .header {
+      height: 33px;
+      background: #ced7e0;
+      color: #0f3860;
+      @include font(bold, 16px, 33px);
+
+      > div {
+        &:not(.separator) {
+        }
+      }
+    }
+
+    .rowTitle {
+      height: 40px;
+      background: #dae7f3;
+      border-bottom: 2px solid #ecf1f4;
+
+      //> div.icon {
+      //  img {
+      //    display: block;
+      //  }
+      //}
+      &:hover,
+      &:active,
+      &.opened {
+        background: #eff6fa;
+      }
+
+      color: #0f3860;
+      @include font(bold, 15px);
+
+      .pointer {
+        cursor: pointer;
+      }
+
+      //.text_status {
+      //  @include font(regular, 15px);
+      //}
+      //.status {
+      //  @include font(regular, 15px);
+      //}
+      //.VALID_text {
+      //  color: #038ed6;
+      //  @include font(regular, 15px);
+      //  cursor: pointer;
+      //}
+      //.INVALIDPASSWORD_text {
+      //  color: #123860;
+      //  @include font(regular, 15px);
+      //}
+      //.check_text {
+      //
+      //}
+      //
+      //.VALID_status {
+      //  color: #123860;
+      //  @include font(regular, 15px);
+      //}
+      //
+      //.INVALIDPASSWORD_status {
+      //  > button {
+      //    @extend %button-dark-ext;
+      //    padding: 0px 18px !important;
+      //    height: 32px !important;
+      //    @include font(semi-bold, 15px);
+      //    font-weight: 600 !important;
+      //  }
+      //}
+      app-token-status-view {
+        margin-#{$left}: 10px;
+        margin-#{$right}: auto;
+        font-weight: normal;
+      }
+    }
+
+    .row {
+      height: 51px;
+      background: #ffffff;
+      @include font(regular, 15px);
+      border-bottom: 2px solid #e5e5e5;
+
+      //&:hover, &:focus {
+      //  background: #e7fbf7;
+      //}
+      > div {
+        &:not(.separator) {
+          &.dropdownOnHover {
+            //p-dropdown {
+            //  display: none;
+            //}
+            //&:hover, &:focus {
+            //  > span {
+            //    display: none;
+            //  }
+            //  > p-dropdown {
+            //    display: flex;
+            //    display: -ms-flexbox;
+            //  }
+            //}
+            .p-dropdown-trigger-icon {
+              font-size: 1.5em;
+              text-align: right;
+              top: 6px;
+              position: absolute;
+              left: -2px;
+            }
+
+            > span {
+              display: none;
+            }
+
+            > p-dropdown {
+              display: flex;
+              display: -ms-flexbox;
+            }
+          }
+        }
+      }
+
+      &:focus {
+        background: #e9f1f6;
+      }
+
+      &:focus-within {
+        background: #e9f1f6;
+      }
+
+      &:hover,
+      &:focus {
+        div.dropdownOnHover {
+          > span {
+            display: none;
+          }
+
+          > p-dropdown {
+            display: flex;
+            display: -ms-flexbox;
+          }
+        }
+      }
+    }
+
+    .row:hover:not(:focus-within):not(.bank-acc-details-row-selected):not(.titleRow) {
+      //background: #e7fbf7; //$bg-table-row;
+      //box-shadow: 0 0 8px 0 rgba(0,0,0,0.12), -1px -1px 4px 0 rgba(0,0,0,0.08) ,  1px 1px 8px 0 rgba(0,0,0,0.12), 2px 2px 4px 0 rgba(0,0,0,0.08);
+      border-bottom-color: transparent;
+      -webkit-filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.32));
+      filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.32));
+    }
+
+    .row.row-outdated {
+      & > div:not(.separator):nth-child(12),
+      & > div:not(.separator):nth-child(14) {
+        color: #f21a1a;
+      }
+    }
+
+    .row.deletedSolekRow {
+      color: #a7a3a3;
+      background: $white;
+
+      input,
+      input:disabled {
+        color: inherit;
+      }
+
+      &:hover,
+      &:focus {
+        background: #f6f7f8;
+
+        input {
+          border-color: transparent;
+          background-color: transparent;
+        }
+      }
+    }
+
+    .row,
+    .rowTitle {
+      color: #0f3860;
+
+      input {
+        outline: none;
+        //@include font(regular, 15px);
+        font: inherit !important;
+        line-height: 28px !important;
+        //@include color-placeholder($color-place-holder);
+        border: 1px solid transparent;
+        background: transparent;
+        //color: #0f3860;
+        //@include border-radius(3px);
+        @include padding-box(0, 7px, 0, 7px);
+        min-width: 0;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+      }
+
+      &:hover,
+      &:focus {
+        input:not([disabled]) {
+          color: $color-base-font; // #0f3860;
+          border-color: $color-base-font; // $border-gray;
+          //background-color: $white;
+        }
+
+        input:not([disabled]):focus {
+          //color: #0f3860;
+          //border-color: #73879e;
+          color: $color-base-font;
+          border-color: $color-base-font;
+        }
+      }
+
+      &:focus-within {
+        input:not([disabled]) {
+          color: $color-base-font;
+          border-color: $color-base-font;
+          //color: #0f3860;
+          //border-color: $border-gray;
+          //background-color: $white;
+        }
+
+        input:not([disabled]):focus {
+          color: $color-base-font;
+          border-color: $color-base-font;
+          //color: #0f3860;
+          //border-color: #73879e;
+        }
+      }
+    }
+  }
+
+  .tableAccounts,
+  .tableCards,
+  .tableSlika {
+    .row {
+      .outdated {
+        color: #f21a1a;
+      }
+    }
+  }
+
+  .row.boldRow {
+    > div {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: #0f3860;
+      @include font(bold, 16px);
+    }
+  }
+
+  .user-on-behalf {
+    &.table-container {
+      display: flex;
+      flex-direction: column;
+      @include font(regular, 15px, 15px);
+      color: $color-base-font-titles;
+
+      .table-header {
+        flex: 1 0 auto;
+        -ms-flex: 0 auto;
+
+        display: flex;
+        background: $bg-table-title;
+        color: $color-base-font-titles;
+        font-weight: getFont('bold');
+        height: 33px;
+        min-height: 33px;
+      }
+
+      .table-body {
+        flex: 1 100%;
+        -ms-flex: 1 100%;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        overflow: auto;
+      }
+
+      .row {
+        flex: 0 auto;
+        -ms-flex: 0 auto;
+
+        display: flex;
+        height: 35px;
+        min-height: 35px;
+        line-height: 2em;
+
+        color: #4f4e4e;
+
+        //border-bottom: 2px solid #e5e5e5;
+        z-index: 0;
+
+        &:hover:not(:focus-within):not(.bank-acc-details-row-selected):not(.titleRow) {
+          //background: #e7fbf7; //$bg-table-row;
+          box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.12),
+            -1px -1px 4px 0 rgba(0, 0, 0, 0.08),
+            1px 1px 8px 0 rgba(0, 0, 0, 0.12), 2px 2px 4px 0 rgba(0, 0, 0, 0.08);
+          z-index: 1;
+          //border-bottom-color: transparent;
+        }
+
+        label.p-radiobutton-label {
+          font-size: inherit;
+        }
+      }
+
+      .table-header,
+      .row {
+        line-height: 2em;
+        align-content: baseline;
+        align-items: baseline;
+
+        > div {
+          overflow: hidden;
+          min-width: 0;
+          white-space: nowrap;
+          text-overflow: ellipsis;
+
+          &:nth-child(1) {
+            flex: 100;
+            display: flex;
+            display: -ms-flexbox;
+
+            > span:not(.p-radiobutton-icon) {
+              margin-#{$right}: 2.25em;
+            }
+
+            p-radioButton {
+              margin-#{$right}: 1em;
+              flex: none;
+            }
+
+            align-self: center;
+          }
+
+          &:nth-child(2) {
+            flex: 100;
+          }
+
+          &:nth-child(3) {
+            flex: 60;
+          }
+
+          &:nth-child(4) {
+            flex: 60;
+
+            > span:not(.p-radiobutton-icon) {
+              margin-#{$right}: 1.2em;
+            }
+          }
+
+          + div {
+            margin-#{$right}: 1em;
+          }
+        }
+      }
+    }
+  }
+
+  .bank-acc-details-table-container.serarchkey-table {
+    .bank-acc-details-table-header {
+      > div {
+        display: flex;
+        display: -ms-flexbox;
+        align-items: center;
+      }
+    }
+
+    .bank-acc-details-table-header,
+    .bank-acc-details-row {
+      > div {
+        overflow: hidden;
+        min-width: 0;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+
+        //+ div {
+        margin-#{$right}: 1em;
+        //}
+
+        &:nth-child(1) {
+          flex: 60;
+          display: flex;
+          display: -ms-flexbox;
+          align-items: center;
+          //display: flex;
+          //display: -ms-flexbox;
+          //> span:not(.p-radiobutton-icon) {
+          //  margin-#{$right}: 2.25em;
+          //}
+          //p-radioButton {
+          //  margin-#{$right}: 1em;
+          //  flex: 1 1 100%;
+          //}
+          //align-self: center;
+        }
+
+        &:nth-child(2) {
+          flex: 120;
+        }
+
+        &:nth-child(3) {
+          flex: 60;
+        }
+
+        &:nth-child(4) {
+          flex: 60;
+          display: flex;
+          display: -ms-flexbox;
+          align-items: center;
+        }
+
+        &:nth-child(5) {
+          flex: 60;
+          display: flex;
+          display: -ms-flexbox;
+          align-items: center;
+        }
+
+        > .seamless-edit-prepare {
+          flex: 1 1 100%;
+          min-width: 0;
+          white-space: nowrap;
+          text-overflow: ellipsis;
+        }
+
+        > p-dropdown[hidden] {
+          display: none;
+          width: 0;
+        }
+
+        > p-dropdown:not([hidden]) {
+          width: 100%;
+        }
+      }
+    }
+  }
+
+  .bank-acc-details-table-container.client-payments-table {
+    .bank-acc-details-table-header {
+      > div {
+        display: flex;
+        display: -ms-flexbox;
+        align-items: center;
+      }
+    }
+
+    .bank-acc-details-table-header,
+    .bank-acc-details-row {
+      > div {
+        overflow: hidden;
+        min-width: 0;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+
+        //+ div {
+        margin-#{$right}: 1em;
+        //}
+
+        &:nth-child(1) {
+          flex: 60;
+          display: flex;
+          display: -ms-flexbox;
+          align-items: center;
+        }
+
+        &:nth-child(2) {
+          flex: 80;
+          display: flex;
+          display: -ms-flexbox;
+          align-items: center;
+
+          > div {
+            display: flex;
+            display: -ms-flexbox;
+            flex-direction: column;
+            line-height: 1.4em;
+
+            i:nth-child(1) {
+            }
+
+            i:nth-child(2) {
+              color: $color-base-font-small;
+            }
+          }
+        }
+
+        &:nth-child(3) {
+          flex: 60;
+          display: flex;
+          display: -ms-flexbox;
+          align-items: center;
+        }
+
+        &:nth-child(4) {
+          flex: 60;
+          display: flex;
+          display: -ms-flexbox;
+          align-items: center;
+        }
+
+        &:nth-child(5) {
+          flex: 60;
+          display: flex;
+          display: -ms-flexbox;
+          align-items: center;
+          justify-content: center;
+
+          > div {
+            display: flex;
+            display: -ms-flexbox;
+
+            > .button-link {
+              color: inherit;
+            }
+          }
+        }
+      }
+    }
+
+    .bank-acc-details-row {
+      height: unset;
+    }
+  }
+
+  .tableUsers {
+    color: $color-base-font;
+
+    .header,
+    .row {
+      display: -ms-flexbox;
+      display: flex;
+      -ms-flex-preferred-size: 0;
+      flex-basis: 0;
+      -webkit-box-align: center;
+      -ms-flex-align: center;
+      align-items: center;
+
+      &:hover {
+        .showHover {
+          display: block;
+        }
+      }
+
+      > div {
+        min-width: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        //display: -ms-flexbox;
+        //display: flex;
+        + div {
+          padding-#{$right}: 5px;
+        }
+
+        &:nth-child(1) {
+          flex: 10;
+          -ms-flex: 10;
+          min-width: 32px;
+          display: -ms-flexbox;
+          display: flex;
+        }
+
+        &:nth-child(2) {
+          flex: 110;
+          -ms-flex: 110;
+        }
+
+        &:nth-child(3) {
+          flex: 80;
+          -ms-flex: 80;
+        }
+
+        &:nth-child(4) {
+          flex: 200;
+          -ms-flex: 200;
+        }
+
+        &:nth-child(5) {
+          flex: 125;
+          -ms-flex: 125;
+          display: -ms-flexbox;
+          display: flex;
+        }
+
+        &:nth-child(6) {
+          flex: 110;
+          -ms-flex: 110;
+        }
+
+        &:nth-child(7) {
+          flex: 110;
+          -ms-flex: 110;
+        }
+
+        &:nth-child(8) {
+          flex: 110;
+          -ms-flex: 110;
+        }
+
+        &:nth-child(9) {
+          flex: 10;
+          -ms-flex: 10;
+          min-width: 68px;
+          display: -ms-flexbox;
+          display: flex;
+
+          .button-link {
+            padding: 0;
+
+            + .button-link {
+              padding-#{$right}: 1em;
+            }
+          }
+        }
+
+        .showHover {
+          cursor: pointer;
+          display: none;
+        }
+      }
+    }
+
+    .header {
+      background: #ced7e0;
+      line-height: 2.1em;
+      font-weight: getFont(bold);
+    }
+
+    .row {
+      line-height: 3em;
+      background: $white;
+      border-bottom: 2px solid #e5e5e5;
+
+      &:not(.selected):hover {
+        //background: #e7fbf7; //$bg-table-row;
+        //box-shadow: 0 0 8px 0 rgba(0,0,0,0.12), -1px -1px 4px 0 rgba(0,0,0,0.08) ,  1px 1px 8px 0 rgba(0,0,0,0.12), 2px 2px 4px 0 rgba(0,0,0,0.08);
+        border-bottom-color: transparent;
+        -webkit-filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.32));
+        filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.32));
+      }
+    }
+  }
+
+  #companyBeneficiaries {
+    margin-top: 1em;
+    min-height: 300px;
+    position: relative;
+
+    //.bank-acc-details-table-header {
+    //  > div {
+    //    display: flex;
+    //    display: -ms-flexbox;
+    //    align-items: center;
+    //    padding-#{$right}: 1em;
+    //  }
+    //}
+
+    .bank-acc-details-table-header,
+    .bank-acc-details-row {
+      > div {
+        display: flex;
+        display: -ms-flexbox;
+        align-items: center;
+        align-content: center;
+        padding-#{$right}: 1em;
+      }
+
+      > div {
+        &:nth-child(1) {
+          flex: 60;
+        }
+
+        &:nth-child(2),
+        &:nth-child(3),
+        &:nth-child(4) {
+          flex: 50;
+        }
+
+        &:nth-child(5),
+        &:nth-child(6) {
+          flex: 80;
+        }
+
+        &:nth-child(6) {
+          justify-content: center;
+        }
+
+        &:nth-child(7) {
+          flex: 60px;
+        }
+      }
+    }
+
+    .bank-acc-details-table-header {
+      > div {
+        &:nth-child(1),
+        &:nth-child(2) {
+          cursor: pointer;
+        }
+      }
+    }
+
+    .bank-acc-details-row {
+      height: 62px;
+      min-height: 62px;
+      padding: 0.5em 0;
+
+      > div {
+        flex-flow: row wrap;
+        align-items: flex-start;
+        align-content: baseline;
+
+        > div {
+          display: flex;
+          display: -ms-flexbox;
+          min-height: 0;
+          min-width: 0;
+
+          &:nth-child(1) {
+            flex: 100%;
+            //border: 1px solid red;
+          }
+
+          &:nth-child(2),
+          &:nth-child(3) {
+            flex: 50%;
+            //border: 1px solid blue;
+            padding-#{$left}: 1ch;
+
+            & + * {
+              border-#{$right}: 1px solid $color-base-font;
+              padding-#{$right}: 1ch;
+            }
+          }
+
+          .primary {
+            font-weight: getFont(semi-bold);
+            line-height: 1.5em;
+            min-height: 1.5em;
+          }
+
+          .secondary {
+            font-size: 0.95em !important;
+            line-height: 1.15em !important;
+          }
+
+          input.primary,
+          input.secondary {
+            min-height: unset;
+          }
+
+          input.primary {
+            margin-bottom: 0.2em;
+          }
+        }
+
+        .edit-in-place {
+          > app-category-select {
+            line-height: inherit;
+          }
+
+          > input {
+            padding-left: 0;
+            padding-right: 0;
+
+            &.ng-invalid {
+              border-color: $red-error;
+            }
+          }
+
+          > :not(.view) {
+            display: none;
+          }
+
+          //&.in-selected-row {
+          //  > .view {
+          //    display: none;
+          //  }
+          //  > :not(.view) {
+          //    display: flex;
+          //  }
+          //  .p-dropdown {
+          //    display: flex;
+          //    padding-right: 0;
+          //    line-height: inherit;
+          //  }
+          //}
+        }
+
+        &:nth-child(6) {
+          .edit-in-place input {
+            text-align: center;
+          }
+        }
+      }
+
+      > div:nth-child(2) {
+        flex-flow: nowrap;
+
+        .periodic-trans-indication {
+          margin-#{$right}: auto;
+          flex: 0 0 20px;
+          min-height: 2em;
+        }
+      }
+
+      &:hover,
+      &.bank-acc-details-row-selected {
+        .edit-in-place {
+          > .view {
+            display: none;
+          }
+
+          > :not(.view) {
+            display: flex;
+          }
+
+          .p-dropdown {
+            display: flex;
+            padding-right: 0;
+            line-height: inherit;
+          }
+        }
+      }
+    }
+  }
+
+  #beneficiaryHistoryTable {
+    margin-top: 1em;
+    min-height: 300px;
+    position: relative;
+
+    //.bank-acc-details-table-header {
+    //  > div {
+    //    display: flex;
+    //    display: -ms-flexbox;
+    //    align-items: center;
+    //    padding-#{$right}: 1em;
+    //  }
+    //}
+
+    .bank-acc-details-table-header,
+    .bank-acc-details-row,
+    .bank-acc-details-table-footer {
+      > div {
+        display: flex;
+        display: -ms-flexbox;
+        align-items: center;
+        align-content: center;
+        padding-#{$right}: 1em;
+      }
+
+      > div {
+        &:nth-child(1) {
+          flex: 40;
+        }
+
+        &:nth-child(3),
+        &:nth-child(5),
+        &:nth-child(6) {
+          flex: 60;
+        }
+
+        &:nth-child(2),
+        &:nth-child(4) {
+          flex: 80;
+        }
+      }
+    }
+
+    .bank-acc-details-table-header {
+    }
+
+    .bank-acc-details-row {
+      height: auto;
+      min-height: auto;
+      padding: 0.5em 0;
+
+      > div {
+        flex-flow: row wrap;
+        align-items: flex-start;
+        align-content: baseline;
+
+        > div {
+          display: flex;
+          display: -ms-flexbox;
+          min-height: 0;
+          min-width: 0;
+
+          &:nth-child(1) {
+            flex: 100%;
+            //border: 1px solid red;
+          }
+
+          .primary {
+            font-weight: getFont(semi-bold);
+            line-height: 1.5em;
+            min-height: 1.5em;
+          }
+
+          .secondary {
+            font-size: 0.95em !important;
+            line-height: 1.15em !important;
+          }
+        }
+      }
+    }
+  }
+
+  .bank-acc-details-column-beneficiary {
+    img {
+      margin: auto;
+    }
+
+    .menu-with-panel {
+      > div:not(.tooltip) {
+        display: flex;
+      }
+
+      .trigger-disabled {
+        pointer-events: none;
+        opacity: 0.7;
+      }
+    }
+  }
+
+  #budgetHistoryTable {
+    margin-top: 1em;
+    min-height: 300px;
+    position: relative;
+
+    .add {
+      display: -webkit-box;
+      display: flex;
+      height: 40px;
+      align-items: center;
+      align-content: center;
+      border-bottom: 2px solid #f7f7f7;
+      padding-right: 16px;
+
+      > span {
+        color: #038ed6;
+        @include font(semi-bold, 15px);
+        cursor: pointer;
+
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+    }
+
+    //.bank-acc-details-table-header {
+    //  > div {
+    //    display: flex;
+    //    display: -ms-flexbox;
+    //    align-items: center;
+    //    padding-#{$right}: 1em;
+    //  }
+    //}
+
+    .bank-acc-details-table-header,
+    .bank-acc-details-row,
+    .bank-acc-details-table-footer {
+      > div {
+        display: flex;
+        display: -ms-flexbox;
+        align-items: center;
+        align-content: center;
+        padding-#{$right}: 1em;
+      }
+
+      > div {
+        &:nth-child(1) {
+          flex: 45;
+        }
+
+        &:nth-child(3) {
+          flex: 110;
+        }
+
+        &:nth-child(5) {
+          flex: 70;
+        }
+
+        &:nth-child(6) {
+          flex: 55;
+        }
+
+        &:nth-child(2) {
+          flex: 70;
+        }
+
+        &:nth-child(4) {
+          flex: 60;
+        }
+
+        &:nth-child(7) {
+          flex: 20;
+          align-self: center;
+        }
+      }
+    }
+
+    .bank-acc-details-table-header {
+    }
+
+    .bank-acc-details-row {
+      height: auto;
+      min-height: 47px;
+      padding: 0.5em 0;
+
+      app-category-select {
+        width: auto;
+      }
+
+      .p-dropdown {
+        display: -webkit-box;
+        display: flex;
+        -webkit-box-align: center;
+        align-items: center;
+        min-height: auto;
+        padding: 0;
+      }
+
+      .p-dropdown-label {
+        color: #4f4e4e !important;
+      }
+
+      .p-dropdown-trigger {
+        display: none;
+      }
+
+      .p-clickable.fa-caret-down {
+        color: #4f4e4e !important;
+      }
+
+      input[type='text'] {
+        flex: 0 0 94%;
+        width: 100%;
+      }
+
+      &:hover .p-dropdown,
+      &:focus .p-dropdown,
+      &.bank-acc-details-row-selected .p-dropdown {
+        .p-dropdown-trigger {
+          display: block;
+        }
+      }
+
+      > div {
+        flex-flow: row wrap;
+        align-items: flex-start;
+        align-content: baseline;
+
+        > div {
+          display: flex;
+          display: -ms-flexbox;
+          min-height: 0;
+          min-width: 0;
+
+          &:nth-child(1) {
+            flex: 100%;
+            //border: 1px solid red;
+          }
+
+          .primary {
+            font-weight: getFont(semi-bold);
+            line-height: 1.5em;
+            min-height: 1.5em;
+          }
+
+          .secondary {
+            font-size: 0.95em !important;
+            line-height: 1.15em !important;
+          }
+        }
+      }
+    }
+
+    .bank-acc-details-table-footer {
+      p {
+        color: #007ebf;
+        @include font(regular, 15px);
+        cursor: pointer;
+        align-self: center;
+      }
+
+      button {
+        @include font(semi-bold, 18px);
+        color: #ffffff;
+        cursor: pointer;
+        width: 150px;
+        height: 33px;
+        border-radius: 4px;
+        background: #022258;
+        align-self: center;
+        margin-left: 22px;
+        margin-right: 12px;
+        border: none;
+      }
+    }
+  }
+
+  #fileDataTable {
+    position: relative;
+
+    .bank-acc-details-table-header {
+      background-color: #eff6fd;
+
+      > div {
+        .sort-icon {
+          height: 15px;
+          margin-#{$right}: 0.5ch;
+        }
+      }
+    }
+
+    .bank-acc-details-row {
+      cursor: pointer;
+
+      .flag-red {
+        width: 1.2em;
+        height: 1.2em;
+        background: url(/assets/images/flag-red.svg) no-repeat center center;
+      }
+
+      .flag-none {
+        display: none;
+      }
+
+      mat-icon.yellow {
+        font-size: 22px;
+        transform: rotate(90deg);
+        color: $base-yellow;
+      }
+    }
+
+    .bank-acc-details-table-header,
+    .bank-acc-details-row {
+      > div {
+        display: flex;
+        display: -ms-flexbox;
+        align-items: center;
+        align-content: center;
+        padding-#{$right}: 1em;
+      }
+
+      > div {
+        &:nth-child(1) {
+          flex: 0 0 36px;
+        }
+
+        &:nth-child(2),
+        &:nth-child(3) {
+          flex: 40;
+        }
+
+        &:nth-child(4),
+        &:nth-child(8) {
+          flex: 40;
+        }
+
+        &:nth-child(5) {
+          flex: 60;
+        }
+
+        &:nth-child(6) {
+          flex: 40;
+        }
+
+        &:nth-child(7) {
+          flex: 35;
+        }
+
+        &:nth-child(9),
+        &:last-child {
+          flex: 0 0 64px;
+          justify-content: center;
+        }
+      }
+    }
+  }
+}
+
+body {
+  &.isRTL,
+  .isRTL {
+    $lang: rtl;
+    @include dirTable($lang);
+  }
+
+  &.isLTR,
+  .isLTR {
+    $lang: ltr;
+    @include dirTable($lang);
+  }
+}

@@ -1,0 +1,641 @@
+<div [appScrollHeight]="280" class="scrollPage scrollbar-dynamic">
+	<div class="infoCompanyForm">
+		<form [formGroup]="info" novalidate>
+			<div class="columns">
+				<div class="sett-table">
+					<div>
+						<div>תוכנת הנהלת חשבונות</div>
+						<div>
+							<input
+									(change)="updateCompany()"
+									formControlName="sourceProgramName"
+									type="text"
+							/>
+						</div>
+					</div>
+					<div class="comments">
+						<div>התוכנה לא נכונה?</div>
+						<div (click)="sharedComponent.showOpenTicket()" class="link">
+							פתחו קריאת שירות
+						</div>
+					</div>
+
+					<div>
+						<div
+								[matTooltip]="'שם בסיס הנתונים בתוכנת הנה״ח'"
+								matTooltipClass="allow-cr"
+								matTooltipPosition="above"
+								style="cursor: pointer"
+						>
+							בסיס נתונים
+						</div>
+						<div>
+							<input
+									(change)="updateCompany()"
+									formControlName="dbName"
+									type="text"
+							/>
+							<span
+									(click)="dbYearHistory()"
+									*ngIf="info.get('yearlyProgram').value"
+									class="link posLeft"
+							>
+                היסטוריה
+              </span>
+						</div>
+					</div>
+					<div class="comments">
+						<div>בסיס הנתונים לא נכון?</div>
+						<div (click)="sharedComponent.showOpenTicket()" class="link">
+							פתחו קריאת שירות
+						</div>
+					</div>
+
+					<div>
+						<div>% מקדמות מס הכנסה</div>
+						<div>
+							<input
+									(change)="updateCompany()"
+									[class.err]="
+                  info.get('mikdamotPrc').dirty &&
+                  info.get('mikdamotPrc').invalid
+                "
+									appNumbersOnly="positiveInt"
+									formControlName="mikdamotPrc"
+									type="text"
+							/>
+						</div>
+					</div>
+					<div
+							*ngIf="
+              info.get('mikdamotPrc').value && info.get('mikdamotPrc').invalid
+            "
+							class="invalidAlert"
+					>
+						המספר שהוקלד לא תקין
+					</div>
+
+					<div>
+						<div>שיוך פקיד שומה</div>
+						<div>
+							<p-dropdown
+									#dd22
+									(onChange)="updateCompany()"
+									(onFocus)="clearFilter(dd22)"
+									[dropdownIcon]="'p-dropdown-icon'"
+									[filter]="true"
+									[options]="assessorArr"
+									[scrollHeight]="'135px'"
+									[style]="{ width: '100%' }"
+									appendTo="body"
+									dataKey="assessorId"
+									formControlName="assessor"
+									optionLabel="assessorName"
+									placeholder="בחירה"
+									styleClass="ddInfoCompanyForm"
+							>
+							</p-dropdown>
+						</div>
+					</div>
+				</div>
+				<div class="sett-table">
+					<div>
+						<div
+								[matTooltip]="
+                'PCN דיווח מפורט מקוון' +
+                '\n' +
+                'דיגיטלית - דיווח בשע״מ או באינטרנט' +
+                '\n' +
+                'שובר ידני - תשלום בשיק'
+              "
+								matTooltipClass="allow-cr"
+								matTooltipPosition="above"
+								style="cursor: pointer"
+						>
+							שיטת הדיווח
+						</div>
+						<div>
+							<p-dropdown
+									#dd11
+									(onChange)="updateCompany(true)"
+									(onFocus)="clearFilter(dd11)"
+									[dropdownIcon]="'p-dropdown-icon'"
+									[options]="vatReportTypeArr"
+									[scrollHeight]="'135px'"
+									[style]="{ width: '100%' }"
+									appendTo="body"
+									formControlName="vatReportType"
+
+									placeholder="בחירה"
+									styleClass="ddInfoCompanyForm"
+							>
+							</p-dropdown>
+						</div>
+					</div>
+
+					<div>
+						<div>דיווח למע"מ</div>
+
+						<div>
+							<div style="padding: 0px 10px; height: 30px">
+								<p-radioButton
+										(onClick)="updateValues('esderMaam', 'MONTH')"
+										[label]="'חודשי'"
+										formControlName="esderMaam"
+										inputId="radio11"
+										name="esderMaam"
+										value="MONTH"
+								>
+								</p-radioButton>
+								<span style="padding: 0px 8px"></span>
+								<p-radioButton
+										(onClick)="updateValues('esderMaam', 'TWO_MONTH')"
+										[label]="'דו חודשי'"
+										formControlName="esderMaam"
+										inputId="radio22"
+										name="esderMaam"
+										value="TWO_MONTH"
+								>
+								</p-radioButton>
+								<span style="padding: 0px 8px"></span>
+								<p-radioButton
+										(onClick)="updateValues('esderMaam', 'NONE')"
+										[label]="'ללא מע״מ'"
+										formControlName="esderMaam"
+										inputId="radio2234"
+										name="esderMaam"
+										value="NONE"
+								>
+								</p-radioButton>
+							</div>
+						</div>
+					</div>
+
+					<div>
+						<div>העסקת עובדים</div>
+						<div>
+							<div style="padding: 0px 10px; height: 30px">
+								<p-radioButton
+										(onClick)="updateValues('hiring', true)"
+										[label]="'כן'"
+										[value]="true"
+										formControlName="hiring"
+										inputId="radio1112"
+										name="hiring"
+								>
+								</p-radioButton>
+								<span style="padding: 0px 8px"></span>
+								<p-radioButton
+										(onClick)="updateValues('hiring', false)"
+										[label]="'לא'"
+										[value]="false"
+										formControlName="hiring"
+										inputId="radio1112"
+										name="hiring"
+								>
+								</p-radioButton>
+							</div>
+						</div>
+					</div>
+
+					<div>
+						<div>% ניכוי מס במקור</div>
+						<div>
+							<input
+									(change)="updateCompany()"
+									[class.err]="
+                  info.get('nikuiMasNum').dirty &&
+                  info.get('nikuiMasNum').invalid
+                "
+									appNumbersOnly="positiveInt"
+									formControlName="nikuiMasNum"
+									type="text"
+							/>
+
+							<a
+									class="link posLeft"
+									href="https://www.misim.gov.il/gmIshurim/firstPage.aspx"
+									target="_blank"
+							>
+								אתר רשות המיסים
+							</a>
+						</div>
+					</div>
+					<div
+							*ngIf="
+              info.get('nikuiMasNum').value && info.get('nikuiMasNum').invalid
+            "
+							class="invalidAlert"
+					>
+						המספר שהוקלד לא תקין
+					</div>
+				</div>
+				<div class="sett-table">
+					<div>
+						<div
+								[matTooltip]="'הנה״ח נפרדת לכל שנה או מצטברת'"
+								matTooltipClass="allow-cr"
+								matTooltipPosition="above"
+								style="cursor: pointer"
+						>
+							רב שנתי/חד שנתי
+						</div>
+						<div>
+							<div style="padding: 0px 10px; height: 30px">
+								<p-radioButton
+										(onClick)="updateValues('yearlyProgram', false)"
+										[label]="'רב שנתי'"
+										[value]="false"
+										formControlName="yearlyProgram"
+										inputId="radio1"
+										name="yearlyProgram"
+								>
+								</p-radioButton>
+								<span style="padding: 0px 8px"></span>
+								<p-radioButton
+										(onClick)="updateValues('yearlyProgram', true)"
+										[label]="'חד שנתי'"
+										[value]="true"
+										formControlName="yearlyProgram"
+										inputId="radio1"
+										name="yearlyProgram"
+								>
+								</p-radioButton>
+							</div>
+						</div>
+					</div>
+					<div class="comments">
+						<div>רוצים לשנות?</div>
+						<div (click)="sharedComponent.showOpenTicket()" class="link">
+							פתחו קריאת שירות
+						</div>
+					</div>
+
+					<div>
+						<div
+								[matTooltip]="'דיווח שנתי על ניכוי מס במקור לספקים'"
+								matTooltipClass="allow-cr"
+								matTooltipPosition="above"
+								style="cursor: pointer"
+						>
+							חובת דיווח 856
+						</div>
+						<div>
+							<div style="padding: 0px 10px; height: 30px">
+								<p-radioButton
+										(onClick)="
+                    bookKeepingCustRes.supplierTaxDeductionCustId
+                      ? updateValues('report856', true)
+                      : (show_modal_report856 = true)
+                  "
+										[label]="'כן'"
+										[value]="true"
+										formControlName="report856"
+										inputId="radio111"
+										name="report856"
+								>
+								</p-radioButton>
+								<span style="padding: 0px 8px"></span>
+								<p-radioButton
+										(onClick)="updateValues('report856', false)"
+										[label]="'לא'"
+										[value]="false"
+										formControlName="report856"
+										inputId="radio112"
+										name="report856"
+								>
+								</p-radioButton>
+							</div>
+						</div>
+					</div>
+
+					<div>
+						<div>שיוך סניף מע"מ</div>
+						<div>
+							<p-dropdown
+									#dd1
+									(onChange)="updateCompany()"
+									(onFocus)="clearFilter(dd1)"
+									[dropdownIcon]="'p-dropdown-icon'"
+									[filter]="true"
+									[options]="snifMaamArr"
+									[scrollHeight]="'135px'"
+									[style]="{ width: '100%' }"
+									appendTo="body"
+									dataKey="snifMaamId"
+									formControlName="snifMaam"
+
+									optionLabel="snifMaamName"
+									placeholder="בחירה"
+									styleClass="ddInfoCompanyForm"
+							>
+							</p-dropdown>
+						</div>
+					</div>
+					<div>
+						<div>תוקף ניכוי מס במקור</div>
+						<div>
+							<p-calendar
+									(onSelect)="updateCompany()"
+									[inputStyle]="{ 'max-width': '100%' }"
+									[locale]="'langCalendar' | translate"
+									[readonlyInput]="true"
+									dateFormat="dd/mm/yy"
+									formControlName="nikuiExpirationDate"
+									id="nikuiExpirationDate"
+									inputId="nikuiExpirationDate"
+									styleClass="calendarInput"
+							>
+							</p-calendar>
+						</div>
+					</div>
+				</div>
+			</div>
+		</form>
+	</div>
+</div>
+
+<ng-container *ngIf="dbYearHistoryArr">
+	<p-dialog (visibleChange)="dbYearHistoryArr = false"
+			[visible]="(dbYearHistoryArr)"
+			[modal]="true"
+			[resizable]="false"
+			appendTo="body"
+			styleClass="dbYearHistoryModal"
+	>
+		<p-header>{{ 'היסטוריית בסיסי נתונים' }}</p-header>
+
+		<ul class="scroll-chrome">
+			<li *ngFor="let item of dbYearHistoryArr">
+				<div>
+					{{ item.dbYear }}
+				</div>
+				<div>
+					{{ item.dbName }}
+				</div>
+			</li>
+		</ul>
+		<div class="border">&nbsp;</div>
+		<p-footer>
+			<button (click)="dbYearHistoryArr = false" class="button-dark">
+				סגירה
+			</button>
+		</p-footer>
+	</p-dialog>
+</ng-container>
+
+<ng-container *ngIf="show_modal_report856">
+	<p-dialog (visibleChange)="show_modal_report856 = false"
+			(onHide)="updateValues_report856()"
+			[visible]="(show_modal_report856)"
+			[modal]="true"
+			[resizable]="false"
+			appendTo="body"
+			styleClass="show_modal_report856"
+	>
+		<p-header>{{ 'ניכוי מס במקור' }}</p-header>
+
+		<div>
+			<p
+					style="
+          font-size: 16px;
+          line-height: 26px;
+          margin-top: 5px;
+          margin-bottom: 15px;
+        "
+			>
+				על מנת להמשיך, יש להגדיר את כרטיס "ניכוי מס במקור לספקים"
+				<br/>
+				וכרטיס "ניכוי מס במקור מלקוחות":
+			</p>
+			<form [formGroup]="infoModal" novalidate style="padding-left: 5px">
+				<div
+						style="
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            justify-content: space-between;
+          "
+				>
+					<div style="width: 200px; font-weight: 300; font-size: 16px">
+						כרטיס "ניכוי מס במקור לספקים"
+					</div>
+					<div>
+						<p-dropdown
+								#formDropdowns
+								(onFocus)="clearFilter(formDropdowns)"
+								[autoDisplayFirst]="false"
+								[filter]="true"
+
+								[options]="
+                userService.appData.userData.companyCustomerDetails
+                  ? userService.appData.userData.companyCustomerDetails
+                      .customerTaxDeductionCustIdExpenseArr
+                  : []
+              "
+								[scrollHeight]="'135px'"
+								[style]="{ width: '202px' }"
+								appendTo="body"
+								dataKey="custId"
+								emptyFilterMessage="לא נמצאו תוצאות"
+								filterBy="lName,custId,hp"
+								formControlName="supplierTaxDeductionCustId"
+								id="supplierTaxDeductionCustId"
+
+								optionLabel="custId"
+								panelStyleClass="company-customer-dropdown-panel cardsDD"
+								placeholder="בחירה"
+								styleClass="ddInfoCompanyForm"
+						>
+							<ng-template let-item pTemplate="selectedItem">
+                <span
+		                #spanElement
+		                [pTooltip]="item.cartisName"
+		                [tooltipDisabled]="
+                    spanElement.offsetWidth >= spanElement.scrollWidth
+                  "
+		                style="
+                    vertical-align: middle;
+                    display: block;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                  "
+		                tooltipPosition="top"
+                >{{ item.custId }}</span
+                >
+							</ng-template>
+							<ng-template let-item pTemplate="item">
+								<div class="p-helper-clearfix cust-item">
+									<div>
+                    <span class="text-ellipsis">{{
+	                    item.cartisName
+	                    }}</span>
+									</div>
+								</div>
+							</ng-template>
+							<ng-template pTemplate="empty">
+								<div
+										class="p-helper-clearfix"
+										style="font-size: 0.95em; padding: 0.3em 1em"
+								>
+									<div>לא מצאת את הכרטיס שחיפשת?</div>
+									<div>צרו כרטיס חדש בהנה"ח</div>
+									<button
+											class="button-link"
+											style="padding: 0; font-size: inherit"
+									>
+										ולחצו על רענון הנתונים
+									</button>
+								</div>
+							</ng-template>
+							<ng-template pTemplate="emptyfilter">
+								<div
+										class="p-helper-clearfix"
+										style="font-size: 0.95em; padding: 0.3em 1em"
+								>
+									<div>לא מצאת את הכרטיס שחיפשת?</div>
+									<div>צרו כרטיס חדש בהנה"ח</div>
+									<button
+											class="button-link"
+											style="padding: 0; font-size: inherit"
+									>
+										ולחצו על רענון הנתונים
+									</button>
+								</div>
+							</ng-template>
+						</p-dropdown>
+					</div>
+				</div>
+				<!--                <div style="    display: flex;-->
+				<!--    align-items: center;-->
+				<!--        margin-bottom: 20px;-->
+				<!--    justify-content: space-between;">-->
+				<!--                    <div style="width: 200px; font-weight:300; font-size: 16px; ">-->
+				<!--                        כרטיס "ניכוי מס במקור מלקוחות"-->
+				<!--                    </div>-->
+				<!--                    <div>-->
+				<!--                        <p-dropdown-->
+				<!--                                formControlName="customerTaxDeductionCustId"-->
+				<!--                                id="customerTaxDeductionCustId"-->
+				<!--                                [options]="userService.appData.userData.companyCustomerDetails.all"-->
+				<!--                                [autoDisplayFirst]="false"-->
+				<!--                                [filter]="true"-->
+				<!--                                [scrollHeight]="'135px'"-->
+				<!--                                -->
+				<!--                                (onFocus)="clearFilter(formDropdowns)"-->
+				<!--                                filterBy="lName,custId,hp"-->
+				<!--                                emptyFilterMessage="לא נמצאו תוצאות"-->
+				<!--                                optionLabel="custId"-->
+				<!--                                appendTo="body"-->
+				<!--                                dataKey="custId"-->
+				<!--                                styleClass="ddInfoCompanyForm"-->
+				<!--                                -->
+				<!--                                [style]="{'width': '202px'}"-->
+				<!--                                placeholder="בחירה"-->
+				<!--                                panelStyleClass="company-customer-dropdown-panel cardsDD"-->
+				<!--                                #formDropdowns>-->
+				<!--                            <ng-template let-item pTemplate="selectedItem">-->
+				<!--                                                        <span style="vertical-align:middle;display: block;white-space: nowrap;overflow: hidden;text-overflow: ellipsis;"-->
+				<!--                                                              #spanElement-->
+				<!--                                                              [tooltipDisabled]="spanElement.offsetWidth >= spanElement.scrollWidth"-->
+				<!--                                                              [pTooltip]="item.cartisName"-->
+				<!--                                                              tooltipPosition="top">{{item.custId}}</span>-->
+				<!--                            </ng-template>-->
+				<!--                            <ng-template let-item pTemplate="item">-->
+				<!--                                <div class="p-helper-clearfix cust-item">-->
+				<!--                                    <div>-->
+				<!--                                        <span class="text-ellipsis">{{item.cartisName}}</span>-->
+				<!--                                    </div>-->
+				<!--                                </div>-->
+				<!--                            </ng-template>-->
+				<!--                            <ng-template pTemplate="noItem">-->
+				<!--                                <div class="p-helper-clearfix"-->
+				<!--                                     style="font-size: .95em; padding: .3em 1em;">-->
+				<!--                                    <div>לא מצאת את הכרטיס שחיפשת?</div>-->
+				<!--                                    <div>צרו כרטיס חדש בהנה"ח</div>-->
+				<!--                                    <button class="button-link"-->
+				<!--                                            style="padding: 0; font-size: inherit;">-->
+				<!--                                        ולחצו על-->
+				<!--                                        רענון הנתונים-->
+				<!--                                    </button>-->
+				<!--                                </div>-->
+				<!--                            </ng-template>-->
+				<!--                        </p-dropdown>-->
+				<!--                    </div>-->
+				<!--                </div>-->
+			</form>
+		</div>
+		<ng-template pTemplate="footer">
+			<div style="justify-content: flex-end; display: flex;">
+				<button
+						(click)="updateValues_report856(); show_modal_report856 = false"
+						class="button-white button-link"
+				>
+					{{ 'actions.cancellation' | translate }}
+				</button>
+				<button
+						(click)="setReport856(); show_modal_report856 = false"
+						[disabled]="infoModal.invalid"
+						class="button-dark"
+						style="width: 108px; height: 33px !important; padding: 0"
+				>
+					{{ 'actions.approve' | translate }}
+				</button>
+			</div>
+		</ng-template>
+	</p-dialog>
+</ng-container>
+
+<ng-container *ngIf="showModalEsderMaam">
+	<p-dialog (visibleChange)="showModalEsderMaam = false"
+			(onHide)="showModalEsderMaam = false"
+			[visible]="(showModalEsderMaam)"
+			[modal]="true"
+			[resizable]="false"
+			appendTo="body"
+			styleClass="showModalEsderMaam"
+	>
+		<p-header> שינוי דיווח למע״מ</p-header>
+
+		<div>
+			<p
+					style="
+          font-size: 16px;
+          line-height: 26px;
+          margin-top: 5px;
+          margin-bottom: 15px;
+          margin-left: 10px;
+        "
+			>
+				כדי שנוכל לעדכן את השינוי שביצעת,
+
+				<span style="font-weight: 700">
+          אין לסגור את המערכת
+          <br/>
+
+          ולא לעשות רענון.
+        </span>
+
+				אחרת השינוי לא יתבצע.
+			</p>
+		</div>
+		<p-footer>
+			<div style="justify-content: center">
+				<button
+						(click)="showModalEsderMaam = false"
+						class="button-white button-link"
+				>
+					{{ 'actions.cancellation' | translate }}
+				</button>
+				<button
+						(click)="showModalEsderMaam = false"
+						class="button-dark"
+						style="width: 108px; height: 33px !important; padding: 0"
+				>
+					הבנתי
+				</button>
+			</div>
+		</p-footer>
+	</p-dialog>
+</ng-container>

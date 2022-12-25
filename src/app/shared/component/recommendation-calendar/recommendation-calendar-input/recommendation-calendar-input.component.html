@@ -1,0 +1,580 @@
+<span #container
+      [class]="styleClass"
+      [ngClass]="{ 'p-calendar': true, 'p-calendar-w-btn': showIcon, 'p-calendar-timeonly': timeOnly, 'p-calendar-disabled': disabled, 'p-focus': focus }"
+      [ngStyle]="style">
+            <ng-template [ngIf]="!inline">
+                <input
+		                #inputfield
+		                (blur)="onInputBlur($event)"
+		                (click)="onInputClick()"
+		                (focus)="onInputFocus($event)"
+		                (input)="onUserInput($event)"
+		                (keydown)="onInputKeydown($event)"
+		                [attr.aria-labelledby]="ariaLabelledBy"
+		                [attr.aria-required]="required"
+		                [attr.id]="inputId"
+		                [attr.inputmode]="touchUI ? 'off' : null"
+		                [attr.name]="name"
+		                [attr.required]="required"
+		                [attr.tabindex]="tabindex"
+		                [class]="inputStyleClass"
+		                [disabled]="disabled"
+		                [ngClass]="'p-inputtext p-component'"
+		                [ngStyle]="inputStyle"
+		                [placeholder]="placeholder || ''"
+		                [readonly]="readonlyInput"
+		                [value]="inputFieldValue"
+		                autocomplete="off"
+		                type="text"
+                />
+                <i (click)="clear()" *ngIf="showClear && !disabled && value != null"
+                   class="p-calendar-clear-icon pi pi-times"></i>
+                <button (click)="onButtonClick($event, inputfield)" *ngIf="showIcon" [attr.aria-label]="iconAriaLabel"
+                        [disabled]="disabled" [icon]="icon" class="p-datepicker-trigger"
+                        pButton pRipple tabindex="0"
+                        type="button"></button>
+            </ng-template>
+            <div
+		            #contentWrapper
+		            (@overlayAnimation.done)="onOverlayAnimationDone($event)"
+		            (@overlayAnimation.start)="onOverlayAnimationStart($event)"
+		            (click)="onOverlayClick($event)"
+		            *ngIf="inline || overlayVisible"
+		            [@.disabled]="inline === true"
+		            [@overlayAnimation]="
+                    touchUI
+                        ? { value: 'visibleTouchUI', params: { showTransitionParams: showTransitionOptions, hideTransitionParams: hideTransitionOptions } }
+                        : { value: 'visible', params: { showTransitionParams: showTransitionOptions, hideTransitionParams: hideTransitionOptions } }
+                "
+		            [class]="panelStyleClass"
+		            [ngClass]="{
+                    'p-datepicker p-component': true,
+                    'p-datepicker-inline': inline,
+                    'p-disabled': disabled,
+                    'p-datepicker-timeonly': timeOnly,
+                    'p-datepicker-multiple-month': this.numberOfMonths > 1,
+                    'p-datepicker-monthpicker': view === 'month',
+                    'p-datepicker-touch-ui': touchUI
+                }"
+		            [ngStyle]="panelStyle"
+            >
+
+                <ng-content select="p-header"></ng-content>
+                <ng-container *ngTemplateOutlet="headerTemplate"></ng-container>
+                <ng-container *ngIf="!timeOnly">
+                    <div class="p-datepicker-group-container">
+                        <div *ngFor="let month of months; let i = index" class="p-datepicker-group">
+                            <div class="p-datepicker-header">
+                                <button (click)="onPrevButtonClick($event)"
+                                        (keydown)="onContainerButtonKeydown($event)"
+                                        *ngIf="i === 0"
+                                        [class.disabled]="!mayGoPrevMonth" class="p-datepicker-prev p-link" pRipple type="button">
+                                    <span class="fa fa-angle-left"></span>
+                                </button>
+                                <div class="p-datepicker-title">
+	                               
+<!--                                     <button (click)="switchToMonthView($event)" (keydown)="onContainerButtonKeydown($event)" -->
+	                                <!--                                             *ngIf="currentView === 'date'" [disabled]="switchViewButtonDisabled()" -->
+	                                <!--                                             class="p-datepicker-month p-link" type="button"> -->
+	                                <!--                                         {{ getMonthName(month.month) }} -->
+	                                <!--                                     </button> -->
+	                                <!--                                     <button (click)="switchToYearView($event)" (keydown)="onContainerButtonKeydown($event)" -->
+	                                <!--                                             *ngIf="currentView !== 'year'" [disabled]="switchViewButtonDisabled()" -->
+	                                <!--                                             class="p-datepicker-year p-link" type="button"> -->
+	                                <!--                                         {{ getYear(month) }} -->
+	                                <!--                                     </button> -->
+	                                <!--                                     <span *ngIf="currentView === 'year'" class="p-datepicker-decade"> -->
+	                                <!--                                         <ng-container *ngIf="!decadeTemplate">{{ yearPickerValues()[0] }} -->
+	                                <!-- 	                                        - {{ yearPickerValues()[yearPickerValues().length - 1] }}</ng-container> -->
+	                                <!--                                         <ng-container -->
+	                                <!-- 		                                        *ngTemplateOutlet="decadeTemplate; context: { $implicit: yearPickerValues }"></ng-container> -->
+	                                <!--                                     </span> -->
+	                                
+	                                
+	                                
+	                                    <span *ngIf="!monthNavigator" class="p-datepicker-month">{{
+		                                    config.translation.monthNames[currentMonth]
+		                                    }}</span>
+        <select
+		        (change)="onMonthDropdownChange($event.target['value'])"
+		        *ngIf="monthNavigator"
+		        class="p-datepicker-month"
+        >
+          <option
+		          *ngFor="let month of config.translation.monthNames; let i = index"
+		          [selected]="i === currentMonth"
+		          [value]="i"
+          >
+            {{ month }}
+          </option>
+        </select>
+        <select
+		        (change)="onYearDropdownChange($event.target['value'])"
+		        *ngIf="yearNavigator"
+		        class="p-datepicker-year"
+        >
+          <option
+		          *ngFor="let year of yearOptions"
+		          [selected]="year === currentYear"
+		          [value]="year"
+          >
+            {{ year }}
+          </option>
+        </select>
+        <span *ngIf="!yearNavigator" class="p-datepicker-year">{{
+	        currentYear
+	        }}</span>
+	                               
+	                               
+                                </div>
+                                <button
+		                                (click)="onNextButtonClick($event)"
+		                                (keydown)="onContainerButtonKeydown($event)"
+		                                [class.disabled]="!mayGoNextMonth"
+		                                [style.display]="numberOfMonths === 1 ? 'inline-flex' : i === numberOfMonths - 1 ? 'inline-flex' : 'none'"
+		                                class="p-datepicker-next p-link"
+		                                pRipple
+		                                type="button"
+                                >
+                                  <span class="fa fa-angle-right"></span>
+                                </button>
+                            </div>
+                            <div *ngIf="currentView === 'date'" class="p-datepicker-calendar-container">
+                                <table class="p-datepicker-calendar">
+                                    <thead>
+                                        <tr>
+                                            <th *ngIf="showWeek" class="p-datepicker-weekheader p-disabled">
+                                                <span>{{ getTranslation('weekHeader') }}</span>
+                                            </th>
+                                            <th *ngFor="let weekDay of weekDays; let begin = first; let end = last"
+                                                scope="col">
+                                                <span>{{ weekDay }}</span>
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr *ngFor="let week of month.dates; let j = index">
+                                            <td *ngIf="showWeek" class="p-datepicker-weeknumber">
+                                                <span class="p-disabled">
+                                                    {{ month.weekNumbers[j] }}
+                                                </span>
+                                            </td>
+                                            <td *ngFor="let date of week"
+                                                [ngClass]="{ 'p-datepicker-other-month': date.otherMonth, 'p-datepicker-today': date.today }">
+                                                <ng-container *ngIf="date.otherMonth ? showOtherMonths : true">
+                                                    <span (click)="onDateSelect($event, date)"
+                                                          (keydown)="onDateCellKeydown($event, date, i)"
+                                                          [ngClass]="{ 'p-highlight': isSelected(date), 'p-disabled': !date.selectable }"
+                                                          draggable="false" pRipple>
+                                                        <ng-container
+		                                                        *ngIf="!dateTemplate">{{ date.day }}</ng-container>
+                                                        <ng-container
+		                                                        *ngTemplateOutlet="dateTemplate; context: { $implicit: date }"></ng-container>
+                                                    </span>
+                                                </ng-container>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div *ngIf="currentView === 'month'" class="p-monthpicker">
+                        <span
+		                        (click)="onMonthSelect($event, i)"
+		                        (keydown)="onMonthCellKeydown($event, i)"
+		                        *ngFor="let m of monthPickerValues(); let i = index"
+		                        [ngClass]="{ 'p-highlight': isMonthSelected(i), 'p-disabled': isMonthDisabled(i) }"
+		                        class="p-monthpicker-month"
+		                        pRipple
+                        >
+                            {{ m }}
+                        </span>
+                    </div>
+                    <div *ngIf="currentView === 'year'" class="p-yearpicker">
+                        <span (click)="onYearSelect($event, y)" (keydown)="onYearCellKeydown($event, y)"
+                              *ngFor="let y of yearPickerValues()" [ngClass]="{ 'p-highlight': isYearSelected(y) }"
+                              class="p-yearpicker-year" pRipple>
+                            {{ y }}
+                        </span>
+                    </div>
+                </ng-container>
+                <div *ngIf="(showTime || timeOnly) && currentView === 'date'" class="p-timepicker">
+                    <div class="p-hour-picker">
+                        <button
+		                        (keydown)="onContainerButtonKeydown($event)"
+		                        (keydown.enter)="incrementHour($event)"
+		                        (keydown.space)="incrementHour($event)"
+		                        (keyup.enter)="onTimePickerElementMouseUp($event)"
+		                        (keyup.space)="onTimePickerElementMouseUp($event)"
+		                        (mousedown)="onTimePickerElementMouseDown($event, 0, 1)"
+		                        (mouseleave)="onTimePickerElementMouseLeave()"
+		                        (mouseup)="onTimePickerElementMouseUp($event)"
+		                        class="p-link"
+		                        pRipple
+		                        type="button"
+                        >
+                            <span class="pi pi-chevron-up"></span>
+                        </button>
+                        <span><ng-container *ngIf="currentHour < 10">0</ng-container>
+	                        {{ currentHour }}</span>
+                        <button
+		                        (keydown)="onContainerButtonKeydown($event)"
+		                        (keydown.enter)="decrementHour($event)"
+		                        (keydown.space)="decrementHour($event)"
+		                        (keyup.enter)="onTimePickerElementMouseUp($event)"
+		                        (keyup.space)="onTimePickerElementMouseUp($event)"
+		                        (mousedown)="onTimePickerElementMouseDown($event, 0, -1)"
+		                        (mouseleave)="onTimePickerElementMouseLeave()"
+		                        (mouseup)="onTimePickerElementMouseUp($event)"
+		                        class="p-link"
+		                        pRipple
+		                        type="button"
+                        >
+                            <span class="pi pi-chevron-down"></span>
+                        </button>
+                    </div>
+                    <div class="p-separator">
+                        <span>{{ timeSeparator }}</span>
+                    </div>
+                    <div class="p-minute-picker">
+                        <button
+		                        (keydown)="onContainerButtonKeydown($event)"
+		                        (keydown.enter)="incrementMinute($event)"
+		                        (keydown.space)="incrementMinute($event)"
+		                        (keyup.enter)="onTimePickerElementMouseUp($event)"
+		                        (keyup.space)="onTimePickerElementMouseUp($event)"
+		                        (mousedown)="onTimePickerElementMouseDown($event, 1, 1)"
+		                        (mouseleave)="onTimePickerElementMouseLeave()"
+		                        (mouseup)="onTimePickerElementMouseUp($event)"
+		                        class="p-link"
+		                        pRipple
+		                        type="button"
+                        >
+                            <span class="pi pi-chevron-up"></span>
+                        </button>
+                        <span><ng-container *ngIf="currentMinute < 10">0</ng-container>
+	                        {{ currentMinute }}</span>
+                        <button
+		                        (keydown)="onContainerButtonKeydown($event)"
+		                        (keydown.enter)="decrementMinute($event)"
+		                        (keydown.space)="decrementMinute($event)"
+		                        (keyup.enter)="onTimePickerElementMouseUp($event)"
+		                        (keyup.space)="onTimePickerElementMouseUp($event)"
+		                        (mousedown)="onTimePickerElementMouseDown($event, 1, -1)"
+		                        (mouseleave)="onTimePickerElementMouseLeave()"
+		                        (mouseup)="onTimePickerElementMouseUp($event)"
+		                        class="p-link"
+		                        pRipple
+		                        type="button"
+                        >
+                            <span class="pi pi-chevron-down"></span>
+                        </button>
+                    </div>
+                    <div *ngIf="showSeconds" class="p-separator">
+                        <span>{{ timeSeparator }}</span>
+                    </div>
+                    <div *ngIf="showSeconds" class="p-second-picker">
+                        <button
+		                        (keydown)="onContainerButtonKeydown($event)"
+		                        (keydown.enter)="incrementSecond($event)"
+		                        (keydown.space)="incrementSecond($event)"
+		                        (keyup.enter)="onTimePickerElementMouseUp($event)"
+		                        (keyup.space)="onTimePickerElementMouseUp($event)"
+		                        (mousedown)="onTimePickerElementMouseDown($event, 2, 1)"
+		                        (mouseleave)="onTimePickerElementMouseLeave()"
+		                        (mouseup)="onTimePickerElementMouseUp($event)"
+		                        class="p-link"
+		                        pRipple
+		                        type="button"
+                        >
+                            <span class="pi pi-chevron-up"></span>
+                        </button>
+                        <span><ng-container *ngIf="currentSecond < 10">0</ng-container>
+	                        {{ currentSecond }}</span>
+                        <button
+		                        (keydown)="onContainerButtonKeydown($event)"
+		                        (keydown.enter)="decrementSecond($event)"
+		                        (keydown.space)="decrementSecond($event)"
+		                        (keyup.enter)="onTimePickerElementMouseUp($event)"
+		                        (keyup.space)="onTimePickerElementMouseUp($event)"
+		                        (mousedown)="onTimePickerElementMouseDown($event, 2, -1)"
+		                        (mouseleave)="onTimePickerElementMouseLeave()"
+		                        (mouseup)="onTimePickerElementMouseUp($event)"
+		                        class="p-link"
+		                        pRipple
+		                        type="button"
+                        >
+                            <span class="pi pi-chevron-down"></span>
+                        </button>
+                    </div>
+                    <div *ngIf="hourFormat == '12'" class="p-ampm-picker">
+                        <button (click)="toggleAMPM($event)" (keydown)="onContainerButtonKeydown($event)"
+                                (keydown.enter)="toggleAMPM($event)"
+                                class="p-link" pRipple type="button">
+                            <span class="pi pi-chevron-up"></span>
+                        </button>
+                        <span>{{ pm ? 'PM' : 'AM' }}</span>
+                        <button (click)="toggleAMPM($event)" (keydown)="onContainerButtonKeydown($event)"
+                                (keydown.enter)="toggleAMPM($event)"
+                                class="p-link" pRipple type="button">
+                            <span class="pi pi-chevron-down"></span>
+                        </button>
+                    </div>
+                </div>
+                <div *ngIf="showButtonBar" class="p-datepicker-buttonbar">
+                    <button (click)="onTodayButtonClick($event)" (keydown)="onContainerButtonKeydown($event)"
+                            [label]="getTranslation('today')"
+                            [ngClass]="[todayButtonStyleClass]" pButton pRipple
+                            type="button"></button>
+                    <button (click)="onClearButtonClick($event)" (keydown)="onContainerButtonKeydown($event)"
+                            [label]="getTranslation('clear')"
+                            [ngClass]="[clearButtonStyleClass]" pButton pRipple
+                            type="button"></button>
+                </div>
+                <ng-content select="p-footer"></ng-content>
+                <ng-container *ngTemplateOutlet="footerTemplate"></ng-container>
+	            <div *ngIf="overlayVisible || inline" class="recommendation-calc-invite">
+      <div class="selection-summary">
+        <ng-container
+		        *ngIf="
+            recommendations$ | async as rcmndts;
+            else outdatedAccSelectedOrNone
+          "
+        >
+          <ng-container
+		          *ngIf="
+              presetData.account.isUpToDate;
+              else outdatedAccSelectedOrNone
+            "
+          >
+            <div>
+              {{
+	            'recommendationCalendar.expectedBalanceAtSelectedDateIs'
+			            | translate
+	            }}
+            </div>
+            <ng-container *ngIf="value; else noneDaySelected">
+              <ng-container
+		              *ngIf="
+                  rcmndts.daysMap[
+                    value.getDate() + '-' + value.getMonth()
+                  ] as selectedDayData;
+                  else outdatedAccSelectedOrNone
+                "
+              >
+                <div
+		                [class.sum-credit]="selectedDayData.color === 'green'"
+		                [class.sum-debit]="selectedDayData.color === 'red'"
+		                class="sum-with-currency"
+                >
+                  <div class="sum forceLTR">
+                    {{ selectedDayData.itra | sum: true }}
+                  </div>
+                  <div class="currency">
+                    {{ presetData?.account?.currency | currencySymbol }}
+                  </div>
+                </div>
+              </ng-container>
+            </ng-container>
+            <ng-template #noneDaySelected>
+              <div class="sum-with-currency">-</div>
+            </ng-template>
+          </ng-container>
+        </ng-container>
+        <ng-template #outdatedAccSelectedOrNone>
+          <div
+		          *ngIf="presetData?.account && !presetData.account.isUpToDate"
+		          style="font-size: 1rem; text-align: center"
+          >
+            {{
+	          'recommendationCalendar.disclaimerWhenOutdatedAccountSelected'
+			          | translate
+	          }}
+          </div>
+          <div
+		          *ngIf="!presetData?.account"
+		          style="font-size: 1rem; text-align: center"
+          >
+            {{
+	          'recommendationCalendar.selectAccountToViewBalance' | translate
+	          }}
+          </div>
+        </ng-template>
+      </div>
+		            <!--<ng-container *ngIf="recommendations$| async as rcmndtn">-->
+		            <!--{{rcmndtn.recommendedDateDt| date:'dd/MM/yy'}}-->
+		            <!--</ng-container>-->
+      <div class="buttons-footer">
+        <button
+		        (click)="toggleRecommendationView()"
+		        [disabled]="
+            !presetData?.account?.isUpToDate ||
+            !(recommendations$ | async)?.recommendedDateDt ||
+            isAboveRecommendationRange
+          "
+		        class="quater-circle-button-container"
+		        type="button"
+        >
+          <img
+		          [src]="
+              '/assets/images/' +
+              (!presetData?.account?.isUpToDate ||
+              !(recommendations$ | async)?.recommendedDateDt
+                ? 'calculator-disabled.png'
+                : 'calculator.png')
+            "
+          />
+        </button>
+        <button
+		        (click)="applySelection()"
+		        [disabled]="!value"
+		        class="button-dark"
+		        type="button"
+        >
+          בחירה
+        </button>
+      </div>
+    </div>
+            </div>
+</span>
+<p-dialog #rcmndtnCalendarDlg
+          (visibleChange)="showRecommendationView = false"
+          *ngIf="showRecommendationView"
+          [header]="'תאריך מומלץ לתשלום'"
+          [modal]="true"
+          [styleClass]="'recommendationCalculator-dialog'"
+          [visible]="(showRecommendationView)"
+          appendTo="body"
+>
+	<div class="recommendation-calendar-container">
+		<div id="header-panel">
+			<form [formGroup]="rcmndtnInputs" novalidate>
+				<input
+						#sumInp
+						(keyup.enter)="sumInp.blur()"
+						appNumbersOnly
+						formControlName="sum"
+						type="text"
+				/>
+				<div>
+					{{ rcmndtnInputs.get('account').value?.currency | currencySymbol }}
+				</div>
+				<p-dropdown
+						[dropdownIcon]="'p-dropdown-icon'"
+						[options]="accountsUpToDate | async"
+						[required]="true"
+						[scrollHeight]="'135px'"
+						[style]="{ width: '228px' }"
+						
+						formControlName="account"
+						optionLabel="accountNickname"
+						placeholder="{{ 'actions.account' | translate }}"
+				>
+					<ng-template let-item pTemplate="selectedItem">
+						<div
+								style="display: flex; display: -ms-flexbox; align-items: center"
+						>
+							<img
+									[src]="
+                  !item.bankId
+                    ? ''
+                    : (item.bankId | toIconSrc: 'bank')
+                "  style="height: auto; width: 24px; position: relative;"
+							/>&nbsp;
+							<div class="text-ellipsis">{{ item?.accountNickname }}</div>
+							<div>&#40;{{ item.currency | currencySymbol }}&#41;</div>
+						</div>
+					</ng-template>
+					<ng-template let-option pTemplate="item">
+						<div
+								style="
+                position: relative;
+                display: flex;
+                display: -ms-flexbox;
+                align-items: center;
+              "
+						>
+							<img
+									[ngSrc]="
+                  (!option.bankId ? '' : option.bankId)
+                    | toIconSrc: 'bank'
+                " fill style="height: auto; width: 24px; position: relative;"
+							/>&nbsp;
+							<div class="text-ellipsis">{{ option.accountNickname }}</div>
+							<div>&#40;{{ option.currency | currencySymbol }}&#41;</div>
+						</div>
+					</ng-template>
+				</p-dropdown>
+			</form>
+		</div>
+		
+		<app-recommendation-calendar-inline
+				#recCal
+				[presetData]="rcmndtnInput$ | async"
+		></app-recommendation-calendar-inline>
+		
+		<div class="buttons-row">
+			<a
+					(click)="toggleRecommendationView()"
+					class="button-white button-link"
+					role="button"
+			>
+				{{ 'actions.cancellation' | translate }}
+			</a>
+			<button
+					(click)="
+          applyRecommendedSelection(recCal.selectedDate, recCal.presetData.sum)
+        "
+					[disabled]="!recCal.selectedDate"
+					class="button-dark"
+					type="button"
+			>
+				המשיכו להוספת הוצאה
+			</button>
+		</div>
+	</div>
+</p-dialog>
+
+
+<!--<table class="p-datepicker-calendar recommendation-calendar" *ngIf="showRecommendationView">-->
+<!--<thead>-->
+<!--<tr>-->
+<!--<th scope="col" *ngFor="let weekDay of weekDays;let begin = first; let end = last">-->
+<!--<span>{{weekDay}}</span>-->
+<!--</th>-->
+<!--</tr>-->
+<!--</thead>-->
+<!--<tbody>-->
+<!--<tr *ngFor="let week of dates">-->
+<!--<td *ngFor="let date of week" [ngClass]="{'p-datepicker-other-month p-disabled':date.otherMonth,-->
+<!--'p-datepicker-current-day':isSelected(date),'p-datepicker-today':date.today}">-->
+<!--<a class="p-state-default" href="#" *ngIf="date.otherMonth ? showOtherMonths : true"-->
+<!--[ngClass]="{'p-state-active':isSelected(date), 'p-highlight':date.today, 'p-disabled':!date.selectable}"-->
+<!--(click)="onDateSelect($event,date)" draggable="false">-->
+<!--<ng-container *ngIf="recommendations$| async as rcmndts; else noop">-->
+<!--<ng-container-->
+<!--*ngIf="rcmndts.daysMap[date.day + '-' + date.month] as dayData; else noop">-->
+<!--<div [class.recommended]="rcmndts.recommendedDateDt-->
+<!--&& rcmndts.recommendedDateDt.getDate() === date.day-->
+<!--&& rcmndts.recommendedDateDt.getMonth() === date.month">-->
+<!--<span class="forceLTR">{{date.day}} <span *ngIf="date.holiday"-->
+<!--[pTooltip]="date.holiday"-->
+<!--tooltipPosition="bottom">&#10033;</span></span>-->
+<!--<span class="itra" [class.sum-debit]="dayData.color === 'red'"-->
+<!--[class.sum-credit]="dayData.color === 'green'">-->
+<!--{{dayData.itra| sum:true}}-->
+<!--&lt;!&ndash;{{1234566.78| sum:true}}&ndash;&gt;-->
+<!--</span>-->
+<!--</div>-->
+<!--</ng-container>-->
+<!--</ng-container>-->
+<!--<ng-template #noop>-->
+<!--<span>{{date.day}}</span>-->
+<!--<span class="itra"><i class="fas fa-ellipsis-h"></i></span>-->
+<!--</ng-template>-->
+<!--</a>-->
+<!--</td>-->
+<!--</tr>-->
+<!--</tbody>-->
+<!--</table>-->

@@ -1,0 +1,78 @@
+<div
+		class="menu-with-panel"
+		style="display: inline-block"
+		[style.position]="showPanelDD ? 'relative' : 'static'"
+>
+	<div (click)="toggleTooltip()" style="cursor: pointer !important;" class="hoverSum">
+		<ng-content></ng-content>
+	</div>
+	<div
+			class="tooltip"
+			*ngIf="showPanelDD"
+			appClickDocument
+			(closed)="closeDoc()"
+			style="z-index: 2"
+			[class.tooltip-top]="stickTooltipToTop"
+			[ngStyle]="
+      stickTooltipToTop && { transform: 'translateY(-100%)', top: '-50%' }
+    "
+	>
+		<div class="titlesTooltip p-g">
+			<div class="p-g-8">
+				{{
+				title[3]
+						? title[1]
+								? ('titles.expectedExpense' | translate)
+								: ('titles.expectedIncome' | translate)
+						: title[1]
+								? ('filters.debit' | translate)
+								: ('filters.credit' | translate)
+				}}
+				-
+				{{
+				title[2] === null
+						? ('expressions.nigrarot' | translate)
+						: (title[2] | todayRelativeHumanize: 'dd/MM/yyyy')
+				}}
+			</div>
+			
+			<div class="p-g-4">
+				<p (click)="changed.emit(title)">
+					{{ 'expressions.toAllTransactions' | translate }}
+				</p>
+			</div>
+		</div>
+		<ul style="max-height: 195px; overflow: auto" class="scroll-chrome">
+			<ng-container *ngIf="dataContent === null; else loaded">
+				<li class="fa-2x" style="text-align: center; color: #42a6a4">
+					<i class="fas fa-circle-notch fa-spin"></i>
+				</li>
+			</ng-container>
+			<ng-template #loaded>
+				<ng-container *ngIf="dataContent && dataContent.length; else noContent">
+					<li
+							*ngFor="let item of dataContent"
+							style="white-space: nowrap"
+							class="p-g"
+					>
+						<div class="p-g-8">
+							{{ item.mainDesc ? item.mainDesc : item.transName }}
+						</div>
+						<div class="p-g-4 ltrNum">
+							<app-sum-view
+									[sum]="item.total"
+									[class.sum-debit]="title[1]"
+									[class.sum-credit]="!title[1]"
+							></app-sum-view>
+						</div>
+					</li>
+				</ng-container>
+			</ng-template>
+			<ng-template #noContent>
+				<li *ngIf="!dataContent || !dataContent.length" class="p-g">
+					<div class="p-g-12">{{ 'expressions.noDataFound' | translate }}</div>
+				</li>
+			</ng-template>
+		</ul>
+	</div>
+</div>

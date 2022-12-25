@@ -1,0 +1,154 @@
+<section class="titlePage">
+  {{ 'menu.customers.knowledge-base' | translate }}
+  <a
+    *ngIf="sectionOutlet.isActivated"
+    [routerLink]="['../help-center']"
+    queryParamsHandling="preserve"
+    id="nav-back-to-parent"
+  >
+    <img
+         style="height: auto; width: 22px; position: relative;" fill
+         ngSrc="/assets/images/back-arrow-rect.png" />
+  </a>
+</section>
+<div class="search" #headerBottom="matAutocompleteOrigin" matAutocompleteOrigin>
+  <input
+    type="text"
+    autocomplete="off"
+    placeholder="{{ 'help-center.search.placeholder' | translate }}"
+    [formControl]="searchFC"
+    [matAutocomplete]="auto"
+    [matAutocompleteConnectedTo]="headerBottom"
+  />
+  <mat-autocomplete #auto="matAutocomplete">
+    <!--                    [displayWith]="displayFn">-->
+    <ng-container
+      *ngIf="
+        sectionOutlet.isActivated
+          ? { faqs: [], terms: [] }
+          : {
+              faqs: faqList$ | async | filterSearchables: searchFC.value,
+              terms: termsList$ | async | filterSearchables: searchFC.value
+            } as lists
+      "
+    >
+      <mat-option
+        *ngFor="let faq of lists.faqs"
+        [value]="faq.question"
+        (onSelectionChange)="optionSelected($event, faq)"
+        >{{ faq.question }}</mat-option
+      >
+      <mat-option
+        *ngFor="let term of lists.terms"
+        [value]="term.subject"
+        (onSelectionChange)="optionSelected($event, term)"
+        >{{ term.subject }} <i style="font-style: italic">(מונח)</i></mat-option
+      >
+    </ng-container>
+    <!--    <ng-container *ngIf="{faqs: (filteredQuestions$| async), terms: (filteredTerms$| async)} as lists">-->
+    <!--      <mat-option *ngFor="let faq of lists.faqs" [value]="faq.question" (onSelectionChange)="optionSelected($event)">{{faq.question}}</mat-option>-->
+    <!--      <mat-option *ngFor="let term of lists.terms" [value]="term.subject">{{term.subject}} <i style="font-style: italic;">(מונח)</i></mat-option>-->
+    <!--    </ng-container>-->
+  </mat-autocomplete>
+</div>
+<section class="content" #content>
+  <div
+    [appScrollHeight]="content.getBoundingClientRect().top + 10"
+    class="scrollbar-dynamic lineBg"
+    style="border-left: 1px solid #022258 !important"
+    *ngIf="sectionOutlet.isActivated"
+  >
+    <mat-list>
+      <a
+        mat-list-item
+        routerLink="video"
+        queryParamsHandling="preserve"
+        routerLinkActive="active"
+      >
+        {{ 'knowledgeBase.vocabularies.video' | translate }}
+        <mat-icon>keyboard_arrow_left</mat-icon>
+      </a>
+      <a
+        mat-list-item
+        routerLink="faq"
+        queryParamsHandling="preserve"
+        routerLinkActive="active"
+      >
+        {{ 'knowledgeBase.vocabularies.faq' | translate }}
+        <mat-icon>keyboard_arrow_left</mat-icon>
+      </a>
+      <a
+        mat-list-item
+        routerLink="term"
+        queryParamsHandling="preserve"
+        routerLinkActive="active"
+      >
+        {{ 'knowledgeBase.vocabularies.terms' | translate }}
+        <mat-icon>keyboard_arrow_left</mat-icon>
+      </a>
+      <ng-container *ngFor="let section of sectionsList">
+        <a
+          mat-list-item
+          *ngIf="section !== 'video' && section !== 'faq' && section !== 'term'"
+          [routerLink]="section"
+          queryParamsHandling="preserve"
+          routerLinkActive="active"
+        >
+          {{ 'knowledgeBase.vocabularies.' + section | translate }}
+          <mat-icon>keyboard_arrow_left</mat-icon>
+        </a></ng-container
+      >
+    </mat-list>
+  </div>
+  <div
+    [appScrollHeight]="content.getBoundingClientRect().top + 10"
+    class="scrollbar-dynamic"
+  >
+    <router-outlet #sectionOutlet="outlet"></router-outlet>
+    <mat-grid-list
+      cols="4"
+      gutterSize="1.5em"
+      rowHeight="120px"
+      id="allSections"
+      *ngIf="!sectionOutlet.isActivated"
+    >
+      <mat-grid-tile
+        class="mat-grid-title-centered"
+        *ngFor="let section of sectionsList"
+        [routerLink]="section"
+        queryParamsHandling="preserve"
+        style="cursor: pointer"
+      >
+        <img
+          style="height: auto; width: auto; position: relative;" fill [ngSrc]="section | sectionIconSrc"
+          [alt]="'knowledgeBase.vocabularies.' + section | translate"
+        />
+        <i>{{ 'knowledgeBase.vocabularies.' + section | translate }}</i>
+
+        <!--        <a [routerLink]="section" queryParamsHandling="preserve" class="button-link">-->
+        <!--          <img style="height: auto; width: auto; position: relative;" fill [ngSrc]="'/assets/images/view-' + section + '.png'"-->
+        <!--               [alt]="('knowledgeBase.vocabularies.' + section)| translate">-->
+        <!--          <i>{{('knowledgeBase.vocabularies.' + section)| translate}}</i>-->
+        <!--        </a>-->
+        <!--        {{section}}-->
+      </mat-grid-tile>
+    </mat-grid-list>
+
+    <section id="service-call-section">
+      <div>לא מצאתם את התשובה שחיפשתם?</div>
+      <button class="button-dark" (click)="sharedComponent.showOpenTicket()">
+        פתחו לנו קריאת שירות
+      </button>
+    </section>
+  </div>
+</section>
+
+<!--<p-dialog (visibleChange)="aaa = false" [visible]="toggleServiceCallDialog"-->
+<!--            appendTo="body"-->
+<!--            [modal]="true"-->
+<!--            styleClass="service-call-dialog">-->
+<!--  <p-header>קריאת שירות</p-header>-->
+<!--  <ng-container *ngIf="toggleServiceCallDialog">-->
+<!--    <app-service-call-dialog></app-service-call-dialog>-->
+<!--  </ng-container>-->
+<!--</p-dialog>-->

@@ -1,0 +1,719 @@
+<div class="creditCardOcrTab" style="margin-top: 10px">
+	<div class="navTable">
+		<div
+				(click)="!exampleCompany ? addTokenPrompt.show() : null"
+				[ngStyle]="{ opacity: exampleCompany ? 0.6 : 1 }"
+				id="addCreditCard"
+		>
+			<img
+					src="/assets/images/add.png"
+					style="
+          align-self: center;
+          flex: 0 0 auto;
+          -ms-flex: 0 0 auto;
+          margin: 0 0px 0px 4px;
+        "
+			/>
+			<label>{{ 'actions.addNonBankCreditCard' | translate }}</label>
+		</div>
+		<ul style="display: flex; justify-content: space-between">
+			<li (click)="toggleExpandedForAllTo(true)" class="button-link">
+				{{ 'actions.expandAll' | translate }}
+			</li>
+			<li>|</li>
+			<li (click)="toggleExpandedForAllTo(false)" class="button-link">
+				{{ 'actions.collapseAll' | translate }}
+			</li>
+		</ul>
+		<div>
+			<p-checkbox [binary]="true"
+			            [formControl]="showDeletedCards"
+			            checkboxIcon="fa fa-check"
+			            class="checkboxGraph"
+			            id="p-showHideValuesInside"
+			            inputId="showHideValuesInside"
+			            label="הצג כרטיסים שנמחקו"
+			>
+			</p-checkbox>
+		</div>
+	</div>
+	<div class="tableCards">
+		<div #header class="header">
+			<div class="separator">&nbsp;</div>
+			<div></div>
+			<div class="separator">&nbsp;</div>
+			<div>שם החשבון</div>
+			<div class="separator">&nbsp;</div>
+			<div>סוג הכרטיס</div>
+			<div class="separator">&nbsp;</div>
+			<div>
+				<div class="padding">שם הכרטיס</div>
+			</div>
+			<div class="separator">&nbsp;</div>
+			<div>מסתיים בספרות</div>
+			<div class="separator">&nbsp;</div>
+			<div>מועד החיוב</div>
+			<div class="separator">&nbsp;</div>
+			<div>כרטיס בהנה"ח</div>
+			<div class="separator">&nbsp;</div>
+			<div style="display: none"></div>
+			<div class="separator" style="display: none">&nbsp;</div>
+			<div></div>
+			<div class="separator">&nbsp;</div>
+			<div style="display: none"></div>
+			<div class="separator" style="display: none">&nbsp;</div>
+			<div></div>
+			<div class="separator">&nbsp;</div>
+		</div>
+		<div
+				[appScrollHeight]="header.getBoundingClientRect().bottom + 5"
+				class="scrollPage scrollbar-dynamic"
+				style="position: relative"
+		>
+			<div *ngIf="loader" class="loader">
+				<div class="circle"></div>
+			</div>
+			
+			<ng-template #nonDeletedCardsOnly let-tokenGroup>
+				<div
+						(click)="
+            tokenGroup.children.length && toggleExpandedFor(tokenGroup.id)
+          "
+						[class.pointer]="tokenGroup.children.length > 0"
+				>
+					<i
+							*ngIf="tokenGroup.children.length"
+							[ngClass]="
+              groupExpanded[tokenGroup.id] ? 'fa-angle-up' : 'fa-angle-down'
+            "
+							class="fas"
+							style="padding: 0 6px; font-size: 20px"
+					></i>
+					<i *ngIf="!tokenGroup.children.length" class="fas">&nbsp;</i>
+				</div>
+			</ng-template>
+			
+			<ng-template #watchDeletedCards let-tokenGroup>
+				<ng-container *ngIf="deletedCards$ | async as deletedCards">
+					<div
+							(click)="
+              (tokenGroup.children.length || deletedCards[tokenGroup.id]) &&
+                toggleExpandedFor(tokenGroup.id)
+            "
+							[class.pointer]="
+              tokenGroup.children.length || deletedCards[tokenGroup.id]
+            "
+					>
+						<i
+								*ngIf="tokenGroup.children.length || deletedCards[tokenGroup.id]"
+								[ngClass]="
+                groupExpanded[tokenGroup.id] ? 'fa-angle-up' : 'fa-angle-down'
+              "
+								class="fas"
+								style="padding: 0 6px; font-size: 20px"
+						></i>
+						<i
+								*ngIf="
+                !(tokenGroup.children.length || deletedCards[tokenGroup.id])
+              "
+								class="fas"
+						>&nbsp;</i
+						>
+					</div>
+				</ng-container>
+			</ng-template>
+			
+			<ng-container *ngIf="byTokenGroups$ | async as byTokenGroups">
+				<div *ngFor="let tokenGroup of byTokenGroups">
+					<div class="rowTitle">
+						<ng-template
+								[ngTemplateOutletContext]="{
+                $implicit: tokenGroup
+              }"
+								[ngTemplateOutlet]="
+                showDeletedCards.value ? watchDeletedCards : nonDeletedCardsOnly
+              "
+						></ng-template>
+						<!--<div (click)="tokenGroup.children.length && toggleExpandedFor(tokenGroup.id)"-->
+						<!--[class.pointer]="tokenGroup.children.length > 0">-->
+						<!--<i *ngIf="tokenGroup.children.length"-->
+						<!--class="fa fa-fw" [ngClass]="groupExpanded[tokenGroup.id] ? 'fa-caret-up':'fa-caret-down'"></i>-->
+						<!--<i *ngIf="!tokenGroup.children.length"-->
+						<!--class="fa fa-fw">&nbsp;</i>-->
+						<!--</div>-->
+						
+						<img
+								style="height: auto; width: auto; position: relative;" fill [ngSrc]="tokenGroup.status.websiteTargetTypeId | toIconSrc : ((tokenGroup.status.websiteTargetTypeId | asTokenType) === tokenTypes.CREDITCARD ? 'card' : 'any')
+              "
+						/>&nbsp;
+						<!--<input [(ngModel)]="tokenGroup.status.tokenNickname" #tokenNicknameInp-->
+						<!--(focus)="selectedToken = tokenGroup.status;" (blur)="selectedToken = null;"-->
+						<!--(keydown.enter)="tokenNicknameInp.blur();"-->
+						<!--(keydown.esc)="selectedToken.tokenNickname = ''; tokenNicknameInp.blur();"-->
+						<!--[readonly]="!tokenGroup.status.hasPrivs || selectedToken !== tokenGroup.status"-->
+						<!--[disabled]="!tokenGroup.status.hasPrivs">-->
+						{{ tokenGroup.status.tokenNickname }}
+						<ng-container
+								*ngIf="
+                (tokenGroup.status.websiteTargetTypeId | asTokenType) ===
+                tokenTypes.CREDITCARD
+              "
+						>
+							&nbsp;(חוץ בנקאי)
+						</ng-container>
+						
+						<ng-container>
+							<app-token-status-view
+									(creationSuccess)="forceReload$.next()"
+									[companyId]="(selectedCompany$ | async).companyId"
+									[status]="tokenGroup.status"
+							>
+							</app-token-status-view>
+						</ng-container>
+					</div>
+					
+					<ng-container
+							*ngIf="tokenGroup.children.length && groupExpanded[tokenGroup.id]"
+					>
+						<div
+								(blur)="selectedCard = null"
+								(focus)="selectedCard = itemChild"
+								*ngFor="let itemChild of tokenGroup.children"
+								[class.row-outdated]="
+                !(itemChild.balanceLastUpdatedDate | isToday: true:false)
+              "
+								[id]="'card_' + itemChild.creditCardId"
+								class="row"
+								tabindex="-1"
+						>
+							<div class="separator">&nbsp;</div>
+							<div></div>
+							<div class="separator">&nbsp;</div>
+							
+							<ng-container
+									*ngIf="
+                  (tokenGroup.status.websiteTargetTypeId | asTokenType) ===
+                    tokenTypes.CREDITCARD;
+                  else uneditableAccount
+                "
+							>
+								<ng-container *ngIf="itemChild.account; else uneditableAccount">
+									<!--                                    <div class="dropdownOnHover">-->
+									<div>
+										<span>{{ itemChild.account.accountNickname }}</span>
+										<!--                                        <p-dropdown *ngIf="itemChild.account" appendTo="body" #accChangeTrigger-->
+										<!--                                                    [options]="defaultCurrencyAccounts"-->
+										<!--                                                    [optionLabel]="'accountNickname'" [dataKey]="'companyAccountId'"-->
+										<!--                                                    [(ngModel)]="itemChild.account"-->
+										<!--                                                    (onChange)="promptForAccountChangeAt(itemChild, $event, accChangeTrigger)"-->
+										<!--                                                    [scrollHeight]="'14em'"-->
+										<!--                                                    (onFocus)="selectedCard = itemChild;"-->
+										<!--                                                    -->
+										<!--                                                    [style]="{'width': '100%'}">-->
+										<!--                                            <ng-template let-item pTemplate="selectedItem">-->
+										<!--                                                <div style="display: flex; display: -ms-flexbox; align-items: center;">-->
+										<!--                                                    &lt;!&ndash;<img style="height: auto; width: auto; position: relative;" fill [ngSrc]="!item.bankId ? '' : item.bankId| toIconSrc:'bank'"/>&nbsp;&ndash;&gt;-->
+										<!--                                                    <div class="text-ellipsis"-->
+										<!--                                                         style="min-width: 0">{{item?.label}}</div>-->
+										<!--                                                </div>-->
+										<!--                                            </ng-template>-->
+										<!--                                            <ng-template let-option pTemplate="item">-->
+										<!--                                                <div style="position: relative; display: flex; display: -ms-flexbox; align-items: center;">-->
+										<!--                                                    <img style="height: auto; width: auto; position: relative;" fill [ngSrc]="(!option.bankId ? '' : option.bankId)| toIconSrc:'bank'"/>&nbsp;-->
+										<!--                                                    <div class="text-ellipsis">{{option.label}}</div>-->
+										<!--                                                </div>-->
+										<!--                                            </ng-template>-->
+										<!--                                        </p-dropdown>-->
+									</div>
+								</ng-container>
+							</ng-container>
+							<ng-template #uneditableAccount>
+								<div>{{ itemChild.account?.accountNickname }}</div>
+							</ng-template>
+							<!--<div>{{itemChild.account?.accountNickname}}</div>-->
+							
+							<div class="separator">&nbsp;</div>
+							<div>
+								{{
+								translate.translations[translate.currentLang].creditCards[
+										itemChild.creditCardTypeId
+										]
+								}}
+							</div>
+							<div class="separator">&nbsp;</div>
+							<div>
+								<div
+										[pTooltip]="itemChild.creditCardNickname"
+										[showDelay]="300"
+										[tooltipDisabled]="
+                    nicknameInp.clientWidth >= nicknameInp.scrollWidth
+                  "
+										appendTo="body"
+										style="display: flex"
+										tooltipPosition="top"
+								>
+									<input
+											#nicknameInp
+											(blur)="selectedCard = null"
+											(focus)="selectedCard = itemChild"
+											(keydown.enter)="nicknameInp.blur()"
+											(keydown.esc)="
+                      selectedCard.creditCardNickname = ''; nicknameInp.blur()
+                    "
+											[(ngModel)]="itemChild.creditCardNickname"
+											[appMaxInputLength]="19"
+											[disabled]="true"
+											[readonly]="selectedCard !== itemChild"
+									/>
+								</div>
+							</div>
+							<div class="separator">&nbsp;</div>
+							<div>
+								{{ itemChild.creditCardNo }}
+							</div>
+							<div class="separator">&nbsp;</div>
+							<div>
+								<div
+										[innerHTML]="
+                    itemChild.cycleDay ? itemChild.cycleDay + ' בחודש' : '-'
+                  "
+										[ngStyle]="{
+                    'margin-right': itemChild.cycleDay !== null ? '0' : '16%'
+                  }"
+										class="text-ellipsis"
+								></div>
+							</div>
+							<div class="separator">&nbsp;</div>
+							<div class="creditLimit-cell">
+								{{ itemChild.izuCustId ? itemChild.izuCustId.cartisName : '' }}
+							</div>
+							<div class="separator">&nbsp;</div>
+							<div style="display: none"></div>
+							<div class="separator" style="display: none">&nbsp;</div>
+							<div>
+								<i
+										*ngIf="
+                    itemChild.alertStatus
+                      | alertStatusHumanize as alertStatusHumanized
+                  "
+										class="outdated"
+								>
+									{{ alertStatusHumanized }}
+								</i>
+							</div>
+							<div class="separator">&nbsp;</div>
+							<div style="display: none">
+								<!--<span *ngIf="!itemChild.primaryAccount" class="showHover" style="color: #038ed6;"-->
+								<!--(click)="accountSetPrimary(itemChild.companyAccountId, itemChild.companyId)">-->
+								<!--בחירת חשבון מוביל-->
+								<!--</span>-->
+							</div>
+							<div class="separator" style="display: none">&nbsp;</div>
+							<div>
+								<img
+										(click)="cardDelete(itemChild)"
+										class="showHover"
+										src="/assets/images/trash.png"
+								/>
+								<!--                                <i class="fas fa-ellipsis-v"-->
+								<!--                                   (click)="setVarTool(itemChild); panelEdit.toggle($event);"></i>-->
+							</div>
+							<div class="separator" style="padding-left: 18px">&nbsp;</div>
+						</div>
+					</ng-container>
+					<ng-container *ngIf="showDeletedCards.value">
+						<ng-container *ngIf="deletedCards$ | async as deletedCards">
+							<div
+									*ngFor="let itemChild of deletedCards[tokenGroup.id]"
+									class="row deletedCardRow"
+									tabindex="-1"
+							>
+								<div class="separator">&nbsp;</div>
+								<div></div>
+								<div class="separator">&nbsp;</div>
+								
+								<div>
+									{{ itemChild.account?.accountNickname }}
+								</div>
+								<div class="separator">&nbsp;</div>
+								<div>
+									{{
+									translate.translations[translate.currentLang].creditCards[
+											itemChild.creditCardTypeId
+											]
+									}}
+								</div>
+								<div class="separator">&nbsp;</div>
+								<div>
+									<div
+											[pTooltip]="itemChild.creditCardNickname"
+											[showDelay]="300"
+											[tooltipDisabled]="
+                      nicknameInp.clientWidth >= nicknameInp.scrollWidth
+                    "
+											appendTo="body"
+											style="display: flex"
+											tooltipPosition="top"
+									>
+										<input
+												#nicknameInp
+												[value]="itemChild.creditCardNickname"
+												disabled
+										/>
+									</div>
+								</div>
+								<div class="separator">&nbsp;</div>
+								<div>
+									{{ itemChild.creditCardNo }}
+								</div>
+								<div class="separator">&nbsp;</div>
+								<div>
+									<div
+											[innerHTML]="
+                      itemChild.cycleDay ? itemChild.cycleDay + ' בחודש' : '-'
+                    "
+											[ngStyle]="{
+                      'margin-right': itemChild.cycleDay !== null ? '0' : '16%'
+                    }"
+											class="text-ellipsis"
+									></div>
+								</div>
+								<div class="separator">&nbsp;</div>
+								<div>
+									{{
+									itemChild.izuCustId ? itemChild.izuCustId.cartisName : ''
+									}}
+								</div>
+								<div class="separator">&nbsp;</div>
+								<div style="display: none"></div>
+								<div class="separator" style="display: none">&nbsp;</div>
+								
+								<div>
+                  <span
+		                  (click)="creditCardRestore(itemChild)"
+		                  class="showHover link"
+                  >{{ 'actions.restoreCreditCard' | translate }}</span
+                  >
+								</div>
+								<div class="separator">&nbsp;</div>
+								<div style="display: none"></div>
+								<div class="separator" style="display: none">&nbsp;</div>
+								<div>&nbsp;</div>
+								<div class="separator">&nbsp;</div>
+							</div>
+						</ng-container>
+					</ng-container>
+				</div>
+				
+				<!--                <p-overlayPanel-->
+				<!--                        styleClass="tooltip-bottom tooltip-acc-deviation tooltip-daily-edit overlayPanelRightClick"-->
+				<!--                        [style]="{'transform': 'translate(-10px, 10px)', 'width': 'auto'}"-->
+				<!--                        #panelEdit-->
+				<!--                        appendTo="body">-->
+				<!--                    <ul style="width: 185px;">-->
+				<!--                        <li (click)="openCardDDEdit = true; panelEdit.hide();">-->
+				<!--                            <div class="p-helper-clearfix"-->
+				<!--                                 style="display: flex; display: -ms-flexbox;">-->
+				<!--                                <p class="nameAcc"-->
+				<!--                                   style="overflow: hidden; white-space: nowrap; text-overflow: ellipsis;flex: 85;-ms-flex:85;">-->
+				<!--                                    עדכון כרטיס-->
+				<!--                                </p>-->
+				<!--                            </div>-->
+				<!--                        </li>-->
+				<!--                    </ul>-->
+				<!--                </p-overlayPanel>-->
+			</ng-container>
+		</div>
+	</div>
+</div>
+
+<app-token-create-dialog
+		(creationSuccess)="forceReload$.next()"
+		(openCallService)="sharedComponent.showOpenTicket()"
+		*ngIf="addTokenPrompt.visible"
+		[(display)]="addTokenPrompt.visible"
+		[companyId]="(selectedCompany$ | async).companyId"
+		[settings]="addTokenPrompt.form"
+		[type]="tokenTypes.CREDITCARD"
+>
+</app-token-create-dialog>
+
+<p-dialog
+		(visibleChange)="cardRestorePrompt.visible = $event"
+		[visible]="(cardRestorePrompt?.visible)"
+		
+		[modal]="true"
+		[style]="{width: 360 + 'px'}"
+		appendTo="body"
+		
+		styleClass="deleteMovementDialog"
+>
+	<p-header>{{ 'actions.creditCardRestore.title' | translate }}</p-header>
+	
+	<div
+			[innerHTML]="
+      'actions.creditCardRestore.subjectPtrn'
+        | translate: cardRestorePrompt.card
+    "
+			class="mat-h3"
+			style="font-weight: 700"
+	></div>
+	<div style="
+    font-size: 15px;
+    line-height: 24px;
+    margin-bottom: 16px;
+"
+			[innerHTML]="'actions.creditCardRestore.body' | translate"
+			class="mat-h4"
+	></div>
+	
+	<p-footer>
+		<div style="justify-content: center">
+			<button
+					(click)="cardRestorePrompt.visible = false"
+					class="button-white button-link"
+			>
+				{{ 'actions.creditCardRestore.decline' | translate }}
+			</button>
+			<button
+					(click)="cardRestorePrompt.onApprove()"
+					[disabled]="cardRestorePrompt?.processing"
+					class="button-dark"
+			>
+				<i
+						*ngIf="cardRestorePrompt?.processing"
+						class="fas fa-fw fa-circle-notch fa-spin"
+				></i>
+				{{ 'actions.creditCardRestore.approve' | translate }}
+			</button>
+		</div>
+	</p-footer>
+</p-dialog>
+
+<p-dialog
+		(visibleChange)="cardDeletePrompt.visible = $event"
+		[visible]="(cardDeletePrompt?.visible)"
+		
+		[modal]="true"
+		[style]="{width: 368 + 'px'}"
+		appendTo="body"
+		
+		styleClass="deleteMovementDialog accountsOcrTabDeleteMovementDialog"
+>
+	<p-header>מחיקת כרטיס</p-header>
+	
+	<div>
+		<strong>
+			אתם עומדים למחוק את כרטיס
+			{{
+			cardDeletePrompt && cardDeletePrompt.card
+					? cardDeletePrompt.card?.creditCardNickname
+					: ''
+			}},
+		</strong>
+		
+		<p>
+			בלחיצה על ‘מחיקה’ לא נמשוך יותר נתונים לכרטיס זה,
+			<br/>
+			היסטוריית הנתונים לא תוצג במסמכי המערכת.
+		</p>
+		
+		<p>להמשיך ולמחוק את הכרטיס?</p>
+	</div>
+	
+	<p-footer>
+		<div style="justify-content: flex-end; margin-top: 25px">
+			<button
+					(click)="cardDeletePrompt.visible = false"
+					class="button-white button-link"
+			>
+				{{ 'actions.cardDelete.decline' | translate }}
+			</button>
+			<button
+					(click)="cardDeletePrompt.onApprove()"
+					[disabled]="cardDeletePrompt.processing"
+					class="button-dark"
+			>
+				<i
+						*ngIf="cardDeletePrompt.processing"
+						class="fas fa-fw fa-circle-notch fa-spin"
+				></i>
+				מחיקת כרטיס
+			</button>
+		</div>
+	</p-footer>
+</p-dialog>
+
+<p-dialog
+		#changeCardLinkedAccountDlg
+		(visibleChange)="
+    changeCardLinkedAccountPrompt.visible = $event;
+    changeCardLinkedAccountPrompt.syncSelection()
+  "
+		*ngIf="changeCardLinkedAccountPrompt"
+		[visible]="(changeCardLinkedAccountPrompt?.visible)"
+		
+		[modal]="true"
+		[style]="{width: 360 + 'px'}"
+		
+		appendTo="body"
+		styleClass="deleteMovementDialog"
+>
+	<p-header>{{
+		'actions.cardLinkedAccountReplace.title' | translate
+		}}</p-header>
+	
+	<div
+			[innerHTML]="
+      'actions.cardLinkedAccountReplace.subjectPtrn'
+        | translate: changeCardLinkedAccountPrompt.newAccount
+    "
+			class="mat-h3"
+			style="font-weight: 700"
+	></div>
+	<div
+			[innerHTML]="'actions.cardLinkedAccountReplace.body' | translate"
+			class="mat-h4"
+	></div>
+	
+	<p-footer>
+		<div style="justify-content: center">
+			<button
+					(click)="changeCardLinkedAccountDlg.close($event)"
+					class="button-white button-link"
+			>
+				{{ 'actions.cardLinkedAccountReplace.decline' | translate }}
+			</button>
+			<button
+					(click)="changeCardLinkedAccountPrompt.onApprove()"
+					[disabled]="changeCardLinkedAccountPrompt.processing | async"
+					class="button-dark"
+			>
+				<i
+						*ngIf="changeCardLinkedAccountPrompt.processing | async"
+						class="fas fa-fw fa-circle-notch fa-spin"
+				></i>
+				{{ 'actions.cardLinkedAccountReplace.approve' | translate }}
+			</button>
+		</div>
+	</p-footer>
+</p-dialog>
+
+<ng-container *ngIf="openCardDDEdit">
+	<p-dialog
+			(visibleChange)="openCardDDEdit = $event"
+			[visible]="(openCardDDEdit)"
+			
+			[modal]="true"
+			[style]="{width: 450 + 'px'}"
+			appendTo="body"
+			
+			styleClass="deleteMovementDialog accountsOcrTabDeleteMovementDialog"
+	>
+		<p-header>
+			עדכון כרטיס הנהלת חשבונות לחברת
+			{{ userService.appData?.userData?.companySelect?.companyName }}
+		</p-header>
+		
+		<div style="text-align: center">
+			<h2>
+				<strong style="font-size: 24px"> שימו לב! </strong>
+			</h2>
+			<p style="margin-bottom: 0">
+				<strong style="line-height: 18px; margin-bottom: 6px">
+					שינוי כרטיס יגרום למחיקת כל ההיסטוריה מ- bizibox.
+				</strong>
+			</p>
+			<p style="line-height: 18px">יכול לגרום גם לבעיות בהנהלת חשבונות.</p>
+			
+			<p-dropdown
+					#formDropdowns
+					(onFocus)="clearFilter(formDropdowns)"
+					
+					[(ngModel)]="tooltipEditFile.izuCustId"
+					[autoDisplayFirst]="false"
+					[filter]="true"
+					
+					[options]="
+          userService.appData.userData.companyCustomerDetails.banksCards
+        "
+					[scrollHeight]="'135px'"
+					[style]="{ width: '300px' }"
+					appendTo="body"
+					dataKey="custId"
+					emptyFilterMessage="לא נמצאו תוצאות"
+					filterBy="lName,custId,hp"
+					id="custFrom"
+					optionLabel="custId"
+					panelStyleClass="company-customer-dropdown-panel cardsDD card282"
+					placeholder="בחירה"
+					style="display: flex; justify-content: center; margin-bottom: 20px"
+					styleClass="ddInfoCompanyForm"
+			>
+				<ng-template let-item pTemplate="selectedItem">
+          <span
+		          #spanElement
+		          [pTooltip]="item.cartisName"
+		          [tooltipDisabled]="
+              spanElement.offsetWidth >= spanElement.scrollWidth
+            "
+		          style="
+              vertical-align: middle;
+              display: block;
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
+            "
+		          tooltipPosition="top"
+          >{{ item.cartisName }}</span
+          >
+				</ng-template>
+				<ng-template let-item pTemplate="title">
+					<div class="p-helper-clearfix">
+						<span> כרטיסי בנק: </span>
+					</div>
+				</ng-template>
+				<ng-template let-item pTemplate="item">
+					<div
+							[class.bottom9]="item.value?.isLastHistory"
+							class="p-helper-clearfix"
+					>
+						<div>
+							<span class="text-ellipsis">{{ item.cartisName }}</span>
+						</div>
+					</div>
+					<div
+							*ngIf="item.value?.isLastHistory"
+							style="
+              height: 1px;
+              background: #cacaca;
+              padding: 0;
+              position: absolute;
+              bottom: -6px;
+              right: 0;
+              left: 0;
+              z-index: 999;
+            "
+					></div>
+				</ng-template>
+			</p-dropdown>
+		</div>
+		<p-footer>
+			<div style="justify-content: center">
+				<button
+						(click)="openCardDDEdit = false"
+						class="button-white button-link"
+				>
+					{{ 'actions.accountRestore.decline' | translate }}
+				</button>
+				<button
+						(click)="openCardDDEdit = false; changeIzuCustId(tooltipEditFile)"
+						class="button-dark"
+						style="width: 160px"
+				>
+					אישור
+				</button>
+			</div>
+		</p-footer>
+	</p-dialog>
+</ng-container>

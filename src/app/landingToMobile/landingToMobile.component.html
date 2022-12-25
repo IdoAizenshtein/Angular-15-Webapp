@@ -1,0 +1,70 @@
+<div class="landingToMobile">
+  <div class="Signup-mobile__card-header">
+    <img  src="/assets/images/logo-big.png" alt="bizibox" />
+    <h1>
+      {{ (!lite ? 'signup.mainTitle' : 'signup.mainTitleLite') | translate }}
+    </h1>
+  </div>
+  <div class="mobileLand">
+    <div [ngSwitch]="userService?.appData?.landingToMobile" class="title">
+      <h1 *ngSwitchCase="'regular'">לקוחות יקרים</h1>
+      <h1 *ngSwitchCase="'end'">תודה שבחרת להצטרף אלינו</h1>
+      <h1 *ngSwitchCase="'example'">
+        תודה שבחרת לצפות בנתונים של
+        <br />
+        "חברה לדוגמא" במערכת bizibox
+      </h1>
+    </div>
+    <div class="hearts">
+      <img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/hearts.png" alt="landingToMobile" />
+    </div>
+    <div [ngSwitch]="userService?.appData?.landingToMobile" class="text">
+      <p *ngSwitchCase="'regular'">
+        על מנת להנות מחווית מובייל מושלמת
+        <br />
+        וכדי שהנתונים שלך יהיו זמינים בכל עת ובכל מקום,
+        <br />
+        יש להוריד את האפליקציה של bizibox
+        <br />
+        מחנות האפליקציה (<span style="text-decoration: underline"
+          >ללא תשלום</span
+        >).
+      </p>
+      <p *ngSwitchCase="'end'">
+        כדי שהנתונים שלך יהיו זמינים בכל עת ובכל מקום,
+        <br />
+        יש להוריד את האפליקציה של bizibox
+        <br />
+        מחנות האפליקציה (<span style="text-decoration: underline"
+          >ללא תשלום</span
+        >).
+      </p>
+      <p *ngSwitchCase="'example'">
+        על מנת לצפות בנתוני "חברה לדוגמא",
+        <br />
+        יש להוריד את האפליקציה של bizibox
+        <br />
+        מחנות האפליקציה (<span style="text-decoration: underline"
+          >ללא תשלום</span
+        >).
+      </p>
+    </div>
+    <div class="buttonWrap">
+      <button (click)="goToAppStore()">להורדת האפליקציה</button>
+    </div>
+    <div style="text-align: center">
+      <img
+        style="height: auto; width: 77.5px; position: relative;" fill ngSrc="/assets/images/logoStores.png"
+        alt="logoStores"
+      />
+    </div>
+    <div class="Login__footer">
+      <img
+        style="height: auto; width: auto; position: relative;-webkit-filter: grayscale(1); filter: grayscale(1)" fill ngSrc="/assets/images/128BIT-gray.png"
+        alt="128bit"
+      />
+      <img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/ASTARO-gray.png" alt="Fortinet" />
+      <img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/VERISIGN-gray.png" alt="Verisign" />
+    </div>
+  </div>
+</div>

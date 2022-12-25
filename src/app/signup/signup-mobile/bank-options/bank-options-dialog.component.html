@@ -1,0 +1,40 @@
+<!--<div mat-dialog-title>-->
+<!--<button mat-raised-button>-->
+<!--{{'בחירת חשבון בנק'}}-->
+<!--</button>-->
+<!--</div>-->
+
+<div mat-dialog-content>
+  <div class="nav-header">
+    <button
+      mat-button
+      (click)="dialogRef.close({ selection: data?.selection })"
+    >
+      <mat-icon matPrefix class="mat-icon-rtl-mirror">chevron_right</mat-icon>
+      <span>{{ 'בחירת חשבון בנק' }}</span>
+    </button>
+  </div>
+  <div class="options-list">
+    <button
+      mat-raised-button
+      *ngFor="let opt of data.options"
+      [mat-dialog-close]="{ selection: opt }"
+      [class.active]="opt.value === data?.selection?.value"
+    >
+      <div class="icon-container">
+        <img
+          style="height: auto; max-height: 100%; width: auto; position: relative;" fill [ngSrc]="(opt.value ? opt.value : '') | toIconSrc: 'bank':'lg'"
+        />
+      </div>
+      <div>{{ opt.label }}</div>
+    </button>
+    <button
+      style="visibility: hidden; pointer-events: none"
+      *ngIf="data.options.length % 3 > 0"
+    ></button>
+    <button
+      style="visibility: hidden; pointer-events: none"
+      *ngIf="data.options.length % 3 > 1"
+    ></button>
+  </div>
+</div>

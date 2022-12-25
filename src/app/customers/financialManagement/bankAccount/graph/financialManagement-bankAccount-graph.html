@@ -1,0 +1,380 @@
+<div id="bankAccountGraphView" style="position: relative" #containerHost>
+  <div class="filterRow">
+    <app-acc-select
+      [accounts]="userService.appData.userData.accounts"
+      (changedTrigger)="changeAcc($event)"
+      #accountSelector
+    ></app-acc-select>
+    <app-account-dates></app-account-dates>
+    <!--<app-acc-dates [option]="'monthsWithoutCalendar'" (changedTrigger)="filterDates($event)"></app-acc-dates>-->
+
+    <ng-container *ngIf="selectedValueGraph !== 'balance'">
+      <div class="search">
+        <input
+          id="containTextFilter"
+          type="text"
+          placeholder="{{ 'filters.search' | translate }}"
+          [formControl]="filterInput"
+          autocomplete="off"
+        />
+      </div>
+
+      <app-tooltip-category
+        [title]="'titles.typeOfPayment' | translate"
+        [type]="'payment'"
+        [data]="paymentTypesArr"
+        [translateEnum]="sharedService.paymentTypesTranslate$"
+        (changed)="filterCategory($event)"
+      ></app-tooltip-category>
+      <app-tooltip-category
+        [title]="'titles.category' | translate"
+        [type]="'transType'"
+        [data]="transTypesArr"
+        (changed)="filterCategory($event)"
+      ></app-tooltip-category>
+    </ng-container>
+
+    <ul class="tabs navTabs">
+      <li
+        id="navToAggregateView"
+        routerLink="../aggregate"
+        queryParamsHandling="preserve"
+
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: false }"
+        [matTooltip]="
+          'appWalk.customers.financialManagement.bankAccount.viewSwitchAggregate'
+            | translate
+        "
+        matTooltipPosition="above"
+      >
+        {{ 'filters.consolidated' | translate }}
+      </li>
+      <li
+        id="navToDetailsView"
+        routerLink="../details"
+        queryParamsHandling="preserve"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: false }"
+        [matTooltip]="
+          'appWalk.customers.financialManagement.bankAccount.viewSwitchDetails'
+            | translate
+        "
+        matTooltipPosition="above"
+      >
+        {{ 'filters.detailed' | translate }}
+      </li>
+      <li
+        id="navToGraphView"
+        routerLink="../graph"
+        queryParamsHandling="preserve"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: false }"
+        [matTooltip]="
+          'appWalk.customers.financialManagement.bankAccount.viewSwitchChart'
+            | translate
+        "
+        matTooltipPosition="above"
+      >
+        <img ngSrc="/assets/images/chart.png" height="13" width="22" />
+      </li>
+    </ul>
+  </div>
+
+  <div *ngIf="loader" class="loader">
+    <div class="circle"></div>
+  </div>
+
+  <div
+    class="rowSumsAndSelect"
+    [ngClass]="{
+      redBg:
+        0 > balanceUse ||
+        accountSelectOneNotUpdate ||
+        accountSelectInDeviation?.length
+    }"
+    #header
+  >
+    <div class="sums tight">
+      <div *ngIf="selectedValueGraph === 'expenses'" class="sum-data">
+        <h3>
+          {{ 'sumsTitles.total' | translate }}
+          {{
+            'menu.customers.financialManagement.bankAccount.charts.revenuesName'
+              | translate
+          }}
+        </h3>
+        <p
+          [class.red]="accountBalanceGraph < 0"
+          *ngIf="
+            accountBalanceGraph || accountBalanceGraph === 0;
+            else accountBalanceNan
+          "
+          class="sum-credit"
+        >
+          <span class="sum">{{ accountBalanceGraph | sum: true }}</span
+          ><span class="currency">{{
+            userService.appData?.userData.accountSelect[0]?.currency
+              | currencySymbol
+          }}</span>
+        </p>
+        <ng-template #accountBalanceNan>
+          <p class="sum-nan"></p>
+        </ng-template>
+      </div>
+      <div *ngIf="selectedValueGraph === 'expenses'" class="sum-data">
+        <h3>
+          {{ 'sumsTitles.total' | translate }}
+          {{
+            'menu.customers.financialManagement.bankAccount.charts.expensesName'
+              | translate
+          }}
+        </h3>
+        <p
+          *ngIf="
+            creditLimitGraph || creditLimitGraph === 0;
+            else creditLimitNan
+          "
+          class="sum-debit"
+        >
+          <span class="sum">{{ creditLimitGraph | sum: true }}</span
+          ><span class="currency">{{
+            userService.appData?.userData.accountSelect[0]?.currency
+              | currencySymbol
+          }}</span>
+        </p>
+        <ng-template #creditLimitNan>
+          <p class="sum-nan"></p>
+        </ng-template>
+      </div>
+      <div *ngIf="selectedValueGraph === 'expenses'" class="sum-data">
+        <h3>
+          {{ 'sumsTitles.total' | translate }}
+          {{
+            'menu.customers.financialManagement.bankAccount.charts.difference'
+              | translate
+          }}
+        </h3>
+
+        <p
+          [class.sum-debit]="balanceUseGraph < 0"
+          [class.sum-credit]="balanceUseGraph >= 0"
+          *ngIf="balanceUseGraph || balanceUseGraph === 0; else balanceUseNan"
+        >
+          <span class="sum">{{ balanceUseGraph | sum: true }}</span
+          ><span class="currency">{{
+            userService.appData?.userData.accountSelect[0]?.currency
+              | currencySymbol
+          }}</span>
+        </p>
+        <ng-template #balanceUseNan>
+          <p class="sum-nan"></p>
+        </ng-template>
+      </div>
+
+      <div *ngIf="selectedValueGraph === 'balance'" class="sum-data">
+        <h3>{{ 'sumsTitles.creditLimitOne' | translate }}</h3>
+        <p
+          *ngIf="
+            creditLimitGraph || creditLimitGraph === 0;
+            else creditLimitNan
+          "
+          class="sum-debit"
+        >
+          <span class="sum">{{ creditLimitGraph | sum: true }}</span
+          ><span class="currency">{{
+            userService.appData?.userData.accountSelect[0]?.currency
+              | currencySymbol
+          }}</span>
+        </p>
+        <ng-template #creditLimitNan>
+          <p class="sum-nan"></p>
+        </ng-template>
+      </div>
+      <!--<p-checkbox checkboxIcon="fa fa-check" id="p-showHideValuesInside" inputId="showHideValuesInside"-->
+      <!--class="checkboxGraph" *ngIf="selectedValueGraph === 'balance'" label="הצג ערכים"-->
+      <!--[(ngModel)]="showValues" [binary]="true" (onChange)="updateChart()"></p-checkbox>-->
+      <!--            <p-checkbox checkboxIcon="fa fa-check" id="p-showHideCreditLimits" inputId="showHideCreditLimits"-->
+      <!--                        class="checkboxGraph" *ngIf="selectedValueGraph === 'balance'" label="הצג מסגרות אשראי"-->
+      <!--                        [(ngModel)]="showCreditLines" [binary]="true" (onChange)="updateChart()"></p-checkbox>-->
+
+      <div class="separator"></div>
+      <div
+        class="alert-deviation"
+        *ngIf="
+          userService.appData.userData.accountSelect &&
+          userService.appData.userData.accountSelect.length === 1 &&
+          !accountSelectOneNotUpdate &&
+          balanceUse < 0
+        "
+      >
+        <i class="fas fa-exclamation-triangle"></i>
+        <div>{{ 'sumsTitles.accountExceeded' | translate }}</div>
+      </div>
+      <div
+        class="alert-deviation-one"
+        *ngIf="
+          !accountSelectOneNotUpdate &&
+          accountSelectInDeviation &&
+          accountSelectInDeviation.length === 1
+        "
+      >
+        <i class="fas fa-exclamation-triangle"></i>
+        <div>
+          {{ 'sumsTitles.account' | translate }}
+          {{ accountSelectInDeviation[0].accountNickname }}
+          {{ 'sumsTitles.exceeding' | translate }}
+        </div>
+        <div class="separatorInsider" style="margin-top: 4px"></div>
+        <div
+          class="link"
+          (click)="
+            selectAccountInDeviation(
+              accountSelector,
+              accountSelectInDeviation[0]
+            )
+          "
+        >
+          {{ 'sumsTitles.forDetails' | translate }}
+        </div>
+      </div>
+      <div
+        class="alert-deviation-multi"
+        *ngIf="accountSelectInDeviation && accountSelectInDeviation.length > 1"
+      >
+        <i class="fas fa-exclamation-triangle"></i>
+        <div>
+          {{ accountSelectInDeviation.length }}
+          {{ 'sumsTitles.accountsExceeded' | translate }}
+        </div>
+        <div class="separatorInsider"></div>
+        <div class="link" (click)="tooltipAccDeviation.toggle($event)">
+          {{ 'sumsTitles.forDetails' | translate }}
+          <p-overlayPanel
+            styleClass="tooltip-bottom tooltip-acc-deviation"
+            [style]="{ transform: 'translate(-50%, 10px)', width: 'auto' }"
+            #tooltipAccDeviation
+            appendTo="body"
+          >
+            <ul class="scroll-chrome">
+              <li
+                *ngFor="let acc of accountSelectInDeviation"
+                (click)="
+                  selectAccountInDeviation(accountSelector, acc);
+                  tooltipAccDeviation.hide()
+                "
+              >
+                <span>{{ acc.accountNickname }}</span
+                >&nbsp;<span class="sum-debit"
+                  >(
+                  <p style="direction: ltr; display: inline-block">
+                    {{ acc.balanceUse | sum }}
+                  </p>
+                  {{ acc.currency | currencySymbol }} )</span
+                >
+              </li>
+            </ul>
+          </p-overlayPanel>
+        </div>
+      </div>
+      <div class="exchange" *ngIf="accountSelectExchange?.length > 0">
+        <img
+          ngSrc="/assets/images/global.png"
+          alt="global"
+          width="22"
+          height="22"
+        />
+        <div *ngIf="accountSelectExchange?.length === 1; else multiEx">
+          {{ 'sumsTitles.account' | translate }}
+          {{ 'sumsTitles.forex' | translate }} ({{
+            accountSelectExchange[0].currency | currencySymbol
+          }})
+        </div>
+        <ng-template #multiEx>
+          {{ 'sumsTitles.accounts' | translate }}
+          {{ 'sumsTitles.forex' | translate }}
+        </ng-template>
+      </div>
+      <div *ngIf="accountSelectOneNotUpdate">
+        <app-account-outdated-view
+          [account]="userService.appData.userData.accountSelect[0]"
+        ></app-account-outdated-view>
+        <!--<app-token-credentials-update-button-->
+        <!--[balanceLastUpdatedDate]="userService.appData.userData.accountSelect[0].balanceLastUpdatedDate"-->
+        <!--[tokenData]="{-->
+        <!--companyId: userService.appData.userData.companySelect.companyId,-->
+        <!--tokenId: userService.appData.userData.accountSelect[0].token-->
+        <!--}">-->
+        <!--</app-token-credentials-update-button>-->
+      </div>
+    </div>
+
+    <div class="exports">
+      <p-checkbox checkboxIcon="fa fa-check"
+        id="p-showHideCreditLimits"
+        inputId="showHideCreditLimits"
+        class="checkboxGraph"
+        *ngIf="selectedValueGraph === 'balance'"
+        label="הצג מסגרת אשראי"
+        [(ngModel)]="showCreditLines"
+        [binary]="true"
+        (onChange)="updateChart()"
+      ></p-checkbox>
+      <p-checkbox checkboxIcon="fa fa-check"
+        id="p-showHideValuesInside"
+        inputId="showHideValuesInside"
+        class="checkboxGraph"
+        label="הצג ערכים"
+        [(ngModel)]="showValues"
+        [binary]="true"
+        (onChange)="updateChart()"
+      ></p-checkbox>
+      <p-dropdown
+        id="p-chartTypeSelector"
+        [style]="{'width': '155px'}"
+        inputId="chartTypeSelector"
+        class="ddSelectGraph"
+        [options]="ddSelectGraph"
+        (onChange)="onChartTypeChange($event)"
+        [(ngModel)]="selectedValueGraph"
+        [dropdownIcon]="'p-dropdown-icon'"
+      >
+      </p-dropdown>
+      <!--<button><img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/to-printer.png"/></button>-->
+      <!--<button><img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/to-pdf.png" height="21" width="24"/></button>-->
+    </div>
+  </div>
+
+  <div
+    *ngIf="
+      userService.appData?.userData?.accountSelect?.length &&
+      dataTableAll?.length
+    "
+    id="chartContainer"
+  >
+    <!--    <p-checkbox checkboxIcon="fa fa-check" id="p-showHideValuesInside" inputId="showHideValuesInside"-->
+    <!--                class="checkboxGraph" [label]="'actions.displayValues'| translate"-->
+    <!--                [(ngModel)]="showValues" [binary]="true" (onChange)="updateChart()"></p-checkbox>-->
+    <app-charts
+      [chartData]="chartData"
+      [scrollHeight]="header.getBoundingClientRect().bottom + 10"
+    ></app-charts>
+  </div>
+
+  <div
+    *ngIf="!loader && !userService.appData?.userData?.accountSelect?.length"
+    class="no-rows-found"
+  >
+    אנא בחרו חשבון להצגת נתונים
+  </div>
+  <div
+    *ngIf="
+      !loader &&
+      userService.appData?.userData?.accountSelect?.length &&
+      !dataTableAll?.length
+    "
+    class="no-rows-found"
+  >
+    לא נמצאו תנועות לסינון המבוקש, שנו את הסינון
+  </div>
+</div>

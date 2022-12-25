@@ -1,0 +1,171 @@
+<div class="landingPageCompanies">
+  <div
+    class="scalePage scroll-chrome"
+    [appScrollHeight]="
+      userService.appData?.userData?.topSideMesagges ? 120 : 75
+    "
+  >
+    <div class="wrap_content">
+      <h1>רוצה להיות הבוס של הכסף שלך?</h1>
+      <h3>
+        bizibox - המערכת המובילה לניהול תזרים מזומנים אוטומטי
+        <br />
+        עוזרת לכם להבין מה קורה עם הכסף של העסק שלכם
+      </h3>
+      <form [formGroup]="detailsForm" (ngSubmit)="submit()">
+        <button type="submit" style="display: none"></button>
+        <div
+          [class.error]="
+            detailsForm.get('name').dirty && detailsForm.get('name').invalid
+          "
+        >
+          <input
+            type="text"
+            formControlName="name"
+            placeholder="שם מלא"
+            autocomplete="off"
+            [class.error]="
+              detailsForm.get('name').touched && detailsForm.get('name').invalid
+            "
+          />
+          <div
+            class="invalidAlert"
+            *ngIf="
+              detailsForm.get('name').touched &&
+              detailsForm.get('name').invalid &&
+              !detailsForm.get('name').value
+            "
+          >
+            * שדה חובה
+          </div>
+          <div
+            class="invalidAlert"
+            *ngIf="
+              detailsForm.get('name').dirty &&
+              detailsForm.get('name').invalid &&
+              detailsForm.get('name').value
+            "
+          >
+            יש לרשום שם פרטי ושם משפחה
+          </div>
+        </div>
+        <div
+          [class.error]="
+            detailsForm.get('phoneNumber').dirty &&
+            detailsForm.get('phoneNumber').invalid
+          "
+        >
+          <input
+            type="tel"
+            formControlName="phoneNumber"
+            placeholder="טלפון"
+            appNumbersOnly="phoneNo"
+            autocomplete="off"
+            id="tel"
+            [class.error]="
+              detailsForm.get('phoneNumber').touched &&
+              detailsForm.get('phoneNumber').invalid
+            "
+          />
+          <div
+            class="invalidAlert"
+            *ngIf="
+              detailsForm.get('phoneNumber').touched &&
+              detailsForm.get('phoneNumber').invalid &&
+              !detailsForm.get('phoneNumber').value
+            "
+          >
+            * שדה חובה
+          </div>
+          <div
+            class="invalidAlert"
+            *ngIf="
+              detailsForm.get('phoneNumber').dirty &&
+              detailsForm.get('phoneNumber').value &&
+              detailsForm.get('phoneNumber').invalid
+            "
+          >
+            המספר לא תקין
+          </div>
+        </div>
+
+        <button
+          type="submit"
+          id="submit"
+          [disabled]="!detailsForm.valid || (formInProgress$ | async)"
+        >
+          השארת פרטים
+        </button>
+      </form>
+      <ul>
+        <li>
+          <div>
+            <img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/companies-landing-1.png" />
+          </div>
+          <p>
+            <strong> ריכוז הנתונים הפיננסים </strong>
+          </p>
+          <p>
+            נתוני בנקים, צ'קים,
+            <br />
+            תשלומים, כרטיסי אשראי
+            <br />
+            הכל באופן אוטומטי!
+          </p>
+        </li>
+        <li>
+          <div>
+            <img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/companies-landing-2.png" />
+          </div>
+          <p>
+            <strong> רק 3 דקות ביום </strong>
+          </p>
+          <p>
+            מערכת ידידותית וקלה
+            <br />
+            לשימוש להפקת תזרים
+            <br />
+            לשימוש להפקת תזרים
+          </p>
+        </li>
+        <li>
+          <div>
+            <img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/companies-landing-3.png" />
+          </div>
+          <p>
+            <strong> התראות חכמות </strong>
+          </p>
+          <p>
+            המערכת החכמה מזהה
+            <br />
+            חריגות בחשבון ובהוצאות
+            <br />
+            ומדווחת בשוטף!
+          </p>
+        </li>
+      </ul>
+
+      <div
+        *ngIf="(formInProgress$ | async) && !showAlertsThanks"
+        class="loader"
+      >
+        <div class="circle"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<p-dialog (visibleChange)="showAlertsThanks = false"
+		[visible]="(showAlertsThanks)"
+		appendTo="body"
+  [modal]="true"
+  styleClass="landingPageCompaniesAlertsThanks"
+>
+  <div>
+    <div id="div_v">
+      <img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/companies-landing-v.png" />
+    </div>
+    <h3>תודה, הפרטים התקבלו בהצלחה!</h3>
+    <p>נציגנו יצרו קשר בהקדם.</p>
+  </div>
+</p-dialog>

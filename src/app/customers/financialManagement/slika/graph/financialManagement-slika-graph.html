@@ -1,0 +1,180 @@
+<div style="position: relative" #containerHost id="slikaGraphView">
+  <div class="filterRow">
+    <app-solek-select
+      [solek]="userService.appData.userData.slika"
+      (changed)="getSlikaDetails()"
+    ></app-solek-select>
+
+    <app-clragencies-dates></app-clragencies-dates>
+    <!--<app-solek-dates [option]="'monthCreditWithoutCalendar'" (onChange)="filterDates($event)"></app-solek-dates>-->
+
+    <ul class="tabs navTabs">
+      <li
+        routerLink="../aggregate"
+        queryParamsHandling="preserve"
+
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: false }"
+        [matTooltip]="
+          'appWalk.customers.financialManagement.slika.viewSwitchAggregate'
+            | translate
+        "
+        matTooltipPosition="above"
+      >
+        {{ 'filters.consolidated' | translate }}
+      </li>
+      <li
+        routerLink="../details"
+        queryParamsHandling="preserve"
+
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: false }"
+        [matTooltip]="
+          'appWalk.customers.financialManagement.slika.viewSwitchDetails'
+            | translate
+        "
+        matTooltipPosition="above"
+      >
+        {{ 'filters.detailed' | translate }}
+      </li>
+      <li
+        routerLink="../graph"
+        queryParamsHandling="preserve"
+
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: false }"
+        [matTooltip]="
+          'appWalk.customers.financialManagement.slika.viewSwitchChart'
+            | translate
+        "
+        matTooltipPosition="above"
+      >
+        <img  ngSrc="/assets/images/chart.png" height="13" width="22" />
+      </li>
+    </ul>
+  </div>
+
+  <div *ngIf="loader" class="loader">
+    <div class="circle"></div>
+  </div>
+
+  <div
+    class="rowSumsAndSelect"
+    [ngClass]="{
+      redBg:
+        selectedSolkimOutdated?.length &&
+        !allSelectedSolkimOutdatedBecauseNotFound
+    }"
+    #header
+  >
+    <div class="sums">
+      <!--<p-checkbox checkboxIcon="fa fa-check" class="checkboxGraph" [label]="('actions.displayValues'| translate)" [disabled]="!(dataTableAll?.length)"-->
+      <!--[(ngModel)]="showValues" [binary]="true" (onChange)="updateChart()"></p-checkbox>-->
+
+      <div
+        *ngIf="
+          selectedSolkimOutdated?.length === 1 &&
+          !allSelectedSolkimOutdatedBecauseNotFound
+        "
+      >
+        <app-solek-outdated-view
+          [solek]="selectedSolkimOutdated[0]"
+        ></app-solek-outdated-view>
+        <!--<app-token-credentials-update-button-->
+        <!--[balanceLastUpdatedDate]="selectedSolkimOutdated[0].ballanceLastUpdatedDate"-->
+        <!--[tokenData]="{-->
+        <!--companyId: userService.appData.userData.companySelect.companyId,-->
+        <!--tokenId: selectedSolkimOutdated[0].token || ((selectedSolkimOutdated[0].companyAccountId)|asBankAccount).token-->
+        <!--}">-->
+        <!--</app-token-credentials-update-button>-->
+      </div>
+      <div
+        *ngIf="
+          selectedSolkimOutdated?.length > 1 &&
+          !allSelectedSolkimOutdatedBecauseNotFound
+        "
+        class="alert-deviation-multi"
+      >
+        <i class="fas fa-exclamation-triangle"></i>
+        <div>
+          {{ 'expressions.cardsDataOutdated0' | translate }}
+          {{ selectedSolkimOutdated.length }}
+          {{ 'expressions.cardsDataOutdated1' | translate }}
+        </div>
+        <div class="separatorInsider"></div>
+        <div class="link" (click)="tooltipWithNavigation.toggle($event)">
+          {{ 'sumsTitles.forDetails' | translate }}
+          <p-overlayPanel
+            styleClass="tooltip-bottom tooltip-acc-deviation"
+            [style]="{ transform: 'translate(-50%, 10px)', width: 'auto' }"
+            #tooltipWithNavigation
+            appendTo="body"
+          >
+            <ul class="scroll-chrome">
+              <li
+                *ngFor="let slk of selectedSolkimOutdated"
+                (click)="selectSolek(slk); tooltipWithNavigation.hide()"
+              >
+                <span>{{
+                  slk.solekDesc ||
+                    ('clearingAgencies.' + slk.solekBankId | translate) +
+                      ' - ' +
+                      slk.solekNum
+                }}</span
+                >&nbsp;
+                <span class="sum-debit">
+                  <span style="color: #0f3860; text-decoration: none">-</span
+                  >&nbsp;{{ 'filters.outdated' | translate }}
+                </span>
+                <!--<span class="sum-debit">{{cc.balanceLastUpdatedDate| todayRelativeHumanize:'days'}}</span>-->
+              </li>
+            </ul>
+          </p-overlayPanel>
+        </div>
+      </div>
+    </div>
+    <div class="exports">
+      <!--<button><img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/to-printer.png" height="21" width="24"/></button>-->
+      <!--<button><img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/to-pdf.png" height="21" width="24"/></button>-->
+    </div>
+  </div>
+
+  <div
+    *ngIf="userService.appData?.userData?.slika?.length && dataTableAll?.length"
+    id="chartContainer"
+  >
+    <p-checkbox checkboxIcon="fa fa-check"
+      id="p-showHideValuesInside"
+      inputId="showHideValuesInside"
+      class="checkboxGraph"
+      [ngStyle]="{ top: 0 }"
+      [label]="'actions.displayValues' | translate"
+      [(ngModel)]="showValues"
+      [binary]="true"
+      (onChange)="updateChart()"
+    ></p-checkbox>
+    <app-charts
+      [chartData]="chartData"
+      [scrollHeight]="header.getBoundingClientRect().bottom + 10"
+    ></app-charts>
+  </div>
+
+  <div
+    *ngIf="!loader && !userService.appData?.userData?.slika?.length"
+    class="no-rows-found"
+    [appScrollHeight]="250"
+  >
+    אנא בחרו סולק להצגת נתונים
+  </div>
+  <div
+    *ngIf="
+      !loader &&
+      userService.appData?.userData?.slika?.length &&
+      !dataTableAll?.length
+    "
+    class="no-rows-found"
+    [appScrollHeight]="250"
+  >
+    לא נמצאו תנועות לסינון המבוקש, שנו את הסינון
+  </div>
+</div>

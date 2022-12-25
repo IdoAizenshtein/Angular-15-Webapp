@@ -1,0 +1,351 @@
+<h2 class="titlePage">
+  {{ 'menu.customers.accountancy.bookKeepingAnalyze' | translate }}
+</h2>
+<div class="filterRow">
+  <app-acc-dates
+    [option]="'bookKeepingAnalyze'"
+    (changedTrigger)="filterDates($event)"
+  ></app-acc-dates>
+  <ul class="tabs" style="margin-right: auto; margin-left: 0">
+    <li (click)="loadPageAnalisis('1000')" [class.active]="targetTab == '1000'">
+      הכנסות
+    </li>
+    <li (click)="loadPageAnalisis('1022')" [class.active]="targetTab == '1022'">
+      עלות המכירות
+    </li>
+    <li
+      (click)="loadPageAnalisis('golmi')"
+      [class.active]="targetTab === 'golmi'"
+    >
+      רווח גולמי
+    </li>
+    <li (click)="loadPageAnalisis('1011')" [class.active]="targetTab == '1011'">
+      הוצאות הנהלה וכלליות
+    </li>
+    <li (click)="loadPageAnalisis('1033')" [class.active]="targetTab == '1033'">
+      הוצאות מימון
+    </li>
+    <li
+      (click)="loadPageAnalisis('naki')"
+      [class.active]="targetTab === 'naki'"
+    >
+      רווח נקי
+    </li>
+  </ul>
+</div>
+<div>
+  <div class="sums sumsProfitAndLoss" [hidden]="analysis.length === 0">
+    <div class="sum-data">
+      <h3>{{ 'סה"כ לתקופה שנבחרה' }}</h3>
+      <p *ngIf="sumThis; else summary">
+        <span class="sum" style="color: #aeaeae">{{
+          sumThis | sum: true
+        }}</span>
+      </p>
+      <ng-template #summary>
+        <p class="sum-nan"></p>
+      </ng-template>
+    </div>
+    <div class="separator"></div>
+
+    <div class="sum-data" *ngIf="targetTab === 'golmi' || targetTab === 'naki'">
+      <h3>אחוז מהמחזור</h3>
+      <p *ngIf="precentThisYears; else hacnasotCurrPrcVal">
+        <span class="sum" style="color: #1387a9">{{ precentThisYears }}%</span>
+      </p>
+      <ng-template #hacnasotCurrPrcVal>
+        <p class="sum-nan"></p>
+      </ng-template>
+    </div>
+    <div
+      class="separator"
+      *ngIf="targetTab === 'golmi' || targetTab === 'naki'"
+    ></div>
+    <div class="sum-data" *ngIf="targetTab === 'golmi' || targetTab === 'naki'">
+      <h3>שינוי מתקופה קודמת</h3>
+      <p *ngIf="precentThisYears > 0 || precentPrevYear > 0; else smallData">
+        <span
+          class="sum"
+          [ngClass]="{
+            red: precentThisYears - precentPrevYear < 0,
+            green: precentThisYears - precentPrevYear > 0,
+            gray: precentThisYears - precentPrevYear == 0
+          }"
+        >
+          {{ precentThisYears - precentPrevYear }}%
+        </span>
+      </p>
+      <ng-template #smallData>
+        <p class="sum-nan"></p>
+      </ng-template>
+    </div>
+    <div
+      class="separator"
+      *ngIf="targetTab === 'golmi' || targetTab === 'naki'"
+    ></div>
+    <div class="sum-data">
+      <h3>{{ 'סה"כ לתקופה קודמת' }}</h3>
+      <p *ngIf="sumPrev; else prevNum">
+        <span class="sum">{{ sumPrev | sum: true }}</span>
+      </p>
+      <ng-template #prevNum>
+        <p class="sum-nan"></p>
+      </ng-template>
+    </div>
+    <div class="separator"></div>
+    <div class="sum-data" *ngIf="targetTab !== 'golmi' && targetTab !== 'naki'">
+      <h3>אחוז שינוי</h3>
+      <p *ngIf="precentTotal; else hacnasotCurrPrcValsmallData">
+        <span class="sum {{ precentTotalClass }}">{{ precentTotal }}</span>
+      </p>
+      <ng-template #hacnasotCurrPrcValsmallData>
+        <p class="sum-nan"></p>
+      </ng-template>
+    </div>
+    <div
+      class="separator"
+      *ngIf="targetTab === 'golmi' || targetTab === 'naki'"
+    ></div>
+    <div class="sum-data" *ngIf="targetTab === 'golmi' || targetTab === 'naki'">
+      <h3>אחוז מהמחזור אשתקד</h3>
+      <p *ngIf="precentPrevYear; else precentPrevYearPrcVal">
+        <span class="sum" style="color: #1387a9">{{ precentPrevYear }}%</span>
+      </p>
+      <ng-template #precentPrevYearPrcVal>
+        <p class="sum-nan"></p>
+      </ng-template>
+    </div>
+
+    <!--<div class="exports">-->
+    <!--<button>-->
+    <!--<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/to-printer.png" height="21" width="24"/>-->
+    <!--</button>-->
+    <!--<button>-->
+    <!--<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/to-mail.png" height="21" width="24"/>-->
+    <!--</button>-->
+    <!--<button>-->
+    <!--<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/to-pdf.png" height="21" width="24"/>-->
+    <!--</button>-->
+    <!--<button>-->
+    <!--<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/to-excel.png" height="21" width="24"/>-->
+    <!--</button>-->
+    <!--</div>-->
+  </div>
+</div>
+
+<ng-container *ngIf="userService.appData.userData?.companySelect">
+  <div
+    [appScrollHeight]="
+      258 +
+      (userService.appData.userData.companySelect.example &&
+      !userService.appData.userData.companySelect.METZALEM_deskTrialExpired
+        ? 32
+        : 0)
+    "
+    class="scrollPage scrollbar-dynamic"
+  >
+    <div class="bgSelectGraph" *ngIf="analysis && analysis.length > 0">
+      <ul
+        class="radioGroupChangePre hTitle"
+        style="display: flex; align-items: center"
+      >
+        <li>
+          <h2>{{ selectName }}</h2>
+        </li>
+        <li style="margin: 0px 15px" *ngIf="selectCodeSort?.length">
+          <p-dropdown
+            [options]="selectCodeSort"
+
+            [appendTo]="'body'"
+            [style]="{ width: '228px' }"
+            *ngIf="
+              targetTab !== 'naki' &&
+              targetTab !== 'golmi' &&
+              selectCodeSort &&
+              selectCodeSort.length
+            "
+            [(ngModel)]="selectCodeSortId"
+            (onChange)="selectCodeSortChange(selectCodeSortId)"
+            optionLabel="name"
+            [dropdownIcon]="'p-dropdown-icon'"
+          >
+          </p-dropdown>
+        </li>
+        <li>
+          <p-dropdown
+            [options]="selectTrans"
+            [appendTo]="'body'"
+            [disabled]="
+              !selectCodeSortId ||
+              (selectCodeSortId && selectCodeSortId.id == 'null')"
+    [style]="{ width: '228px' }"
+            *ngIf="
+              targetTab !== 'naki' &&
+              targetTab !== 'golmi' &&
+              selectTrans &&
+              selectTrans.length
+            "
+            [(ngModel)]="selectTransId"
+            (onChange)="selectTransChange(selectTransId)"
+            optionLabel="name"
+            [dropdownIcon]="'p-dropdown-icon'"
+          >
+          </p-dropdown>
+        </li>
+      </ul>
+    </div>
+    <div *ngIf="chartDataGr" style="border: 1px solid #e1e1e1">
+      <app-charts
+        [chartData]="chartData"
+        [scrollHeight]="{ height: 415 }"
+      ></app-charts>
+    </div>
+    <div class="chartDataGr" *ngIf="!chartDataGr && !loader">
+      <h2>אין נתונים בתאריכים שהוזנו</h2>
+    </div>
+
+    <div
+      class="bookKeepingAnalyze"
+      style="margin-top: 15px"
+      *ngIf="
+        targetTab !== 'naki' &&
+        targetTab !== 'golmi' &&
+        listAnalisis &&
+        listAnalisis.length > 0
+      "
+    >
+      <div style="position: relative">
+        <div *ngIf="loader" class="loader">
+          <div class="circle"></div>
+        </div>
+
+        <div
+          *ngFor="
+            let val of listAnalisis;
+            let i = index;
+            let odd = odd;
+            let even = even
+          "
+        >
+          <div
+            [class.opened]="val.rowshow"
+            class="rowTitle"
+            [class.pointer]="val?.level_1.level_2.length > 0"
+            (click)="val.rowshow = !val.rowshow"
+          >
+            <div class="separator">&nbsp;</div>
+            <div style="text-align: center; flex: 5">
+              <i
+                *ngIf="val?.level_1.level_2.length > 0"
+                class="fa fa-fw"
+                [ngClass]="val.rowshow ? 'fa-caret-up' : 'fa-caret-down'"
+              ></i>
+            </div>
+            <div class="separator">&nbsp;</div>
+            <div class="title" style="display: flex; direction: rtl">
+              <span *ngIf="val.level_1.name == null">{{
+                nameTabs(targetTab)
+              }}</span>
+              <span *ngIf="val.level_1.name !== null">
+                {{ val.level_1.number }} - {{ val.level_1.name }}</span
+              >
+            </div>
+            <div class="separator">&nbsp;</div>
+            <div style="flex: 35" class="sumBold">
+              {{ val.level_1.sum | sum: true }}
+            </div>
+            <div class="separator">&nbsp;</div>
+            <div style="flex: 35">
+              <ng-container *ngIf="val.level_1.percentage">
+                <span>מסך ההכנסות</span>
+                <span> {{ val.level_1.percentage }}% </span>
+              </ng-container>
+            </div>
+          </div>
+          <div *ngIf="val.rowshow">
+            <div *ngFor="let a of val?.level_1.level_2; let i1 = index">
+              <div
+                [class.opened]="val.rowshow"
+                class="row pointer"
+                *ngIf="val.rowshow"
+                (click)="openRowThree(a.id); a.rowshow = !a.rowshow"
+              >
+                <div class="separator">&nbsp;</div>
+                <div style="flex: 5"></div>
+                <div class="separator">&nbsp;</div>
+                <div style="display: flex; direction: rtl">
+                  <div style="flex: 5">
+                    <i
+                      class="fa fa-fw"
+                      [ngClass]="a.rowshow ? 'fa-caret-up' : 'fa-caret-down'"
+                    ></i>
+                  </div>
+                  <div style="flex: 80" class="title">
+                    {{ a.number }} - {{ a.name }}
+                  </div>
+                </div>
+                <div class="separator">&nbsp;</div>
+                <div style="flex: 35" class="sumBold">
+                  {{ a.sum | sum: true }}
+                </div>
+                <div class="separator">&nbsp;</div>
+                <div style="flex: 35">
+                  <ng-container *ngIf="a.percentage"
+                    >{{ a.percentage }}%</ng-container
+                  >
+                </div>
+              </div>
+
+              <div *ngIf="a.rowshow">
+                <div *ngIf="a?.level_3.length > 0" class="row boldRow">
+                  <div style="flex: 100"></div>
+                  <div class="separator">&nbsp;</div>
+                  <div style="flex: 112">תאריך</div>
+                  <div class="separator">&nbsp;</div>
+                  <div style="flex: 228">שם לקוח</div>
+                  <div class="separator">&nbsp;</div>
+                  <div style="flex: 226">פרטים</div>
+                  <div class="separator">&nbsp;</div>
+                  <div style="flex: 154">אסמכתא</div>
+                  <div class="separator">&nbsp;</div>
+                  <div style="flex: 238">סכום</div>
+                </div>
+                <div class="wrapBg" *ngIf="a?.level_3.length > 0">
+                  <div *ngFor="let b of a?.level_3">
+                    <div
+                      *ngIf="val.rowshow && a.rowshow"
+                      tabindex="-1"
+                      class="row rowLastReg"
+                    >
+                      <div style="flex: 100"></div>
+                      <div class="separator">&nbsp;</div>
+                      <div style="flex: 112">
+                        {{ b.referenceDate | date: 'dd/MM/yy' }}
+                      </div>
+                      <div class="separator">&nbsp;</div>
+                      <div style="flex: 228">{{ b.oppositCustomerName }}</div>
+                      <div class="separator">&nbsp;</div>
+                      <div style="flex: 226">{{ b.description }}</div>
+                      <div class="separator">&nbsp;</div>
+                      <div style="flex: 154">{{ b.asmachta1 }}</div>
+                      <div class="separator">&nbsp;</div>
+                      <div
+                        style="flex: 238"
+                        class="semiBold"
+                        [ngStyle]="{
+                          color: b.hova === true ? '#ec3c66' : '#62b03f'
+                        }"
+                      >
+                        {{ b.total | sum: true }}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</ng-container>

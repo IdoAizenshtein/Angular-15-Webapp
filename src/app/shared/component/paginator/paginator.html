@@ -1,0 +1,76 @@
+<div
+		[class]="styleClass"
+		[ngStyle]="style"
+		[ngClass]="
+    'p-paginator p-widget p-widget-header p-unselectable-text p-helper-clearfix'
+  "
+>
+	<ng-container *ngIf="alwaysShow ? true : pageLinks && pageLinks.length > 1">
+		<div class="p-paginator-left-content" *ngIf="templateLeft">
+			<ng-container
+					*ngTemplateOutlet="templateLeft; context: { $implicit: paginatorState }"
+			></ng-container>
+		</div>
+		<a
+				href="#"
+				class="p-paginator-first p-paginator-element p-state-default p-corner-all"
+				(click)="changePageToFirst($event)"
+				[ngClass]="{ 'p-disabled': isFirstPage() }"
+				[tabindex]="isFirstPage() ? -1 : null"
+		>
+			<span class="fa fa-step-backward"></span>
+		</a>
+		<a
+				href="#"
+				class="p-paginator-prev p-paginator-element p-state-default p-corner-all"
+				(click)="changePageToPrev($event)"
+				[ngClass]="{ 'p-disabled': isFirstPage() }"
+				[tabindex]="isFirstPage() ? -1 : null"
+		>
+			<span class="fa fa-backward"></span>
+		</a>
+		<span class="p-paginator-pages">
+      <a
+		      href="#"
+		      *ngFor="let pageLink of pageLinks"
+		      class="p-paginator-page p-paginator-element p-state-default p-corner-all"
+		      (click)="onPageLinkClick($event, pageLink - 1)"
+		      [ngClass]="{ 'p-state-active': pageLink - 1 == getPage() }"
+      >{{ pageLink }}</a
+      >
+    </span>
+		<a
+				href="#"
+				class="p-paginator-next p-paginator-element p-state-default p-corner-all"
+				(click)="changePageToNext($event)"
+				[ngClass]="{ 'p-disabled': isLastPage() }"
+				[tabindex]="isLastPage() ? -1 : null"
+		>
+			<span class="fa fa-forward"></span>
+		</a>
+		<a
+				href="#"
+				class="p-paginator-last p-paginator-element p-state-default p-corner-all"
+				(click)="changePageToLast($event)"
+				[ngClass]="{ 'p-disabled': isLastPage() }"
+				[tabindex]="isLastPage() ? -1 : null"
+		>
+			<span class="fa fa-step-forward"></span>
+		</a>
+	</ng-container>
+	
+	<p-dropdown
+			[options]="rowsPerPageItems"
+			[(ngModel)]="rows"
+			[dropdownIcon]="'p-dropdown-icon'"
+			[style]="{'width': '60px'}"
+			*ngIf="rowsPerPageOptions && rowsPerPageOptions[0] < totalRecords"
+			(onChange)="onRppChange($event)"
+			[appendTo]="dropdownAppendTo"
+	></p-dropdown>
+	<div class="p-paginator-right-content" *ngIf="templateRight">
+		<ng-container
+				*ngTemplateOutlet="templateRight; context: { $implicit: paginatorState }"
+		></ng-container>
+	</div>
+</div>

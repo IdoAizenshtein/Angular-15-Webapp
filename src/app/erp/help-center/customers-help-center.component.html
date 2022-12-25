@@ -1,0 +1,455 @@
+<section class="titlePage">
+	{{ 'menu.customers.knowledge-base' | translate }}
+	<a
+			[routerLink]="['../accountManagement']"
+			queryParamsHandling="preserve"
+			id="nav-back-to-parent"
+			class="link"
+			style="font-size: 1rem; font-weight: normal"
+	>
+		חזרה למסך הראשי
+	</a>
+</section>
+<div class="search" #headerBottom="matAutocompleteOrigin" matAutocompleteOrigin>
+	<input
+			type="text"
+			autocomplete="off"
+			placeholder="{{ 'help-center.search.placeholder' | translate }}"
+			[formControl]="searchFC"
+	/>
+</div>
+<section class="content erp-help" #content>
+	<div
+			[appScrollHeight]="content.getBoundingClientRect().top + 10"
+			class="scrollbar-dynamic lineBg"
+			style="border-left: 1px solid #022258 !important"
+	>
+		<mat-list>
+			<ng-container *ngFor="let section of filteredData">
+				<a
+						mat-list-item
+						(click)="navScreen = section.stage"
+						[class.active]="navScreen === section.stage"
+				>
+					<span [innerHTML]="section.title | highlight: queryString"></span>
+					<mat-icon>keyboard_arrow_left</mat-icon>
+				</a>
+			</ng-container>
+		</mat-list>
+	</div>
+	<div
+			[appScrollHeight]="content.getBoundingClientRect().top + 10"
+			class="scrollbar-dynamic"
+	>
+		<ng-container [ngSwitch]="navScreen">
+			<!--            <ng-container *ngSwitchCase="1">-->
+			<!--                <h2>-->
+			<!--                    הקמת תחנה חדשה-->
+			<!--                </h2>-->
+			<!--                <p>-->
+			<!--                    1. נציג שירות בחשבשבת פותח תחנה חדשה דרך CRM-->
+			<!--                    <br>-->
+			<!--                    &nbsp;&nbsp;&nbsp;&nbsp;-->
+			<!--                    • לפי פרטי לקוח: מספר מנוי, יוזרים של הלקוח (לכל יוזר שם, טלפון ומייל)-->
+			<!--                    <br>-->
+			<!--                    2. נציג שירות בחשבשבת מתחבר למחשב\ מכונת הלקוח ומבצע אקטיבציה לתחנה בעזרת קובץ אקטיבציה-->
+			<!--                </p>-->
+			<!--                <h2>-->
+			<!--                    ניהול משתמשים ואקטיבציה-->
+			<!--                </h2>-->
+			<!--                <p>-->
+			<!--                    בעת כניסה ראשונית למערכת ביזיבוקס תקפוץ ההערה הנ"ל.-->
+			<!--                    <br>-->
+			<!--                    בסימון צ'ק בוקס מייל יומי הלקוח מאפשר קבלה של מייל יומי מ- bizibox כאשר המייל היומי מכיל סיכום יומי-->
+			<!--                    ופירוט על חשבונות הבנק וכרטיסי האשראי.-->
+			<!--                </p>-->
+			<!--                <img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/help-erp-1-1.png">-->
+			<!--                <p>-->
+			<!--                    • בכל רגע נתון אפשר להגיע לניהול משתמשים ולערוך הגדרות משתמש/ להוסיף משתמש חדש ע"י לחיצה על "ניהול-->
+			<!--                    משתמשים".-->
+			<!--                </p>-->
+			<!--                <img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/help-erp-1-2.png">-->
+			<!--                <h2>-->
+			<!--                    הוספת חשבונות בנק/ כ.אשראי חוץ בנקאי-->
+			<!--                </h2>-->
+			<!--                <p>-->
+			<!--                    1. לגשת אל חשבשבת > הנהלת חשבונות > התאמות וניתוח כרטיסים > קליטת דפי בנק.-->
+			<!--                    <br>-->
+			<!--                    &nbsp;&nbsp;&nbsp;&nbsp;-->
+			<!--                    • בחירת כ.הנה"ח > לחיצה על כפתור "קליטת דף בנק אוטומטית" > מעבר ל- bizibox-->
+			<!--                </p>-->
+			<!--                <img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/help-erp-1-3.PNG">-->
+			<!--                <p>-->
+			<!--                    2. הוספת חשבונות בנק\ כ.אשראי חוץ בנקאי והמתנה עד שכל החשבונות/ כרטיסים יסיימו טעינה.-->
+			<!--                </p>-->
+			<!--                <img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/help-erp-1-4.png">-->
+			<!--                <p>-->
+			<!--                    • קיים בממשק חיווי לתהליך טעינה של החשבון-->
+			<!--                </p>-->
+			<!--                <img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/help-erp-1-5.png">-->
+			<!--                <h2>-->
+			<!--                    קישור כרטיס הנה”ח לחשבונות בנק-->
+			<!--                </h2>-->
+			<!--                <p>-->
+			<!--                    1. לגשת אל חשבשבת > הנהלת חשבונות > התאמות וניתוח כרטיסים > קליטת דפי בנק.-->
+			<!--                    <br>-->
+			<!--                    &nbsp;&nbsp;&nbsp;&nbsp;-->
+			<!--                    • בחירת כ.הנה"ח אותו רוצים לקשר לחשבון שהוספנו בממשק ביזיבוקס > לחיצה על כפתור "קליטת דף בנק-->
+			<!--                    אוטומטית" > מעבר ל- bizibox-->
+			<!--                    <br>-->
+			<!--                    &nbsp;&nbsp;&nbsp;&nbsp;-->
+			<!--                    • ב- bizibox בוחרים את כרטיס האשראי הרלוונטי ומאיזה מחזור חיוב נרצה לייבא ולאחר מכן חוזרים לחשבשבת-->
+			<!--                    ולוחצים שוב על כפתור "קליטת דף בנק אוטומטית".-->
+			<!--                    <br>-->
+			<!--                    כעת מתבצע ייבוא.-->
+			<!--                    <br>-->
+			<!--                    2. כאשר קיימת בעיית יתרות יש לבחור איך לטפל, ידנית או ע"י הוספת תנועת הפרש אוטומטית.-->
+			<!--                </p>-->
+			<!--                <h2>-->
+			<!--                    קישור כרטיס הנה”ח לכרטיס אשראי-->
+			<!--                </h2>-->
+			<!--                <p>-->
+			<!--                    1. לגשת אל חשבשבת > הנהלת חשבונות > התאמות וניתוח כרטיסים > קליטת דפי בנק.-->
+			<!--                    <br>-->
+			<!--                    &nbsp;&nbsp;&nbsp;&nbsp;-->
+			<!--                    • בחירת כ.הנה"ח אותו רוצים לקשר לכרטיס האשראי > לחיצה על כפתור "קליטת דף בנק אוטומטית" > מעבר ל- -->
+			<!--                    bizibox-->
+			<!--                    <br>-->
+			<!--                    &nbsp;&nbsp;&nbsp;&nbsp;-->
+			<!--                    • ב- bizibox בוחרים את כרטיס האשראי הרלוונטי ומאיזה מחזור חיוב נרצה לייבא ולאחר מכן חוזרים לחשבשבת-->
+			<!--                    ולוחצים שוב על כפתור "קליטת דף בנק אוטומטית".-->
+			<!--                    <br>-->
+			<!--                    כעת מתבצע ייבוא.-->
+			<!--                    <br>-->
+			<!--                    2. כאשר קיימת בעיית יתרות יש לבחור איך לטפל, ידנית או ע"י הוספת תנועת הפרש אוטומטית.-->
+			<!--                </p>-->
+			<!--            </ng-container>-->
+			<ng-container *ngSwitchCase="2">
+				<h2 class="section-header">הוספת כרטיס אשראי חוץ בנקאי</h2>
+				<p>
+					בממשק יש ללחוץ על "הוספת כרטיס אשראי",
+					<br/>
+					יש לבחור מאיזה חשבון בנק הכרטיס יורד (במידה והחשבון עוד לא קיים
+					בביזיבוקס יש תחילה להוסיף אותו), לבחור את סוג הכרטיס שאנו
+					<br/>
+					רוצים להוסיף ולהקליד את פרטי הכניסה. לבסוף יש ללחוץ על "הוספה".
+				</p>
+				<p class="red" style="margin-top: 0.5em">
+					• שימו לב - 3 ניסיונות כושלים בהכנסת פרטי הכניסה ב- bizibix/ באתר
+					האשראי יגרמו לחסימה.
+					<br/>
+					בנוסף, יש לצאת מאתר האשראי לפני הוספת הכרטיס
+				</p>
+				<img style="height: auto; width: auto; position: relative;margin-top: 0.5em" fill ngSrc="/assets/images/help-erp-2-1.png"/>
+			</ng-container>
+			<ng-container *ngSwitchCase="3">
+				<h2 class="section-header">קישור כרטיס הנה"ח לחשבון בנק</h2>
+				<p>
+					כדי לקשר כרטיס הנה"ח לחשבון בנק יש לגשת אל חשבשבת > הנהלת חשבונות >
+					התאמות וניתוח כרטיסים > קליטת דפי בנק.
+				</p>
+				<p>
+					לאחר שנכנסנו אל כרטיס הנה"ח הרצוי יש ללחוץ על "קליטת דף בנק אוטומטית"
+				</p>
+				<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/help-erp-1-3.PNG"/>
+				<p>ולאחר מכן ללחוץ על "כפתור קישור ל- BIZIBOX"</p>
+				<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/help-erp-3-2.PNG"/>
+				
+				<p>
+					לחיצה על הכפתור תוביל אותנו אל הממשק שם תינתן האופציה לבחור את חשבון
+					הבנק אליו אנו רוצים לקשר את כרטיס הנה"ח, אנו בוחרים בחשבון הרלוונטי
+					ולוחצים על "שמירה".
+				</p>
+				<p class="bold">
+					שימו לב: במידה והיתרות בין חשבשבת לבנק תואמות, תופיע המלצה תחת החשבון.
+				</p>
+				<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/help-erp-3-3.png"/>
+				<p>
+					לאחר בחירת החשבון יש לחזור אל חשבשבת וללחוץ שוב על כפתור "קליטת דף בנק
+					אוטומטית".
+				</p>
+				<p class="bold">כעת מתבצע ייבוא נתונים.</p>
+			</ng-container>
+			<ng-container *ngSwitchCase="4">
+				<h2 class="section-header">הוספת חשבון בנק</h2>
+				<p>
+					בממשק יש ללחוץ על "הוספת חשבון בנק" ולאחר מכן לבחור את הבנק אותו אנו
+					רוצים להוסיף.
+				</p>
+				<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/help-erp-4-1.png"/>
+				<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/help-erp-4-2.png"/>
+				<p>
+					לאחר בחירת הבנק יש להכניס את פרטי הכניסה כפי שמעודכנים באתר הבנק
+					וללחוץ על "הוספה".
+				</p>
+				<p class="red">
+					• שימו לב - 3 ניסיונות כושלים בהכנסת פרטי הכניסה בביזיבוקס/בבנק יגרמו
+					לחסימת חשבון הבנק.
+					<br/>
+					בנוסף, יש לצאת מאתר הבנק לפני הוספת החשבון.
+				</p>
+				<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/help-erp-4-3.png"/>
+				<p>
+					• בעת הוספת חשבון של פועלים לעסקים יש להכניס גם את מספר הנייד אליו
+					נשלחים המסרונים מהבנק.
+					<br/>
+					שימו לב שלאחר הוספת החשבון יישלח מסרון בכדי לטעון נתונים מהבנק.
+				</p>
+				<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/help-erp-4-4.png"/>
+			</ng-container>
+			<ng-container *ngSwitchCase="5">
+				<h2 class="section-header">הורדה ושימוש באפליקציה של פועלים לעסקים</h2>
+				<p>
+					כדי לייבא בכל יום נתונים עדכניים מבנק פועלים לעסקים לחשבשבת, יש לטעון
+					נתונים עצמאית דרך אפליקציית "bizibox OTP".
+				</p>
+				<p>יש לגשת אל החנות באנדרואיד/ אייפון ולהוריד את האפליקציה.</p>
+				<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/help-erp-5-1.png"/>
+				<p>
+					יש להכניס את מספר הנייד ואת מספר המנוי בחשבשבת וללחוץ לבסוף על
+					"אישור".
+				</p>
+				<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/help-erp-5-2.png"/>
+				<p>
+					לאחר שהפרטים יאומתו, ישלח מסרון עם קוד אימות חד פעמי להצטרפות
+					לאפליקציה. יש להכניס את הקוד וללחוץ לבסוף על "אישור".
+				</p>
+				<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/help-erp-5-3.png"/>
+				<p>
+					לאחר מכן נגיע לטעינת הנתונים מהבנק.
+					<br/>
+					לחיצה על "הפעלה" שולחת מסרון עם קוד חד פעמי אותו יש להכניס תוך 5 דקות.
+					<br/>
+					במידה ועדיין לא קיים חשבון בנק של פועלים לעסקים בממשק יש להוסיף אותו
+					ע"י לחיצה על "הוספת חשבון בנק" באפליקציה/ בממשק ביזיבוקס.
+				</p>
+				<p class="red">
+					• שימו לב - יש להתנתק מאתר הבנק לפני הפעלת הטעינה.
+					<br/>
+					• במידה ופרטי הכניסה שגויים האפליקציה תפנה אל ממשק ביזיבוקס- שם יש
+					לעדכן את פרטי הכניסה העדכניים.
+				</p>
+				<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/help-erp-5-4.png"/>
+				<p>כעת הטעינה מתבצעת, יש לחכות לסיום.</p>
+				<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/help-erp-5-5.png"/>
+				<p>כעת ניתן לייבא נתונים לחשבשבת.</p>
+			</ng-container>
+			<ng-container *ngSwitchCase="6">
+				<h2 class="section-header">מייל יומי</h2>
+				<p>
+					לאחר כניסתכם לממשק bizibox יש לגשת תחילה אל "ניהול משתמשים" ולאמת את
+					הפרטים שלכם
+				</p>
+				<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/help-erp-6-1.png"/>
+				<p>
+					אימות הנתונים
+					<span class="bold" style="font-size: 18px; font-weight: 700">
+            ועדכון כתובת המייל
+          </span>
+					יגרום לכך שבכל בוקר יישלח אליכם מייל מפורט שיכלול בתוכו ריכוז יתרות של
+					חשבונות הבנק שלכם,
+					<br/>
+					יתריע על חריגות, סיסמאות שגויות, יתרות לא תואמות ועוד.
+				</p>
+				<p>דוגמה למייל שתקבלו</p>
+				<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/help-erp-6-2.png"/>
+			</ng-container>
+			<ng-container *ngSwitchCase="7">
+				<h2 class="section-header">
+					ניתוק חשבון בנק/ כרטיס אשראי מכרטיס הנה”ח
+				</h2>
+				<p>
+					כדי לנתק חשבון בנק או כרטיס אשראי מכרטיס הנה"ח יש לגשת אל ממשק
+					bizibox,
+					<br/>
+					ללחוץ על האייקון 3 נקודות בצד שמאל בשורה של החשבון/כרטיס אשראי הרצוי
+					ולאחר מכן לבחור "ניתוק מכרטיס הנה"ח".
+				</p>
+				<img style="height: auto; width: auto; position: relative;margin-top: 0.5em" fill ngSrc="/assets/images/help-erp-7-1.png"/>
+				<p>לאחר הניתוק חשבון/ כרטיס אשראי זה לא יהיה מיובא יותר אל חשבשבת.</p>
+			</ng-container>
+			<ng-container *ngSwitchCase="8">
+				<h2 class="section-header">קישור כרטיס הנה”ח לכרטיס אשראי</h2>
+				<p>
+					כדי לקשר כרטיס הנה"ח לכרטיס אשראי יש לגשת אל חשבשבת > הנהלת חשבונות >
+					התאמות וניתוח כרטיסים > קליטת דפי בנק.
+					<br/>
+					לאחר שנכנסנו אל כרטיס הרצוי יש ללחוץ על "קליטת דף בנק אוטומטית"
+				</p>
+				<img style="height: auto; width: auto; position: relative;margin-top: 0.5em" fill ngSrc="/assets/images/help-erp-1-3.PNG" />
+				<p>ולאחר מכן ללחוץ על "כפתור קישור ל- BIZIBOX"</p>
+				<img style="height: auto; width: auto; position: relative;margin-top: 0.5em" fill ngSrc="/assets/images/help-erp-3-2.PNG" />
+				<p>
+					לחיצה על הכפתור תוביל אותנו אל הממשק שם תינתן האופציה לבחור את כרטיס
+					האשראי אליו אנו רוצים לקשר את כרטיס הנה"ח, אנו בוחרים בכרטיס הרלוונטי
+					ולוחצים על "שמירה".
+				</p>
+				<p>
+					לאחר בחירת כרטיס האשראי יש לחזור אל חשבשבת וללחוץ שוב על כפתור “קליטת
+					דף בנק אוטומטית”.
+				</p>
+				<p>כעת מתבצע ייבוא נתונים.</p>
+			</ng-container>
+			<ng-container *ngSwitchCase="10">
+				<h2 class="section-header">
+					עדכון פרטי כניסה לבנקים/ כרטיסי אשראי חוץ בנקאיים
+				</h2>
+				<p>
+					במידה ופרטי הכניסה של הבנק/ כרטיס האשראי החוץ בנקאי שונו/ שגויים/ פג
+					תוקפם יש לעדכן את פרטי הכניסה העדכניים ב-bizibox,
+					<br/>
+					בכדי שטעינת הנתונים תתבצע בצורה תקינה ואיתה גם ייבוא הנתונים לחשבשבת.
+					<br/>
+					<span
+							class="bold"
+							style="font-weight: 700; text-decoration: underline"
+					>
+            (שימו לב: במידה והסיסמה פג תוקף -
+          </span>
+					יש לעדכן תחילה את הסיסמה החדשה באתר הבנק/ האשראי ורק לאחר מכן לעדכן
+					ב-bizibox).
+				</p>
+				
+				<p>יש ללחוץ על "עדכון סיסמה"</p>
+				<img style="height: auto; width: auto; position: relative;margin-top: 0.5em" fill ngSrc="/assets/images/help-erp-10-1.png" />
+				<p>
+					ולאחר מכן להכניס את הסיסמה החדשה (במידה והשתנה גם שם המשתמש יש ללחוץ
+					על "עדכון שם משתמש").
+				</p>
+				<img style="height: auto; width: auto; position: relative;margin-top: 0.5em" fill ngSrc="/assets/images/help-erp-10-2.png" />
+				<p>לחיצה על "עדכון" תגרום לתחילת טעינת נתונים מהבנק.</p>
+			</ng-container>
+			<ng-container *ngSwitchCase="11">
+				<h2 class="section-header">עדכון נתונים מבנק פועלים לעסקים</h2>
+				<p>
+					בנק פועלים לעסקים הינו הבנק היחיד שבו אתם אלו שצריכים לטעון נתונים
+					מהבנק (בשל רמת האבטחה של הבנק ושליחת מסרון אל הנייד שלכם).
+				</p>
+				<p>
+					טעינת הנתונים יכולה להתבצע בשני אופנים:
+					<br/>
+					1. אפליקציית "bizibox otp"
+					<br/>
+					2. דרך ממשק bizibox
+				</p>
+				<p>
+					אם ברצונכם לבצע את הטעינות ע"י שימוש באפליקציה יש לגשת אל מסמך זה.
+					<br/>
+					במידה ואינכם רוצים להשתמש באפליקציה ומעדיפים לטעון נתונים דרך ממשק
+					bizibox -
+					<br/>
+					יש ללחוץ על "טעינת הבנק" תחת אחד מהחשבונות של פועלים לעסקים (שימו לב-
+					אין צורך לטעון נתונים לכל חשבון, במידה וטוענים חשבון אחד,
+					<br/>
+					כל חשבונות הבנק שיושבים תחת אותם פרטי כניסה נטענים).
+				</p>
+				<p class="red" style="margin-top: 0.5em">
+					* שימו לב - יש להתנתק מאתר הבנק לפני הפעלת הטעינה.
+					<br/>
+					* יש להכניס את הקוד תוך 5 דקות.
+				</p>
+				<img style="height: auto; width: auto; position: relative;margin-top: 0.5em" fill ngSrc="/assets/images/help-erp-11-1.png" />
+				<p>
+					לחיצה על "טעינת הבנק" תשלח אל הנייד שמקבל את הקוד מהבנק מסרון, אותו יש
+					להכניס כאן
+				</p>
+				<img style="height: auto; width: auto; position: relative;margin-top: 0.5em" fill ngSrc="/assets/images/help-erp-11-2.png" />
+				<p>
+					לאחר לחיצה על "אישור" נתונים יתחילו להטען מאתר הבנק (הטעינה יכולה
+					להמשך מספר דקות).
+				</p>
+				<p>המלצה: יש לבצע את הטעינה בכל יום.</p>
+			</ng-container>
+			<ng-container *ngSwitchCase="12">
+				<h2 class="section-header">מחיקת חשבון בנק/ כרטיס אשראי</h2>
+				<p>
+					במידה וקיימים חשבונות בנק או כרטיסי אשראי שאתם רוצים למחוק מ-bizibox
+					<br/>
+					יש לעמוד עם העכבר על החשבון / כרטיס אשראי הרצוי, ללחוץ על האייקון 3
+					נקודות מצד שמאל
+					<br/>
+					ולאחר מכן לבחור "מחיקת חשבון" / "מחיקת אשראי"
+				</p>
+				<img style="height: auto; width: auto; position: relative;margin-top: 0.5em" fill ngSrc="/assets/images/help-erp-12-1.png" />
+				<img style="height: auto; width: auto; position: relative;margin-top: 0.5em" fill ngSrc="/assets/images/help-erp-12-2.png" />
+				<img style="height: auto; width: auto; position: relative;margin-top: 0.5em" fill ngSrc="/assets/images/help-erp-12-3.png" />
+			</ng-container>
+			<ng-container *ngSwitchCase="9">
+				<h2 class="section-header">אודות bizibox</h2>
+				<p class="card-1">
+					המערכת מושכת באופן אוטומטי וברמה יומית את כל הנתונים מכל המקורות
+					הפיננסיים של בעל העסק ומציגה אותם במקום אחד ובצורה מרוכזת.
+					<br/>
+					המערכת יודעת בכל זמן נתון מה הפעולה האחרונה שהועברה מכל חשבון בנק
+					ואשראי ומשקפת אותו בממשק.
+					<br/>
+					מערכת bizibox שומרת עבור הלקוח את כל ההיסטוריה הפיננסית שלו ללא שום
+					מגבלה כולל צילומי השיקים ופרטי ההעברות הבנקאיות.
+					<br/>
+					ל bizibox יש מנוע חיפוש מאוד חכם שמאפשר לחפש כל פעולה קיימת לפי שם או
+					סכום.
+					<br/>
+					כל לקוח שמחובר ל bizibox מקבל בכל בוקר מייל יומי עם כל הנתונים
+					הפיננסים מכל הבנקים שלו כולל יתרות יומיות והתנועות שהיו בבנק באותו
+					יום.
+				</p>
+				<p class="card-2">
+					מערכת התזרים של bizibox בונה תזרים מזומנים המציג בפריסה חודשית את כל
+					ההכנסות וההוצאות הצפויות בכל יום ויום. בלחיצת כפתור פשוטה
+					<br/>
+					נפתח מסך המפרט את התנועות הכספיות בעסק, כולל ניתוחים, השוואות ומגמות
+					עד רמת ההוצאה הבודדת של תנועות הבנק וכרטיסי האשראי.
+					<br/>
+					המערכת מאפשרת ללקוח בקרה בזמן אמת אחר מאזן הכספים של העסק כולל הוצאות
+					והכנסות עתידיות וכוללת הודעות בינה עסקית (B.I.) על נושאים
+					<br/>
+					מהותיים בניהול העסק, כולל מייל יומי על מצב כל חשבונות הבנק והיתרות.
+				</p>
+				<p style="margin-bottom: 0px; padding-bottom: 0px">
+					<a
+							href="https://bizibox.biz/terms-of-use-bizibox/"
+							class="link"
+							target="_blank"
+					>
+						הסכם שימוש
+					</a>
+				</p>
+				<p class="link">
+					<a
+							href="https://bizibox.biz/privacy-policy-bizibox/"
+							class="link"
+							target="_blank"
+					>
+						מדיניות הפרטיות
+					</a>
+				</p>
+			</ng-container>
+		</ng-container>
+		
+		<section
+				id="service-call-section"
+				style="margin-top: 100px; margin-bottom: 30px"
+		>
+			<div>לא מצאתם את התשובה שחיפשתם?</div>
+			<!--            (click)="showOpenTicket()"-->
+			<a href="https://h-erp.co.il/help/?type=171" target="_blank">
+				<button class="button-dark">פתחו לנו קריאת שירות</button>
+			</a>
+		</section>
+	</div>
+</section>
+
+<p-dialog (visibleChange)="knowledgeBaseVisible = false"
+		[visible]="(knowledgeBaseVisible)"
+		appendTo="body"
+		[modal]="true"
+		styleClass="service-call-dialog"
+>
+	<p-header>קריאת שירות</p-header>
+	<ng-container *ngIf="knowledgeBaseVisible">
+		<app-service-call-dialog
+				[data]="knowledgeBaseVisible"
+				[isHashavshevet]="true"
+		></app-service-call-dialog>
+	</ng-container>
+</p-dialog>

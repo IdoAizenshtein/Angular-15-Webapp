@@ -1,0 +1,5284 @@
+<h2 class="titlePage">
+	<i>פקודות יומן ספקים ולקוחות</i>
+</h2>
+<div
+		class="filterRow"
+		style="
+      margin-top: 15px;
+      margin-bottom: 15px;
+      justify-content: space-between;
+      align-items: flex-end;
+    "
+>
+	<div class="filters-companies-main">
+		<ul>
+			<li>
+				<app-tooltip-category
+						(changed)="filterCategory($event)"
+						[data]="esderMaamArr"
+						[ddIcon]="true"
+						[title]="'סוג דיווח מע״מ'"
+						[type]="'esderMaam'"
+						style="color: #022258"
+				>
+				</app-tooltip-category>
+			</li>
+			<li *ngIf="yearlyProgramShow">
+				<app-tooltip-category
+						(changed)="filterCategory($event)"
+						[data]="yearlyProgramArr"
+						[ddIcon]="true"
+						[title]="'רב שנתי/חד שנתי'"
+						[type]="'yearlyProgram'"
+						style="color: #022258"
+				>
+				</app-tooltip-category>
+			</li>
+		</ul>
+
+		<div class="search" style="width: 215px">
+			<input
+					[formControl]="filterInput"
+					[value]="queryString"
+					autocomplete="off"
+					placeholder="{{ 'filters.search' | translate }}"
+					type="text"
+			/>
+		</div>
+	</div>
+
+<!-- 	<div class="btnChangeView"> -->
+<!-- 		<div class="exports"> -->
+<!-- 			<button -->
+<!-- 					[matTooltip]="'appWalk.customers.report.printBtn' | translate" -->
+<!-- 					matTooltipPosition="above" -->
+<!-- 			> -->
+<!-- 				<img height="21" ngSrc="/assets/images/to-printer.png" width="24"/> -->
+<!-- 			</button> -->
+<!-- 			<button -->
+<!-- 					[matTooltip]="'appWalk.customers.report.mailBtn' | translate" -->
+<!-- 					matTooltipPosition="above" -->
+<!-- 			> -->
+<!-- 				<img height="21" ngSrc="/assets/images/to-mail.png" width="24"/> -->
+<!-- 			</button> -->
+<!-- 			<button [matTooltip]="'הורדה'" matTooltipPosition="above"> -->
+<!-- 				<img height="21" ngSrc="/assets/images/download.png" width="21"/> -->
+<!-- 			</button> -->
+<!-- 		</div> -->
+<!-- 	</div> -->
+</div>
+
+<div class="comapniesTable journalTransTable isDev supplierCustomersJournal">
+	<div #header class="header">
+		<div (click)="toggleCompanyFilesOrderTo('companyName')">
+			שם החברה
+
+			<mat-icon
+					*ngIf="companies && companies.length"
+					[class.active]="
+            companyFilesSortControl.value?.orderBy === 'companyName'
+          "
+					[svgIcon]="
+            (companyFilesSortControl.value?.orderBy === 'companyName'
+              ? companyFilesSortControl.value.order
+              : null
+            ) | sortIcon
+          "
+					class="sort-icon"
+			>
+			</mat-icon>
+		</div>
+		<div (click)="toggleCompanyFilesOrderTo('companyHp')">
+			ח.פ.
+
+			<mat-icon
+					*ngIf="companies && companies.length"
+					[class.active]="
+            companyFilesSortControl.value?.orderBy === 'companyHp'
+          "
+					[svgIcon]="
+            (companyFilesSortControl.value?.orderBy === 'companyHp'
+              ? companyFilesSortControl.value.order
+              : null
+            ) | sortIcon
+          "
+					class="sort-icon"
+			>
+			</mat-icon>
+		</div>
+		<div (click)="toggleCompanyFilesOrderTo('forConfirm')">
+			לאישור
+
+			<mat-icon
+					*ngIf="companies && companies.length"
+					[class.active]="
+            companyFilesSortControl.value?.orderBy === 'forConfirm'
+          "
+					[svgIcon]="
+            (companyFilesSortControl.value?.orderBy === 'forConfirm'
+              ? companyFilesSortControl.value.order
+              : null
+            ) | sortIcon
+          "
+					class="sort-icon"
+			>
+			</mat-icon>
+		</div>
+		<div (click)="toggleCompanyFilesOrderTo('lastUploadDate')">
+			ת. העלאה
+			<br class="hideIn1920"/>
+			אחרון
+
+			<mat-icon
+					*ngIf="companies && companies.length"
+					[class.active]="
+            companyFilesSortControl.value?.orderBy === 'lastUploadDate'
+          "
+					[svgIcon]="
+            (companyFilesSortControl.value?.orderBy === 'lastUploadDate'
+              ? companyFilesSortControl.value.order
+              : null
+            ) | sortIcon
+          "
+					class="sort-icon"
+			>
+			</mat-icon>
+		</div>
+		<div (click)="toggleCompanyFilesOrderTo('journalTrans')">
+			ספקים
+			<br class="hideIn1920"/>
+			ולקוחות
+
+			<mat-icon
+					*ngIf="companies && companies.length"
+					[class.active]="
+            companyFilesSortControl.value?.orderBy === 'journalTrans'
+          "
+					[svgIcon]="
+            (companyFilesSortControl.value?.orderBy === 'journalTrans'
+              ? companyFilesSortControl.value.order
+              : null
+            ) | sortIcon
+          "
+					class="sort-icon"
+			>
+			</mat-icon>
+		</div>
+		<div (click)="toggleCompanyFilesOrderTo('forCare')">
+			<mat-icon
+					[pTooltip]="'להמשך טיפול'"
+					[svgIcon]="'flagBg'"
+					class="forCare"
+					style="color: #022258; cursor: pointer; height: 100%; width: 22px"
+					tooltipPosition="top"
+			>
+			</mat-icon>
+			<mat-icon
+					*ngIf="companies && companies.length"
+					[class.active]="companyFilesSortControl.value?.orderBy === 'forCare'"
+					[svgIcon]="
+            (companyFilesSortControl.value?.orderBy === 'forCare'
+              ? companyFilesSortControl.value.order
+              : null
+            ) | sortIcon"
+					class="sort-icon"
+			>
+			</mat-icon>
+		</div>
+	</div>
+	<div
+			[ngStyle]="{'height': (getPageHeightFunc(header.getBoundingClientRect().bottom + paginator.getBoundingClientRect().height + 15)) +'px'}"
+			class="body scrollbar-dynamic containerList"
+
+			style="position: relative">
+		<div *ngIf="loader" class="loader">
+			<div class="circle"></div>
+		</div>
+
+		<ng-container *ngIf="companies && companies.length">
+			<!-- 					<p-virtualScroller [itemSize]="45" -->
+			<!-- 					                   [options]="{ onScroll:onScrollCubes }" -->
+			<!-- 					                   [value]="companies" -->
+			<!-- 					                   scrollHeight="{{getPageHeightFunc(header.getBoundingClientRect().bottom + paginator.getBoundingClientRect().height + 30)}}px" -->
+			<!-- 					                   > -->
+			<!-- 						<ng-template let-company let-i="rowIndex" pTemplate="item"> -->
+			<!-- 							</div> -->
+			<!-- 						</ng-template> -->
+			<!-- 					</p-virtualScroller> -->
+
+			<ng-scrollbar
+					#scrollbarCompanies
+					(updated)="onScroll(scrollbarCompanies)"
+					class="custom-scrollbar"
+					thumbClass="scrollbar-thumb"
+					trackClass="scrollbar">
+
+				<cdk-virtual-scroll-viewport #virtualScroll itemSize="45" scrollViewport>
+					<div *cdkVirtualFor="let company of companies;  let i = index;">
+						<div
+								(click)="companySelect = company"
+								[class.active]="
+              tooltipEdit.overlayVisible ||
+              (companySelect && companySelect.companyId === company.companyId)
+            "
+								class="row"
+						>
+							<div style="overflow: hidden; display: block">
+								<!-- 									userService.appData.overlay.push(  { -->
+								<!-- 									item: tooltipMoreData, -->
+								<!-- 									target: $event['currentTarget'] || $event['target'], -->
+								<!-- 									container: $event['srcElement'] -->
+								<!-- 									}); -->
+								<div
+										[ngStyle]="{
+                  'margin-right': company.companyName !== null ? '0' : '12%'
+                }"
+								>
+									<p-overlayPanel
+											[showTransitionOptions]="'0ms'"
+											[hideTransitionOptions]="'0ms'"
+											(onShow)="checkIfStillHover(tooltipMoreData, transDesc)"
+											[dismissable]="false"
+											#tooltipMoreData
+											[autoZIndex]="false"
+											[style]="{
+                    width: 'auto',
+                    'z-index': 999,
+                    left: 'inherit !important',
+                    right: rightSideTooltip + 'px'
+                  }"
+											appendTo="body"
+											styleClass="tooltip-top tooltip-acc-deviation tooltipInfoCompany tooltipInfoCompanyTop"
+									>
+										<div>
+											<p>שם בסיס נתונים</p>
+
+											<p style="margin-right: 20px">
+												{{ company.dbName }}
+											</p>
+										</div>
+										<div>
+											<small> טעינה אחרונה </small>
+
+											<small style="margin-right: 20px">
+												{{ company.dataReceiveDate | date: 'dd/MM/yy HH:mm' }}
+											</small>
+										</div>
+									</p-overlayPanel>
+
+									<span style="font-size: 16px;"
+											#transDesc
+											(click)="
+                    storageService.sessionStorageSetter(
+                      'suppliersAndCustomersStatus',
+                      'WAIT_FOR_CONFIRM'
+                    );
+                    sharedComponent.selectCompanyParam(
+                      company,'journalTrans/suppliersAndCustomers'
+                    )
+                  "
+											(mouseleave)="tooltipMoreData.hide()"
+											(mouseover)="
+
+
+                    eventRightPos($event);
+                    onScrollCubes(i);
+                    tooltipMoreData.show($event)
+                  "
+											[innerHTML]="
+                    company.companyName || '-' | highlight: queryString
+                  "
+											[pTooltip]="company.companyName"
+											[tooltipDisabled]="
+                  transDesc.clientWidth >= transDesc.scrollWidth
+                "
+											class="link text-ellipsis"
+									></span>
+
+
+									<!--                                <span class="link text-ellipsis"-->
+									<!--                                      (click)="sharedComponent.selectCompanyParam(company, 'general')"-->
+									<!--                                      (mouseover)="onScrollCubes(i); tooltipMoreData.show($event);"-->
+									<!--                                      (mouseleave)="tooltipMoreData.hide();"-->
+									<!--                                      [pTooltip]="company.companyName"-->
+									<!--                                      [innerHTML]="(company.companyName || '-')| highlight: queryString"></span>-->
+								</div>
+							</div>
+							<div>
+								<div
+										#transDesc
+										[innerHTML]="
+                  (company.companyHp !== null ? company.companyHp : '-')
+                    | highlight: queryString
+                "
+										[pTooltip]="company.companyHp"
+										[tooltipDisabled]="
+                  transDesc.clientWidth >= transDesc.scrollWidth
+                "
+										class="text-ellipsis left-space"
+								></div>
+							</div>
+							<div>
+								<div
+										(click)="
+                  storageService.sessionStorageSetter(
+                    'suppliersAndCustomersStatus',
+                    'WAIT_FOR_CONFIRM'
+                  );
+                  sharedComponent.selectCompanyParam(
+                    company,
+                    'journalTrans/suppliersAndCustomers'
+                  )
+                "
+										[innerHTML]="
+                  (company.forConfirm !== null ? company.forConfirm : '-')
+                    | highlight: queryString
+                "
+										class="text-ellipsis link left-space"
+								></div>
+							</div>
+							<div>
+								<div
+										#transDesc
+										[innerHTML]="
+                  (company.lastUploadDate | date: 'dd/MM/yy') || '-'
+                    | highlight: queryString
+                "
+
+										[pTooltip]="company.lastUploadDate | date: 'dd/MM/yy'"
+										[tooltipDisabled]="
+                  transDesc.clientWidth >= transDesc.scrollWidth
+                "
+										class="text-ellipsis left-space"
+								></div>
+							</div>
+							<div>
+								<mat-icon
+										(click)="
+                  storageService.sessionStorageSetter(
+                    'suppliersAndCustomersStatus',
+                    'CREATE_JOURNAL_TRANS'
+                  );
+                  sharedComponent.selectCompanyParam(
+                    company,
+                    'journalTrans/suppliersAndCustomers'
+                  )
+                "
+										*ngIf="company.journalTrans"
+										[svgIcon]="'folder-table'"
+										class="left-space"
+										style="
+                  color: #4f4e4e;
+                  position: relative;
+                  height: 100%;
+                  width: 22px;
+                "
+								>
+									<div
+											[innerHTML]="company.journalTrans | highlight: queryString"
+											class="text-ellipsis circle"
+									></div>
+								</mat-icon>
+								<mat-icon
+										(click)="
+                  storageService.sessionStorageSetter(
+                    'suppliersAndCustomersStatus',
+                    'CREATE_JOURNAL_TRANS'
+                  );
+                  sharedComponent.selectCompanyParam(
+                    company,
+                    'journalTrans/suppliersAndCustomers'
+                  )
+                "
+										*ngIf="!company.journalTrans"
+										[svgIcon]="'folder-table'"
+										class="left-space"
+										style="
+                  color: #4f4e4e;
+                  position: relative;
+                  height: 100%;
+                  width: 22px;
+                "
+								>
+								</mat-icon>
+							</div>
+
+							<div>
+								<div
+										(click)="
+                  storageService.sessionStorageSetter(
+                    'suppliersAndCustomersStatus',
+                    'WAIT_FOR_CARE'
+                  );
+                  sharedComponent.selectCompanyParam(
+                    company,
+                    'journalTrans/suppliersAndCustomers'
+                  )
+                "
+										[innerHTML]="
+                  (company.forCare !== null ? company.forCare : '-')
+                    | highlight: queryString
+                "
+										class="text-ellipsis link left-space"
+								></div>
+								<i
+										(click)="onScrollCubes(i); tooltipEdit.toggle($event)"
+										class="fas fa-ellipsis-v"
+								></i>
+							</div>
+
+							<p-overlayPanel
+									#tooltipEdit
+									[style]="{ transform: 'translate(-10px, 0px)', width: 'auto' }"
+									appendTo="body"
+									styleClass="tooltip-bottom tooltip-acc-deviation tooltip-daily-edit overlayPanelRightClick"
+							>
+								<ul style="width: 185px">
+									<li
+											(click)="
+                    docToSend.show(company?.companyId); tooltipEdit.hide()
+                  "
+									>
+										<div
+												class="p-helper-clearfix"
+												style="display: flex; display: -ms-flexbox"
+										>
+											<p
+													class="nameAcc"
+													style="
+                        overflow: hidden;
+                        white-space: nowrap;
+                        text-overflow: ellipsis;
+                        flex: 85;
+                        -ms-flex: 85;
+                      "
+											>
+												שליחת הודעה ללקוח
+											</p>
+										</div>
+									</li>
+									<li (click)="openContactModal(company); tooltipEdit.hide()">
+										<div
+												class="p-helper-clearfix"
+												style="display: flex; display: -ms-flexbox"
+										>
+											<p
+													class="nameAcc"
+													style="
+                        overflow: hidden;
+                        white-space: nowrap;
+                        text-overflow: ellipsis;
+                        flex: 85;
+                        -ms-flex: 85;
+                      "
+											>
+												רשימת אנשי קשר
+											</p>
+										</div>
+									</li>
+									<!--                                <li (click)="tooltipEdit.hide();">-->
+									<!--                                    <div class="p-helper-clearfix"-->
+									<!--                                         style="display: flex; display: -ms-flexbox;">-->
+									<!--                                        <p class="nameAcc"-->
+									<!--                                           style="overflow: hidden; white-space: nowrap; text-overflow: ellipsis;flex: 85;-ms-flex:85;">-->
+									<!--                                            צירוף לקוח לאפליקציה-->
+									<!--                                        </p>-->
+									<!--                                    </div>-->
+									<!--                                </li>-->
+									<li (click)="uploadFilesOcr(company); tooltipEdit.hide()">
+										<div
+												class="p-helper-clearfix"
+												style="display: flex; display: -ms-flexbox"
+										>
+											<p
+													class="nameAcc"
+													style="
+                        overflow: hidden;
+                        white-space: nowrap;
+                        text-overflow: ellipsis;
+                        flex: 85;
+                        -ms-flex: 85;
+                      "
+											>
+												העלאת מסמכים
+											</p>
+										</div>
+									</li>
+									<li
+											(click)="loadScanFilesOcr(company); tooltipEdit.hide()"
+											*ngIf="isWindows"
+									>
+										<div
+												class="p-helper-clearfix"
+												style="display: flex; display: -ms-flexbox"
+										>
+											<p
+													class="nameAcc"
+													style="
+                        overflow: hidden;
+                        white-space: nowrap;
+                        text-overflow: ellipsis;
+                        flex: 85;
+                        -ms-flex: 85;
+                      "
+											>
+												סריקת מסמכים
+											</p>
+										</div>
+									</li>
+								</ul>
+							</p-overlayPanel>
+						</div>
+					</div>
+				</cdk-virtual-scroll-viewport>
+			</ng-scrollbar>
+
+
+			<!--         <div -->
+			<!--           *appVsFor=" -->
+			<!--             companies; -->
+			<!--             scrollParent: '.containerList'; -->
+			<!--             let _companies = vsCollection -->
+			<!--           " -->
+			<!--         > -->
+			<!--     -->
+			<!--         </div> -->
+		</ng-container>
+
+		<div *ngIf="companiesSrc && !companiesSrc.length" class="noData">
+			<mat-icon
+					style="
+            vertical-align: middle;
+            width: auto;
+            height: 61px;
+            margin-bottom: 10px;
+          "
+					svgIcon="export2"
+			></mat-icon>
+
+			<h1>לא נמצאו חברות</h1>
+		</div>
+		<div
+				*ngIf="
+          companiesSrc && companiesSrc.length && companies && !companies.length
+        "
+				class="noData"
+		>
+			<mat-icon
+					style="
+            vertical-align: middle;
+            width: auto;
+            height: 61px;
+            margin-bottom: 10px;
+          "
+					svgIcon="interface"
+			></mat-icon>
+
+			<h1>לא נמצאו חברות לחיפוש המבוקש</h1>
+		</div>
+	</div>
+
+	<div #paginator>
+		<app-paginator
+				(onPageChange)="paginate($event)"
+				[alwaysShow]="false"
+				[rowsPerPageOptions]="[50, 100, 200]"
+				[rows]="entryLimit"
+				[totalRecords]="companies.length"
+		>
+		</app-paginator>
+	</div>
+</div>
+
+
+<ng-container *ngIf="uploadFilesOcrPopUp && uploadFilesOcrPopUp?.visible">
+	<p-dialog
+			(visibleChange)="uploadFilesOcrPopUp.visible = $event"
+			[closable]="true"
+
+
+			[closeOnEscape]="true"
+			[draggable]="false"
+			[modal]="true"
+			[resizable]="false"
+			[visible]="(uploadFilesOcrPopUp?.visible && !fileViewer && !fileUploadProgress)"
+			appendTo="body"
+			styleClass="uploadFilesOcrPopUp"
+	>
+		<p-header> העלאת מסמכים</p-header>
+
+		<div class="flexCenter" style="overflow-y: hidden">
+			<div>
+				<h1>
+					העלאת מסמכים לחברת
+					<b>{{ companySelect?.companyName }}</b>
+				</h1>
+
+				<div
+						(fileDropped)="
+            !uploadFilesOcrPopUp?.urlsFiles?.links.length
+              ? onFileDropped($event)
+              : null
+          "
+						appDnd
+						class="container drop_zone"
+				>
+					<figure>
+						<mat-icon
+								style="color: #022258; height: 95px; width: auto"
+								svgIcon="file"
+						></mat-icon>
+
+						<figcaption>גררו קבצים מהמחשב לכאן</figcaption>
+					</figure>
+
+					<div class="uploadBtns">
+						<p>או לחצו כאן</p>
+
+						<label for="fileDropRef">
+							<input
+									#fileDropRef
+									(change)="fileBrowseHandler($event.target)"
+									*ngIf="uploadFilesOcrPopUp?.visible"
+									[disabled]="uploadFilesOcrPopUp?.urlsFiles?.links.length"
+									accept="image/bmp, image/jpg, image/jpeg, image/png, image/tif, image/tiff, application/pdf, .tif"
+									id="fileDropRef"
+									multiple
+									name="fileDropRef"
+									type="file"
+							/>
+							<mat-icon
+									style="color: #022258; height: 29px; width: 19px"
+									svgIcon="clipOutline"
+							></mat-icon>
+							לבחירת קבצים
+						</label>
+					</div>
+				</div>
+				<div class="line">
+					<div>&nbsp;</div>
+				</div>
+				<div class="sendToEmail">
+					<mat-icon
+							style="color: #022258; height: 20px; width: 26px"
+							svgIcon="mail"
+					></mat-icon>
+					ניתן גם לשלוח את החשבוניות לכתובת
+
+					<a
+							[href]="'mailto:' + companyHpEmail"
+							style="
+              display: inline-block;
+              direction: ltr;
+              text-align: left;
+              margin-right: 5px;
+            "
+							target="_blank"
+					>{{ companyHpEmail }}</a
+					>
+				</div>
+			</div>
+		</div>
+
+		<!--        <div class="alertSuc" *ngIf="files.length">-->
+		<!--            <mat-icon-->
+		<!--                    svgIcon="tick" style="color: #022258;-->
+		<!--    height: 23px;-->
+		<!--    width: 31px;"></mat-icon>-->
+		<!--            {{files.length}}-->
+		<!--            מסמכים נבחרו בהצלחה-->
+		<!--        </div>-->
+	</p-dialog>
+
+	<p-dialog
+			#fileViewerModal
+			(visibleChange)="resetAndReturnToMainUploadScreen()"
+			[draggable]="false"
+
+
+			[modal]="true"
+			[resizable]="false"
+			[visible]="(      fileViewer && uploadFilesOcrPopUp && uploadFilesOcrPopUp.visible)"
+			appendTo="body"
+			styleClass="fileViewer {{
+      finishedPrepareFiles &&
+      filesForContainerCompleted === 0 &&
+      filesForContainer !== filesForContainerCompleted
+        ? 'smallWidth'
+        : ''
+    }}"
+	>
+		<p-header>
+			<h1>
+				<ng-container *ngIf="finishedPrepareFiles">
+					העלאת מסמכים לחברת
+					<b>{{ companySelect?.companyName }}</b>
+				</ng-container>
+				<ng-container *ngIf="!finishedPrepareFiles">
+					טעינת מסמכים לחברת
+					<b>{{ companySelect?.companyName }}</b>
+				</ng-container>
+			</h1>
+		</p-header>
+		<ng-container *ngIf="finishedPrepareFiles">
+			<ng-container
+					*ngIf="
+          finishedPrepareFiles &&
+            filesForContainerCompleted === 0 &&
+            filesForContainer !== filesForContainerCompleted;
+          else showRegTitles
+        "
+			>
+				<p #header class="text">
+					טעינת מסמכים לחברת
+					<strong style="font-weight: 700">
+						{{ companySelect?.companyName }}
+						-
+						<span style="color: #cd1010"> נכשלה </span>
+					</strong>
+
+					<br/>
+					כל המסמכים לא עלו כי היו פגומים.
+				</p>
+			</ng-container>
+			<ng-template #showRegTitles>
+				<div class="progressBarTitles" style="display: block">
+					<p #header class="text" style="padding-bottom: 0px">
+						<ng-container *ngIf="files.length > 1">
+							<strong style="font-weight: 700">
+								{{ files.length }}
+								מסמכים
+							</strong>
+
+							עלו מפוצלים, ניתן לבצע איחוד ע"י לחיצה על המספריים, בנוסף ניתן
+							לשנות את מיקום המסמך ע"י גרירה.
+							<br/>
+						</ng-container>
+						למחיקה יש ללחוץ קליק ימני בעכבר על המסמך, ניתן לסמן כמה מסמכים ביחד
+						ע"י לחיצה על ctrl ולמחוק אותם.
+
+						<ng-container
+								*ngIf="
+                finishedPrepareFiles &&
+                filesForContainerCompleted > 0 &&
+                filesForContainer !== filesForContainerCompleted
+              "
+						>
+							<br/>
+							<span style="color: #cd1010">
+                שימו לב,
+
+								{{
+								filesForContainer - filesForContainerCompleted > 1
+										? filesForContainer -
+										filesForContainerCompleted +
+										' מסמכים לא עלו כי היו פגומים.'
+										: 'מסמך אחד לא עלה כי היה פגום.'
+								}}</span
+							>
+						</ng-container>
+					</p>
+
+					<div
+							style="
+              display: flex;
+              align-items: center;
+              margin-bottom: 0px;
+              justify-content: space-between;
+            "
+					>
+						<div>
+							<p-checkbox (onChange)="
+                  keepOriginFiles = !keepOriginFiles; keepOriginFilesChange()
+                "
+							            [binary]="true"
+							            [ngModel]="keepOriginFiles"
+							            checkboxIcon="fa fa-check"
+							            label="אל תפצל (שמירה על העלאה המקורית)"
+							>
+							</p-checkbox>
+						</div>
+						<div class="uploadBtns">
+							<label for="fileDropRef">
+								<input
+										#fileDropRef
+										(change)="fileBrowseHandler($event.target)"
+										accept="image/bmp, image/jpg, image/jpeg, image/png, image/tif, image/tiff, application/pdf, .tif"
+										id="fileDropRef"
+										multiple
+										name="fileDropRef"
+										type="file"
+								/>
+
+								<div
+										class="button-link"
+										style="padding: 0; display: flex; align-items: center"
+								>
+									<img
+											src="/assets/images/addFolder.png"
+											style="margin-left: 4px"
+									/>
+									הוספת מסמכים
+								</div>
+							</label>
+						</div>
+					</div>
+				</div>
+			</ng-template>
+		</ng-container>
+		<ng-container *ngIf="!finishedPrepareFiles">
+			<div class="progressBarTitles">
+				<p #header class="text">המסמכים עולים כעת למערכת</p>
+
+				<div class="progressBarLeft">
+					<div class="sums-progress">
+						<p>
+							{{
+							round((100 / filesForContainer) * filesForContainerCompleted)
+							}}%
+						</p>
+						<p>{{ filesForContainerCompleted }}/{{ filesForContainer }}</p>
+					</div>
+					<div>
+						<app-progress
+								[progress]="
+                (100 / filesForContainer) * filesForContainerCompleted
+              "
+						></app-progress>
+					</div>
+				</div>
+			</div>
+		</ng-container>
+
+		<!--            <div class="container-photos" #container *ngIf="fileViewer && uploadFilesOcrPopUp && uploadFilesOcrPopUp.visible">-->
+		<!--                <ul class="scroll-chrome"-->
+		<!--                    appSortable-->
+		<!--                    (refreshBack)="refreshBack($event)"-->
+
+		<div
+				#container
+				*ngIf="
+        !(
+          finishedPrepareFiles &&
+          filesForContainerCompleted === 0 &&
+          filesForContainer !== filesForContainerCompleted
+        )
+      "
+				class="container-photos"
+		>
+			<!--                <div class="example-container">-->
+			<!--                    <div id="all"-->
+			<!--                            cdkDropList-->
+			<!--                            cdkDropListOrientation="horizontal"-->
+			<!--                            [cdkDropListData]="files"-->
+			<!--                            class="example-list"-->
+			<!--                            (cdkDropListDropped)="drop($event)">-->
+			<!--                        <div-->
+			<!--                                cdkDragBoundary=".example-list"-->
+			<!--                                class="example-box"-->
+			<!--                                *ngFor="let file of files"-->
+			<!--                                [cdkDragData]="file"-->
+			<!--                                cdkDrag>{{file.val}}</div>-->
+			<!--                    </div>-->
+			<!--                </div>-->
+
+			<ul
+					#scroll
+					[style.maxHeight.px]="this.maxSizeHeightModal"
+					class="scroll-chrome"
+			>
+				<ng-container
+						*ngFor="
+            let file of files;
+            let i = index;
+            last as isLast;
+            trackBy: trackByIndex
+          "
+				>
+					<li
+							#element
+							(click)="onKeydownMain($event, file, i)"
+							(contextmenu)="
+              onScrollCubes(i);
+              eventRclickUpload = $event;
+              tooltipEdit.toggle($event, actualTarget);
+              onRightClick($event)
+            "
+							(dragover)="allowDrop($event, i)"
+							(dragstart)="onDragStart($event, i)"
+							(drop)="onDrop($event, i)"
+							*ngIf="finishedPrepareFiles"
+							draggable="true"
+					>
+						<div *ngIf="onDragOverIndex == i" class="drop-zone"></div>
+						<p #actualTarget>{{ i + 1 }}</p>
+						<img
+								*ngIf="
+                keepOriginFiles &&
+                file.type === 'application/pdf' &&
+                file.numPages &&
+                file.numPages > 1
+              "
+								src="/assets/images/corner-bg.png"
+								style="position: absolute; right: 3px; top: 24px; z-index: 999"
+						/>
+						<i
+								*ngIf="
+                keepOriginFiles &&
+                file.type === 'application/pdf' &&
+                file.numPages &&
+                file.numPages > 1
+              "
+								class="numPages"
+						>
+							<div>
+								{{ file.numPages }}
+							</div>
+						</i>
+						<div
+								[class.changeStateUploadFile]="changeStateUploadFile"
+								class="image"
+						>
+							<button
+									(click)="
+                  showDocumentStorageDataViewAsGrid(
+                    file?.src,
+                    file.type === 'application/pdf', false
+                  );
+                  $event.stopPropagation()
+                "
+									(contextmenu)="
+                  onScrollCubes(i);
+                  onRightClickInside($event);
+                  tooltipEdit.toggle($event, actualTarget);
+                  $event.stopPropagation();
+                  onRightClick($event)
+                "
+									*ngIf="file?.src && !tooltipEdit.overlayVisible"
+									class="viewPhoto"
+							>
+								<mat-icon
+										style="
+                    color: white;
+                    width: 18px;
+                    height: 18px;
+                    display: block;
+                    align-self: center;
+                  "
+										svgIcon="pictureLines"
+								></mat-icon>
+							</button>
+
+							<div
+									[style.border-width]="file.selcetFile ? '3px' : '1px'"
+									style="
+                  border: 1px solid #0f2d61;
+                  position: absolute;
+                  z-index: 99;
+                  right: 0;
+                  left: 0;
+                  bottom: 0;
+                  top: 0;
+                  width: 100%;
+                  height: 100%;
+                "
+							></div>
+
+							<ng-container
+									*ngIf="
+                  files.length < 50 ||
+                    (files.length >= 50 &&
+                      scroll.scrollTop + scroll.offsetHeight >
+                        element.offsetTop - 50 &&
+                      !(scroll.scrollTop > element.offsetTop + 155));
+                  else loading
+                "
+							>
+								<ng-container *ngIf="file?.src; else templateNull">
+									<iframe
+											*ngIf="file?.src && file.type === 'application/pdf'"
+											[src]="file?.src"
+
+											allowfullscreen="false"
+											height="221"
+											type="application/pdf"
+
+											width="100%"
+									>
+									</iframe>
+
+									<img
+											*ngIf="file.type !== 'application/pdf'"
+											[src]="file?.src"
+											style="height: 221px; width: auto; "
+
+									/>
+								</ng-container>
+								<ng-template #templateNull>
+									<div style="text-align: center">
+										קובץ גדול לא ניתן לעשות תצוגה מקדימה
+									</div>
+								</ng-template>
+							</ng-container>
+							<ng-template #loading>
+								<div
+										class="loaderPercent"
+										style="background: transparent; opacity: 1"
+								>
+									<div class="circle"></div>
+								</div>
+							</ng-template>
+						</div>
+						<p-overlayPanel
+								#tooltipEdit
+								[style]="{
+																																							'margin-left':      (eventRclickUpload && eventRclickUpload.layerX
+                    ? eventRclickUpload.layerX - 68
+                    : 0) +
+                  'px',
+							'margin-top':   (eventRclickUpload && eventRclickUpload.layerY
+                    ? eventRclickUpload.layerY
+                    : 0) +
+                  'px'
+
+              }"
+								appendTo="body"
+								styleClass="tooltip-bottom tooltip-acc-deviation tooltip-daily-edit overlayPanelRightClick"
+						>
+							<ul style="width: 136px">
+								<li (click)="deleteFile(i); tooltipEdit.hide()">
+									<div
+											class="p-helper-clearfix"
+											style="display: flex; display: -ms-flexbox"
+									>
+										<div
+												style="
+                        align-self: center;
+                        flex: 20;
+                        -ms-flex: 20;
+                        display: flex;
+                        align-items: center;
+                      "
+										>
+											<mat-icon style="width: 16px" svgIcon="trash"></mat-icon>
+										</div>
+										<p
+												class="nameAcc"
+												style="
+                        overflow: hidden;
+                        white-space: nowrap;
+                        text-overflow: ellipsis;
+                        flex: 85;
+                        -ms-flex: 85;
+                      "
+										>
+											מחיקה
+										</p>
+									</div>
+								</li>
+							</ul>
+						</p-overlayPanel>
+					</li>
+
+					<li
+							(click)="file.merge = !file.merge"
+							*ngIf="
+              finishedPrepareFiles &&
+              files.length > 1 &&
+              !isLast &&
+              !keepOriginFiles
+            "
+							[class.active]="!file.merge"
+							[pTooltip]="
+              file.merge ? 'לחיצה תפצל את המסמכים' : 'לחיצה תאחד את המסמכים'
+            "
+							class="splitLine"
+							tooltipPosition="bottom"
+					>
+						<div class="line">&nbsp;</div>
+						<div class="splitIcon">&#9986;</div>
+					</li>
+
+					<li #element *ngIf="!finishedPrepareFiles">
+						<p #actualTarget>{{ i + 1 }}</p>
+						<div class="image">
+							<div
+									[style.border-width]="file.selcetFile ? '3px' : '1px'"
+									style="
+                  border: 1px solid #0f2d61;
+                  position: absolute;
+                  z-index: 99;
+                  right: 0;
+                  left: 0;
+                  bottom: 0;
+                  top: 0;
+                  width: 100%;
+                  height: 100%;
+                "
+							></div>
+
+							<ng-container
+									*ngIf="
+                  files.length < 50 ||
+                    (files.length >= 50 &&
+                      scroll.scrollTop + scroll.offsetHeight >
+                        element.offsetTop - 50 &&
+                      !(scroll.scrollTop > element.offsetTop + 155));
+                  else loading
+                "
+							>
+								<ng-container *ngIf="file?.src; else templateNull">
+									<iframe
+											*ngIf="file?.src && file.type === 'application/pdf'"
+											[src]="file?.src"
+
+											allowfullscreen="false"
+											height="221"
+											type="application/pdf"
+
+											width="100%"
+									>
+									</iframe>
+
+									<img
+											*ngIf="file.type !== 'application/pdf'"
+											[src]="file?.src"
+											style="height: 221px; width: auto; "
+
+									/>
+								</ng-container>
+								<ng-template #templateNull>
+									<div style="text-align: center">
+										קובץ גדול לא ניתן לעשות תצוגה מקדימה
+									</div>
+								</ng-template>
+							</ng-container>
+							<ng-template #loading>
+								<div
+										class="loaderPercent"
+										style="background: transparent; opacity: 1"
+								>
+									<div class="circle"></div>
+								</div>
+							</ng-template>
+						</div>
+					</li>
+				</ng-container>
+			</ul>
+		</div>
+
+		<p-footer [ngStyle]="{ display: !finishedPrepareFiles ? 'flex' : 'block' }">
+			<ng-container
+					*ngIf="
+          !finishedPrepareFiles ||
+            (finishedPrepareFiles &&
+              filesForContainerCompleted === 0 &&
+              filesForContainer !== filesForContainerCompleted);
+          else filesBtnsTemp
+        "
+			>
+				<button
+						(click)="resetAndReturnToMainUploadScreen()"
+						*ngIf="!finishedPrepareFiles"
+						class="button-dark"
+				>
+					{{ 'actions.cancellation' | translate }}
+				</button>
+				<button
+						(click)="resetAndReturnToMainUploadScreen()"
+						*ngIf="finishedPrepareFiles"
+						class="button-dark"
+						style="margin: 0 auto; display: block"
+				>
+					הבנתי
+				</button>
+			</ng-container>
+			<ng-template #filesBtnsTemp>
+				<div
+						*ngIf="finishedPrepareFiles"
+						class="filesBtns"
+						style="display: flex; justify-content: space-between"
+				>
+					<div>
+						<h1>לאן תרצו להעביר את החשבוניות/ מסמכים?</h1>
+						<p>
+							<strong> יצירת פקודת יומן - </strong>
+							חשבוניות לקליטה בהנה”ח (יגיעו אוטומטית לארכיון)
+						</p>
+						<p>
+							<strong> העברה לארכיון - </strong>
+							מסמכים אחרים שתרצו לשמור באחת מתיקיות הארכיון
+						</p>
+					</div>
+
+					<div class="btnActions app-folders-selector-up">
+						<button
+								(click)="resetAndReturnToMainUploadScreen()"
+								class="button-link"
+						>
+							{{ 'actions.cancellation' | translate }}
+						</button>
+
+						<button
+								(click)="fileViewerOpen('WAIT_FOR_CARE')"
+								[disabled]="!files.length"
+						>
+							יצירת פקודת יומן
+						</button>
+
+						<app-folders-selector
+								(selectedFolderChange)="
+                folderSelect = $event; fileViewerOpen('ARCHIVE')
+              "
+								[disabled]="!files.length"
+								[isDD]="true"
+								[selectedCompanyId]="companySelect?.companyId"
+						>
+						</app-folders-selector>
+					</div>
+				</div>
+			</ng-template>
+		</p-footer>
+	</p-dialog>
+
+	<p-dialog
+			#fileViewerModal
+			(visibleChange)="resetReloadAndReturnToMain()"
+			[draggable]="false"
+			[modal]="true"
+			[resizable]="false"
+			[visible]="(fileUploadProgress && uploadFilesOcrPopUp && uploadFilesOcrPopUp.visible)"
+			appendTo="body"
+			styleClass="fileViewer"
+	>
+		<p-header>
+			<h1>המסמכים שעולים לפענוח במערכת</h1>
+		</p-header>
+		<p #header class="text">
+			<ng-container *ngIf="numberOfFilesForUpload > 1">
+        <span>
+          <strong style="font-weight: 700">
+            {{ numberOfFilesForUpload }}
+	          מסמכים
+          </strong>
+          עוברים כרגע תהליך פיענוח במערכת. על כל מסמך שעלה יופיע אייקון
+        </span>
+
+				<span
+						style="
+            position: relative;
+            width: 40px;
+            display: inline-block;
+            height: auto;
+          "
+				>
+          <img
+		          class="file_ready_icon"
+		          height="37"
+		          ngSrc="/assets/images/file_ready.png"
+		          style="position: absolute; top: -25px; right: 0"
+		          width="37"
+          />
+        </span>
+
+				<span> ניתן ללחוץ על מסמך זה ולהתחיל לעבוד עליו. </span>
+				<br/>
+				<span style="font-weight: 600">
+          אם ברצונכם להתחיל לעבוד על מסמכים אחרים ניתן ללחוץ על אייקון x שממוקם
+          למעלה בצד שמאל והפופ אפ ייסגר, תמשיכו לקבל
+          <br/>
+          עדכונים על עליית המסמכים במסך עצמו
+        </span>
+			</ng-container>
+
+			<ng-container *ngIf="numberOfFilesForUpload === 1">
+        <span>
+          <strong style="font-weight: 700"> המסמך </strong>
+
+          עובר כרגע תהליך פיענוח במערכת. כאשר המסמך יעלה יופיע אייקון
+        </span>
+
+				<span
+						style="
+            position: relative;
+            width: 40px;
+            display: inline-block;
+            height: auto;
+          "
+				>
+          <img
+		          class="file_ready_icon"
+		          height="37"
+		          ngSrc="/assets/images/file_ready.png"
+		          style="position: absolute; top: -25px; right: 0"
+		          width="37"
+          />
+        </span>
+
+				<span> ניתן ללחוץ על מסמך זה ולהתחיל לעבוד עליו. </span>
+				<br/>
+				<span style="font-weight: 600">
+          אם ברצונכם להתחיל לעבוד על מסמכים אחרים ניתן ללחוץ על אייקון איקס
+          שממוקם למעלה בצד שמאל והפופ אפ ייסגר, תמשיכו לקבל
+          <br/>
+          עדכונים על עליית המסמך במסך עצמו
+        </span>
+			</ng-container>
+		</p>
+
+		<div #container class="container-photos">
+			<ul
+					#scroll
+					[style.maxHeight.px]="this.maxSizeHeightModal"
+					class="scroll-chrome"
+			>
+				<ng-container
+						*ngFor="
+            let file of files;
+            let i = index;
+            last as isLast;
+            trackBy: trackByIndex
+          "
+				>
+					<li #element>
+						<p #actualTarget>{{ i + 1 }}</p>
+						<div class="image">
+							<div
+									[style.border-width]="'1px'"
+									style="
+                  border: 1px solid #0f2d61;
+                  position: absolute;
+                  z-index: 99;
+                  right: 0;
+                  left: 0;
+                  bottom: 0;
+                  top: 0;
+                  width: 100%;
+                  height: 100%;
+                "
+							></div>
+							<div *ngIf="!file.ready" class="viewPhotoLoader notReady">
+								<div style="justify-content: center">
+									<img
+											height="116"
+											src="/assets/images/loader_upload_files.gif"
+											width="98"
+									/>
+								</div>
+							</div>
+
+							<button
+									(click)="goToInvoiceLocal(file)"
+									*ngIf="file.ready"
+									class="viewPhotoLoader"
+							>
+								<div style="justify-content: center">
+									<img
+											height="48"
+											src="/assets/images/file_ready.png"
+											style="cursor: pointer; width: 48px; height: 48px"
+											width="48"
+									/>
+								</div>
+							</button>
+							<ng-container
+									*ngIf="
+                  files.length < 50 ||
+                    (files.length >= 50 &&
+                      scroll.scrollTop + scroll.offsetHeight >
+                        element.offsetTop - 50 &&
+                      !(scroll.scrollTop > element.offsetTop + 155));
+                  else loading
+                "
+							>
+								<ng-container *ngIf="file?.src; else templateNull">
+									<iframe
+											*ngIf="file?.src && file.type === 'application/pdf'"
+											[src]="file?.src"
+
+											allowfullscreen="false"
+											height="221"
+											type="application/pdf"
+
+											width="100%"
+									>
+									</iframe>
+
+									<img
+											*ngIf="file.type !== 'application/pdf'"
+											[src]="file?.src"
+											style="height: 221px; width: auto; "
+
+									/>
+								</ng-container>
+								<ng-template #templateNull>
+									<div style="text-align: center">
+										קובץ גדול לא ניתן לעשות תצוגה מקדימה
+									</div>
+								</ng-template>
+							</ng-container>
+							<ng-template #loading>
+								<div
+										class="loaderPercent"
+										style="background: transparent; opacity: 1"
+								>
+									<div class="circle"></div>
+								</div>
+							</ng-template>
+						</div>
+					</li>
+				</ng-container>
+			</ul>
+		</div>
+	</p-dialog>
+</ng-container>
+
+<ng-container *ngIf="scanFilesOcrPopUp && scanFilesOcrPopUp?.visible">
+	<p-dialog
+			(onHide)="unload()"
+			(visibleChange)="scanFilesOcrPopUp.visible = $event"
+			[closable]="true"
+			[closeOnEscape]="true"
+			[draggable]="false"
+			[modal]="true"
+			[resizable]="false"
+			[visible]="(scanFilesOcrPopUp?.visible)"
+			appendTo="body"
+			styleClass="scanFilesOcrPopUp"
+	>
+		<div [appScrollHeight]="55" class="scroll-chrome flexCenter">
+			<div>
+				<div *ngIf="showScanLoader" class="loader">
+					<div class="circle"></div>
+				</div>
+				<h1>
+					סריקת מסמכים לחברת
+					<b>{{ companySelect?.companyName }}</b>
+				</h1>
+
+				<div>
+					<figure
+							style="margin: 75px auto 75px auto; width: auto; text-align: center"
+					>
+						<img fill ngSrc="/assets/images/iconScan.png"
+						     style="height: auto; width: auto; position: relative;"/>
+						<figcaption style="margin-top: 15px">
+							יש לוודא שהמסמכים נמצאים בסורק שנבחר וללחוץ סריקה
+						</figcaption>
+					</figure>
+				</div>
+
+				<div *ngIf="files.length" class="alertSuc">
+					<img fill ngSrc="/assets/images/tick.png"
+					     style="height: auto; width: auto; position: relative;margin-left: 5px"/>
+
+					{{ files.length }}
+					מסמכים נסרקו בהצלחה
+				</div>
+				<div *ngIf="!finishedScan" class="filesBtns">
+					<div class="btnActions scanBtn">
+						<div style="margin-left: 25px; display: flex; align-items: center">
+							<i
+									(click)="refreshScanList()"
+									*ngIf="dynamsoftReady"
+									class="fas fa-sync-alt"
+									pTooltip="רענון רשימת סורקים"
+									style="cursor: pointer; margin-left: 10px"
+									tooltipPosition="top"
+							></i>
+							<p-dropdown
+									[(ngModel)]="selectedScan"
+
+									[dropdownIcon]="'p-dropdown-icon'"
+									[options]="scanerList"
+									optionLabel="name"
+									placeholder="בחרו סורק"
+							>
+							</p-dropdown>
+						</div>
+
+						<button
+								(click)="AcquireImage()"
+								[disabled]="!scanerList.length || !selectedScan"
+						>
+							{{ files.length ? 'המשך סריקה' : 'סריקה' }}
+						</button>
+
+						<button (click)="finishedScan = true" *ngIf="files.length">
+							סיום סריקה
+						</button>
+					</div>
+				</div>
+				<div *ngIf="finishedScan" class="filesBtns">
+					<h1>לאן תרצו להעביר את החשבוניות/ מסמכים?</h1>
+					<p>
+						<strong> יצירת פקודת יומן - </strong>
+						חשבוניות לקליטה בהנה”ח (יגיעו אוטומטית לארכיון)
+					</p>
+					<p>
+						<strong> העברה לארכיון - </strong>
+						מסמכים אחרים שתרצו לשמור באחת מתיקיות הארכיון
+					</p>
+					<div class="btnActions">
+						<button
+								(click)="fileViewerOpen('WAIT_FOR_CARE')"
+								[disabled]="!files.length"
+						>
+							יצירת פקודת יומן
+						</button>
+
+						<app-folders-selector
+								(selectedFolderChange)="
+                folderSelect = $event; fileViewerOpen('ARCHIVE')
+              "
+								[disabled]="!files.length"
+								[isDD]="true"
+								[selectedCompanyId]="
+                userService.appData?.userData?.companySelect?.companyId
+              "
+						>
+						</app-folders-selector>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<p-dialog
+				#fileViewerModal2
+				(visibleChange)="resetAndReturnToMainUploadScreen()"
+				[draggable]="false"
+				[modal]="true"
+				[resizable]="false"
+				[visible]="(fileViewer && scanFilesOcrPopUp && scanFilesOcrPopUp.visible)"
+				appendTo="body"
+				styleClass="fileViewer"
+		>
+			<p-header>
+				<h1>המסמכים שעלו</h1>
+			</p-header>
+
+			<p class="text">
+				<ng-container *ngIf="files.length > 1">
+					{{ files.length }}
+					מסמכים נסרקו מפוצלים, ניתן לבצע איחוד ע"י לחיצה על המספריים, בנוסף
+					ניתן לשנות את מיקום המסמך ע"י גרירה.
+					<br/>
+				</ng-container>
+				למחיקה יש ללחוץ קליק ימני בעכבר על המסמך, ניתן לסמן כמה מסמכים ביחד ע"י
+				לחיצה על ctrl ולמחוק אותם.
+			</p>
+			<div #container class="container-photos">
+				<ul
+						[style.maxHeight.px]="this.maxSizeHeightModal"
+						class="scroll-chrome"
+				>
+					<ng-container
+							*ngFor="
+              let file of files;
+              let i = index;
+              last as isLast;
+              trackBy: trackByIndex
+            "
+					>
+						<li
+								#element
+								(click)="onKeydownMain($event, file, i)"
+								(contextmenu)="
+                onScrollCubes(i);
+                eventRclickUpload = $event;
+                tooltipEdit.toggle($event, actualTarget);
+                onRightClick($event)
+              "
+								(dragover)="allowDrop($event, i)"
+								(dragstart)="onDragStart($event, i)"
+								(drop)="onDrop($event, i)"
+								draggable="true"
+						>
+							<div *ngIf="onDragOverIndex == i" class="drop-zone"></div>
+							<p #actualTarget>{{ i + 1 }}</p>
+							<div class="image">
+								<button
+										(click)="
+                    showDocumentStorageDataViewAsGrid(file?.src, false, false);
+                    $event.stopPropagation()
+                  "
+										(contextmenu)="
+                    onScrollCubes(i);
+                    onRightClickInside($event);
+                    tooltipEdit.toggle($event, actualTarget);
+                    $event.stopPropagation();
+                    onRightClick($event)
+                  "
+										*ngIf="!tooltipEdit.overlayVisible"
+										class="viewPhoto"
+								>
+									<mat-icon
+											style="
+                      color: white;
+                      width: 18px;
+                      height: 18px;
+                      display: block;
+                      align-self: center;
+                    "
+											svgIcon="pictureLines"
+									></mat-icon>
+								</button>
+
+								<div
+										[style.border-width]="file.selcetFile ? '3px' : '1px'"
+										style="
+                    border: 1px solid #0f2d61;
+                    position: absolute;
+                    z-index: 99;
+                    right: 0;
+                    left: 0;
+                    bottom: 0;
+                    top: 0;
+                    width: 100%;
+                    height: 100%;
+                  "
+								></div>
+
+								<img [src]="file?.src"
+								     style="height: 221px; width: auto; "
+								/>
+							</div>
+
+							<p-overlayPanel
+									#tooltipEdit
+									[style]="{
+																																								'margin-left':      (eventRclickUpload && eventRclickUpload.layerX
+                    ? eventRclickUpload.layerX - 68
+                    : 0) +
+                  'px',
+							'margin-top':   (eventRclickUpload && eventRclickUpload.layerY
+                    ? eventRclickUpload.layerY
+                    : 0) +
+                  'px'
+
+                }"
+									appendTo="body"
+									styleClass="tooltip-bottom tooltip-acc-deviation tooltip-daily-edit overlayPanelRightClick"
+							>
+								<ul style="width: 185px">
+									<li (click)="deleteScanFile(i); tooltipEdit.hide()">
+										<div
+												class="p-helper-clearfix"
+												style="display: flex; display: -ms-flexbox"
+										>
+											<div
+													style="
+                          align-self: center;
+                          flex: 20;
+                          -ms-flex: 20;
+                          display: flex;
+                          align-items: center;
+                        "
+											>
+												<mat-icon
+														style="width: 16px"
+														svgIcon="trash"
+												></mat-icon>
+											</div>
+											<p
+													class="nameAcc"
+													style="
+                          overflow: hidden;
+                          white-space: nowrap;
+                          text-overflow: ellipsis;
+                          flex: 85;
+                          -ms-flex: 85;
+                        "
+											>
+												מחיקה
+											</p>
+										</div>
+									</li>
+									<li
+											(click)="
+                      RotateRight(file?.index, file?.idxImg, file?.id);
+                      tooltipEdit.hide()
+                    "
+									>
+										<div
+												class="p-helper-clearfix"
+												style="display: flex; display: -ms-flexbox"
+										>
+											<div
+													style="
+                          align-self: center;
+                          flex: 20;
+                          -ms-flex: 20;
+                          display: flex;
+                          align-items: center;
+                        "
+											>
+												<mat-icon
+														style="
+                            display: block;
+                            font-size: 16px;
+                            width: auto;
+                            height: auto;
+                            line-height: normal;
+                          "
+												>rotate_right
+												</mat-icon>
+											</div>
+											<p
+													class="nameAcc"
+													style="
+                          overflow: hidden;
+                          white-space: nowrap;
+                          text-overflow: ellipsis;
+                          flex: 85;
+                          -ms-flex: 85;
+                        "
+											>
+												סובב ימינה
+											</p>
+										</div>
+									</li>
+									<li
+											(click)="
+                      RotateLeft(file?.index, file?.idxImg, file?.id);
+                      tooltipEdit.hide()
+                    "
+									>
+										<div
+												class="p-helper-clearfix"
+												style="display: flex; display: -ms-flexbox"
+										>
+											<div
+													style="
+                          align-self: center;
+                          flex: 20;
+                          -ms-flex: 20;
+                          display: flex;
+                          align-items: center;
+                        "
+											>
+												<mat-icon
+														style="
+                            display: block;
+                            font-size: 16px;
+                            width: auto;
+                            height: auto;
+                            line-height: normal;
+                          "
+												>rotate_left
+												</mat-icon>
+											</div>
+											<p
+													class="nameAcc"
+													style="
+                          overflow: hidden;
+                          white-space: nowrap;
+                          text-overflow: ellipsis;
+                          flex: 85;
+                          -ms-flex: 85;
+                        "
+											>
+												סובב שמאלה
+											</p>
+										</div>
+									</li>
+									<!--                                    <li (click)="Flip(file?.index, file?.idxImg, file?.id); tooltipEdit.hide();">-->
+									<!--                                        <div class="p-helper-clearfix"-->
+									<!--                                             style="display: flex; display: -ms-flexbox;">-->
+									<!--                                            <div style="align-self: center; flex: 20;-ms-flex:20; display: flex; align-items: center;">-->
+									<!--                                                <mat-icon style="display: block;-->
+									<!--    font-size: 16px;-->
+									<!--    width: auto;-->
+									<!--    height: auto;-->
+									<!--    line-height: normal;">rotate_90_degrees_ccw-->
+									<!--                                                </mat-icon>-->
+									<!--                                            </div>-->
+									<!--                                            <p class="nameAcc"-->
+									<!--                                               style="overflow: hidden; white-space: nowrap; text-overflow: ellipsis;flex: 85;-ms-flex:85;">-->
+									<!--                                                היפוך-->
+									<!--                                            </p>-->
+									<!--                                        </div>-->
+									<!--                                    </li>-->
+									<!--                                    <li (click)="Mirror(file?.index, file?.idxImg, file?.id); tooltipEdit.hide();">-->
+									<!--                                        <div class="p-helper-clearfix"-->
+									<!--                                             style="display: flex; display: -ms-flexbox;">-->
+									<!--                                            <div style="align-self: center; flex: 20;-ms-flex:20; display: flex; align-items: center;">-->
+									<!--                                                <mat-icon style="display: block;-->
+									<!--    font-size: 16px;-->
+									<!--    width: auto;-->
+									<!--    height: auto;-->
+									<!--    line-height: normal;">flip-->
+									<!--                                                </mat-icon>-->
+									<!--                                            </div>-->
+									<!--                                            <p class="nameAcc"-->
+									<!--                                               style="overflow: hidden; white-space: nowrap; text-overflow: ellipsis;flex: 85;-ms-flex:85;">-->
+									<!--                                                היפוך מראה-->
+									<!--                                            </p>-->
+									<!--                                        </div>-->
+									<!--                                    </li>-->
+								</ul>
+							</p-overlayPanel>
+						</li>
+
+						<li
+								(click)="file.merge = !file.merge"
+								*ngIf="files.length > 1 && !isLast"
+								[class.active]="!file.merge"
+								[pTooltip]="
+                file.merge ? 'לחיצה תפצל את המסמכים' : 'לחיצה תאחד את המסמכים'
+              "
+								class="splitLine"
+								tooltipPosition="bottom"
+						>
+							<div class="line">&nbsp;</div>
+							<div class="splitIcon">&#9986;</div>
+						</li>
+					</ng-container>
+				</ul>
+			</div>
+
+			<p-footer>
+				<button
+						(click)="resetAndReturnToMainUploadScreen(true)"
+						class="button-link"
+				>
+					{{ 'actions.cancellation' | translate }}
+				</button>
+				<button (click)="uploadsScan(fileViewer)" class="button-dark">
+					אישור
+				</button>
+			</p-footer>
+		</p-dialog>
+
+		<p-dialog (visibleChange)="fileUploadProgress = false"
+		          [draggable]="false"
+		          [modal]="true"
+		          [resizable]="false"
+		          [visible]="(fileUploadProgress && scanFilesOcrPopUp && scanFilesOcrPopUp.visible)"
+		          appendTo="body"
+		          styleClass="fileUploadProgress"
+		>
+			<p-header>
+				<h1>העלאת הסריקות למערכת</h1>
+			</p-header>
+
+			<div class="files-list scroll-chrome">
+				<div class="single-file">
+					<div class="info">
+						<h4 class="name">
+							<ng-container *ngFor="let file of files; let i = index">
+								<ng-container *ngIf="i === indexFileTimer">
+									{{ file?.name }}
+									{{
+									!progress ||
+									(progress && (progress[file.name].progress | async) < 100)
+											? ''
+											: ' - הועלה בהצלחה'
+									}}
+								</ng-container>
+							</ng-container>
+						</h4>
+
+						<p class="progressText">
+							{{ progressAll ? (progressAll | async) : 0 }}%
+						</p>
+						<app-progress
+								[progress]="progressAll ? (progressAll | async) : 0"
+						></app-progress>
+					</div>
+				</div>
+
+				<!--                <div class="single-file" *ngFor="let file of files; let i = index">-->
+				<!--                    <div class="info">-->
+				<!--                        <h4 class="name">-->
+				<!--                            {{ file?.name }}-->
+				<!--                        </h4>-->
+
+				<!--                        <p class="progressText">-->
+				<!--                            {{ progress ? (progress[file.name].progress | async) : 0}}%-->
+				<!--                        </p>-->
+				<!--                        <app-progress [progress]="progress ? (progress[file.name].progress | async) : 0"></app-progress>-->
+				<!--                    </div>-->
+				<!--                </div>-->
+			</div>
+		</p-dialog>
+
+		<p-dialog (visibleChange)="scanFilesOcrPopUp.visible = false"
+		          [closeOnEscape]="true"
+
+		          [draggable]="false"
+		          [modal]="true"
+		          position="top"
+		          [style]="{'margin-top':'100px'}"
+		          [resizable]="false"
+		          [visible]="(     showProgressScan &&
+        scanFilesOcrPopUp &&
+        scanFilesOcrPopUp.visible &&
+        !stopped)"
+		          appendTo="body"
+		          styleClass="fileUploadProgress scanProgress"
+		>
+			<p-header>
+				<h1>העלאה מסורק</h1>
+			</p-header>
+
+			<div
+					*ngIf="showProgressScan"
+					class="files-list"
+					style="padding-top: 5px; padding-bottom: 10px"
+			>
+				<p
+						*ngIf="
+            !showProgressScan.bScanCompleted &&
+            showProgressScan.result &&
+            showProgressScan.result &&
+            showProgressScan.result.currentPageNum
+          "
+				>
+					סורק מסמך {{ showProgressScan?.result.currentPageNum + 1 }}
+				</p>
+				<p
+						*ngIf="
+            showProgressScan.bScanCompleted &&
+            showProgressScan.result &&
+            showProgressScan.result &&
+            showProgressScan.result.currentPageNum > 0
+          "
+				>
+					הסריקה הסתיימה בהצלחה.
+
+					{{
+					showProgressScan.result.currentPageNum > 1
+							? showProgressScan.result.currentPageNum + ' מסמכים נסרקו'
+							: 'מסמך אחד נסרק'
+					}}
+				</p>
+			</div>
+			<div class="progress-base">
+				<div class="progress-bar"></div>
+			</div>
+			<p-footer style="justify-content: center">
+				<button (click)="stopScan()" class="button-dark">
+					{{ 'actions.cancellation' | translate }}
+				</button>
+			</p-footer>
+		</p-dialog>
+
+		<p-dialog (onHide)="errorString = false"
+		          (visibleChange)="errorString = false"
+		          [closeOnEscape]="true"
+		          [draggable]="false"
+		          [modal]="true"
+		          position="top"
+		          [style]="{'margin-top':'100px'}"
+		          [resizable]="false"
+		          [visible]="(errorString)"
+		          appendTo="body"
+		          styleClass="fileUploadProgress err"
+		>
+			<p-header>
+				<h1>שגיאה</h1>
+			</p-header>
+
+			<h1
+					[innerHTML]="errorString?.errorString"
+					style="padding-top: 10px; text-align: center"
+			></h1>
+			<p
+					*ngIf="errorString?.errorCode"
+					style="padding-top: 5px; direction: ltr; text-align: center"
+			>
+				errorCode: {{ errorString?.errorCode }}
+			</p>
+		</p-dialog>
+	</p-dialog>
+</ng-container>
+
+<p-sidebar
+		(onHide)="hideDocumentStorageData()"
+		[modal]="true"
+		[position]="'left'"
+		[styleClass]="'sidebar-show-imgs'"
+		[visible]="(showDocumentStorageDataFired)"
+		appendTo="body"
+>
+	<div class="zoom-controls-inside">
+		<button (click)="imageScaleNewInvoice = 1" mat-icon-button>
+			<mat-icon class="rotate-90">height</mat-icon>
+		</button>
+		<button (click)="rotateInside(); $event.stopPropagation()" mat-icon-button>
+			<mat-icon style="width: 17px; height: 17px" svgIcon="rotate"></mat-icon>
+		</button>
+		<button (click)="zoomStepInside(1, 'imageScaleNewInvoice')" mat-icon-button>
+			<mat-icon>add</mat-icon>
+		</button>
+		<button
+				(click)="zoomStepInside(-1, 'imageScaleNewInvoice')"
+				mat-icon-button
+		>
+			<mat-icon>remove</mat-icon>
+		</button>
+	</div>
+	<div
+			[ngStyle]="{ height: window['innerHeight'] - 10 + 'px' }"
+			class="scrollbar-dynamic scroll-chrome"
+			style="overflow: auto"
+	>
+		<div *ngIf="!sidebarImgs" class="loader">
+			<div class="circle"></div>
+		</div>
+
+		<div style="margin: 5px 0px; height: 100%">
+			<iframe
+					*ngIf="isPdf"
+					[src]="sidebarImgs"
+
+					allowfullscreen="false"
+					height="100%"
+					scrolling="auto"
+					type="application/pdf"
+					width="100%"
+			>
+			</iframe>
+
+
+			<ng-container *ngIf="!isPdf && !!sidebarImgs">
+				<img
+						*ngIf="isNgSrc"
+						[ngStyle]="{ transform: 'rotate(' + degRotateImg + 'deg)' }"
+						[ngSrc]="sidebarImgs"
+						[style.zoom.%]="imageScaleNewInvoice * 100"
+						style="height: auto; width: 680px; position: relative;display: block; margin: 0 auto" fill
+				/>
+				<img
+						*ngIf="!isNgSrc"
+						[ngStyle]="{ transform: 'rotate(' + degRotateImg + 'deg)' }"
+						[src]="sidebarImgs"
+						[style.zoom.%]="imageScaleNewInvoice * 100"
+						style="height: auto; width: 680px; position: relative;display: block; margin: 0 auto"
+				/>
+			</ng-container>
+		</div>
+	</div>
+</p-sidebar>
+
+<ng-container *ngIf="docToSend.visible">
+	<p-dialog (visibleChange)="docToSend.visible = false"
+	          [modal]="true"
+	          [resizable]="false"
+	          [visible]="(docToSend.visible)"
+	          appendTo="body"
+	          styleClass="ocrDocumentNoteDialog docToRemove"
+	>
+		<p-header>
+			<h1>שליחת הודעה ללקוח</h1>
+		</p-header>
+		<div
+				*ngIf="
+        contactsWithoutAgreement.length &&
+        docToSend.form.value.sendType === 'WHATSAPP'
+      "
+				style="
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        align-content: center;
+        font-size: 16px;
+        background: #fda0a0;
+        height: 70px;
+        color: #022258;
+        margin-top: -20px;
+        margin-left: -20px;
+        margin-right: -20px;
+        padding: 0 20px;
+      "
+		>
+			<p style="font-weight: 700; padding: 0">
+				{{ contactsWithoutAgreementNames }}
+				{{ contactsWithoutAgreement.length === 1 ? ' צריכ/ה ' : ' צריכים ' }}
+				לאשר את הסכם ההתקשרות כדי לקבל ממך הודעות
+			</p>
+
+			<p style="padding: 0">
+        <span
+		        (click)="contactsWithoutAgreementSend()"
+		        style="cursor: pointer; text-decoration: underline"
+        >
+          שליחת הסכם התקשרות
+        </span>
+			</p>
+		</div>
+		<form [formGroup]="docToSend.form" class="docToRemove" novalidate>
+			<div class="rowForm">
+				<label> שליחה באמצעות </label>
+				<div>
+					<p-dropdown
+							(onChange)="changeSendType()"
+							[autoDisplayFirst]="false"
+							[formControl]="docToSend.form.get('sendType')"
+							[options]="sendTypeList"
+							[style]="{ width: '205px' }"
+							appendTo="body"
+							[dropdownIcon]="'p-dropdown-icon'"
+
+							placeholder="בחירה"
+					>
+						<ng-template let-option pTemplate="item">
+							<div>
+								<div
+										(click)="onClickOptionDD(option.disabled, $event)"
+										[ngStyle]="
+                    option.disabled ? { opacity: '0.4', cursor: 'default' } : ''
+                  "
+								>
+									{{ option.label }}
+								</div>
+							</div>
+						</ng-template>
+					</p-dropdown>
+				</div>
+			</div>
+			<div
+					*ngIf="
+          docToSend.form.value.sendType === 'WHATSAPP' ||
+          docToSend.form.value.sendType === 'MAIL'
+        "
+					class="rowForm"
+			>
+				<label style="line-height: normal">
+					איש קשר
+
+					<small
+							(click)="moveToContact()"
+							class="link"
+							style="display: block; line-height: normal; font-size: 13px"
+					>
+						הוספה/עריכה
+					</small>
+				</label>
+				<div>
+					<p-dropdown
+							(onChange)="targetUserIdChanged()"
+							[autoDisplayFirst]="false"
+							[formControl]="docToSend.form.get('targetUserId')"
+							[options]="contacts"
+							[style]="{ width: '205px' }"
+							appendTo="body"
+							[dropdownIcon]="'p-dropdown-icon'"
+
+							placeholder="בחירה"
+					>
+						<ng-template let-option pTemplate="item">
+							<div>
+								<div
+										(click)="onClickOptionDD(option.disabled, $event)"
+										[ngStyle]="
+                    option.disabled ? { opacity: '0.4', cursor: 'default' } : ''
+                  "
+								>
+									{{ option.label }}
+								</div>
+							</div>
+						</ng-template>
+					</p-dropdown>
+				</div>
+			</div>
+			<div *ngIf="docToSend.form.value.sendType === 'MAIL'" class="rowForm">
+				<label> מאת </label>
+				<div>
+					<input
+							[formControl]="docToSend.form.get('from')"
+							placeholder="יש להזין את שם השולח"
+							type="text"
+					/>
+				</div>
+			</div>
+			<div *ngIf="docToSend.form.value.sendType === 'MAIL'" class="rowForm">
+				<label> כתובת מייל השולח </label>
+				<div style="position: relative">
+					<input
+							(keypress)="handleKeyPressHeb1($event)"
+							[formControl]="docToSend.form.get('fromMail')"
+							placeholder="יש להזין את כתובת מייל השולח"
+							type="text"
+					/>
+					<div
+							*ngIf="isHebrew1"
+							class="invalidAlert"
+							style="
+              font-size: 13px;
+              color: red;
+              display: block;
+              line-height: 0px;
+              position: absolute;
+              bottom: -5px;
+              right: 5px;
+            "
+					>
+						כתובת באנגלית
+					</div>
+				</div>
+			</div>
+<!-- 			<div -->
+<!-- 					*ngIf=" -->
+<!--           docToSend.form.value.sendType === 'MAIL' && -->
+<!--           !docToSend.form.value.targetUserId -->
+<!--         " -->
+<!-- 					class="rowForm" -->
+<!-- 			> -->
+<!-- 				<label> כתובת מייל הלקוח </label> -->
+<!-- 				<div style="position: relative"> -->
+<!-- 					&lt;!&ndash;                    appNoNationalCharacters&ndash;&gt; -->
+<!-- 					<input -->
+<!-- 							(keypress)="handleKeyPressHeb2($event)" -->
+<!-- 							[formControl]="docToSend.form.get('toMail')" -->
+<!-- 							placeholder="יש להזין את כתובת מייל הלקוח" -->
+<!-- 							type="text" -->
+<!-- 					/> -->
+<!-- 					<div -->
+<!-- 							*ngIf="isHebrew2" -->
+<!-- 							class="invalidAlert" -->
+<!-- 							style=" -->
+<!--               font-size: 13px; -->
+<!--               color: red; -->
+<!--               display: block; -->
+<!--               line-height: 0px; -->
+<!--               position: absolute; -->
+<!--               bottom: -5px; -->
+<!--               right: 5px; -->
+<!--             " -->
+<!-- 					> -->
+<!-- 						כתובת באנגלית -->
+<!-- 					</div> -->
+<!-- 				</div> -->
+<!-- 			</div> -->
+			<div class="rowForm">
+				<label> נושא </label>
+				<div>
+					<button (click)="op.toggle($event)" class="subjectBtn" type="button">
+						{{ docToSend.form.get('subject')?.value.subjectName }}
+
+						<i
+								[ngStyle]="{
+                transform: op.overlayVisible ? 'rotate(225deg)' : 'rotate(45deg)',
+                'margin-top': op.overlayVisible ? '8px' : '0px'
+              }"
+								style="
+                border-style: solid;
+                border-width: 0 2px 2px 0;
+                content: '';
+                display: inline-block;
+                padding: 3px;
+                vertical-align: middle;
+                width: 7px;
+              "
+						></i>
+					</button>
+					<p-overlayPanel #op appendTo="body" styleClass="overlayPanelSubjects">
+						<p-listbox
+								#plist_subjectsForCompany
+								(onChange)="op.hide()"
+								[dataKey]="'subjectId'"
+								[formControlName]="'subject'"
+								[listStyle]="{ 'max-height': '200px', width: '237px' }"
+								[optionLabel]="'subjectName'"
+								[options]="
+                docToSend.form.value.sendType === 'MAIL'
+                  ? subjectsForCompany
+                  : subjectsForCompanyWhatsApp
+              "
+						>
+							<ng-template let-subjects pTemplate="item">
+								<div>
+									<p>{{ subjects.subjectName }}</p>
+									<div
+											*ngIf="
+                      !subjects.system &&
+                      docToSend.form.value.sendType === 'MAIL'
+                    "
+											style="
+                      display: flex;
+                      width: 50px;
+                      justify-content: space-between;
+                      height: 27px;
+                      position: relative;
+                    "
+									>
+										<div
+												(click)="
+                          createTemplateSubjectModal.show(
+                            true,
+                            subjects.subjectName,
+                            subjects.subjectText,
+                            subjects.subjectId
+                          );
+                          $event.stopPropagation();
+                        "
+												style="
+												    width: 25px;
+													z-index: 9999999;
+													position: absolute;
+													right: 0;
+                        align-self: center;
+                        align-items: center;
+                        justify-content: center;
+                        display: flex;
+                              height: 27px;
+                        flex: 1;
+                      "
+										>
+											<mat-icon
+
+													style="
+																z-index: 9999999;
+                          width: 14px;
+                          height: 15px;
+                          vertical-align: middle;
+                        "
+													svgIcon="pencil"
+											></mat-icon>
+										</div>
+										<div
+												(click)="subjectToRemove = subjects;$event.stopPropagation();"
+												style="
+															z-index: 9999999;
+													position: absolute;
+													    width: 25px;
+                        align-self: center;
+                        left: 0;
+                        align-items: center;
+                        justify-content: center;
+                        display: flex;
+                              height: 27px;
+                        flex: 1;
+                      "
+										>
+											<mat-icon
+													style="
+                          width: 14px;
+                          height: 15px;
+                          vertical-align: middle;
+                        "
+													svgIcon="trash"
+											></mat-icon>
+										</div>
+									</div>
+								</div>
+							</ng-template>
+							<p-footer
+									(click)="createTemplateSubjectModal.show()"
+									*ngIf="docToSend.form.value.sendType === 'MAIL'"
+							>
+								<img
+										src="/assets/images/addFolder.png"
+										style="margin-left: 7px"
+								/>
+
+								יצירת תבנית
+							</p-footer>
+						</p-listbox>
+					</p-overlayPanel>
+				</div>
+			</div>
+			<!--            <div class="rowForm" style="justify-content: flex-start;"-->
+			<!--                 *ngIf="docToSend.form.value.sendType !== 'MAIL'">-->
+			<!--                <p-checkbox checkboxIcon="fa fa-check" label="צירוף תמונת החשבונית"-->
+			<!--                            [formControl]="docToSend.form.get('sendToClient')"-->
+			<!--                            [binary]="true">-->
+			<!--                </p-checkbox>-->
+			<!--            </div>-->
+			<div class="textarea docToRemove_textarea">
+				<label> תוכן ההודעה </label>
+				<div *ngIf="docToSend.form.value.sendType === 'MAIL'">
+          <textarea
+		          [(ngModel)]="docToSend.form.get('subject').value.subjectText"
+		          [class.isWhatsApp]="docToSend.form.value.sendType === 'WHATSAPP'"
+		          [ngModelOptions]="{ standalone: true }"
+		          [placeholder]="'הקלידו הערה'"
+		          class="scroll-chrome"
+		          cols="48"
+		          rows="8"
+          ></textarea>
+
+					<div class="endText">
+						בברכה,
+						<br/>
+						{{
+						docToSend.form.get('from').value
+								? docToSend.form.get('from').value
+								: userService.appData.userData.firstName +
+								' ' +
+								userService.appData.userData.lastName
+						}}
+					</div>
+				</div>
+				<div *ngIf="docToSend.form.value.sendType === 'WHATSAPP'">
+					<p
+							style="
+              float: right;
+              padding-bottom: 0;
+              padding-left: 5px;
+              opacity: 0.5;
+            "
+					>
+						{{ docToSend.form.get('subject').value.subjectTextBasic }}
+					</p>
+					<p
+							(input)="
+              docToSend.form.get('subject').value.subjectText =
+                $event.target.innerHTML
+            "
+							[(ngModel)]="docToSend.form.get('subject').value.subjectText"
+							[ngModelOptions]="{ standalone: true }"
+							contenteditable="true"
+							style="z-index: 9999; position: relative"
+					></p>
+				</div>
+			</div>
+		</form>
+		<p-footer>
+			<button (click)="docToSend.visible = false" class="button-link">
+				{{ 'actions.cancellation' | translate }}
+			</button>
+			<button
+					(click)="docToSend.approve()"
+					[disabled]="
+          (contactsWithoutAgreement.length &&
+            docToSend.form.value.sendType === 'WHATSAPP') ||
+          (docToSend.form.value.sendType === 'MAIL' &&
+            (docToSend.form.get('from').invalid ||
+              docToSend.form.get('fromMail').invalid ||
+              docToSend.form.get('toMail').invalid ||
+              !docToSend.form.get('subject').value.subjectText)) ||
+          (docToSend.form.value.sendType !== 'MAIL' &&
+            !docToSend.form.get('subject').value.subjectText)
+        "
+					class="button-dark"
+			>
+				אישור
+			</button>
+		</p-footer>
+	</p-dialog>
+</ng-container>
+
+<ng-container *ngIf="companiesWithoutAgreement">
+	<p-dialog (visibleChange)="companiesWithoutAgreement = false"
+	          [closeOnEscape]="true"
+	          [draggable]="false"
+	          [modal]="true"
+	          position="top"
+	          [style]="{'margin-top':'198px'}"
+	          [resizable]="false"
+	          [visible]="(companiesWithoutAgreement)"
+	          appendTo="body"
+	          styleClass="companiesWithoutAgreement"
+	>
+		<p-header> שליחת הסכם התקשרות</p-header>
+
+		<div>
+			<div style="text-align: center; margin-top: 30px">
+				<i
+						class="fas fa-check-circle"
+						style="color: #73b573; font-size: 70px"
+				></i>
+			</div>
+			<div style="text-align: center; margin-top: 15px; margin-bottom: 30px">
+				<strong style="font-size: 24px; font-weight: 700">
+					ההסכם נשלח בהצלחה!
+				</strong>
+			</div>
+		</div>
+	</p-dialog>
+</ng-container>
+
+<ng-container *ngIf="createTemplateSubjectModal">
+	<p-dialog (visibleChange)="createTemplateSubjectModal.visible = false"
+	          [closeOnEscape]="true"
+	          [draggable]="false"
+	          [modal]="true"
+	          position="top"
+	          [style]="{'margin-top':'198px'}"
+	          [resizable]="false"
+	          [visible]="(createTemplateSubjectModal.visible)"
+	          appendTo="body"
+	          styleClass="createTemplateSubjectModal"
+	>
+		<p-header>{{
+			createTemplateSubjectModal.createType ? 'יצירת תבנית חדשה' : 'עריכת תבנית'
+			}}</p-header>
+
+		<div class="rowForm">
+			<label> נושא התבנית </label>
+			<!--            [placeholder]="createTemplateSubjectModal.createType ?'בחרו שם לתבנית החדשה' : ''"-->
+
+			<div
+					[class.error]="
+          createTemplateSubjectModal.subjectName.dirty &&
+          createTemplateSubjectModal.subjectName.invalid
+        "
+			>
+				<input
+						[formControl]="createTemplateSubjectModal.subjectName"
+						autocomplete="off"
+						name="subjectName"
+						required
+						type="text"
+				/>
+			</div>
+		</div>
+		<div class="textarea">
+			<label> תוכן ההודעה </label>
+			<div
+					[class.error]="
+          createTemplateSubjectModal.subjectText.dirty &&
+          createTemplateSubjectModal.subjectText.invalid
+        "
+			>
+        <textarea
+		        [formControl]="createTemplateSubjectModal.subjectText"
+		        [placeholder]="'הקלידו טקסט חופשי'"
+		        class="scroll-chrome"
+		        cols="48"
+		        required
+		        rows="8"
+		        style="resize: none"
+        ></textarea>
+			</div>
+		</div>
+
+		<p-footer>
+			<button
+					(click)="createTemplateSubjectModal.visible = false"
+					class="button-link"
+			>
+				{{ 'actions.cancellation' | translate }}
+			</button>
+			<button
+					(click)="createTemplateSubjectModal.approve()"
+					[disabled]="
+          createTemplateSubjectModal.subjectName.invalid ||
+          createTemplateSubjectModal.subjectText.invalid
+        "
+					class="button-dark"
+			>
+				{{ 'actions.approve' | translate }}
+			</button>
+		</p-footer>
+	</p-dialog>
+</ng-container>
+
+<ng-container *ngIf="subjectToRemove">
+	<p-dialog (onHide)="subjectToRemove = false"
+	          (visibleChange)="subjectToRemove = false"
+	          [modal]="true"
+	          [resizable]="false"
+	          [visible]="(
+subjectToRemove
+        )"
+	          appendTo="body"
+	          styleClass="ocrExportFileToRemove"
+	>
+		<p-header>
+			<h1>מחיקת תבנית</h1>
+		</p-header>
+
+		<p class="text">
+			התבנית
+			<strong>{{ subjectToRemove?.subjectName }}</strong>
+			תמחק ללא אפשרות שחזור.
+			<br/>
+			האם למחוק?
+		</p>
+
+		<p-footer>
+			<button (click)="subjectToRemove = false" class="button-link">
+				{{ 'actions.cancellation' | translate }}
+			</button>
+			<button (click)="deleteSubject()" class="button-dark">
+				{{ 'actions.approve' | translate }}
+			</button>
+		</p-footer>
+	</p-dialog>
+</ng-container>
+
+<ng-container *ngIf="agreementPopup">
+	<p-dialog (onHide)="agreementPopup = false"
+	          (visibleChange)="agreementPopup = false"
+	          [closeOnEscape]="false"
+	          [draggable]="false"
+	          [modal]="true"
+	          [resizable]="false"
+	          [visible]="(
+agreementPopup
+        )"
+	          appendTo="body"
+	          styleClass="agreementPopup {{
+      agreementPopup.step !== 1 ? 'stepScroll' : ''
+    }}"
+	>
+		<ng-container *ngIf="agreementPopup.step === 1">
+			<p>
+				<strong>
+					{{userService?.appData?.userData?.officeName}}
+				</strong>
+				שלום,
+			</p>
+			<p>
+				בהתאם להוראת הרגולציה לבנקאות פתוחה, הנכם נדרשים
+				<br>
+				לחתום על
+				<span style="margin-left: 2px">
+                    <a class="link" href="https://bizibox.biz/license-agreement-to-accountants-and-tax-consultants/"
+                       target="_blank">הסכם שימוש</a>
+                </span>
+
+				ו<span><a class="link" href="https://bizibox.biz/privacy-policy-bizibox/"
+				          target="_blank">מדיניות הפרטיות</a>
+                                        </span>
+				עם bizibox
+			</p>
+
+			<ul style="margin-top: 15px;">
+				<li>
+					<p-checkbox
+							(onChange)="agreementPopup.agreementConfirmation = !agreementPopup.agreementConfirmation;"
+							[inputId]="'agreementConfirmation'"
+							[ngModel]="agreementPopup.agreementConfirmation"
+							binary="true"
+							checkboxIcon="fa fa-check"
+							styleClass="agreementConfirmationCheck">
+					</p-checkbox>
+					<label [for]="'agreementConfirmation'" style="margin-right: 5px">
+						<p>
+							אני
+							{{userService?.appData?.userData?.accountantName}}
+							קראתי, הבנתי
+							ואני מסכים לתנאי השימוש
+							<br>
+							ומדיניות הפרטיות
+							<!--                            <span>-->
+							<!--&lt;!&ndash;(click)="agreementPopup.step = 2; updateAgreementConfirmation(false); $event.stopPropagation()"&ndash;&gt;-->
+							<!--                                <a href="https://bizibox.biz/terms-of-use-scanning-app/" class="link" target="_blank"> הסכם שימוש </a></span>-->
+							<!--                            &lt;!&ndash;(click)="agreementPopup.step = 8; updateAgreementConfirmation(false); $event.stopPropagation()"&ndash;&gt;-->
+							<!--                            ו<span>-->
+							<!--                                            <a href="https://bizibox.biz/privacy-policy-bizibox/" class="link"-->
+							<!--                                               target="_blank">-->
+							<!--                                            מדיניות הפרטיות-->
+							<!--                                        </a>-->
+							<!--                                        </span>-->
+
+							<!--                            ואני מסכים/ה-->
+							<!--                           -->
+							<!--                            לכל התנאים המפורטים בהם-->
+						</p>
+					</label>
+				</li>
+				<!--                <li>-->
+				<!--                    <p-checkbox checkboxIcon="fa fa-check" [inputId]="'sendMarketingInformation'"-->
+				<!--                                binary="true"-->
+				<!--                                [(ngModel)]="agreementPopup.sendMarketingInformation"-->
+				<!--                                (onChange)="agreementPopup.sendMarketingInformation = !agreementPopup.sendMarketingInformation;">-->
+				<!--                    </p-checkbox>-->
+				<!--                    <label [for]="'sendMarketingInformation'" style="margin-right: 5px">-->
+				<!--                        <p>-->
+				<!--                            אשמח לקבל עדכונים על המוצרים-->
+				<!--                        </p>-->
+				<!--                    </label>-->
+				<!--                </li>-->
+			</ul>
+			<div style="
+    margin-right: 103px;
+    margin-top: 20px;
+    display: flex;
+">
+				<!--                <button class="button-link" (click)="agreementPopup = false">-->
+				<!--                    {{'actions.cancellation'| translate}}-->
+				<!--                </button>-->
+				<button (click)="updateAgreementConfirmation(agreementPopup)"
+				        [disabled]="!agreementPopup.agreementConfirmation" class="button-dark"
+				        style="padding: 0; width: 123px; height: 33px;">
+					{{'actions.approve'| translate}}
+				</button>
+			</div>
+		</ng-container>
+		<ng-container *ngIf="agreementPopup.step !== 1">
+			<div class="headerNav">
+				<div>
+					<mat-icon
+							(click)="
+              agreementPopup.step === 2 || agreementPopup.step === 8
+                ? (agreementPopup.step = 1)
+                : (agreementPopup.step = 2)
+            "
+							style="
+              cursor: pointer;
+              width: 16px;
+              height: 16px;
+              display: block;
+              transform: rotate(180deg);
+              align-self: center;
+              margin-top: 0px;
+            "
+							svgIcon="arrowBack"
+					></mat-icon>
+				</div>
+				<div>
+					<button
+							(click)="printScreen()"
+							[matTooltip]="'appWalk.customers.report.printBtn' | translate"
+							matTooltipPosition="above"
+							style="
+              border: none;
+              background: transparent;
+              outline: none;
+              cursor: pointer;
+            "
+					>
+						<img height="17" ngSrc="/assets/images/printIcon.png" width="19"/>
+					</button>
+				</div>
+			</div>
+			<div class="scrollData scroll-chrome">
+				<div #elemToPrint>
+					<style>
+						@page {
+							size: portrait;
+						}
+					</style>
+					<ng-container *ngIf="agreementPopup.step === 2">
+						<p style="text-align: center">
+							<strong>
+								הסכם רישיון שימוש בתוכנת bizibox לרו"ח ויועצי מס
+							</strong>
+						</p>
+						<p style="text-align: center">
+							<strong> [עודכן בתאריך: 8 מרס, 2021] </strong>
+						</p>
+						<p>
+							<strong> הקדמה </strong>
+						</p>
+						<p>
+							• השימוש בתוכנת bizibox ("<strong>התוכנה</strong>") ע"י רו"ח
+							ויועצי מס ("<strong>המשתמש</strong>" או "<strong>אתה</strong>" או
+							"<strong>רו"ח</strong>") מבית חברת איי-פקט בע"מ
+							("<strong>החברה</strong>" או "<strong>אנחנו</strong>"), על
+							השירותים הניתנים ו/או שיינתנו בה ו/או באמצעותה
+							("<strong>השירותים</strong>") כפוף גם ל
+							<span (click)="agreementPopup.step = 3">מדיניות הפרטיות</span>
+
+							,
+							<span (click)="agreementPopup.step = 4"
+							>מדיניות האחריות הכללית</span
+							>
+							ו-
+							<span (click)="agreementPopup.step = 5">
+                מדיניות הקניין הרוחני והשימושים אסורים
+              </span>
+							של החברה (ביחד יקראו תנאי הסכם רישיון זה ומסמכי המדיניות "<strong
+						>תנאי הרישיון</strong
+						>" או "<strong>ההסכם</strong>").
+						</p>
+						<p>
+							• אישור תנאי הרישיון מהווים את הסכמתך לתוכנם ואת והתחייבותך לפעול
+							בהתאם להם. הינך רשאי לסיים את ההסכם והרישיון בכל רגע נתון באמצעות
+							שליחת הודעה לחברה, זאת ע"י "קריאת שרות" הזמינה בתוכנה ו/או באמצעות
+							משלוח מייל לכתובת
+							<span
+							><a
+									class="link"
+									href="mailto:service@bizibox.biz"
+									target="_blank"
+							>service@bizibox.biz</a
+							></span
+							>. לאחר קבלת הודעה כאמור, החברה תחסום את גישתך לתוכנה ותשמיד כל
+							מידע שנאסף באמצעות התוכנה אודותיך ואודות לקוחותיך ונשמר במערכותיה
+							בהתאם לתנאי ההסכם.
+						</p>
+						<p>
+							• השימוש בשירותים שלנו כפוף לתנאי הרישיון העדכניים ביותר. עליך
+							לדעת כי תנאי ההסכם ו/או תנאי השימוש עלולים להשתנות ולכן מומלץ
+							לעיין בהם מפעם לפעם, אנו ניידע אותך ונבקש את הסכמתך לכך בעת
+							שינויים מהותיים, ע"י "פופ-אפ" אשר יופיע בעת הכניסה לתוכנה.
+						</p>
+						<p>
+							• האמור בתנאים אלה מתייחס באופן שווה לנשים וגברים, והשימוש בלשון
+							זכר נעשה מטעמי נוחות. כותרות הסעיפים בהסכם זה נועדו לנוחות בלבד,
+							ואין להתחשב בהן בפרשנות תנאי הרישיון.
+						</p>
+						<p>
+							<strong> רישיון השימוש בתוכנה </strong>
+						</p>
+						<p>
+							• במהלך תקופת ההסכם, בכפוף לכל דין, לנכונות הצהרותיך ומילוי כלל
+							התחייבויותיך על פיו, ובכפוף לתשלום התמורה החודשית כפי שתסוכם בינך
+							לבין החברה, החברה מעניקה לך בזאת רישיון שימוש מוגבל (כלומר,
+							הרישיון ניתן לביטול, בלתי-ייחודי, בלתי ניתן להעברה, ולא ניתן
+							להעניק בו רישיונות-משנה) בתוכנה, יצוין כי הרישיון מוענק למטרת
+							ניהול נתוני רו"ח ו/או הנתונים הפיננסיים של לקוחותיך אשר בהם אתה
+							מבצע שימוש במסגרת מתן השירות להם ובהתאם להרשאתם המפורשת לעשות זאת
+							(להלן בהתאמה: "<strong>רישיון השימוש</strong>" וה-
+							"<strong>נתונים</strong>").
+						</p>
+						<p>
+							• מובהר בזאת כי החברה תהיה זכאית להעניק לכל צד שלישי אחר רישיון
+							זהה או דומה לרישיון השימוש לפי שיקול דעתה הבלעדי.
+						</p>
+						<p>
+							<strong> שימוש בתוכנה </strong>
+						</p>
+						<p>
+							• באמצעות טכנולוגיית ליקוט, יבוא, עיבוד וקריאה אוטומטית, התוכנה
+							קולטת את הנתונים הפיננסיים של לקוחותיך (לרבות נתוני כרטיסי אשראי
+							וסליקה, הלוואות, פיקדונות, מסגרות אשראי) (בהתאמה :
+							"<strong>הטכנולוגיה</strong>" ו"<strong>הנתונים</strong>"),
+							ובאמצעות רכיב תוכנה המתממשק לתוכנות הנהלת החשבונות ניתן להציג את
+							הנתונים הפיננסיים ביחס ללקוח או לקבוצת לקוחות ב-Dashboard, ולבצע
+							מגוון פעולות ביחס אליהם, בין השאר: איתור מגמות ושינויים בהשוואה
+							לתקופות קודמות, העברת כלל הנתונים אל תוכנות הנהלת החשבונות באופן
+							אוטומטי ומהיר, הצגת דו"חות חשבונאיים על פי נתוני תוכנות הנה"ח,
+							ויצירת פקודות יומן אוטומטיות זמניות (לתוכנת הנה"ח, לחשבוניות
+							ספקים/לקוחות, לתנועות בדפי הבנק). כן התוכנה מהווה ארכיון ממוחשב
+							לכל המסמכים שהועלו אליה ומאפשרת שימושי BI שונים ( להלן, יחדיו:
+							ה"<strong>תוצרי השימוש</strong>" או "<strong
+						>שימושי התוכנה המותרים</strong
+						>").
+						</p>
+						<p>
+							• יובהר כי חלק מהשירותים יהיו זמינים בעתיד והחברה שומרת לעצמה את
+							הזכות הבלעדית לשנות ו/או לעדכן ו/או להסיר חלק מהשירותים על פי
+							שיקול דעתה הבלעדי.
+						</p>
+						<p>
+							<strong> הרשאת שימוש </strong>
+						</p>
+						<p>
+							• הזנת הנתונים של לקוחותיך בתוכנה והשימוש בהם מותנה בקבלת הרשאה
+							מפורשת לכך. עליך לקבל הרשאה זו מכל לקוח,לפיה הוא מודע ומסכים כי
+							תזין את נתוניו בתוכנה ובהם יעשה שימוש כמפורט במדיניות הפרטיות. על
+							ההרשאה להתקבל בטרם הזנת הנתונים ולהתייחס לאורך כל תקופת שימושך
+							בתוכנה.
+						</p>
+						<p>
+							• בכלל זה עליך להביא לידיעת הלקוח במסגרת קבלת ההרשאה את ההיבטים
+							הבאים: (1) תידרש גישה לנתוני הנהלת החשבונות וכניסה לחשבונות
+							במוסדות הפיננסים. (2) כחלק משימושך בתוכנה תבצע באמצעותה קריאה
+							אוטומטית של הנתונים מהם תפיק תוצרי השימוש. (3) במהלך ו/או במסגרת
+							שימושך בתוכנה יישמר ו/או יבוצע שימוש במידע ע”י החברה בכדי לאפשר
+							למשתמשים את השימוש בתוכנה ואת קבלת השירות מאיתנו, לאפשר לנו לשפר
+							את השירות, להציע שירותים נוספים, לברר ולפעול בכל עניין הנוגע לתנאי
+							שימוש אלו ול<span (click)="agreementPopup.step = 3"
+						>מדיניות הפרטיות</span
+						>, לנתח, לחקור ולבקר עניינים נוספים בקשר לתוכנה ו/או לשירותי החברה
+							ו/או ביחס אליך וללקוחותיך. (4) אנו רשאים להסתייע בשירותי צד ג'
+							בנוגע למידע (כגון גוגל ואמזון), והכול כמפורט בתנאי השימוש הכלליים
+							ובמדיניות הפרטיות. (5) הוראות מדיניות הפרטיות חלות על הלקוח מרגע
+							שנתוניו הוכנסו לתוכנה והלקוח מודע לתוכן מדיניות הפרטיות ומסכים
+							לאמור בה.
+						</p>
+						<p>
+							<strong> הצהרת המשתמש </strong>
+						</p>
+						<p>
+							באישורך והסכמתך לתנאי השימוש, יש בכדי להוות את הצהרתך להיבטים
+							הבאים:
+						</p>
+						<p>
+							• אתה רשאי ומוסמך להתקשר בהסכם זה ולא קיימת כל מניעה חוקית, חוזית
+							או אחרת להתקשרותך בו ו/או בביצוע התחייבויותיך על פיו ו/או ביחס
+							לשימושך בתוכנה.
+						</p>
+						<p>
+							• לא תעשה כל שימוש בלתי מורשה עפ"י הסכם זה. שימושך בתוכנה יעשה רק
+							לצרכי שימושי התוכנה המותרים כהגדרתם, בהתאם לכל דין לרבות חוק הגנת
+							הפרטיות והתקנות מכוחו וכאמור, לאחר קבלת ההרשאה.
+						</p>
+						<p>
+							• אתה תהייה אחראי כלפי החברה ו/או מי מטעמה לכל נזק, הפסד ו/או
+							הוצאה שיגרמו לחברה ו/או מי מטעמה כתוצאה מדרישה ו/או תביעה של צד ג'
+							כלשהו כתוצאה ממעשה ו/או מחדל שלך המהווה הפרה של הסכם זה, ותשפה את
+							החברה ו/או מי מטעמה בגין כל נזק ו/או הוצאה שייגרמו לה.
+						</p>
+						<p>
+							• אתה מתחייב, לחדול מלהשתמש בתוכנה עבור כל לקוח, שחדל להיות לקוח
+							שלך ו/או שביטל את הסכמתו לגבי המשך השימוש בתוכנה. עליך למסור לנו
+							הודעה במקרה בו הלקוח הפסיק או הגביל את הרשאתו.
+						</p>
+						<p>
+							<strong> כללי </strong>
+						</p>
+						<p>
+							• התוכנה מסופקת לך לצורך שיפור תהליכי הנהלת החשבונות וייעול תהליכי
+							העבודה בניהול המשרד ושיפור השירות ללקוחותיך בלבד, ובכל מקרה אינה
+							מיועדת לספק לך או ללקוחותיך שירותי ייעוץ מכל סוג. על כן, השימוש
+							בתוכנה אינו תחליף להפעלת שיקול דעתך העצמאי וכל פעולה ו/או החלטה על
+							בסיס התוכנה היא באחריותך בלבד.
+						</p>
+						<p>
+							• מטעמי אבטחת מידע יידרש שימוש בשם משתמש וסיסמה אישיים של המשתמשים
+							במשרדך, ואתה תנקוט בכל האמצעים הנחוצים לשמירת סודיותם ולאי חשיפתם
+							לצד ג' כלשהו.
+						</p>
+						<p>
+							• תנאי שימוש אלה אינם יוצרים ולא יתפרשו כאילו הם יוצרים יחסי
+							שותפות, מיזם משותף, יחסי עובד-מעסיק, יחסי שליחות או יחסי נותן-מקבל
+							זיכיון בין הצדדים.
+						</p>
+						<p>
+							• סמכות השיפוט הבלעדית לדון בכל מחלוקת ו/או סכסוך בקשר עם תנאי
+							הרישיון תהא נתונה לבית המשפט המוסמך במחוז תל אביב.
+						</p>
+						<p>
+							<strong> פניה לחברה </strong>
+						</p>
+						<p>
+							• במידה ויש לך שאלות נוספות או הערות בנוגע לתנאים, הינך מוזמן
+							לפנות אלינו ע"י קריאת שרות דרך התוכנה,ב"צור קשר" באתר החברה
+							<span
+							><a class="link" href="https://bizibox.biz/" target="_blank"
+							>https://www.bizibox.biz</a
+							></span
+							>
+							ובאמצעות דואר אלקטרוני בכתובת:
+							<span
+							><a
+									class="link"
+									href="mailto:service@bizibox.biz"
+									target="_blank"
+							>service@bizibox.biz</a
+							></span
+							>, אנו נעשה את מירב המאמצים לחזור אליך תוך זמן סביר.
+						</p>
+
+						<ul style="margin-top: 15px">
+							<li>
+								<p-checkbox (onChange)="
+                    agreementPopup.agreementConfirmation =
+                      !agreementPopup.agreementConfirmation
+                  "
+								            [binary]="true"
+								            [inputId]="'agreementConfirmation'"
+								            [ngModel]="agreementPopup.agreementConfirmation"
+								            checkboxIcon="fa fa-check"
+								>
+								</p-checkbox>
+								<label
+										[for]="'agreementConfirmation'"
+										style="margin-right: 5px"
+								>
+									<p>
+										קראתי והבנתי את הסכם שימוש ומדיניות הפרטיות ואני מסכים/ה לכל
+										התאים המפורטים בהם
+									</p>
+								</label>
+							</li>
+							<li>
+								<p-checkbox (onChange)="
+                    agreementPopup.sendMarketingInformation =
+                      !agreementPopup.sendMarketingInformation
+                  "
+								            [binary]="true"
+								            [inputId]="'sendMarketingInformation'"
+								            [ngModel]="agreementPopup.sendMarketingInformation"
+								            checkboxIcon="fa fa-check"
+								>
+								</p-checkbox>
+								<label
+										[for]="'sendMarketingInformation'"
+										style="margin-right: 5px"
+								>
+									<p>אשמח לקבל עדכונים על המוצרים</p>
+								</label>
+							</li>
+						</ul>
+
+						<div
+								style="
+                margin-top: 20px;
+                display: flex;
+                text-align: center;
+                justify-content: center;
+              "
+						>
+							<button
+									(click)="updateAgreementConfirmation(agreementPopup)"
+									[disabled]="!agreementPopup.agreementConfirmation"
+									class="button-dark"
+									style="padding: 0; width: 123px; height: 33px"
+							>
+								{{ 'actions.approve' | translate }}
+							</button>
+						</div>
+					</ng-container>
+
+					<ng-container
+							*ngIf="agreementPopup.step === 3 || agreementPopup.step === 8"
+					>
+						<p style="text-align: center">
+							<strong> מדיניות הפרטיות - תוכנת bizibox לרו"ח ויועצי מס </strong>
+						</p>
+						<p style="text-align: center">
+							<strong> [עודכן בתאריך: 8 מרס, 2021] </strong>
+						</p>
+						<p>
+							כאמור בהסכם רישיון שימוש בתוכנת bizibox לרו"ח ויועצי מס ("<strong
+						>הסכם רו"ח</strong
+						>" ו"<strong>התוכנה</strong>" בהתאמה), השימוש בתוכנה כפוף בין השאר
+							למדיניות הפרטיות, אשר מהווה חלק בלתי נפרד מההסכם. ביטויים אשר לא
+							הוגדרו במדיניות הפרטיות, תהא להם משמעות הזהה למשמעותם בהסכם.
+						</p>
+						<p>
+							<strong>
+								על מי חלה מדיניות הפרטיות בתוכנת bizibox לרו"ח ויועצי מס
+								("המדיניות")?
+							</strong>
+						</p>
+						<p>
+							• הוראות המדיניות חלות על כל משתמש ו/או ישות ו/או לקוח של המשתמש
+							(כהגדרתו בהסכם) אשר נתונים (כהגדרתם בהסכם) אודותיו הוזנו לתוכנה
+							(להלן: "<strong>אתה</strong>").
+						</p>
+						<p>
+							<strong> הסכמה </strong>
+						</p>
+						<p>
+							• מדיניות הפרטיות המפורטת במסמך זה מהווה הסכם משפטי מחייב ואכיף
+							בינך לבין החברה. לפיכך, הנך מתבקש לקרוא אותה בקפידה רבה.
+						</p>
+						<p>
+							• בעצם השימוש המבוצע בנתוניך בתוכנה, בין אם על ידך ובין אם ע"י
+							משתמש לו סיפקת את נתוניך לשם שימוש בתוכנה ("<strong
+						>מורשה מטעמך</strong
+						>"), הינך מצהיר כי קראת והבנת את מדיניות הפרטיות, כי ניתנה לך
+							האפשרות לעיין בה, וכי הינך מסכים לכל התנאים המפורטים בה.
+						</p>
+						<p>
+							• אם אינך מסכים לאי אילו מהתנאים המפורטים להלן, הנך מחויב, באופן
+							מידי, להימנע מכניסה ו/או מכל שימוש בתוכנה בכל אופן ו/או להודיע זאת
+							למורשה מטעמך.
+						</p>
+						<p>
+							<strong>
+								איזה מידע אנחנו רשאים לאסוף במסגרת המידע המוזן לתוכנה?
+							</strong>
+						</p>
+						<p>
+							• הסוג הראשון של מידע שהחברה אוספת הנו מידע אנונימי ואינו מזהה
+							(להלן: "<strong>מידע לא אישי</strong>").
+							<br/>
+							מידע לא אישי הוא כל מידע גלוי אשר זמין לחברה בשעה שהמשתמש משתמש
+							בתוכנה, ואינו מאפשר את זיהויו של אותו משתמש.
+							<br/>
+							מידע לא אישי, כולל מידע אנונימי, טכני וכן מידע שנאסף אודות התנהגות
+							המשתמש, ועשוי לכלול, בין היתר, את פעילותו בתוכנה, את זהות מערכת
+							ההפעלה וסוג מערכת הדפדפן של המשתמש, זרם הקשות (click-stream), שפת
+							המקלדת, רזולוציית מסך המכשיר ממנו מתבצעת הגישה לתוכנה וכיוצ"ב.
+						</p>
+						<p>
+							• הסוג השני של מידע שהחברה אוספת הנו מידע אישי מזהה. ככלל, בהסכמתך
+							למדיניות זו, אתה מאשר לנו להשתמש בכל הנתונים (כהגדרתם בהסכם רו"ח)
+							והמידע אשר בהם אתה ו/או מורשה מטעמך ביצע/ת בהם שימוש מכל סוג
+							במסגרת התוכנה (להלן: "<strong>מידע אישי</strong>"). אינך מחויב
+							למסור מידע אישי. זאת, על-פי חוק
+							<br/>
+							המידע האישי, מאפשר לחברה לזהות באופן אישי את המשתמש ו/או את מושא
+							הנתונים ובדרך כלל נושא אופי פרטי או רגיש.
+
+							<br/>
+							המשתמש (כהגדרתו בהסכם רו"ח) מספק באופן אוטומטי את ה- IP address או
+							כתובת ה-Mac שלו בהתאם לרשת או למכשיר בהם משתמש. מידע זה נאסף על
+							מנת לשפר את חוויית המשתמשים ולמטרות אבטחה.
+							<br/>
+							בנוסף, אנו אוספים מידע אישי הנמסר על-ידי המשתמש באופן מודע ומרצונו
+							החופשי במהלך השימוש בתוכנה. מידע זה כולל בין היתר, את הנתונים
+							(כהגדרתם בהסכם רו"ח כאמור) וכן כל מידע המתקבל עם ו/או עקב השימוש
+							בתוכנה, וכן כל תוצר שהופק באמצעות השימוש בתוכנה, הן ביחס לנתונים
+							והן ע"י שימוש בתוכנה.
+							<br/>
+							כחלק מהשימוש בתוכנה, כל משתמש נדרש בפתיחת חשבון אישי. המידע להלן
+							נאסף במסגרת פתיחת החשבון: (א) כתובת דואר-אלקטרוני; (ב) שם מלא; (ג)
+							מספר ח.פ. (במידה ומדובר בעוסק מורשה); (ד) פרטי חשבון בנק ו/או
+							כרטיסי אשראי; (ה) מספר טלפון סלולארי; (ו) שם משתמש וסיסמת כניסה
+							לפורטל ו/או לתוכנה; (ז) פרטי אמצעי תשלום (המידע נאסף על-ידי ספקי
+							שירותי סליקה כמפורט להלן); ו- (ח) כל הפרמטרים הנדרשים להתחברות לכל
+							מקורות המידע הפיננסי אשר ברשות המשתמש ו/או מורשה מטעמו אשר ברצונו
+							לקשר לתוכנה, לרבות שמות המשתמש והסיסמאות הרלוונטיות לכל אחד
+							ממקורות המידע הפיננסי.
+							<br/>
+							המידע האישי שמסרת לחברה (מלבד נתונים הקשורים להליך עיבוד התשלומים,
+							כפי שמפורט בתנאי השימוש) יישמר במאגר המידע המאובטח של החברה והגישה
+							אליו תהיה מוגבלת בלבד. כמו כן, מידע אודות שימושים ספציפיים שביצעת
+							בתוכנה, ייאסף אף הוא וייחשב כחלק מה-"מידע האישי" כאמור לעיל.
+							<br/>
+							(להלן יחדיו: "<strong>המידע</strong>")
+						</p>
+						<p>
+							• הנך מסכים ומצהיר בזאת (1) שהמידע האישי שהינך מספק לנו, בין אם
+							ישירות ובין אם ע"י מורשה מטעמך, נמסר מתוך הסכמה ורצון חופשי, על
+							מנת שנוכל לספק את שירותי התוכנה (2) הינך מסכים כי נשמור את המידע
+							שסיפקת לנו במאגר מידע (אשר יתכן ויירשם בהתאם לדרישות הדין).
+						</p>
+						<p>
+							<strong> שימוש ב"מידע" </strong>
+						</p>
+						<p>
+							בעת השימוש בתוכנה יכול שיצטבר מידע על נוהגיך, מקום המחשב שלך ועוד.
+							החברה רשאית לשמור את המידע במאגריה. השימוש בנתונים אלה ייעשה רק
+							על-פי מדיניות פרטיות זו או על-פי הוראות כל דין - וזאת למטרות
+							המפורטות להלן:
+						</p>
+						<p>
+							• אנו נשתמש במידע האישי שמסרת ו/או במידע הסטטיסטי שנאסף אצלנו
+							לצורך אספקת השירותים השונים בתוכנה, ולצורך שינוי ושיפור התכנים,
+							השירותים בה כך שיתאימו לאופי המשתמשים, לרבות להעדפותיך ממש, כפי
+							שמשתקף מניתוח המידע הסטטיסטי שנאסף בחברה לגבי הרגלי השימוש של
+							המשתמשים בתוכנה.
+						</p>
+						<p>
+							• המידע שנאסוף, לרבות באמצעות השימוש בקבצי 'עוגיות' (ראה בהמשך),
+							עשוי לזהות אותך בכל פעם שתיכנס לתוכנה ממחשבך הקבוע ו/או ממכשירך
+							הנייד, ו/או שתפעיל את התוכנה באמצעות מחשבך וכך לייתר את הצורך
+							בהזנת שם המשתמש והסיסמא בכניסותיך החוזרות לתוכנה.
+						</p>
+						<p>
+							• אנו נשתמש במידע האישי שמסרת על מנת ליצור איתך קשר בעת הצורך,
+							ו/או, במידה ונתת את הסכמתך לכך ע"י סימון V בתיבה המיועדת לכך,
+							לשלוח אליך מדי פעם פרסומות ו/או הודעות באמצעות דואר אלקטרוני לפי
+							הפרטים שמסרת בעת הרישום, ובהם עדכונים על מבצעים שונים בתוכנה,
+							חידושים בשירותים הניתנים, שוברי הנחה, הודעות ו/או פרסומות שונות,
+							בין מטעם החברה ובין מטעם צדדים שלישיים (להלן: "דברי פרסומת").
+						</p>
+						<p>
+							• אישור ההסכם, המשך השימוש שלך בתוכנה והסכמתך לכללי מדיניות זו
+							מהווים הסכמה לקבלת דברי פרסומת בהתאם להוראות סעיף 30א לחוק התקשורת
+							(בזק ושירותים), התשמ"ב–1982 ובהתאם, כל חומר שנשלח אליך מטעם החברה
+							לא יחשב כספאם מכל סוג ומין אשר מהווה או יש בו כדי להוות הפרה של
+							חוק הספאם. לתשומת לבך כי, בכפוף להוראות הדין, בכל עת תוכל לבחור
+							לחדול מלקבל הודעות דברי פרסומת כאמור על-ידי מחיקת פרטיך מרשימת
+							הדיוור של התוכנה. זאת, באמצעות לחיצה על "הסר" במייל השיווקי.
+						</p>
+						<p>
+							• אנו נשתמש במידע הסטטיסטי שנאסף ו/או נאגר אצלנו לצרכינו הפנימיים,
+							לרבות על מנת לדאוג לתפעול התוכנה ופיתוחה, לשיפור המבנה שלה,
+							השירותים הניתנים בה וכד'. לשם כך, עשויים אנו להסתייע בצדדים
+							שלישיים לצורך איסוף וניתוח המידע הסטטיסטי והאנונימי כדי ללמוד על
+							הרגלי השימוש שלך ושל יתר משתמשי התוכנה באופן שלא יזהה אותך ו/או את
+							יתר המשתמשים באופן אישי.
+						</p>
+						<p>
+							• אנו נשתמש במידע שמסרת או במידע שנאסף אצלנו לכל מטרה אחרת בקשר עם
+							אספקת השירותים המוצעים בתוכנה, לרבות כל מטרה המפורטת במדיניות זו
+							ו/או בתנאי השימוש.
+						</p>
+
+						<p>
+							<strong> איסוף מידע לצרכים סטטיסטיים </strong>
+						</p>
+						<p>
+							• החברה נעזרת בחברות שונות המספקות לה ניתוחים סטטיסטיים אודות
+							השימוש בתוכנה. החברות אוספות ומנתחות מידע על היקף השימוש בתוכנה,
+							תדירות השימוש בהם, מקורות הגישה של המשתמשים אליהם וכיוצא בזה.
+							המידע הנאסף הוא סטטיסטי במהותו, הוא איננו מזהה אותך אישית והוא
+							נועד לצרכי ניתוח, מחקר ובקרה.
+						</p>
+						<p>
+							<strong> מסירת מידע ואיסוף המידע </strong>
+						</p>
+						<p>
+							• המידע שמסרת לחברה ישמר במאגר המידע של החברה (להלן: "<strong
+						>מאגר המידע</strong
+						>").
+						</p>
+						<p>
+							• בעת מסירת המידע האישי לחברה, עליך להקפיד למסור פרטים נכונים,
+							מלאים ולא שגויים או מסולפים. ככל שיחולו שינויים במידע האישי אותו
+							מסרת בעת הרישום, תתבקש לעדכן את הנתונים בחשבון המשתמש שלך בתוכנה.
+						</p>
+						<p>
+							• המידע הסטטיסטי הנאסף בעת השימוש בתוכנה על-ידינו מכיל רק את המידע
+							הנחוץ לנו לצורך מתן השירותים ושיפורם. אנו נעשה במידע זה שימוש
+							בכפוף למדיניות הפרטיות המפורטת להלן ובהתאם להוראות חוק הגנת
+							הפרטיות, התשמ"א–1981 (להלן: "<strong>חוק הגנת הפרטיות</strong>").
+						</p>
+						<p>
+							•
+							<strong>מידע אישי</strong>
+							– החברה לא תעביר לצדדים שלישיים את המידע האישי אלא באחד המקרים
+							המפורטים להלן:
+							<br/>
+							במידה והחברה ביקשה את רשותך, ואת/ה נתת את הסכמתך המפורשת לכך;
+							<br/>
+							במקרה שתפר את ההסכם;
+							<br/>
+							במידה ויתקבל צו מבית משפט או מכל ערכאה מוסמכת אחרת, המורה לחברה
+							למסור את פרטיך או המידע האישי אודותיך לידי בית המשפט או הערכאה
+							האחרת או לידי צד שלישי כלשהו;
+							<br/>
+							במקרה של מחלוקת משפטית בינך לבין החברה שתחייב את חשיפת פרטיך;
+							<br/>
+							בכל מקרה שהחברה תסבור, כי מסירת המידע נחוצה כדי למנוע נזק חמור
+							לגופך או לרכושך או לגופו או לרכושו של צד שלישי;
+							<br/>
+							החברה תהיה רשאית להעביר את פרטיך והמידע שנאסף בעקבות השימוש שעשית
+							בתוכנה לחברות אחרות הקשורות לחברה, ובלבד שהן תשתמשנה במידע זה רק
+							על-פי הוראות מדיניות פרטיות זו;
+							<br/>
+							במקרה שהחברה תתמזג עם גוף אחר או תמזג את פעילותיה עם פעילותו של צד
+							שלישי - היא תהיה זכאית להעביר לתאגיד החדש העתק מן המידע שנאגר
+							אודותיך או כל מידע סטטיסטי שבידיה, ובלבד שתאגיד זה יקבל על עצמו את
+							הוראות מדיניות פרטיות זו.
+							<br/>
+							במידה ומסירת המידע האישי הינה לעובדים המוסמכים של החברה ו/או
+							לשלוחים מטעמה ו/או לפועלים מטעמה, והיא במידה הנדרשת והחיונית לצורך
+							אספקת השירותים ותפעול הפורטל ו/או האפליקציה;
+							<br/>
+							במידה ומסירת המידע נעשית עפ"י דין.
+						</p>
+						<p>
+							•
+							<strong>מידע סטטיסטי</strong>
+							– החברה עשויה להעביר מידע סטטיסטי, בתמורה או שלא בתמורה, לצדדים
+							שלישיים המצויים איתם בקשרים עסקיים או אחרים, לרבות חברות העוסקות
+							בניתוח מידע סטטיסטי אנונימי כאמור לצורך שיפור השירותים המוצעים
+							בתוכנה, לפי שיקול דעתם הבלעדי של החברה.
+						</p>
+						<p>
+							<strong> "עוגיות" (Cookies) ואחסון מקומי </strong>
+						</p>
+
+						<p>
+							• בשעת השימוש בתוכנה, החברה או צדדים שלישיים עשויים להשתמש
+							בטכנולוגיה אשר מקובלת בתעשייה ומוכרת כ"עוגיות" ו-Flash (או
+							טכנולוגיות דומות), המאחסנת מידע מסוים במחשב של המשתמש, מאפשרת
+							לחברה להפעיל מאפיינים מסוימים באופן אוטומטי, ומשפרת את חווית
+							השימוש של המשתמש בשירותי החברה.
+						</p>
+						<p>
+							• העוגיות נדרשות לצורך תפעול התוכנה באופן שוטף, ובכלל זה, בכדי
+							לאסוף נתונים אודות הרגלי השימוש בתוכנה ולזהות דפוסי משתמשים,
+							לאימות פרטים, להתאמת להעדפותיך האישיות ולצרכי אבטחת מידע.
+						</p>
+						<p>
+							• מרבית דפדפני האינטרנט מאפשרים למשתמשים למחוק עוגיות ממכשיר
+							המשתמש, לחסום קבלה של עוגיות או לקבל התראות לפני אחסונן של עוגיות.
+							עם זאת, יש לשים לב כי אם המשתמש ימחק את העוגיות או לא יאפשר את
+							אחסונן, או אם ישנה את המאפיינים של Flash, החוויה המקוונת של המשתמש
+							דרך הפורטל ו/או האפליקציה תהיה מוגבלת.
+						</p>
+
+						<p>
+							<strong> זכות עיון במידע </strong>
+						</p>
+						<p>
+							• על-פי חוק הגנת הפרטיות, כל אדם זכאי לעיין בעצמו, או על-ידי
+							בא-כוחו שהרשהו בכתב או על-ידי אפוטרופוסו, במידע שעליו המוחזק במאגר
+							מידע. אדם שעיין במידע שעליו ומצא כי אינו נכון, שלם, ברור או
+							מעודכן, רשאי לפנות לבעל מאגר המידע בבקשה לתקן את המידע או למוחקו.
+							אם בעל המאגר סירב למלא בקשה זו, עליו להודיע על כך למבקש באופן
+							ובדרך שנקבעו בתקנות. על סירובו של בעל מאגר מידע לאפשר עיון ועל
+							הודעת סירוב לתקן או למחוק מידע, רשאי מבקש המידע לערער לפני בית
+							משפט השלום באופן ובדרך שנקבעו בתקנות.
+						</p>
+
+						<p>
+							• בנוסף, אם המידע שבמאגרי החברה משמש לצורך פניה אישית אליך, בהתבסס
+							על השתייכותך לקבוצת אוכלוסין, שנקבעה על-פי איפיון אחד או יותר של
+							בני אדם ששמותיהם כלולים במאגר (להלן: "פניה בהצעה מסחרית"), כי אז
+							אתה זכאי על-פי חוק הגנת הפרטיות, לדרוש בכתב שהמידע המתייחס אליך
+							יימחק ממאגר המידע. החברה תימחק במקרה זה מידע הדרוש לה רק כדי לפנות
+							אליך בהצעות מסחריות כאמור לעיל. מידע הדרוש להחברה לשם ניהול עסקיה
+							- לרבות תיעוד פעולות מסחריות ואחרות שביצעת בתוכנה - יוסיף להישמר
+							בהחברה על-פי דין, אך לא ישמש עוד לצורך פניות אליך. אם בתוך 30 יום
+							לא תקבל הודעה כי המידע שנתבקשה החברה למחוק אכן נמחק על-פי סעיף זה,
+							תהיה זכאי לפנות לבית משפט השלום באופן הקבוע בתקנות שמכוח החוק, כדי
+							שיורה להחברה לפעול כאמור.
+						</p>
+
+						<p>
+							<strong> שירותי צדדים שלישיים </strong>
+						</p>
+						<p>
+							• אנו רשאים להשתמש בתוכנה או בשירותי צד שלישי על מנת לאסוף, לאחסן
+							ו/או לעבד את המידע שנאסף במסגרת הפורטל ו/או האפליקציה. אנו עושים
+							מאמצים על מנת להתקשר עם צדדים שלישיים המפרסמים מדיניות פרטיות החלה
+							על איסוף, אחסון, עיבוד ושימוש במידע אישי ובמידע לא אישי. שירותי
+							צדדים שלישיים כוללים, בין היתר, Google Analytics, אשר מדיניות
+							הפרטיות שלה מפורסמת בכתובות:
+							<span
+							><a
+									class="link"
+									href="https://www.google.com/policies/privacy"
+									target="_blank"
+							>https://www.google.com/policies/privacy</a
+							></span
+							>;וחברת קארדקום בע"מ, אשר פרטים בנוגע למדיניות הפרטיות שלה ניתן
+							למצוא בכתובות:
+							<span
+							><a
+									class="link"
+									href="http://www.cardcom.co.il/MainPage.aspx"
+									target="_blank"
+							>http://www.cardcom.co.il/MainPage.aspx</a
+							></span
+							>.
+						</p>
+						<p>
+							• יחד עם זאת, לחברה אין כל שליטה על צדדים שלישיים אלה. אנו ממליצים
+							לך לקרוא את תנאי השימוש ומדיניות הפרטיות של צדדים שלישיים אלה ו/או
+							לפנות אליהם במישרין על מנת שתוכל לדעת אילו סוגי מידע נאספים לגביך.
+						</p>
+						<p>
+							<strong> שינויים במדיניות הפרטיות </strong>
+						</p>
+						<p>
+							• החברה שומרת על זכותה לשנות מדיניות פרטיות זו בכל זמן, ומבקשת
+							מכלל המשתמשים לשוב ולבקר בדף זה לעיתים קרובות ככל האפשר.
+						</p>
+						<p>
+							• אנו נודיע למשתמש על כל שינוי מהותי בתנאי מדיניות פרטיות זו,
+							כאמור בהסכם רו"ח.
+						</p>
+						<p>
+							• שינויים שאינם מהותיים יכנסו לתוקף תוך שבעה (7) ימים ממועד ההודעה
+							כאמור. כל שאר השינויים במדיניות הפרטיות ייכנסו לתוקף באופן מידי
+							והמשך השימוש שלך בתוכנה לאחר תאריך העדכון האחרון יהווה הסכמה שלך
+							לכך שהשינויים יחייבו אותך.
+						</p>
+						<p>
+							<strong> שאלות </strong>
+						</p>
+						<p>
+							• במידה ויש לך שאלות נוספות או הערות בנוגע לתנאים, הינך מוזמן
+							לפנות אלינו ע"י קריאת שרות דרך התוכנה,ב"צור קשר" באתר החברה
+							<span
+							><a class="link" href="https://bizibox.biz/" target="_blank"
+							>https://www.bizibox.biz</a
+							></span
+							>
+							ובאמצעות דואר אלקטרוני בכתובת:
+							<span
+							><a
+									class="link"
+									href="mailto:service@bizibox.biz"
+									target="_blank"
+							>service@bizibox.biz</a
+							></span
+							>, אנו נעשה את מירב המאמצים לחזור אליך תוך זמן סביר.
+						</p>
+
+						<ng-container *ngIf="agreementPopup.step === 8">
+							<ul style="margin-top: 15px">
+								<li>
+									<p-checkbox (onChange)="
+                      agreementPopup.agreementConfirmation =
+                        !agreementPopup.agreementConfirmation
+                    "
+									            [binary]="true"
+									            [inputId]="'agreementConfirmation'"
+									            [ngModel]="agreementPopup.agreementConfirmation"
+									            checkboxIcon="fa fa-check"
+									>
+									</p-checkbox>
+									<label
+											[for]="'agreementConfirmation'"
+											style="margin-right: 5px"
+									>
+										<p>
+											קראתי והבנתי את הסכם שימוש ומדיניות הפרטיות ואני מסכים/ה
+											לכל התאים המפורטים בהם
+										</p>
+									</label>
+								</li>
+								<li>
+									<p-checkbox (onChange)="
+                      agreementPopup.sendMarketingInformation =
+                        !agreementPopup.sendMarketingInformation
+                    "
+									            [binary]="true"
+									            [inputId]="'sendMarketingInformation'"
+									            [ngModel]="agreementPopup.sendMarketingInformation"
+									            checkboxIcon="fa fa-check"
+									>
+									</p-checkbox>
+									<label
+											[for]="'sendMarketingInformation'"
+											style="margin-right: 5px"
+									>
+										<p>אשמח לקבל עדכונים על המוצרים</p>
+									</label>
+								</li>
+							</ul>
+
+							<div
+									style="
+                  margin-top: 20px;
+                  display: flex;
+                  text-align: center;
+                  justify-content: center;
+                "
+							>
+								<button
+										(click)="updateAgreementConfirmation(agreementPopup)"
+										[disabled]="!agreementPopup.agreementConfirmation"
+										class="button-dark"
+										style="padding: 0; width: 123px; height: 33px"
+								>
+									{{ 'actions.approve' | translate }}
+								</button>
+							</div>
+						</ng-container>
+					</ng-container>
+
+					<ng-container *ngIf="agreementPopup.step === 4">
+						<p style="text-align: center">
+							<strong> מדיניות האחריות הכללית </strong>
+						</p>
+						<p style="text-align: center">
+							<strong> [עודכן בתאריך: 11/11/20] </strong>
+						</p>
+						<p>
+							כאמור בהסכם רישיון שימוש בתוכנת bizibox לרו"ח ויועצי מס, השימוש
+							בתוכנה כפוף בין השאר למדיניות האחריות הכללית אשר מהווה חלק בלתי
+							נפרד מ"תנאי הרישיון". ביטויים אשר לא הוגדרו במדיניות זו, תהא להם
+							משמעות הזהה למשמעותם בהסכם.
+						</p>
+						<p>
+							<strong> אנא קרא בעיון את ההוראות הבאות: </strong>
+						</p>
+						<p>
+							• אנו עושים מאמצים על מנת להבטיח שהתוכנה והשירותים יהיו זמינים
+							עבורך באופן רציף ושהשימוש בהם יהיה יעיל ומאובטח ככל הניתן, ככל
+							שתתגלה תקלה הנובעת מהתוכנה עצמה, נפעל לתקנה (יתכן כי באמצעות צד
+							ג'), בכפוף לקבלת הודעת קריאה בסמוך למועד גילוי התקלה ולשיתוף
+							פעולתך בנושא.
+						</p>
+						<p>
+							• עם זאת, השימוש בתוכנה תלוי בגורמים שאינם בשליטת החברה ולכן איננו
+							מתחייבים שהשימוש בה יהיה ללא תקלות ו/או הפרעות ו/או נקי מפגמים
+							ו/או הגבלות אחרות (“תקלה” או “תקלות”) ולכן החברה אינה אחראית
+							להיבטים אלו ולאחרים.
+						</p>
+						<p>
+							• אנא שים לב לתקלות אפשריות העלולות להתרחש במסגרת השימוש בתוכנה:
+						</p>
+						<p>
+							<strong> זמינות </strong>
+						</p>
+						<p>
+							יתכן ומעת לעת לא יתאפשר זמנית השימוש בתוכנה בשל תקלה, עדכון,
+							תחזוקה, תיקון ו/או כל פעולה אחרת, שהחברה, לפי שיקול דעתה הבלעדי
+							תנקוט. החברה שומרת לעצמה את הזכות לתקן, להרחיב, לשפר, לעדכן,
+							לשדרג, לאבטח, להוסיף תכונות חדשות, להסיר ו/או לערוך כל התאמה ו/או
+							שינוי אחר בתוכנה ו/או בכל חלק ממנה, וזאת בלא צורך להודיע על כך
+							מראש.
+						</p>
+						<p>
+							<strong> דיוק וטכנולוגיה </strong>
+						</p>
+						<p>
+							החברה משקיעה מאמצים רבים בהגנה מפני סיכונים הטמונים בטכנולוגיה
+							ומבצעת מאמצים רבים לנאמנות המידע ביחס לנתוני המקור, אך עם זאת,
+							יתכנו אי-דיוקים במידע לאור גורמים רבים. החברה אינה בודקת ואינה
+							אחראית לדיוק, נכונות, אמינות, שלמות ו/או חוקיות הנתונים. הנך מחויב
+							לבדוק את דיוק התוצרים שהופקו בהתאם לנתונים שהכנסת לתוכנה בכל עת.
+							תוצרי השימוש מופקים בהסתמך על הנתונים, כפי שהם (“as is”), על פי
+							זמינותם (“as available”) ונכון למועד בו יובאו, לוקטו ונקראו, ואין
+							בהם כדי לרפא כל טעות שנפלה במקור ו/או להציג נתונים שלא היו זמינים
+							במועד בו לוקטו ו/או להתייחס לכל שינוי שחל בנתונים לאחר מכן. החברה
+							אינה מצהירה, בכל צורה שהיא, כי הנתונים ו/או תוצרי השימוש מדויקים,
+							איכותיים, מקצועיים, נכונים, וכי הם לא כוללים מידע שגוי.
+						</p>
+						<p>
+							<strong> סיכוני אינטרנט </strong>
+						</p>
+						<p>
+							אנו משקיעים מאמצים רבים בהגנה מפני סיכונים הטמונים באינטרנט לרבות
+							סיכוני סייבר.עם זאת, אין ביכולתנו ו/או בשליטתנו למנוע לחלוטין את
+							חדירתן ופעולתן של תוכנות מזיקות וגורמים עוינים כגון וירוסים,
+							באגים, רוגלות, או כל קודי מחשב, קבצים או תוכנות אחרות אשר עשויים
+							לבצע תרמיות והונאות מקוונות וכד'.
+						</p>
+						<p>
+							<strong> הגבלת אחריות </strong>
+						</p>
+						<p>
+							• השירותים בתוכנה ניתנים לך “כמות שהם”(“as is”) , ללא כל התחייבות
+							או אחריות מכל סוג שהוא, באופן מפורש או מכללא, לרבות בין השאר,
+							אחריות בנוגע לסחירות, דיוק, אי הפרה של זכויות קניין רוחני, או
+							להתאמה למטרה מסוימת. הסכמה לתנאי השימוש משמעה שבדקת את התוכנה,
+							ומצאת אותה מתאימה לצרכיך ולמטרותיך.
+						</p>
+						<p>
+							• למן הסר ספק, תוצרי השימוש אינם מהווים ייעוץ כספי, פיננסי,
+							חשבונאי, מיסויי, ייעוץ בהשקעות ו/או כל ייעוץ אחר, ואין בהם משום
+							הצעה, שידול ו/או ייעוץ לביצוע כל עסקה, פעולה ו/או קבלת החלטה
+							כלשהי.
+						</p>
+						<p>
+							• החברה תהיה פטורה מכל אחריות לכל הוצאה, הפסד, נזק ישיר ו/או עקיף,
+							הפסד הכנסה או עסקים, רווח מנוע, פגיעה במוניטין וכיו”ב, שנגרם ו/או
+							אשר עלול להיגרם לך, ללקוחותיך ו/או לכל צד ג' אחר בקשר עם ו/או
+							כתוצאה משימוש בתוכנה ו/או בתוצרי השימוש ו/או בקשר עם הסכם זה.
+						</p>
+						<p>
+							• פטור זה כולל בין השאר, אך לא רק, נזק עקב טעות, תקלות, תפעול שגוי
+							של התוכנה, שיבושים בפעולת אתר/י צד ג' (לרבות מוסדות פיננסים),
+							זמינות ו/או זמני תגובה של המערכות הממוחשבות שלך ו/או של צדדים
+							שלישיים (לרבות מוסדות פיננסים), שיבושים במידע ו/או בנתונים ו/או
+							בקבלתם ו/או באובדנם כתוצאה מתקלות אחרות שאינן בשליטת החברה, ובכלל
+							זה תקלה בליקוט ו/או בהצגת הנתונים בשל שינוי באופן הצגת ו/או
+							בזמינות נתונים אצל מוסד פיננסי כלשהו (למשל בעקבות שינוי באתר
+							אינטרנט ו/או בתצוגת מסך אצל מוסד פיננסי, העשוי להשפיע על תוצרי
+							השימוש), חוסר התאמה ו/או דיוק בין הנתונים המקוריים לאלו אשר נקלטו
+							בתוכנה.
+						</p>
+						<p>
+							• החברה מצהירה, כי לא תוכל לספק את רישיון השימוש ללא הגבלת האחריות
+							כאמור לעיל.
+						</p>
+						<p>
+							• בכל מקרה, שלטענתך, נגרם לך ו/או למי מטעמך נזק בקשר לתוכנה ו/או
+							למידע ו/או לתנאי השימוש, עליך למסור מיד הודעה בכתב לחברה בליווי כל
+							המידע ו/או החומר הרלבנטיים, ולשתף עמנו פעולה בכל עניין בקשר לכך.
+						</p>
+						<p>
+							• הנך מתחייב/ת בזאת לשפות ולפצות את החברה או מי מטעמה, בגין כל
+							נזק, הוצאה או הפסד, ישיר או עקיף, לרבות הוצאות משפט ושכ"ט עורכי
+							דין, שיגרמו לה בקשר עם הפרת תנאי השימוש, או ביצוע כל פעולה אחרת
+							בניגוד לדין בקשר עם האפליקציה והשירותים.
+						</p>
+					</ng-container>
+					<ng-container *ngIf="agreementPopup.step === 5">
+						<p style="text-align: center">
+							<strong> מדיניות קניין רוחני ושימוש אסורים כלליים </strong>
+						</p>
+						<p style="text-align: center">
+							<strong> [עודכן בתאריך: 11/11/20] </strong>
+						</p>
+
+						<p>
+							<strong>
+								כאמור בהסכם רישיון שימוש בתוכנת bizibox לרו"ח ויועצי מס, השימוש
+								בתוכנה כפוף בין השאר למדיניות הקניין הרוחני ושימוש אסורים כלליים
+								אשר מהווה חלק בלתי נפרד מ"תנאי הרישיון". ביטויים אשר לא הוגדרו
+								במדיניות זו, תהא להם משמעות הזהה למשמעותם בהסכם. אנא קרא בעיון
+								את ההוראות הבאות:
+							</strong>
+						</p>
+						<p>
+							<strong> קניין רוחני </strong>
+						</p>
+						<p>
+							• מלוא זכויות הקניין הרוחני בתוכנה הנם בבעלות קניינית מלאה ובלעדית
+							של החברה ו/או בשימושה לפי רישיון שימוש שקיבלה, ולמשתמש בה אין כל
+							זכויות בתוכנה ו/או בכל חלק ממנה.
+						</p>
+						<p>
+							• בין זכויות קניין רוחני אלו, אך לא רק ומבלי להגביל את כלליות
+							האמור: שמות מתחם (בין אם רשומים או ניתנים לרישום ובין אם לאו),
+							חוויית משתמש, תוכן (מילולי, חזותי, קולי, או כל שילוב שלהם או חלק
+							מהם וכן עיצובו, עיבודו, עריכתו ודרך הצגתו), טקסט, מידע, גרפיקה,
+							עיצובים, תמונות, צילומים, וידאו/סרטונים, לוגו, סמלים, ממשקים,
+							הודעות, מוניטין, זכויות יוצרים, סימני מסחר (בין רשומים ובין אם
+							לאו), פטנטים, רעיונות, פיתוחים, קוד מקור, שיטות, תהליכים,
+							טכנולוגיות, כל זכויות דומות באשר הן.
+						</p>
+						<p>
+							• המשתמש בתוכנה לא יעתיק, ישכפל, יפיץ, יפרסם, ישדר, יציג, ישנה,
+							יעבד או יעשה כל שימוש בתוכנה לכל מטרה, שלא הותרה במפורש לפי תנאי
+							השימוש, ובכלל זה כל שימוש העשוי לפגוע בזכויות הקניין הרוחני של
+							החברה ו/או של צד ג' אחר כלשהו.
+						</p>
+						<p>
+							• המשתמש בתוכנה לא יעביר בכל דרך שהיא לצד ג' כלשהו כל ו/או חלק
+							מהקניין הרוחני של החברה ו/או מהתוכנה ו/או מרישיון השימוש שלו, ללא
+							קבלת הסכמה מפורשת מראש ובכתב מאיתנו ובכפוף לה.
+						</p>
+						<p>
+							• אישור תנאי השימוש על ידך מהווה הסכמה לכך שנבצע שימוש מכל סוג
+							וכפי שתמצא לנכון, בכל משוב, המלצה או רעיון מכל סוג שהוא, שתעביר
+							לחברה. בכך מוענק לנו רישיון תמידי, הניתן להעברה ולרישוי משנה,
+							גלובלי, בלתי חוזר, משולם במלואו וללא חיוב בתגמולים להשתמש בכל דרך
+							שהיא באלו.
+						</p>
+						<p>
+							<strong> שימושים אסורים </strong>
+						</p>
+						<p>
+							פעולות מסוימות אסורות בעת השימוש בתוכנה, אי עמידה בהוראות המצוינות
+							להלן אף עשויה לחשוף את המשתמש לחבות אזרחית ו/או פלילית. אינך רשאי
+							(ואינך רשאי להתיר לכל צד שלישי), אלא אם הדבר הותר במפורש על-פי
+							תנאי שימוש אלה:
+						</p>
+						<p>
+							• להשתמש בתוכנה ו/או בתוכן לכל מטרה בלתי חוקית, בלתי מוסרית,
+							בלתי-מורשית ו/או אסורה;
+						</p>
+						<p>
+							• להשתמש בתוכנה ו/או בתוכן למטרות מסחריות או שאינן פרטיות, ללא
+							הסכמה מפורשת של החברה בכתב ומראש;
+						</p>
+						<p>
+							• להסיר או להפריד מהתוכן ו/או מהתוכנה כל הגבלות וסימנים המציינים
+							זכויות קנייניות של החברה או נותני הרישיון שלו, לרבות כל ההודעות
+							הקנייניות המופיעות בהם (כגון ©, TMאו ®), והנך מצהיר ומתחייב בזאת
+							כי תציית לכל החוקים החלים בעניין זה;
+						</p>
+						<p>
+							• להפר ו/או לפגוע בזכויות המשתמשים לפרטיות וזכויות אחרות, או לאסוף
+							מידע אישי מזהה אודות משתמשים ללא הסכמתם המפורשת, בין אם באופן ידני
+							או באמצעות שימוש בכל רובוט, עכביש, זחלן, כל יישום חיפוש או אחזור,
+							או שימוש באמצעי, בתהליך או בשיטה ידניים או אוטומטיים אחרים על מנת
+							להיכנס לתוכנה ולאחזר, לאסוף ו/או לשאוב מידע;
+						</p>
+						<p>
+							• לפגוע או לשבש בפעולת התוכנה או השרתים או הרשתות המאחסנות את
+							התוכנה, או להפר כל חוק, תקנה, דרישה, נוהל או מדיניות של שרתים או
+							רשתות כאמור;
+						</p>
+						<p>
+							• להצהיר הצהרות שקריות או להציג מצג שווא בנוגע לקשר שלך עם כל אדם
+							או גוף, או לציין במפורש או במרומז כי החברה משויכת אליך בכל דרך
+							שהיא, מעניקה חסות, תומכת בך, בתוכנה שלך, בעסקך או בהצהרותיך, או
+							להציג מידע שקרי או לא מדויק אודות התוכנה או החברה;
+						</p>
+						<p>
+							• לבצע כל פעולה היוצרת או העלולה ליצור עומס גדול ובלתי סביר על
+							תשתית התוכנה;
+						</p>
+						<p>
+							• לעקוף את כל האמצעים בהם החברה משתמשת על מנת למנוע או להגביל את
+							הגישה לתוכנה;
+						</p>
+						<p>
+							• להעתיק, לתקן, לשנות, להתאים, למסור, להנגיש, לתרגם, להפנות, לבצע
+							הנדסה חוזרת, להמיר קוד בינארי לקוד פתוח, לעשות דה-קומפילציה, או
+							להפריד כל חלק בתוכן או בתוכנה, או להציג לציבור, ליצור יצירות
+							נגזרות, לבצע, להפיץ, לתת רישיון משנה, לעשות כל שימוש מסחרי, למכור,
+							להשכיר, להעביר, להלוות, לעבד, לאסוף, לשלב עם תוכנה אחרת – של כל
+							חומר הכפוף לזכויות קנייניות של החברה, לרבות קניין רוחני של החברה
+							(כהגדרתו של מונח זה להלן), בכל אופן או בכל אמצעי, אלא אם הדבר הותר
+							במפורש בתנאים ו/או על-פי כל דין החל, המתיר פעולות אלו במפורש;
+						</p>
+						<p>
+							• לעשות כל שימוש בתוכן בכל תוכנה אחר או רשת מחשבים, לכל מטרה, ללא
+							הסכמה של החברה בכתב ומראש;
+						</p>
+						<p>
+							• ליצור סביבת דפדפן, לתחם (frame), ליצור העתק (mirror) או לבצע
+							in-line linkingלכל חלק מהתוכנה ללא הרשאה מפורשת של החברה בכתב
+							ומראש;
+						</p>
+						<p>
+							• למכור, לתת רישיון, או לנצל למטרה מסחרית כלשהי כל שימוש או גישה
+							לתוכנה;
+						</p>
+						<p>
+							• ליצור מאגר מידע על-ידי הורדה ואחסון שיטתיים של כל או חלק מהתוכן;
+						</p>
+						<p>
+							• להעביר או להנגיש בכל דרך אחרת, בקשר לתוכנה או לתוכן, כל וירוס,
+							“תולעת”, סוס טרויאני, באג, רוגלה, נוזקה, או כל קוד מחשב, קובץ או
+							תוכנה אחרים אשר עשויים להזיק, או נועדו להזיק לפעילות של כל חומרה,
+							תוכנה, ציוד תקשורת, קוד או רכיב;
+						</p>
+						<p>• (טו) להפר אי אלו מתנאי הרישיון.</p>
+					</ng-container>
+				</div>
+			</div>
+		</ng-container>
+	</p-dialog>
+</ng-container>
+
+<ng-container *ngIf="showItrotModal">
+	<p-dialog (onHide)="showItrotModal = false"
+	          (visibleChange)="showItrotModal = false"
+	          [closable]="true"
+	          [closeOnEscape]="false"
+	          [draggable]="false"
+	          [modal]="true"
+	          [resizable]="false"
+	          [visible]="(
+showItrotModal
+        )"
+	          appendTo="body"
+	          styleClass="hashAppTokenOtpModal alertAppTokenOtpModal"
+	>
+		<h1 style="padding-bottom: 12px; padding-top: 10px">יתרות לא תואמות</h1>
+
+		<p>
+			נראה כי היתרה בין הבנק לחשבשבת לא תואמות.
+			<br/>
+			על מנת שנוכל לבדוק מה הבעיה יש לגשת אל חשבשבת ולבצע יבוא
+			<br/>
+			בכרטיס הנהלת החשבונות.
+		</p>
+		<p style="margin-top: 7px">
+			<strong> היבוא ישלח לנו נתונים עדכניים החשובים לתיקון הבעיה. </strong>
+
+			<br/>
+
+			<small> (אל דאגה, במידה ונזהה בעיה ביתרות תקבלו עדכון במערכת) </small>
+		</p>
+
+		<div class="p-dialog-footer">
+			<div
+					style="
+          justify-content: center;
+          align-items: center;
+          margin-top: 10px;
+          display: flex;
+        "
+			>
+				<button
+						(click)="showItrotModal = false"
+						class="button-dark"
+						style="width: 180px; height: 33px !important; padding: 0"
+				>
+					הבנתי
+				</button>
+			</div>
+		</div>
+	</p-dialog>
+</ng-container>
+
+<ng-container *ngIf="openCardDDEdit">
+	<p-dialog
+			(visibleChange)="openCardDDEdit = $event"
+			[modal]="true"
+			[style]="{width: 450 + 'px'}"
+			[visible]="(
+openCardDDEdit
+        )"
+			appendTo="body"
+			styleClass="deleteMovementDialog accountsOcrTabDeleteMovementDialog"
+	>
+		<p-header>
+			עדכון כרטיס הנהלת חשבונות לחברת
+			{{ tooltipEditFile.parent.companyName }}
+		</p-header>
+
+		<div style="text-align: center">
+			<!--            <h2>-->
+			<!--                <strong style="-->
+			<!--    font-size: 24px;-->
+			<!--">-->
+			<!--                    שימו לב!-->
+			<!--                </strong>-->
+			<!--            </h2>-->
+			<!--            <p style="-->
+			<!--    margin-bottom: 0;-->
+			<!--">-->
+			<!--                <strong style="-->
+			<!--    line-height: 18px;-->
+			<!--    margin-bottom: 6px;-->
+			<!--">-->
+			<!--                    שינוי כרטיס יגרום למחיקת כל ההיסטוריה מ- bizibox.-->
+			<!--                </strong>-->
+			<!--            </p>-->
+			<!--            <p style="-->
+			<!--    line-height: 18px;-->
+			<!--">-->
+			<!--                יכול לגרום גם לבעיות בהנהלת חשבונות.-->
+			<!--            </p>-->
+			<div style="
+          display: flex;
+          justify-content: center;
+          margin-bottom: 45px;
+          margin-top: 50px;
+        ">
+				<p-dropdown
+						#formDropdowns
+						(onFocus)="clearFilter(formDropdowns)"
+
+						[(ngModel)]="tooltipEditFile.izuCustId"
+						[autoDisplayFirst]="false"
+						[filter]="true"
+
+						[options]="
+       disabledData(userService.appData.userData.companyCustomerDetails
+            ? userService.appData.userData.companyCustomerDetails.banksCards
+            : [])
+        "
+						[scrollHeight]="'135px'"
+						[style]="{ width: '300px' }"
+						appendTo="body"
+						dataKey="custId"
+						emptyFilterMessage="לא נמצאו תוצאות"
+						filterBy="lName,custId,hp"
+						id="custFrom"
+						optionDisabled="disabled"
+						optionLabel="custId"
+						optionValue="custId"
+						panelStyleClass="company-customer-dropdown-panel cardsDD card282"
+						placeholder="בחירה"
+						styleClass="ddInfoCompanyForm"
+				>
+					<ng-template let-item pTemplate="selectedItem">
+          <span
+		          #spanElement
+		          [pTooltip]="item.cartisName"
+		          [tooltipDisabled]="
+              spanElement.offsetWidth >= spanElement.scrollWidth
+            "
+		          style="
+              vertical-align: middle;
+              display: block;
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
+            "
+		          tooltipPosition="top"
+          >{{ item.cartisName }}</span
+          >
+					</ng-template>
+					<ng-template let-item pTemplate="item">
+						<div *ngIf="item.title" class="p-helper-clearfix">
+							<span> כרטיסי בנק: </span>
+						</div>
+						<div *ngIf="!item.title"
+						     [ngStyle]="
+              tooltipEditFile['izuCustIdSrc'] === item.custId ||
+              isExistCustId(item.custId)
+                ? { opacity: '0.4', cursor: 'default' }
+                : ''
+            "
+						     class="p-helper-clearfix"
+						     style="flex-flow: row wrap"
+						>
+							<div
+									[class.bottom9]="item.isLastHistory"
+									class="p-helper-clearfix"
+							>
+								<div>
+									<span class="text-ellipsis">{{ item.cartisName }}</span>
+								</div>
+							</div>
+							<div
+									*ngIf="
+                tooltipEditFile['izuCustIdSrc'] === item.custId ||
+                isExistCustId(item.custId)
+              "
+									style="flex: none; width: 100%; height: auto; line-height: normal"
+							>
+								הכרטיס מוגדר ככרטיס הנה”ח
+							</div>
+							<div
+									*ngIf="item.value?.isLastHistory"
+									style="
+                height: 1px;
+                background: #cacaca;
+                padding: 0;
+                position: absolute;
+                bottom: -6px;
+                right: 0;
+                left: 0;
+                z-index: 999;
+              "
+							></div>
+						</div>
+					</ng-template>
+				</p-dropdown>
+			</div>
+
+		</div>
+		<p-footer>
+			<div style="justify-content: center">
+				<button
+						(click)="openCardDDEdit = false"
+						class="button-white button-link"
+				>
+					{{ 'actions.accountRestore.decline' | translate }}
+				</button>
+				<button
+						(click)="openCardDDEdit = false; changeIzuCustId(tooltipEditFile)"
+						class="button-dark"
+						style="width: 160px"
+				>
+					אישור
+				</button>
+			</div>
+		</p-footer>
+	</p-dialog>
+</ng-container>
+
+<!--BALANCE_DIFFERENCE-->
+<ng-container
+		*ngIf="exportPopupType && exportPopupType.popupType === 'BALANCE_DIFFERENCE'"
+>
+	<p-dialog (onHide)="exportPopupType = false"
+	          (visibleChange)="exportPopupType = false"
+
+	          [draggable]="false"
+	          [modal]="true"
+	          [resizable]="false"
+	          [visible]="(
+      exportPopupType && exportPopupType.popupType === 'BALANCE_DIFFERENCE'
+        )"
+	          appendTo="body"
+	          styleClass="BALANCE_DIFFERENCE {{
+      exportPopupType.biziboxAccountHistory ? 'biziboxAccountHistory_modal' : ''
+    }}"
+	>
+		<p-header
+		>השוואת תנועות -
+			{{ exportPopupType.item.parent.companyName }}
+			- חש -
+			{{ exportPopupType.item.nickname }}
+		</p-header>
+		<ng-container *ngIf="!exportPopupType.biziboxAccountHistory">
+			<div style="width: 673px; margin: 0 auto">
+				<p class="info" style="padding-bottom: 5px">
+					קיים פער תנועות בין החשבשבת לבין ביזיבוקס
+				</p>
+				<div class="data">
+					<div class="table">
+						<div>
+							<p>תאריכי פער</p>
+							<h3>
+								{{
+								exportPopupType.hashBankData
+										? (exportPopupType.hashBankData.date | date: 'd/M/yy')
+										: ''
+								}}
+								{{
+								exportPopupType.hashBankData &&
+								exportPopupType.biziboxTransData
+										? ' - '
+										: ''
+								}}
+								{{
+								exportPopupType.biziboxTransData
+										? (exportPopupType.biziboxTransData.date | date: 'd/M/yy')
+										: ''
+								}}
+							</h3>
+						</div>
+						<div>
+							<p>פעולה אחרונה בחשבשבת</p>
+							<h3>
+								{{
+								exportPopupType.hashBankData
+										? (exportPopupType.hashBankData.date | date: 'd/M/yy')
+										: ''
+								}}
+								<br/>
+								{{
+								exportPopupType.hashBankData
+										? exportPopupType.hashBankData.name
+										: ''
+								}}
+								{{
+								exportPopupType.hashBankData
+										? (exportPopupType.hashBankData.balance | sum: false)
+										: '-'
+								}}
+							</h3>
+						</div>
+						<div>
+							<p>פעולה ראשונה בביזיבוקס</p>
+							<h3>
+								{{
+								exportPopupType.biziboxTransData
+										? (exportPopupType.biziboxTransData.date | date: 'd/M/yy')
+										: ''
+								}}
+								<br/>
+								{{
+								exportPopupType.biziboxTransData
+										? exportPopupType.biziboxTransData.name
+										: ''
+								}}
+								{{
+								exportPopupType.biziboxTransData
+										? (exportPopupType.biziboxTransData.balance | sum: false)
+										: '-'
+								}}
+							</h3>
+						</div>
+					</div>
+					<div class="mark">
+						<div>
+							<p>פער</p>
+							<h3>
+								{{
+								exportPopupType.balanceDifference !== null
+										? '+' + (exportPopupType.balanceDifference | sum: true:true)
+										: '-'
+								}}
+							</h3>
+						</div>
+					</div>
+				</div>
+
+				<div class="select-auto-manual">
+					<p>איך תרצה להתאים את היתרות ?</p>
+					<ul>
+						<li>
+							<div>
+								<p-radioButton
+										[(ngModel)]="exportPopupType['fixTrans']"
+										[value]="'MANUAL'"
+										name="balanceDifferenceAuto"
+								></p-radioButton>
+							</div>
+							<div>
+								<h2>
+									ידנית
+									<img
+											src="/assets/images/balanceDifferenceAutoAlert.png"
+											style="margin-right: 5px; cursor: pointer"
+									/>
+								</h2>
+								<p>אני אשלים את הפער ואנסה לייצא שוב כשאסיים</p>
+							</div>
+						</li>
+						<li>
+							<div>
+								<p-radioButton
+										[(ngModel)]="exportPopupType['fixTrans']"
+										[value]="'ADD_TRANS'"
+										name="balanceDifferenceAuto"
+								></p-radioButton>
+							</div>
+							<div>
+								<h2>הוספת תנועת הפרש</h2>
+								<p>
+									המערכת תוסיף אוטומטית תנועת הפרש בסכום של
+									{{
+									exportPopupType.balanceDifference !== null
+											? (exportPopupType.balanceDifference | sum: false)
+											: '-'
+									}}
+									ש״ח
+								</p>
+							</div>
+						</li>
+					</ul>
+					<p class="link-to-history">
+            <span (click)="exportPopupType.biziboxAccountHistory = true">
+              הצג נתוני ביזיבוקס
+            </span>
+					</p>
+				</div>
+			</div>
+		</ng-container>
+		<p-footer
+				*ngIf="!exportPopupType.biziboxAccountHistory"
+				style="justify-content: center"
+		>
+			<button (click)="exportPopupType = false" class="button-link">
+				{{ 'actions.cancellation' | translate }}
+			</button>
+			<button
+					(click)="nextAfterBALANCEDIFFERENCE()"
+					class="button-dark"
+					style="width: 171px; height: 35px !important; padding: 0"
+			>
+				{{ 'actions.save' | translate }}
+			</button>
+		</p-footer>
+		<ng-container *ngIf="exportPopupType.biziboxAccountHistory">
+			<div class="biziboxAccountHistory" style="width: 690px; margin: 0 auto">
+				<div class="nav">
+					<p class="link-to-history">
+            <span (click)="exportPopupType.biziboxAccountHistory = false">
+              סגור נתוני ביזיבוקס
+            </span>
+					</p>
+					<h1></h1>
+					<button
+							(click)="printHistoryTable()"
+							[matTooltip]="'appWalk.customers.report.printBtn' | translate"
+							matTooltipPosition="above"
+							style="
+              border: none;
+              background: transparent;
+              outline: none;
+              cursor: pointer;
+            "
+					>
+						<img fill ngSrc="/assets/images/to-printer-sm.png"
+						     style="height: auto; width: auto; position: relative;"/>
+					</button>
+				</div>
+				<div #historyToPrint style="margin: 0 auto">
+					<style>
+						@page {
+							size: landscape;
+							margin: 0 auto;
+						}
+					</style>
+					<div style="display: flex; justify-content: space-between">
+						<div *ngIf="exportPopupType.biziboxTransData" style="width: 48%">
+							<h1>נתונים מהבנק</h1>
+							<div class="biziboxAccountHistory_table_balance">
+								<div class="header">
+									<div>תאריך</div>
+									<div>סכום</div>
+									<div>אסמכתא</div>
+									<div>יתרה</div>
+								</div>
+								<div class="row empty">
+									<div class="text-ellipsis"></div>
+									<div class="text-ellipsis ltrNum"></div>
+									<div class="text-ellipsis"></div>
+									<div class="text-ellipsis ltrNum"></div>
+								</div>
+								<div class="row">
+									<div class="text-ellipsis">
+										{{
+										exportPopupType.biziboxTransData.date
+												? (exportPopupType.biziboxTransData.date
+														| date: 'd/M/yy')
+												: '-'
+										}}
+									</div>
+									<div
+											[class.setRedColor]="
+                      exportPopupType.biziboxTransData.total &&
+                      exportPopupType.biziboxTransData.total < 0
+                    "
+											class="text-ellipsis ltrNum"
+									>
+										{{
+										exportPopupType.biziboxTransData.total
+												? (exportPopupType.biziboxTransData.total | sum: false)
+												: '-'
+										}}
+									</div>
+									<div class="text-ellipsis">
+										{{
+										exportPopupType.biziboxTransData.asmachta
+												? exportPopupType.biziboxTransData.asmachta
+												: '-'
+										}}
+									</div>
+									<div
+											[class.setRedColor]="
+                      exportPopupType.biziboxTransData.balance &&
+                      exportPopupType.biziboxTransData.balance < 0
+                    "
+											class="text-ellipsis ltrNum"
+									>
+										{{
+										exportPopupType.biziboxTransData.balance
+												? (exportPopupType.biziboxTransData.balance
+														| sum: false)
+												: '-'
+										}}
+									</div>
+								</div>
+							</div>
+						</div>
+						<div *ngIf="exportPopupType.hashBankData" style="width: 48%">
+							<h1>נתונים מהנה״ח</h1>
+							<div class="biziboxAccountHistory_table_balance">
+								<div class="header">
+									<div>תאריך</div>
+									<div>סכום</div>
+									<div>אסמכתא</div>
+									<div>יתרה</div>
+								</div>
+								<div class="row">
+									<div class="text-ellipsis">
+										{{
+										exportPopupType.hashBankData.date
+												? (exportPopupType.hashBankData.date | date: 'd/M/yy')
+												: '-'
+										}}
+									</div>
+									<div
+											[class.setRedColor]="
+                      exportPopupType.hashBankData.total &&
+                      exportPopupType.hashBankData.total < 0
+                    "
+											class="text-ellipsis ltrNum"
+									>
+										{{
+										exportPopupType.hashBankData.total
+												? (exportPopupType.hashBankData.total | sum: false)
+												: '-'
+										}}
+									</div>
+									<div class="text-ellipsis">
+										{{
+										exportPopupType.hashBankData.asmachta
+												? exportPopupType.hashBankData.asmachta
+												: '-'
+										}}
+									</div>
+									<div
+											[class.setRedColor]="
+                      exportPopupType.hashBankData.balance &&
+                      exportPopupType.hashBankData.balance < 0
+                    "
+											class="text-ellipsis ltrNum"
+									>
+										{{
+										exportPopupType.hashBankData.balance
+												? (exportPopupType.hashBankData.balance | sum: false)
+												: '-'
+										}}
+									</div>
+								</div>
+								<div class="row empty">
+									<div class="text-ellipsis"></div>
+									<div class="text-ellipsis ltrNum"></div>
+									<div class="text-ellipsis"></div>
+									<div class="text-ellipsis ltrNum"></div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</ng-container>
+	</p-dialog>
+</ng-container>
+<!--VALID-->
+<!--<ng-container *ngIf="exportPopupType && exportPopupType.popupType === 'VALID'">-->
+<!--	<p-dialog (onHide)="exportPopupType = false"-->
+<!--	          (visibleChange)="exportPopupType = false"-->
+<!--	          [draggable]="false"-->
+<!--	          [modal]="true"-->
+<!--	          [resizable]="false"-->
+<!--	          [visible]="(-->
+<!--exportPopupType && exportPopupType.popupType === 'VALID'-->
+<!--        )"-->
+<!--	          appendTo="body"-->
+<!--	          styleClass="BALANCE_DIFFERENCE_VALID"-->
+<!--	>-->
+<!--		<p-header-->
+<!--		>השוואת תנועות - -->
+<!--			{{ exportPopupType.item.parent.companyName }}-->
+<!--			- חש - -->
+<!--			{{ exportPopupType.item.nickname }}-->
+<!--		</p-header>-->
+<!--		<div>-->
+<!--			<p class="info" style="padding-bottom: 5px">-->
+<!--				יתרת בנק והנה״ח תואמות ל- -->
+<!--				{{-->
+<!--				exportPopupType.hashBankData-->
+<!--						? (exportPopupType.hashBankData.date | date: 'd/M/yy')-->
+<!--						: ''-->
+<!--				}}-->
+<!--			</p>-->
+<!--			<div class="data">-->
+<!--				<div class="table">-->
+<!--					<div>-->
+<!--						<p>תאריך</p>-->
+<!--						<h3>-->
+<!--							{{-->
+<!--							exportPopupType.hashBankData-->
+<!--									? (exportPopupType.hashBankData.date | date: 'd/M/yy')-->
+<!--									: ''-->
+<!--							}}-->
+<!--						</h3>-->
+<!--					</div>-->
+<!--					<div>-->
+<!--						<p>-->
+<!--							יתרה בבנק-->
+<!--							<i></i>-->
+<!--							<span>-->
+<!--                {{ exportPopupType.item.nickname }}-->
+<!--              </span>-->
+<!--						</p>-->
+<!--						<h3 style="color: #229f88">-->
+<!--							{{-->
+<!--							exportPopupType.biziboxTransData-->
+<!--									? (exportPopupType.biziboxTransData.balance | sum: false)-->
+<!--									: '-'-->
+<!--							}}-->
+<!--						</h3>-->
+<!--					</div>-->
+<!--					<div>-->
+<!--						<p>-->
+<!--							יתרה בהנה״ח-->
+<!--							<i></i>-->
+<!--							<span>-->
+<!--                חשבשבת כ.-->
+<!--								{{ exportPopupType.item.izuCustId.custId }}-->
+<!--              </span>-->
+<!--						</p>-->
+<!--						<h3 style="color: #229f88">-->
+<!--							{{-->
+<!--							exportPopupType.hashBankData-->
+<!--									? (exportPopupType.hashBankData.balance | sum: false)-->
+<!--									: '-'-->
+<!--							}}-->
+<!--						</h3>-->
+<!--					</div>-->
+<!--				</div>-->
+<!--			</div>-->
+<!--			<p class="info" style="padding-bottom: 5px">-->
+<!--				לידיעתכם, היתרות בבנק ובהנהלת חשבונות תואמות.-->
+<!--			</p>-->
+<!--		</div>-->
+<!--		<p-footer style="justify-content: center">-->
+<!--			<button (click)="exportPopupType = false" class="button-link">-->
+<!--				{{ 'actions.cancellation' | translate }}-->
+<!--			</button>-->
+<!--			<button-->
+<!--					(click)="nextAfterVALID()"-->
+<!--					class="button-dark"-->
+<!--					style="width: 171px; height: 35px !important; padding: 0"-->
+<!--			>-->
+<!--				{{ 'actions.save' | translate }}-->
+<!--			</button>-->
+<!--		</p-footer>-->
+<!--	</p-dialog>-->
+<!--</ng-container>-->
+<!--CUST_EMPTY-->
+<ng-container
+		*ngIf="exportPopupType && exportPopupType.popupType === 'CUST_EMPTY'"
+>
+	<p-dialog (onHide)="exportPopupType = false"
+	          (visibleChange)="exportPopupType = false"
+	          [draggable]="false"
+	          [modal]="true"
+	          [resizable]="false"
+	          [visible]="(
+exportPopupType && exportPopupType.popupType === 'CUST_EMPTY'
+        )"
+	          appendTo="body"
+	          styleClass="CONNECT"
+	>
+		<p-header>
+			קישור כרטיס -
+			{{ exportPopupType.item.parent.companyName }}
+
+			{{ exportPopupType.item.nickname }}
+		</p-header>
+
+		<div style="width: 300px; margin: 0 auto">
+			<p
+					class="titleCalendar"
+					style="text-align: center; margin-bottom: 10px; margin-top: 5px"
+			>
+				ייצוא לכרטיס הנה״ח ריק - כרטיס
+				{{ exportPopupType.item.izuCustId.custId }}
+				<br/>
+				<small>
+					נראה שכרטיס הנה״ח ריק,
+					<i> בחרו מתי לייבא נתונים: </i>
+				</small>
+			</p>
+			<div id="date-range-select" style="margin: 0 auto; width: 285px">
+				<div class="scrollers modalConnectTitle">
+					<div class="scroller">
+						<button
+								(click)="
+                current.from.year = current.from.year - 1;
+                currentDates.from = createMonth(current.from)
+              "
+								[disabled]="
+                !mayNavigateTo(current.from.month, current.from.year - 1)
+              "
+						>
+							<i class="fas fa-angle-double-right"></i>
+						</button>
+						<button
+								(click)="
+                stepMonth(current.from, -1);
+                currentDates.from = createMonth(current.from)
+              "
+								[disabled]="
+                !mayNavigateTo(current.from.month - 1, current.from.year)
+              "
+						>
+							<i class="fas fa-angle-right"></i>
+						</button>
+
+						<div>
+							{{ ('langCalendar.monthNames' | translate)[current.from.month] }}
+							{{ current?.from.year }}
+						</div>
+
+						<button
+								(click)="
+                stepMonth(current.from, 1);
+                currentDates.from = createMonth(current.from)
+              "
+								[disabled]="
+                !mayNavigateTo(current.from.month + 1, current.from.year) ||
+                isEqual(current.from.month, current.from.year, current.till) ||
+                isAfter(
+                  current.from.month + 1,
+                  current.from.year,
+                  current.till
+                ) ||
+                (selection.till &&
+                  (isEqual(
+                    current.from.month,
+                    current.from.year,
+                    selection.till
+                  ) ||
+                    isAfter(
+                      current.from.month + 1,
+                      current.from.year,
+                      selection.till
+                    )))
+              "
+						>
+							<i class="fas fa-angle-left"></i>
+						</button>
+						<button
+								(click)="
+                current.from.year = current.from.year + 1;
+                currentDates.from = createMonth(current.from)
+              "
+								[disabled]="
+                !mayNavigateTo(current.from.month, current.from.year + 1) ||
+                isAfter(
+                  current.from.month,
+                  current.from.year + 1,
+                  current.till
+                ) ||
+                (selection.till &&
+                  isAfter(
+                    current.from.month,
+                    current.from.year + 1,
+                    selection.till
+                  ))
+              "
+						>
+							<i class="fas fa-angle-double-left"></i>
+						</button>
+					</div>
+				</div>
+
+				<div class="bodies modalConnect">
+					<div class="days">
+						<div
+								*ngFor="
+                let weekday of 'langCalendar.dayNamesShort' | translate;
+                index as i
+              "
+								class="weekday"
+						>
+							{{ weekday }}
+						</div>
+						<!--                            {{currentDates.from[0]| json}}-->
+						<ng-container *ngFor="let week of currentDates.from">
+							<div
+									*ngFor="let day of week; index as i"
+									[style.visibility]="
+                  current.from.month !== day.month ? 'hidden' : 'visible'
+                "
+							>
+								<div
+										(click)="
+                    selection.from.month = day.month;
+                    selection.from.year = day.year;
+                    selection.from.day = day.day
+                  "
+										[class.disabled]="
+                    current.from.month !== day.month || !day.selectable
+                  "
+										[class.selected]="
+                    selection.from &&
+                    selection.from.year === day.year &&
+                    selection.from.month === day.month &&
+                    selection.from.day === day.day
+                  "
+								>
+									{{ day.day }}
+								</div>
+							</div>
+						</ng-container>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<p-footer style="justify-content: center">
+			<button (click)="exportPopupType = false" class="button-link">
+				{{ 'actions.cancellation' | translate }}
+			</button>
+			<button
+					(click)="nextAfterCUSTEMPTY()"
+					class="button-dark"
+					style="width: 171px; height: 35px !important; padding: 0"
+			>
+				{{ 'actions.save' | translate }}
+			</button>
+		</p-footer>
+	</p-dialog>
+</ng-container>
+<!--NOT_UPDATED-->
+<ng-container
+		*ngIf="exportPopupType && exportPopupType.popupType === 'NOT_UPDATED'"
+>
+	<p-dialog (onHide)="exportPopupType = false"
+	          (visibleChange)="exportPopupType = false"
+	          [closable]="true"
+	          [closeOnEscape]="false"
+	          [draggable]="false"
+	          [modal]="true"
+	          [resizable]="false"
+	          [visible]="(
+exportPopupType && exportPopupType.popupType === 'NOT_UPDATED'
+        )"
+	          appendTo="body"
+	          styleClass="hashAppTokenOtpModal alertAppTokenOtpModal"
+	>
+		<p
+				style="
+        padding-top: 62px;
+        padding-bottom: 37px;
+        font-size: 20px;
+        text-align: center;
+        line-height: normal;
+      "
+		>
+			קיימים בתוכנת הנה”ח נתונים חדשים יותר מנתוני הבנק בביזיבוקס
+			לא קיימים נתונים חדשים לייצוא
+		</p>
+		<div
+				style="
+          justify-content: center;
+          align-items: center;
+          margin-top: 10px;
+          display: flex;
+        "
+		>
+			<button
+					(click)="nextAfterNOT_UPDATED()"
+					class="button-dark"
+					style="width: 180px; height: 33px !important; padding: 0"
+			>
+				הבנתי
+			</button>
+		</div>
+	</p-dialog>
+</ng-container>
+<!--HB_DELETE || LAST_DAY_MATCHED || NO_MATCH-->
+<ng-container
+		*ngIf="
+    exportPopupType &&
+    (exportPopupType.popupType === 'HB_DELETE' ||
+      exportPopupType.popupType === 'LAST_DAY_MATCHED' ||
+      exportPopupType.popupType === 'NO_MATCH')
+  "
+>
+	<p-dialog (onHide)="exportPopupType = false"
+	          (visibleChange)="exportPopupType = false"
+	          [draggable]="false"
+
+	          [modal]="true"
+	          [resizable]="false"
+	          [visible]="(
+     exportPopupType &&
+      (exportPopupType.popupType === 'HB_DELETE' ||
+        exportPopupType.popupType === 'LAST_DAY_MATCHED' ||
+        exportPopupType.popupType === 'NO_MATCH')
+        )"
+	          appendTo="body"
+	          styleClass="BALANCE_DIFFERENCE {{
+      exportPopupType.biziboxAccountHistory ? 'biziboxAccountHistory_modal' : ''
+    }}"
+	>
+		<p-header>
+			<ng-container *ngIf="exportPopupType.popupType === 'LAST_DAY_MATCHED'">
+				ביטול התאמות ומחיקת תנועות -
+				{{ exportPopupType.item.parent.companyName }}
+				-
+				{{ exportPopupType.item.nickname }}
+			</ng-container>
+			<ng-container *ngIf="exportPopupType.popupType === 'HB_DELETE'">
+				מחיקת תנועות -
+				{{ exportPopupType.item.parent.companyName }}
+				-
+				{{ exportPopupType.item.nickname }}
+			</ng-container>
+			<ng-container *ngIf="exportPopupType.popupType === 'NO_MATCH'">
+				השוואת נתונים: הנה"ח - בנק
+			</ng-container>
+		</p-header>
+		<ng-container *ngIf="!exportPopupType.biziboxAccountHistory">
+			<div style="width: 673px; margin: 0 auto">
+				<p class="info" style="padding-bottom: 5px">
+					יתרת בנק והנה״ח לא תואמות ב-
+					{{
+					exportPopupType.hashBankData
+							? (exportPopupType.hashBankData.date | date: 'd/M/yy')
+							: ''
+					}}
+				</p>
+				<div class="data">
+					<div class="table">
+						<div>
+							<p>תאריך</p>
+							<h3>
+								{{
+								exportPopupType.hashBankData
+										? (exportPopupType.hashBankData.date | date: 'd/M/yy')
+										: ''
+								}}
+							</h3>
+						</div>
+						<div>
+							<p>
+								יתרה בבנק
+								<i></i>
+								<span>
+                  {{ exportPopupType.item.nickname }}
+                </span>
+							</p>
+							<h3 style="color: #000000; font-weight: bold">
+								{{
+								exportPopupType.popupType === 'NO_MATCH'
+										? exportPopupType.biziboxTransDataArr &&
+										exportPopupType.biziboxTransDataArr.length
+												? (exportPopupType.biziboxTransDataArr[0].balance
+														| sum: false)
+												: '-'
+										: ((exportPopupType.hashBankData
+												? exportPopupType.hashBankData.balance
+												: 0) -
+										(exportPopupType.balanceDifference !== null
+												? exportPopupType.balanceDifference
+												: 0) | sum: false)
+								}}
+							</h3>
+						</div>
+						<div>
+							<p>
+								יתרה בהנה״ח
+								<i></i>
+								<span>
+                  חשבשבת כ.
+									{{ exportPopupType.item.izuCustId.custId }}
+                </span>
+							</p>
+							<h3
+									style="
+                  color: #df0000;
+                  display: flex;
+                  align-content: center;
+                  align-items: center;
+                  justify-content: center;
+                "
+							>
+								<img
+										src="/assets/images/invalid.png"
+										style="margin-right: 5px"
+								/>
+								{{
+								exportPopupType.hashBankData
+										? (exportPopupType.hashBankData.balance | sum: false)
+										: '-'
+								}}
+							</h3>
+						</div>
+					</div>
+					<div *ngIf="exportPopupType.popupType !== 'NO_MATCH'" class="mark">
+						<div>
+							<p>פער</p>
+							<h3>
+								{{
+								exportPopupType.balanceDifference !== null
+										? '+' + (exportPopupType.balanceDifference | sum: true:true)
+										: '-'
+								}}
+							</h3>
+						</div>
+					</div>
+				</div>
+				<p
+						*ngIf="exportPopupType.popupType === 'HB_DELETE'"
+						class="info"
+						style="padding-bottom: 5px"
+				>
+					נמצאה יתרה תואמת בתאריך
+					{{
+					exportPopupType.oldestTransIzuDate
+							? (exportPopupType.oldestTransIzuDate | date: 'dd/MM/yyyy')
+							: ''
+					}}
+					.
+					<br/>
+					לא קיימות תנועות מותאמות לאחר תנועה זו.
+					<br/>
+					ניתן למחוק תנועות אלו ללא חשש.
+
+					<br/>
+					<br/>
+
+					<span style="text-decoration: underline">
+            מחיקת התנועות בחשבשבת:
+          </span>
+					<br/>
+					<ng-container
+							*ngIf="
+              exportPopupType.hashBankDataArr &&
+              exportPopupType.hashBankDataArr.length === 1
+            "
+					>
+						תנועה מספר
+						{{
+						exportPopupType.hashBankDataArr &&
+						exportPopupType.hashBankDataArr[0].uniqueId
+								? exportPopupType.hashBankDataArr[0].uniqueId
+								: '-'
+						}}
+						בתאריך
+						{{
+						exportPopupType.hashBankDataArr
+								? (exportPopupType.hashBankDataArr[0].date | date: 'dd/MM/yyyy')
+								: '-'
+						}}
+					</ng-container>
+					<ng-container
+							*ngIf="
+              exportPopupType.hashBankDataArr &&
+              exportPopupType.hashBankDataArr.length > 1
+            "
+					>
+						מתנועה מספר
+						{{
+						exportPopupType.hashBankDataArr &&
+						exportPopupType.hashBankDataArr[0].uniqueId
+								? exportPopupType.hashBankDataArr[0].uniqueId
+								: '-'
+						}}
+						בתאריך
+						{{
+						exportPopupType.hashBankDataArr
+								? (exportPopupType.hashBankDataArr[0].date | date: 'dd/MM/yyyy')
+								: '-'
+						}}
+						עד תנועה מספר
+						{{
+						exportPopupType.hashBankDataArr &&
+						exportPopupType.hashBankDataArr[
+						exportPopupType.hashBankDataArr.length - 1
+								].uniqueId
+								? exportPopupType.hashBankDataArr[
+								exportPopupType.hashBankDataArr.length - 1
+										].uniqueId
+								: '-'
+						}}
+						בתאריך
+						{{
+						exportPopupType.hashBankDataArr &&
+						exportPopupType.hashBankDataArr[
+						exportPopupType.hashBankDataArr.length - 1
+								].date
+								? (exportPopupType.hashBankDataArr[
+								exportPopupType.hashBankDataArr.length - 1
+										].date | date: 'dd/MM/yyyy')
+								: '-'
+						}}
+					</ng-container>
+
+					<!--                    כל התנועות לאחר יתרה זו אינן מותאמות וניתן לבצע מחיקה על ידי לחיצה בחשבשבת על פעולות נוספות > מחיקת-->
+					<!--                    קבוצת תנועות:-->
+					<!--                    מתנועה-->
+					<!--                    {{exportPopupType.hashBankDataArr && exportPopupType.hashBankDataArr[0].uniqueId ? exportPopupType.hashBankDataArr[0].uniqueId : '-'}}-->
+					<!--                    בתאריך-->
+					<!--                    {{exportPopupType.hashBankData.date ? (exportPopupType.hashBankData.date| date:'dd/MM/yyyy') : '-'}}-->
+					<!--                    עד תנועה-->
+					<!--                    {{exportPopupType.hashBankDataArr && exportPopupType.hashBankDataArr[exportPopupType.hashBankDataArr.length - 1].uniqueId ? exportPopupType.hashBankDataArr[exportPopupType.hashBankDataArr.length - 1].uniqueId : '-'}}-->
+					<!--                    מתאריך-->
+					<!--                    {{exportPopupType.hashBankDataArr && exportPopupType.hashBankDataArr[exportPopupType.hashBankDataArr.length - 1].date ? (exportPopupType.hashBankDataArr[exportPopupType.hashBankDataArr.length - 1].date | date:'dd/MM/yyyy') : '-'}}-->
+				</p>
+				<p
+						*ngIf="exportPopupType.popupType === 'LAST_DAY_MATCHED'"
+						class="info"
+						style="padding-bottom: 5px"
+				>
+          <span style="font-weight: bold">
+            נמצאה יתרה תואמת בתאריך
+	          {{
+	          exportPopupType.oldestTransIzuDate
+			          ? (exportPopupType.oldestTransIzuDate | date: 'dd/MM/yyyy')
+			          : ''
+	          }}
+	          .
+          </span>
+					<br/>
+					קיימות תנועות מותאמות לאחר תנועה זו.
+					<br/>
+					יש למחוק תנועות אלו לאחר ביטול ההתאמה.
+					<br/>
+					<br/>
+					<!--                    <span style="text-decoration: underline">-->
+					<!--                 ביטול ההתאמה בחשבשבת:-->
+					<!--                   </span>-->
+					<!--                    <br>-->
+					<!--                    לחיצה על הנהלת חשבונות > התאמות וניתוח כרטיסים > איתור ומחיקת התאמות בנק > איתור לפי מפתח חשבון:-->
+
+					<!--&lt;!&ndash;                    ניתן למחוק את התאמת התנועות על ידי לחיצה בחשבשבת על הנהלת&ndash;&gt;-->
+					<!--&lt;!&ndash;                    חשבונות > התאמות וניתוח כרטיסים > איתור ומחיקת התאמות בנק > איתור לפי מפתח חשבון:&ndash;&gt;-->
+					<!--                    מהתאמה-->
+					<!--                    {{exportPopupType.hashBankDataArr && exportPopupType.hashBankDataArr[0].uniqueId ? exportPopupType.hashBankDataArr[0].uniqueId : '-'}}-->
+					<!--                    עד התאמה-->
+					<!--                    {{exportPopupType.hashBankDataArr && exportPopupType.hashBankDataArr[exportPopupType.hashBankDataArr.length - 1].uniqueId ? exportPopupType.hashBankDataArr[0].uniqueId : '-'}}-->
+					<!--                    <br>-->
+					<span style="text-decoration: underline">
+            מחיקת התנועות בחשבשבת:
+          </span>
+					<br/>
+
+					<ng-container
+							*ngIf="
+              exportPopupType.hashBankDataArr &&
+              exportPopupType.hashBankDataArr.length === 1
+            "
+					>
+						תנועה מספר
+						{{
+						exportPopupType.hashBankDataArr &&
+						exportPopupType.hashBankDataArr[0].uniqueId
+								? exportPopupType.hashBankDataArr[0].uniqueId
+								: '-'
+						}}
+						בתאריך
+						{{
+						exportPopupType.hashBankDataArr
+								? (exportPopupType.hashBankDataArr[0].date | date: 'dd/MM/yyyy')
+								: '-'
+						}}
+					</ng-container>
+					<ng-container
+							*ngIf="
+              exportPopupType.hashBankDataArr &&
+              exportPopupType.hashBankDataArr.length > 1
+            "
+					>
+						מתנועה מספר
+						{{
+						exportPopupType.hashBankDataArr &&
+						exportPopupType.hashBankDataArr[0].uniqueId
+								? exportPopupType.hashBankDataArr[0].uniqueId
+								: '-'
+						}}
+						בתאריך
+						{{
+						exportPopupType.hashBankDataArr
+								? (exportPopupType.hashBankDataArr[0].date | date: 'dd/MM/yyyy')
+								: '-'
+						}}
+						עד תנועה מספר
+						{{
+						exportPopupType.hashBankDataArr &&
+						exportPopupType.hashBankDataArr[
+						exportPopupType.hashBankDataArr.length - 1
+								].uniqueId
+								? exportPopupType.hashBankDataArr[
+								exportPopupType.hashBankDataArr.length - 1
+										].uniqueId
+								: '-'
+						}}
+						בתאריך
+						{{
+						exportPopupType.hashBankDataArr &&
+						exportPopupType.hashBankDataArr[
+						exportPopupType.hashBankDataArr.length - 1
+								].date
+								? (exportPopupType.hashBankDataArr[
+								exportPopupType.hashBankDataArr.length - 1
+										].date | date: 'dd/MM/yyyy')
+								: '-'
+						}}
+					</ng-container>
+					<br/>
+					תנועות מותאמות לא יימחקו.
+				</p>
+				<div
+						*ngIf="exportPopupType.popupType === 'NO_MATCH' || exportPopupType.popupType === 'LAST_DAY_MATCHED'"
+						class="select-auto-manual"
+				>
+					<p>
+						<span style="font-weight: bold"> לא נמצאו יתרות תואמות </span>
+						<br/>
+						<span style="font-weight: 400">
+              נא וודאו כי כרטיס הנה"ח הנבחר תואם לחשבון הבנק.
+            </span>
+						<br/>
+						<br/>
+						איך תרצה להתאים את היתרות?
+					</p>
+					<ul>
+						<li>
+							<div>
+								<p-radioButton
+										[(ngModel)]="exportPopupType['fixTrans']"
+										[value]="'MANUAL'"
+										name="balanceDifferenceAuto"
+								></p-radioButton>
+							</div>
+							<div>
+								<h2>
+									ידנית
+									<img
+											src="/assets/images/balanceDifferenceAutoAlert.png"
+											style="margin-right: 5px; cursor: pointer"
+									/>
+								</h2>
+								<p>
+									איתור הרשומות הבעייתיות ותיקון ידני שלהן כך שיתרת הסגירה ב-
+									{{
+									exportPopupType.hashBankData
+											? (exportPopupType.hashBankData.date | date: 'd/M/yy')
+											: ''
+									}}
+									תהיה שווה ליתרה בבנק
+									<!--                                    <span style="color: #038ed6;">-->
+									<!--                                                                            -->
+									<!--                                    </span>-->
+								</p>
+							</div>
+						</li>
+						<li>
+							<div>
+								<p-radioButton
+										[(ngModel)]="exportPopupType['fixTrans']"
+										[value]="'ADD_TRANS'"
+										name="balanceDifferenceAuto"
+								></p-radioButton>
+							</div>
+							<div>
+								<h2>אוטומטית</h2>
+								<p>
+									הוספה של פעולת גישור זמנית בסכום של
+									{{
+									exportPopupType.balanceDifference !== null
+											? (exportPopupType.balanceDifference | sum: false)
+											: '-'
+									}}
+									ש״ח
+								</p>
+							</div>
+						</li>
+					</ul>
+					<p class="link-to-history">
+            <span
+		            (click)="exportPopupType.biziboxAccountHistory = true"
+		            style="font-weight: bold; font-size: 17px"
+            >
+              הצג פעולות
+            </span>
+					</p>
+				</div>
+
+				<div
+						*ngIf="exportPopupType.popupType !== 'NO_MATCH'"
+						class="select-auto-manual"
+				>
+					<p class="link-to-history">
+            <span
+		            (click)="exportPopupType.biziboxAccountHistory = true"
+		            style="font-weight: bold; font-size: 17px"
+            >
+              הצג פעולות
+            </span>
+					</p>
+				</div>
+
+				<!--                <p class="info" style="text-align: center"-->
+				<!--                   *ngIf="exportPopupType.popupType === 'NO_MATCH'">-->
+				<!--                    התנתק מאתר הבנק לפני המשך לשלב הבא-->
+				<!--                </p>-->
+			</div>
+		</ng-container>
+
+
+		<p-footer
+				[ngStyle]="{
+        'margin-top':
+          (exportPopupType.popupType === 'HB_DELETE'
+            ? '65'
+            : exportPopupType.popupType === 'NO_MATCH'
+            ? '-14'
+            : '90') + 'px'
+      }"
+				style="justify-content: center"
+		>
+			<ng-container *ngIf="!exportPopupType.biziboxAccountHistory">
+				<button (click)="exportPopupType = false" class="button-link">
+					{{ 'actions.cancellation' | translate }}
+				</button>
+				<button
+						(click)="nextAfterHB_DELETE()"
+						class="button-dark"
+						style="width: 171px; height: 35px !important; padding: 0"
+				>
+					{{ 'actions.approve' | translate }}
+				</button>
+			</ng-container>
+		</p-footer>
+
+
+		<ng-container *ngIf="exportPopupType.biziboxAccountHistory">
+			<div class="biziboxAccountHistory" style="width: 690px; margin: 0 auto">
+				<div class="nav">
+					<p class="link-to-history">
+            <span (click)="exportPopupType.biziboxAccountHistory = false">
+              סגור פעולות
+            </span>
+					</p>
+					<h1></h1>
+					<button
+							(click)="printHistoryTable()"
+							[matTooltip]="'appWalk.customers.report.printBtn' | translate"
+							matTooltipPosition="above"
+							style="
+              border: none;
+              background: transparent;
+              outline: none;
+              cursor: pointer;
+            "
+					>
+						<img fill ngSrc="/assets/images/to-printer-sm.png"
+						     style="height: auto; width: auto; position: relative;"/>
+					</button>
+				</div>
+				<div #historyToPrint2 style="margin: 0 auto">
+					<style>
+						@page {
+							size: landscape;
+							margin: 0 auto;
+						}
+					</style>
+					<div style="display: flex; justify-content: space-between">
+						<div
+								*ngIf="exportPopupType.hashBankDataArrWithTitle"
+								style="width: 100%"
+						>
+							<h1>נתונים מהנה״ח</h1>
+							<div class="biziboxAccountHistory_table_balance tableWithTitles">
+								<div class="header">
+									<div>תאריך</div>
+									<div>תיאור</div>
+									<div>סכום</div>
+									<div>אסמכתא</div>
+									<div>יתרה</div>
+									<div *ngIf="exportPopupType.popupType === 'LAST_DAY_MATCHED'">
+										מספר תנועה
+									</div>
+									<div>מותאמת</div>
+								</div>
+
+								<div
+										[ngStyle]="{'height': exportPopupType.popupType === 'LAST_DAY_MATCHED' ? '405.5px' : exportPopupType.popupType === 'NO_MATCH' ? '321px' : '357px'}"
+										class="body containerList"
+										style="position: relative;"
+
+								>
+									<div *ngIf="loader" class="loader">
+										<div class="circle"></div>
+									</div>
+									<ng-scrollbar
+											class="custom-scrollbar"
+											thumbClass="scrollbar-thumb"
+											trackClass="scrollbar">
+
+										<cdk-virtual-scroll-viewport #virtualScroll itemSize="35" scrollViewport>
+											<div *cdkVirtualFor="let item of exportPopupType.hashBankDataArrWithTitle; let i = index; trackBy: trackByUniqueId">
+												<div
+														(click)="openCol(item); generateArrFilter()"
+														*ngIf="item.title"
+														class="row title"
+												>
+													<div class="text-ellipsis">
+														<i
+																[ngClass]="
+                              item[item.date | date: 'dd/MM/yy'] === true
+                                ? 'fa-angle-up'
+                                : 'fa-angle-down'
+                            "
+																class="fas"
+																style="
+                              padding: 0 6px;
+                              font-size: 18px;
+                              position: absolute;
+                              right: -3px;
+                              top: 8px;
+                            "
+														></i>
+														{{ item.date ? (item.date | date: 'd/M/yy') : '-' }}
+													</div>
+													<div class="text-ellipsis">&nbsp;</div>
+													<div class="text-ellipsis ltrNum">&nbsp;</div>
+													<div class="text-ellipsis">&nbsp;</div>
+													<div
+															[class.setRedColor]="item.balance && item.balance < 0"
+															class="text-ellipsis ltrNum"
+													>
+														{{ item.balance ? (item.balance | sum: false) : '-' }}
+													</div>
+													<div
+															*ngIf="
+                            exportPopupType.popupType === 'LAST_DAY_MATCHED'
+                          "
+													>
+														&nbsp;
+													</div>
+													<div class="text-ellipsis">&nbsp;</div>
+												</div>
+												<div
+														*ngIf="
+                          !item.title &&
+                          item[item.date | date: 'dd/MM/yy'] === true
+                        "
+														class="row empty"
+												>
+													<div class="text-ellipsis">
+														{{ item.date ? (item.date | date: 'd/M/yy') : '-' }}
+													</div>
+													<div class="text-ellipsis">
+														{{ item.name ? item.name : '-' }}
+													</div>
+													<div
+															[class.setRedColor]="item.total && item.total < 0"
+															class="text-ellipsis ltrNum"
+													>
+														{{ item.total ? (item.total | sum: false) : '-' }}
+													</div>
+													<div class="text-ellipsis">
+														{{ item.asmachta ? item.asmachta : '-' }}
+													</div>
+													<div
+															[class.setRedColor]="item.balance && item.balance < 0"
+															class="text-ellipsis ltrNum"
+													>
+														{{ item.balance ? (item.balance | sum: false) : '-' }}
+													</div>
+													<div
+															*ngIf="
+                            exportPopupType.popupType === 'LAST_DAY_MATCHED'
+                          "
+													>
+														{{ item.uniqueId ? item.uniqueId : '-' }}
+													</div>
+													<div class="text-ellipsis">
+														<mat-icon
+																[ngStyle]="{
+                              color: item.matched ? '#229f88' : '#ce1515',
+                              width: item.matched ? '17px' : '14px',
+                              cursor: !item.matched ? 'pointer' : 'default'
+                            }"
+																[svgIcon]="item.matched ? 'tick' : 'close'"
+																class="left-space"
+																style="height: 100%"
+														>
+														</mat-icon>
+													</div>
+												</div>
+											</div>
+										</cdk-virtual-scroll-viewport>
+									</ng-scrollbar>
+
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</ng-container>
+	</p-dialog>
+</ng-container>
+
+<ng-container *ngIf="exportFileFolderCreatePrompt">
+	<p-dialog (onHide)="
+      exportFileFolderCreatePrompt = false;
+      enabledDownloadLink = true;
+      file_0 = true;
+      file_1 = true
+    "
+	          (visibleChange)="   exportFileFolderCreatePrompt = false;
+      enabledDownloadLink = true;
+      file_0 = true;
+      file_1 = true"
+	          [modal]="true"
+	          [resizable]="false"
+	          [visible]="(
+exportFileFolderCreatePrompt
+        )"
+	          appendTo="body"
+	          styleClass="exportFileFolderCreatePrompt hideFooter"
+	>
+		<p-header>
+			<h1>הורדה ידנית של קבצי היצוא</h1>
+		</p-header>
+
+		<p style="text-align: center">ניתן להוריד את הקבצים בצורה ידנית</p>
+		<p
+				style="
+        text-align: center;
+        margin-bottom: 10px;
+        font-size: 18px;
+        text-decoration: underline;
+        font-weight: 600;
+      "
+		>
+			חייבים להוריד את שני הקבצים לקליטה בחשבשבת
+		</p>
+		<div
+				style="
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        margin-top: 30px;
+        margin-bottom: 10px;
+      "
+		>
+			<button
+					(click)="downloadFiles(0)"
+					[class.disabledDownloadLink]="!file_0"
+					[disabled]="!file_0"
+					class="button-dark"
+					style="font-weight: 600; font-size: 18px"
+			>
+				{{
+				docsfile[0][0] === 'ALL_CREDITS'
+						? 'הורדת קובץ ייצוא אשראי'
+						: 'הורדת קובץ ייצוא בנק'
+				}}
+			</button>
+			<button
+					(click)="downloadFiles(1)"
+					[class.disabledDownloadLink]="!file_1"
+					[disabled]="!file_1"
+					class="button-dark"
+					style="font-weight: 600; font-size: 18px"
+			>
+				{{
+				docsfile[1][0] === 'ALL_CREDITS'
+						? 'הורדת קובץ ייצוא אשראי'
+						: 'הורדת קובץ ייצוא בנק'
+				}}
+			</button>
+		</div>
+	</p-dialog>
+</ng-container>
+
+<ng-container *ngIf="showContactModal">
+	<p-dialog (onHide)="showContactModal = false"
+	          (visibleChange)="showContactModal = false"
+	          [appendTo]="'body'"
+	          [closable]="true"
+	          [closeOnEscape]="false"
+	          [draggable]="false"
+	          [maximizable]="false"
+	          [modal]="true"
+	          [resizable]="false"
+	          [rtl]="true"
+	          [showHeader]="true"
+	          [visible]="(
+showContactModal
+        )"
+	          styleClass="contactsCompaniesModal">
+		<p-header>
+			<h1>רשימת אנשי קשר</h1>
+		</p-header>
+		<app-contacts
+				(closeModal)="showContactModal = false"
+				[contactsInput]="contactsModal"
+				[isModalFromCompaniesScreen]="selectedCompany"
+				[isModal]="false"
+		></app-contacts>
+	</p-dialog>
+</ng-container>

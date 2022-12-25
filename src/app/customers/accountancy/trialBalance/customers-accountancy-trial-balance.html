@@ -1,0 +1,425 @@
+<h2 class="titlePage">
+  {{ 'menu.customers.accountancy.trialBalance' | translate }}
+</h2>
+<div class="filterRow">
+  <app-acc-dates
+    [option]="'trialBalance'"
+    (changedTrigger)="filterDates($event)"
+  ></app-acc-dates>
+
+  <div class="search">
+    <input
+      type="text"
+      placeholder="חיפוש פרטי רמה 2"
+      [value]="queryString"
+      [formControl]="filterInput"
+      autocomplete="off"
+    />
+  </div>
+</div>
+<div>
+  <div class="sums">
+    <div class="sum-data">
+      <h3>חובה</h3>
+      <p *ngIf="trialBalanceArr; else totalHova" class="sum-debit">
+        <span class="sum">{{
+          trialBalanceArr[trialBalanceArr.length - 1].totalHova | sum: true:true
+        }}</span>
+      </p>
+      <ng-template #totalHova>
+        <p class="sum-nan"></p>
+      </ng-template>
+    </div>
+    <div class="operator">&nbsp;</div>
+    <div class="sum-data">
+      <h3>זכות</h3>
+      <p *ngIf="trialBalanceArr; else totalZhut" class="sum-credit">
+        <span class="sum">{{
+          trialBalanceArr[trialBalanceArr.length - 1].totalZhut | sum: true
+        }}</span>
+      </p>
+      <ng-template #totalZhut>
+        <p class="sum-nan"></p>
+      </ng-template>
+    </div>
+    <div class="operator">&nbsp;</div>
+    <div class="sum-data">
+      <h3>הפרש</h3>
+      <p *ngIf="trialBalanceArr; else totalHefresh">
+        <span class="sum">{{
+          trialBalanceArr[trialBalanceArr.length - 1].totalHefresh | sum: true
+        }}</span>
+      </p>
+      <ng-template #totalHefresh>
+        <p class="sum-nan"></p>
+      </ng-template>
+    </div>
+
+    <div class="exports" style="display: block">
+      <div
+        style="display: flex; display: -ms-flexbox; justify-content: flex-end"
+      >
+        <!--<button style="flex: 1 0 25%;">-->
+        <!--<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/to-printer.png" height="21" width="24"/>-->
+        <!--</button>-->
+        <!--<button style="flex: 1 0 25%;">-->
+        <!--<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/to-mail.png" height="21" width="24"/>-->
+        <!--</button>-->
+        <!--<button style="flex: 1 0 25%;">-->
+        <!--<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/to-mail.png" height="21" width="24"/>-->
+        <!--</button>-->
+        <button (click)="exportTransactions('EXCEL')">
+          <img  ngSrc="/assets/images/to-excel.png" height="21" width="24" />
+        </button>
+      </div>
+      <div>
+        <ul style="display: flex; justify-content: space-between">
+          <li (click)="openRowsButtonAlerts()" class="button-link">
+            <span *ngIf="!customAlert"> הצג </span>
+            <span *ngIf="customAlert"> סגור </span>
+            חריגים
+          </li>
+
+          <ul
+            style="
+              display: flex;
+              justify-content: space-between;
+              width: 130px;
+              margin-right: 20px;
+            "
+          >
+            <li
+              id="expandAllBtn"
+              class="button-link"
+              (click)="collapseOpen(true)"
+            >
+              {{ 'actions.expandAll' | translate }}
+            </li>
+            <li>|</li>
+            <li
+              id="collapseAllBtn"
+              class="button-link"
+              (click)="collapseOpen(false)"
+            >
+              {{ 'actions.collapseAll' | translate }}
+            </li>
+          </ul>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="trialBalance">
+  <div class="header" #header>
+    <div class="separator">&nbsp;</div>
+    <div></div>
+    <div class="separator">&nbsp;</div>
+    <div>מיון</div>
+    <div class="separator">&nbsp;</div>
+    <div>חשבון</div>
+    <div class="separator">&nbsp;</div>
+    <div>שם חשבון</div>
+    <div class="separator">&nbsp;</div>
+    <div>סיווג</div>
+    <div class="separator">&nbsp;</div>
+    <div>חובה</div>
+    <div class="separator">&nbsp;</div>
+    <div>זכות</div>
+    <div class="separator">&nbsp;</div>
+    <div>הפרש</div>
+    <div class="separator">&nbsp;</div>
+  </div>
+
+  <ng-container *ngIf="userService.appData.userData?.companySelect">
+    <div
+      [appScrollHeight]="header.getBoundingClientRect().bottom + 4"
+      class="scrollPage scrollbar-dynamic"
+      style="position: relative"
+    >
+      <div *ngIf="loader" class="loader">
+        <div class="circle"></div>
+      </div>
+      <div
+        *ngFor="let a of trialBalance; let i = index"
+        [hidden]="!a.tableShow"
+      >
+        <div
+          [class.opened]="a.opened"
+          class="rowTitle"
+          (click)="
+            a.opened = !a.opened;
+            collapseOpenVal = false;
+            setIndexRowCollapse(a.opened, i)
+          "
+        >
+          <div class="separator">&nbsp;</div>
+          <div>
+            <i
+              class="fa fa-fw"
+              [ngClass]="a.opened ? 'fa-caret-up' : 'fa-caret-down'"
+            ></i>
+          </div>
+          <div class="separator">&nbsp;</div>
+          <div>{{ a?.level_1?.number }} - {{ a?.level_1?.name }}</div>
+          <div class="separator">&nbsp;</div>
+          <div></div>
+          <div class="separator">&nbsp;</div>
+          <div></div>
+          <div class="separator">&nbsp;</div>
+          <div></div>
+          <div class="separator">&nbsp;</div>
+          <div>{{ a?.level_1?.sum_over_scode_hova | sum: false:true }}</div>
+          <div class="separator">&nbsp;</div>
+          <div>{{ a?.level_1?.sum_over_scode_zchut | sum }}</div>
+          <div class="separator">&nbsp;</div>
+          <div>
+            {{ a?.level_1?.sum | sum }}
+            <i
+              *ngIf="a?.level_1?.alert_ind"
+              title="קיימים חריגים בקוד מיון זה‎"
+            ></i>
+          </div>
+          <div class="separator">&nbsp;</div>
+        </div>
+        <div *ngIf="a.opened">
+          <div
+            *ngFor="let v of a?.level_1?.level_2"
+            tabindex="-1"
+            class="row"
+            [hidden]="!a.opened || !v.opened"
+          >
+            <div class="separator">&nbsp;</div>
+            <div></div>
+            <div class="separator">&nbsp;</div>
+            <div>{{ a?.level_1?.number }}</div>
+            <div class="separator">&nbsp;</div>
+            <div>{{ v.number }}</div>
+            <div class="separator">&nbsp;</div>
+            <div>{{ v.name }}</div>
+            <div class="separator">&nbsp;</div>
+            <div style="display: flex; align-items: center">
+              <div style="margin-left: 10px">
+                <div *ngIf="!v.targetEdit">{{ v.target_supp_desc }}</div>
+                <p-dropdown
+                  *ngIf="v.targetEdit"
+                  appendTo="body"
+                  [options]="cartis_code_getlist"
+                  [(ngModel)]="v.selectItems"
+
+                  [dropdownIcon]="'p-dropdown-icon'"
+                  optionLabel="description"
+                >
+                </p-dropdown>
+                <i
+                  *ngIf="v.user_target_supp_desc"
+                  title="מוגדר בתוכנת הנה''ח כ: {{ v.user_target_supp_desc }}"
+                ></i>
+              </div>
+
+              <div
+                (click)="v.targetEdit = !v.targetEdit; supplierUpdateType(v)"
+                style="cursor: pointer"
+              >
+                <span *ngIf="!v.targetEdit">
+                  <img ngSrc="/assets/images/pencil.png"
+                       style="height: 11px; width: auto; position: relative;" fill
+                  />
+                  עריכה
+                </span>
+                <span *ngIf="v.targetEdit"> שמירה </span>
+              </div>
+            </div>
+            <div class="separator">&nbsp;</div>
+            <div
+              [ngStyle]="{ visibility: v.sum > 0 ? 'hidden' : 'visibility' }"
+            >
+              {{ v.sum | sum }}
+            </div>
+            <div class="separator">&nbsp;</div>
+            <div
+              [ngStyle]="{ visibility: v.sum < 0 ? 'hidden' : 'visibility' }"
+            >
+              {{ v.sum | sum }}
+            </div>
+            <div class="separator">&nbsp;</div>
+            <div>
+              <button *ngIf="v.alert_text" (click)="v.alert_text = false">
+                לא חריג
+              </button>
+              <img
+                *ngIf="v.alert_text"
+                style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/invalid.png"
+                title="{{ v.alert_text }}"
+              />
+            </div>
+            <div class="separator">&nbsp;</div>
+          </div>
+        </div>
+
+        <div
+          class="sumBalanceLast"
+          *ngIf="trialBalance[i + 1]?.level_1?.level0Digits"
+        >
+          <div class="separator">&nbsp;</div>
+          <div></div>
+          <div class="separator">&nbsp;</div>
+          <div style="display: flex; justify-content: space-between">
+            <div>סה״כ לקבוצה</div>
+            <div>{{ trialBalance[i + 1]?.level_1?.level0Digits }}*</div>
+          </div>
+          <div class="separator">&nbsp;</div>
+          <div></div>
+          <div class="separator">&nbsp;</div>
+          <div></div>
+          <div class="separator">&nbsp;</div>
+          <div></div>
+          <div class="separator">&nbsp;</div>
+          <div>
+            {{ trialBalance[i + 1]?.level_1?.level0HovaSum | sum: false:true }}
+          </div>
+          <div class="separator">&nbsp;</div>
+          <div>{{ trialBalance[i + 1]?.level_1?.level0ZhutSum | sum }}</div>
+          <div class="separator">&nbsp;</div>
+          <div>{{ trialBalance[i + 1]?.level_1?.level0Hefresh | sum }}</div>
+          <div class="separator">&nbsp;</div>
+        </div>
+        <div
+          class="sumBalanceLast"
+          *ngIf="trialBalance[i + 1]?.level_1?.prevLevelDigit"
+        >
+          <div class="separator">&nbsp;</div>
+          <div></div>
+          <div class="separator">&nbsp;</div>
+          <div style="display: flex; justify-content: space-between">
+            <div>סה״כ לקבוצה</div>
+            <div>{{ trialBalance[i + 1]?.level_1?.prevLevelDigit }}*</div>
+          </div>
+          <div class="separator">&nbsp;</div>
+          <div></div>
+          <div class="separator">&nbsp;</div>
+          <div></div>
+          <div class="separator">&nbsp;</div>
+          <div></div>
+          <div class="separator">&nbsp;</div>
+          <div>
+            {{
+              trialBalance[i + 1]?.level_1?.prevLevelHovaSum | sum: false:true
+            }}
+          </div>
+          <div class="separator">&nbsp;</div>
+          <div>{{ trialBalance[i + 1]?.level_1?.prevLevelZhutSum | sum }}</div>
+          <div class="separator">&nbsp;</div>
+          <div>{{ trialBalance[i + 1]?.level_1?.prevLevelHefresh | sum }}</div>
+          <div class="separator">&nbsp;</div>
+        </div>
+        <div
+          class="sumBalanceLast"
+          *ngIf="trialBalance[i + 1]?.level_1?.nextLevelDigits"
+        >
+          <div class="separator">&nbsp;</div>
+          <div></div>
+          <div class="separator">&nbsp;</div>
+          <div style="display: flex; justify-content: space-between">
+            <div>סה״כ לקבוצה</div>
+            <div>{{ trialBalance[i + 1]?.level_1?.nextLevelDigits }}*</div>
+          </div>
+          <div class="separator">&nbsp;</div>
+          <div></div>
+          <div class="separator">&nbsp;</div>
+          <div></div>
+          <div class="separator">&nbsp;</div>
+          <div></div>
+          <div class="separator">&nbsp;</div>
+          <div>
+            {{
+              trialBalance[i + 1]?.level_1?.nextLevelHovaSum | sum: false:true
+            }}
+          </div>
+          <div class="separator">&nbsp;</div>
+          <div>{{ trialBalance[i + 1]?.level_1?.nextLevelZhutSum | sum }}</div>
+          <div class="separator">&nbsp;</div>
+          <div>{{ trialBalance[i + 1]?.level_1?.nextLevelHefresh | sum }}</div>
+          <div class="separator">&nbsp;</div>
+        </div>
+        <div
+          class="sumBalanceLast"
+          *ngIf="i + 1 === trialBalance.length && trialBalance[i].level0Digits"
+        >
+          <div class="separator">&nbsp;</div>
+          <div></div>
+          <div class="separator">&nbsp;</div>
+          <div style="display: flex; justify-content: space-between">
+            <div>סה״כ לקבוצה</div>
+            <div>{{ trialBalance[i].level0Digits }}*</div>
+          </div>
+          <div class="separator">&nbsp;</div>
+          <div></div>
+          <div class="separator">&nbsp;</div>
+          <div></div>
+          <div class="separator">&nbsp;</div>
+          <div></div>
+          <div class="separator">&nbsp;</div>
+          <div>{{ trialBalance[i]?.level0HovaSum | sum: false:true }}</div>
+          <div class="separator">&nbsp;</div>
+          <div>{{ trialBalance[i]?.level0ZhutSum | sum }}</div>
+          <div class="separator">&nbsp;</div>
+          <div>{{ trialBalance[i]?.level0Hefresh | sum }}</div>
+          <div class="separator">&nbsp;</div>
+        </div>
+        <div
+          class="sumBalanceLast"
+          *ngIf="i + 1 == trialBalance.length && trialBalance[i].prevLevelDigit"
+        >
+          <div class="separator">&nbsp;</div>
+          <div></div>
+          <div class="separator">&nbsp;</div>
+          <div style="display: flex; justify-content: space-between">
+            <div>סה״כ לקבוצה</div>
+            <div>{{ trialBalance[i]?.prevLevelDigit }}*</div>
+          </div>
+          <div class="separator">&nbsp;</div>
+          <div></div>
+          <div class="separator">&nbsp;</div>
+          <div></div>
+          <div class="separator">&nbsp;</div>
+          <div></div>
+          <div class="separator">&nbsp;</div>
+          <div>{{ trialBalance[i]?.prevLevelHovaSum | sum: false:true }}</div>
+          <div class="separator">&nbsp;</div>
+          <div>{{ trialBalance[i]?.prevLevelZhutSum | sum }}</div>
+          <div class="separator">&nbsp;</div>
+          <div>{{ trialBalance[i]?.prevLevelHefresh | sum }}</div>
+          <div class="separator">&nbsp;</div>
+        </div>
+        <div
+          class="sumBalanceLast"
+          *ngIf="
+            i + 1 == trialBalance.length && trialBalance[i].nextLevelDigits
+          "
+        >
+          <div class="separator">&nbsp;</div>
+          <div></div>
+          <div class="separator">&nbsp;</div>
+          <div style="display: flex; justify-content: space-between">
+            <div>סה״כ לקבוצה</div>
+            <div>{{ trialBalance[i]?.nextLevelDigits }}*</div>
+          </div>
+          <div class="separator">&nbsp;</div>
+          <div></div>
+          <div class="separator">&nbsp;</div>
+          <div></div>
+          <div class="separator">&nbsp;</div>
+          <div></div>
+          <div class="separator">&nbsp;</div>
+          <div>{{ trialBalance[i]?.nextLevelHovaSum | sum: false:true }}</div>
+          <div class="separator">&nbsp;</div>
+          <div>{{ trialBalance[i]?.nextLevelZhutSum | sum }}</div>
+          <div class="separator">&nbsp;</div>
+          <div>{{ trialBalance[i]?.nextLevelHefresh | sum }}</div>
+          <div class="separator">&nbsp;</div>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+</div>

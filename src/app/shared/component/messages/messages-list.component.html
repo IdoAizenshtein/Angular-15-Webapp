@@ -1,0 +1,800 @@
+<ng-container *ngIf="messagesSource$ | async as messages; else loading">
+	<div class="messages-list-tools" [formGroup]="filter" #header>
+		<p-dropdown
+				[options]="severities"
+				styleClass="severity"
+				formControlName="severity"
+				dropdownIcon="fas fa-xs fa-filter"
+				[style]="{ width: '13ch' }"
+		>
+			<ng-template let-item pTemplate="selectedItem">
+				<div
+						style="
+            position: relative;
+            display: flex;
+            display: -ms-flexbox;
+            align-items: center;
+            justify-content: space-between;
+          "
+				>
+					<div>{{ item.label }}</div>
+					<i
+							class="fas fa-xs fa-circle"
+							[ngClass]="'severity-' + item.value"
+							*ngIf="item.value"
+					></i>
+				</div>
+			</ng-template>
+			<ng-template let-item pTemplate="item">
+				<div
+						style="
+            position: relative;
+            display: flex;
+            display: -ms-flexbox;
+            align-items: center;
+            justify-content: flex-start;
+          "
+				>
+					<i>
+						<img
+								width="14"
+								height="14"
+								style="margin-top: 2px; display: block"
+								 [src]="
+                filter.get('severity').value === item.value
+                  ? '/assets/images/radioBgSelected.png'
+                  : '/assets/images/radioBg.png'
+              "
+						/>
+					</i>
+					<div>{{ item.label }}</div>
+					<i
+							class="fas fa-xs fa-circle"
+							[ngClass]="'severity-' + item.value"
+							*ngIf="item.value"
+					></i>
+					<i *ngIf="item.value === ''"></i>
+				</div>
+			</ng-template>
+		</p-dropdown>
+		<button
+				class="button-link"
+				(click)="messagesMarkAllAsRead()"
+				[disabled]="messages.length === 0"
+		>
+			{{ 'סימון הכל כנקרא' }}
+		</button>
+	</div>
+	<ng-container *ngIf="messages.length > 0; else noMessages">
+		<div class="message-list-container">
+			<div
+					class="scrollbar-dynamic"
+					[appScrollHeight]="
+          customersGeneralComponent
+            ? 300
+            : header.getBoundingClientRect().bottom +
+              10 +
+              (mode === 'notifications' ? 48 : 0)
+        "
+					[appendTo]="customersGeneralComponent ? 'parent' : 'body'"
+			>
+				<ng-container *ngIf="separateNew === true; else singleList">
+					<ng-container *ngIf="messagesSeparatedNew$ | async as messagesNew">
+						<ul *ngIf="messagesNew.length > 0">
+							<li class="groupName">{{ 'חדש' }}</li>
+							<ng-template
+									*ngFor="let msg of messagesNew; trackBy: msgTrack"
+									[ngTemplateOutlet]="messageTemplateRef"
+									[ngTemplateOutletContext]="{ msg: msg }"
+							></ng-template>
+						</ul>
+					</ng-container>
+					
+					<ng-container *ngIf="messagesSeparatedOld$ | async as messagesOld">
+						<ul *ngIf="messagesOld.length > 0">
+							<li class="groupName">{{ 'מוקדם יותר' }}</li>
+							<ng-template
+									*ngFor="let msg of messagesOld; trackBy: msgTrack"
+									[ngTemplateOutlet]="messageTemplateRef"
+									[ngTemplateOutletContext]="{ msg: msg }"
+							></ng-template>
+						</ul>
+					</ng-container>
+				</ng-container>
+				
+				<ng-template #singleList>
+					<ul>
+						<ng-template
+								*ngFor="let msg of messages; trackBy: msgTrack"
+								[ngTemplateOutlet]="messageTemplateRef"
+								[ngTemplateOutletContext]="{ msg: msg }"
+						></ng-template>
+					</ul>
+				</ng-template>
+			</div>
+		</div>
+		
+		<app-bank-update-foreign-credentials-dialog
+				*ngIf="
+        actionService.showupTokenUpdateDialog$
+          | async as showupTokenUpdateDialog
+      "
+				[(display)]="showupTokenUpdateDialog.visible"
+				[tokenData]="showupTokenUpdateDialog.tokenData"
+				[companyId]="showupTokenUpdateDialog.companyId"
+		>
+		</app-bank-update-foreign-credentials-dialog>
+		
+		<ng-container
+				*ngIf="
+        actionService.showupTransactionHistoryDialog$
+          | async as showupTransactionHistoryDialog
+      "
+		>
+			<p-dialog (visibleChange)="showupTransactionHistoryDialog.visible = false"
+					[visible]="(showupTransactionHistoryDialog.visible)"
+					appendTo="body"
+					[modal]="true"
+					[resizable]="false"
+					[styleClass]="'transHistoryDialog'"
+			>
+				<p-header>{{ showupTransactionHistoryDialog.trns.transName }}</p-header>
+				<app-cyclic-trans-history
+						[cyclicTrans]="showupTransactionHistoryDialog?.trns"
+				></app-cyclic-trans-history>
+			</p-dialog>
+		</ng-container>
+		
+		<ng-container
+				*ngIf="
+        actionService.showupTransactionDeleteDialog$
+          | async as showupTransactionDeleteDialog
+      "
+		>
+			<p-dialog (visibleChange)=" showupTransactionDeleteDialog.visible = $event"
+					[visible]="(showupTransactionDeleteDialog?.visible)"
+					styleClass="deleteMovementDialog"
+					appendTo="body"
+					[style]="{width: 300 + 'px'}"
+					[modal]="true"
+			>
+				<p-header>{{ showupTransactionDeleteDialog?.title }}</p-header>
+				
+				<div
+						class="mat-h3"
+						[innerHTML]="
+            'actions.deleteMovement.body.' +
+              showupTransactionDeleteDialog?.type +
+              '.content' | translate: showupTransactionDeleteDialog
+          "
+				></div>
+				
+				<p-footer>
+					<div style="width: 100%; display: flex; justify-content: center">
+						<button
+								class="button-white button-link"
+								(click)="showupTransactionDeleteDialog.visible = false"
+						>
+							{{ 'actions.cancellation' | translate }}
+						</button>
+						<button
+								class="button-dark"
+								(click)="
+                onApproveDeleteOperation(showupTransactionDeleteDialog.item);
+                showupTransactionDeleteDialog.visible = false
+              "
+								[disabled]="processingDeleteOperation"
+						>
+							<i
+									class="fas fa-fw fa-circle-notch fa-spin"
+									*ngIf="processingDeleteOperation"
+							></i>
+							{{ 'actions.remove' | translate }}
+						</button>
+					</div>
+				</p-footer>
+			</p-dialog>
+		</ng-container>
+	</ng-container>
+	<ng-template #noMessages>
+		<div
+				class="message-list-container"
+				[style.align-items]="filter.get('severity').value ? 'flex-start' : null"
+		>
+			<div
+				class="scrollbar-dynamic"
+				[appScrollHeight]="
+          customersGeneralComponent
+            ? 300
+            : header.getBoundingClientRect().bottom +
+              10 +
+              (mode === 'notifications' ? 48 : 0)
+        "
+				[appendTo]="customersGeneralComponent ? 'parent' : 'body'"
+		>
+			<div class="no-rows-found">
+				<ng-container
+						*ngIf="!filter.get('severity').value; else noMessagesForFilter"
+				>
+					<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/alerts-all-caught.png"/>
+					<div>{{ 'אין לכם התראות חדשות, שיהיה יום טוב ומוצלח!' }}</div>
+				</ng-container>
+				<ng-template #noMessagesForFilter>
+					<div>
+						{{ 'expressions.noMessagesFoundForCriteria' | translate }} ,
+						{{ 'expressions.changeCriteria' | translate }}
+					</div>
+				</ng-template>
+			</div>
+		</div>
+		</div>
+	</ng-template>
+
+</ng-container>
+
+<ng-template #loading>
+	<div class="message-list-container">
+		<div
+				class="scrollbar-dynamic"
+				[appScrollHeight]="
+          customersGeneralComponent
+            ? 300
+            :
+              10 +
+              (mode === 'notifications' ? 48 : 0)
+        "
+				[appendTo]="customersGeneralComponent ? 'parent' : 'body'"
+		>
+			<div class="loader">
+				<div class="circle"></div>
+			</div>
+		</div>
+	</div>
+</ng-template>
+
+
+<ng-template #messageTemplateRef let-msg="msg">
+	<li [class.msg-not-read]="!msg.indRead" (click)="messageClick(msg, $event)">
+		<div
+				class="msg-severity"
+				[class.widthWideIcon]="!sharedComponent.isCustomer"
+				[ngClass]="'severity-bg-' + msg.indAlert"
+		>
+			<ng-container *ngIf="!sharedComponent.isCustomer">
+				<mat-icon
+						*ngIf="msg.uploadSource === 'MOBILE'"
+						svgIcon="uploadSource_MOBILE"
+						style="color: #ffffff; height: auto; width: 30px"
+				></mat-icon>
+				<mat-icon
+						*ngIf="msg.uploadSource === 'MAIL'"
+						svgIcon="uploadSource_MAIL"
+						style="color: #ffffff; height: auto; width: 30px"
+				></mat-icon>
+				<mat-icon
+						*ngIf="msg.uploadSource === 'UPLOAD'"
+						svgIcon="uploadSource_UPLOAD"
+						style="color: #ffffff; height: auto; width: 32px"
+				></mat-icon>
+			</ng-container>
+		</div>
+		<div class="msg-type" *ngIf="sharedComponent.isCustomer">
+			<img
+					*ngIf="msg.iconName"
+					style="height: auto; width: 24px; position: relative;" fill [ngSrc]="msg.iconName | messageTypeAsIconSrc"
+					[alt]="msg.iconName"
+			/>
+		</div>
+		<div class="msg-body">
+			<div class="msg-timestamp">
+				<strong>{{ msg.dateCreated | date: 'dd/MM/yy' }}</strong
+				>&nbsp;
+				<ng-container *ngIf="sharedComponent.isCustomer">
+					{{ msg.dateCreated | todayRelativeHumanize: 'days' }}
+				</ng-container>
+				<ng-container *ngIf="!sharedComponent.isCustomer">
+					{{ msg.dateCreated | date: 'HH:mm' }}
+				</ng-container>
+				
+				<span *ngIf="!sharedComponent.isCustomer">
+          {{ msg.createdBy }}
+        </span>
+			</div>
+			
+			<ng-container
+					*ngIf="
+          msg.linked_action && msg.linked_action === 'showCheckDetails';
+          else temp
+        "
+			>
+				<div
+						class="msg-message"
+						[class.red]="
+            msg.indAlert === 'red' &&
+            !sharedComponent.isCustomer &&
+            !msg.messageTemplate2
+          "
+						[appTransactionAdditionalTrigger]="{
+            msg: {
+              keyId: msg.keyId,
+              companyAccountId: msg.companyAccountId
+            }
+          }"
+						[innerHTML]="messagesParsed[msg.messageId] || msg.messageTemplate"
+				></div>
+			</ng-container>
+			<ng-template #temp>
+				<div
+						class="msg-message"
+						[class.red]="
+            msg.indAlert === 'red' &&
+            !sharedComponent.isCustomer &&
+            !msg.messageTemplate2
+          "
+						[innerHTML]="messagesParsed[msg.messageId] || msg.messageTemplate"
+				>
+					<!--{{msg.messageTemplate}}-->
+				</div>
+			</ng-template>
+			<ng-container *ngIf="!sharedComponent.isCustomer && msg.messageTemplate2">
+				<div
+						class="msg-message"
+						[class.red]="msg.indAlert === 'red'"
+						[innerHTML]="msg.messageTemplate2"
+				></div>
+			</ng-container>
+			
+			<div class="msg-actions">
+				<ng-container
+						*ngIf="
+            msg[msg.peulaName1 ? 'peula1' : 'peula2'] === 'showCheckDetails';
+            else actionBtn
+          "
+				>
+					<div
+							[appTransactionAdditionalTrigger]="{
+              msg: {
+                keyId: msg.keyId,
+                companyAccountId: msg.companyAccountId
+              }
+            }"
+							class="bank-acc-details-link button-link"
+					>
+						{{ msg.peulaName1 ? msg.peulaName1 : msg.peulaName2 }}
+					</div>
+				</ng-container>
+				<ng-template #actionBtn>
+					<button
+							class="button-link"
+							*ngIf="msg.peulaName1"
+							(click)="
+              messageActionClick(msg, 'peula1'); $event.stopPropagation()
+            "
+					>
+						{{ msg.peulaName1 }}
+					</button>
+					<button
+							class="button-link"
+							*ngIf="msg.peulaName2"
+							(click)="
+              messageActionClick(msg, 'peula2'); $event.stopPropagation()
+            "
+					>
+						{{ msg.peulaName2 }}
+					</button>
+					<button
+							class="button-link"
+							*ngIf="msg.peula1 && msg.peula1 === 'popUpFile'"
+							style="position: absolute; left: 29px; top: 44%; cursor: pointer"
+							(click)="
+              messageActionClick(msg, 'popUpFile'); $event.stopPropagation()
+            "
+					>
+						<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/popUpFile.png"/>
+					</button>
+				</ng-template>
+			</div>
+		</div>
+		<div class="msg-ops">
+			<button
+					class="button-link"
+					(click)="messageToggleRead(msg); $event.stopPropagation()"
+					[pTooltip]="msg.indRead ? 'סימון כלא נקרא' : 'סימון כנקרא'"
+			>
+				<i
+						class="fa-circle"
+						[ngClass]="msg.indRead === true ? 'far' : 'fas'"
+				></i>
+			</button>
+			<button
+					class="button-link"
+					(click)="messageHide(msg); $event.stopPropagation()"
+					[pTooltip]="'הסתרת הודעה זו'"
+			>
+				<i class="fas fa-times"></i>
+			</button>
+		</div>
+	</li>
+</ng-template>
+
+<p-dialog (visibleChange)="editMovementData.visible = false"
+		[resizable]="false"
+		[visible]="(editMovementData.visible)"
+		appendTo="body"
+		[modal]="true"
+		[styleClass]="'fixed-movement-edit'"
+		#editMovementDataDlg
+>
+	<p-header>{{ editMovementData?.title }}</p-header>
+	<form
+			novalidate
+			[formGroup]="editMovementData?.form"
+			(ngSubmit)="onSubmitEditOperation()"
+			#editEditorElem
+	>
+		<app-fixed-movement-settings
+				[form]="editMovementData?.form"
+				#editEditor
+				[setDateFromMessage]="true"
+				[companyTransTypes]="companyTransTypes"
+				[companyId]="userService.appData?.userData?.companySelect?.companyId"
+				[source]="editMovementData.source"
+				[seriesSource]="editMovementData.seriesSource"
+				[allowMultimode]="
+        !editorMultimodeForbiddenTypes.includes(
+          editMovementData?.source?.targetType
+        )
+      "
+		>
+		</app-fixed-movement-settings>
+		<button
+				type="submit"
+				style="display: none"
+				[disabled]="editMovementData.form.invalid"
+		></button>
+		<!--{{createMovementData.form.valid}}-->
+	</form>
+	<p-footer>
+		<div
+				style="width: 100%; display: flex; justify-content: center"
+				*ngIf="editMovementData?.source"
+		>
+			<a
+					href="#"
+					role="button"
+					class="button-white button-link"
+					(click)="editMovementData.visible = false"
+			>
+				{{ 'actions.cancellation' | translate }}
+			</a>
+			<button
+					class="button-dark"
+					(click)="onSubmitEditOperation()"
+					[disabled]="editMovementData.loading"
+			>
+				<i
+						class="fas fa-fw fa-circle-notch fa-spin"
+						*ngIf="editMovementData.loading"
+				></i>
+				{{ 'actions.saveAndClose' | translate }}
+			</button>
+		</div>
+	</p-footer>
+</p-dialog>
+
+<ng-container *ngIf="getMessageFiles">
+	<p-dialog (visibleChange)=" getMessageFiles = false"
+			[visible]="(getMessageFiles)"
+			appendTo="body"
+			[modal]="true"
+			#fileViewerModal
+			[resizable]="false"
+			[draggable]="false"
+			styleClass="fileViewer"
+	>
+		<p-header>
+			<h1>
+				{{ getMessageFiles.msg.dateCreated | date: 'dd/MM/yy' }}
+				מסמכים מ{{ getMessageFiles.msg.createdBy }}
+			</h1>
+		</p-header>
+		
+		<div
+				class="progressBarTitles"
+				style="
+        display: flex;
+        justify-content: space-between;
+        padding-bottom: 10px;
+      "
+		>
+			<p class="text" #header style="padding-bottom: 0px">
+				<strong style="font-weight: 700">
+					סה״כ {{ getMessageFiles.title }}. הנתונים המוצגים הם הנתונים המעודכנים
+					ביותר למיקום המסמכים
+				</strong>
+				<br/>
+				ניתן לפצל ולאחד מסמכים ע״י סימון הצ׳ק בוקס
+			</p>
+			<div class="btnActions" style="margin-top: 25px">
+				<ng-container *ngIf="getMessageFiles.messageFilesChecked.length >= 2">
+					<button (click)="filesUnion()" style="width: 165px">
+						איחוד מסמכים
+					</button>
+				</ng-container>
+				<ng-container
+						*ngIf="
+            getMessageFiles.messageFilesChecked.length === 1 &&
+            getMessageFiles.messageFilesChecked[0].pages.length > 1
+          "
+				>
+					<button (click)="filesSplit()" style="margin-left: 0; width: 165px">
+						פיצול מסמכים
+					</button>
+				</ng-container>
+			</div>
+		</div>
+		
+		<ng-container *ngIf="!getMessageFiles.messageFiles; else viewFiles">
+			<div class="message-list-container" style="min-height: 280px">
+				<div class="loader">
+					<div class="circle"></div>
+				</div>
+			</div>
+		</ng-container>
+		<ng-template #viewFiles>
+			<div class="container-photos" #container style="border-bottom: none">
+				<ul
+						class="scroll-chrome"
+						#scroll
+						[style.maxHeight.px]="this.maxSizeHeightModal"
+				>
+					<ng-container
+							*ngFor="
+              let file of getMessageFiles.messageFiles;
+              let i = index;
+              last as isLast;
+              trackBy: trackByFileId
+            "
+					>
+						<li
+								#element
+								style="
+                margin-left: 0px;
+                margin-right: 0px;
+                position: relative;
+                width: 190px !important;
+                text-align: center;
+                margin-bottom: 20px;
+              "
+						>
+							<div style="position: absolute; right: 16px; top: -2px">
+								<p-checkbox checkboxIcon="fa fa-check"
+								            [binary]="true"
+								            *ngIf="
+                    file.fileLocation === 'טאב לאישור' &&
+                    !file.companyChanged &&
+                    !(
+                      file.fileStatus === 'FAILED' &&
+                      file.pages &&
+                      file.pages.length === 1
+                    ) &&
+                    !(
+                      getMessageFiles.messageFiles.length === 1 &&
+                      (!file.pages || (file.pages && file.pages.length <= 1))
+                    )
+                  "
+								            (onChange)="
+                    file.selcetFile = !file.selcetFile; checkSelected()
+                  "
+								            [ngModel]="file.selcetFile"
+								>
+								</p-checkbox>
+							</div>
+							<p #actualTarget>{{ i + 1 }}</p>
+							<i
+									class="numPages"
+									style="left: 4px"
+									*ngIf="file.pages && file.pages.length > 1"
+							>
+								<div>
+									{{ file.pages.length }}
+								</div>
+							</i>
+							<div class="image" style="margin: 1px auto">
+								<div
+										[class.grayCube]="file.fileLocation !== 'טאב לאישור'"
+										style="
+                    border: 1px solid #0f2d61;
+                    position: absolute;
+                    z-index: 99;
+                    right: 0;
+                    left: 0;
+                    bottom: 0;
+                    top: 0;
+                    width: 100%;
+                    height: 100%;
+                  "
+										[style.border-width]="'1px'"
+								></div>
+								<ng-container *ngIf="!file.companyChanged">
+									<button
+											class="viewPhoto"
+											*ngIf="file.finishedLoaded === true"
+											(click)="
+                      showDocumentStorageDataViewQuick(file);
+                      $event.stopPropagation()
+                    "
+									>
+										<mat-icon
+												svgIcon="pictureLines"
+												style="
+                        color: white;
+                        width: 18px;
+                        height: 18px;
+                        display: block;
+                        align-self: center;
+                      "
+										></mat-icon>
+									</button>
+									<ng-container
+											*ngIf="
+                      file.pages &&
+                      file.pages.length &&
+                      file.fileStatus !== 'FAILED'
+                    "
+									>
+										<img
+												style="height: 221px; width: auto; position: relative;" fill [ngSrc]="file.pages[0].contentUrl"
+												[style.visibility]="
+                        file.finishedLoaded === true ? 'visible' : 'hidden'
+                      "
+												(loadstart)="file.finishedLoaded = false"
+												*ngIf="file.finishedLoaded !== 'error'"
+												(error)="file.finishedLoaded = 'error'"
+												(load)="file.finishedLoaded = true"
+										/>
+									</ng-container>
+									<ng-container
+											*ngIf="
+                      file.finishedLoaded === 'error' ||
+                      !file.pages ||
+                      !file.pages.length ||
+                      file.fileStatus === 'FAILED'
+                    "
+									>
+										<p style="text-align: center">שגיאה בגישה לנתיב הקובץ</p>
+									</ng-container>
+									<div
+											class="loaderPercent"
+											*ngIf="
+                      !file.finishedLoaded &&
+                      file.pages &&
+                      file.pages.length &&
+                      file.fileStatus !== 'FAILED'
+                    "
+											style="background: transparent; opacity: 1"
+									>
+										<div class="circle"></div>
+									</div>
+								</ng-container>
+								<ng-container *ngIf="file.companyChanged">
+									<mat-icon
+											svgIcon="pictureLines"
+											style="
+                      width: 30px;
+                      height: 30px;
+                      display: block;
+                      align-self: center;
+                      color: #022258;
+                    "
+									></mat-icon>
+								</ng-container>
+							</div>
+							<div
+									*ngIf="file.companyChanged"
+									style="color: #022258; font-size: 15px; text-align: center"
+							>
+								המסמך הועבר
+								
+								{{
+								file.companyName ? 'לחברת ' + file.companyName : 'לחברה אחרת'
+								}}
+							</div>
+							<div
+									*ngIf="!file.companyChanged && file.folderName"
+									style="color: #022258; font-size: 15px; text-align: center"
+							>
+								{{ file.fileLocation }}
+								
+								-
+							</div>
+							<div
+									*ngIf="!file.companyChanged && file.folderName"
+									style="color: #022258; font-size: 15px; text-align: center"
+							>
+								{{ file.folderName }}
+							</div>
+							<div
+									*ngIf="!file.companyChanged && !file.folderName"
+									style="color: #022258; font-size: 15px; text-align: center"
+							>
+								ספקים ולקוחות -
+							</div>
+							<div
+									*ngIf="!file.companyChanged && !file.folderName"
+									style="color: #022258; font-size: 15px; text-align: center"
+							>
+								{{ file.fileLocation }}
+							</div>
+							<div
+									*ngIf="file.fileStatus === 'FAILED' && file.fileName"
+									style="color: #022258; font-size: 15px; text-align: center"
+							>
+								{{ file.fileName }}
+							</div>
+						</li>
+					</ng-container>
+				</ul>
+			</div>
+		</ng-template>
+	</p-dialog>
+</ng-container>
+
+<p-sidebar
+		[visible]="(showDocumentStorageDataFired)"
+		(onHide)="hideDocumentStorageData()"
+		[position]="'left'"
+		appendTo="body"
+		[modal]="true"
+		[styleClass]="'sidebar-show-imgs list-imgs'"
+>
+	<div class="zoom-controls-inside">
+		<button mat-icon-button (click)="imageScaleNewInvoice = 1">
+			<mat-icon class="rotate-90">height</mat-icon>
+		</button>
+		<button mat-icon-button (click)="rotateInside(); $event.stopPropagation()">
+			<mat-icon style="width: 17px; height: 17px" svgIcon="rotate"></mat-icon>
+		</button>
+		<button mat-icon-button (click)="zoomStepInside(1, 'imageScaleNewInvoice')">
+			<mat-icon>add</mat-icon>
+		</button>
+		<button
+				mat-icon-button
+				(click)="zoomStepInside(-1, 'imageScaleNewInvoice')"
+		>
+			<mat-icon>remove</mat-icon>
+		</button>
+	</div>
+	<div
+			class="scrollbar-dynamic scroll-chrome"
+			style="overflow: auto"
+			[ngStyle]="{ height: window['innerHeight'] + 30 + 'px' }"
+	>
+		<ul>
+			<ng-container *ngFor="let pageImg of sidebarImgs.pages">
+				<li>
+					<img
+							[style.zoom.%]="imageScaleNewInvoice * 100"
+							[ngStyle]="{ transform: 'rotate(' + degRotateImg + 'deg)' }"
+							(loadstart)="pageImg.finishedLoaded = false"
+							*ngIf="pageImg.finishedLoaded !== 'error'"
+							(error)="pageImg.finishedLoaded = 'error'"
+							(load)="pageImg.finishedLoaded = true"
+							style="height: auto; width: 680px; position: relative;display: block; margin: 0 auto" fill
+							[ngSrc]="pageImg.contentUrl"
+					/>
+					<ng-container *ngIf="pageImg.finishedLoaded === 'error'">
+						<p style="text-align: center">שגיאה בגישה לנתיב הקובץ</p>
+					</ng-container>
+					<div
+							class="loaderPercent"
+							*ngIf="!pageImg.finishedLoaded"
+							style="background: transparent; opacity: 1"
+					>
+						<div class="circle"></div>
+					</div>
+				</li>
+			</ng-container>
+		</ul>
+	</div>
+</p-sidebar>

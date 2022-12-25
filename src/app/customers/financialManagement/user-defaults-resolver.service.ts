@@ -1,0 +1,214 @@
+import {
+    ActivatedRouteSnapshot,
+    CanActivate,
+    NavigationEnd,
+    PRIMARY_OUTLET,
+    Resolve,
+    Router,
+    RouterStateSnapshot
+} from '@angular/router';
+import {Observable, of} from 'rxjs';
+import {Directive, OnDestroy} from '@angular/core';
+import {InterfaceParamHttp} from '@app/shared/interfaces/interface.param.http';
+import {HttpServices} from '@app/shared/services/http.services';
+import {filter, map, mergeMap} from 'rxjs/operators';
+import {publishRef} from '@app/shared/functions/publishRef';
+
+@Directive()
+export class UserDefaultsResolver
+    implements Resolve<any>, CanActivate, OnDestroy {
+    readonly constPart;
+    readonly defaultDisplayMode;
+    readonly userDefaultsSubject: Observable<any>;
+
+    constructor(
+        private httpServices: HttpServices,
+        private router: Router,
+        screenName: string,
+        private storageService: any,
+        private ignoreParts: string[] = ['graph']
+    ) {
+        this.constPart = screenName;
+        this.defaultDisplayMode =
+            this.constPart === 'slika' ? 'details' : 'aggregate';
+        let constPartSaved = storageService.localStorageGetterItem(this.constPart);
+        if (constPartSaved) {
+            constPartSaved = JSON.parse(constPartSaved)
+        }
+        this.userDefaultsSubject = constPartSaved ? of(constPartSaved): this.getUserDefaultsFor(this.constPart).pipe(
+            publishRef
+        );
+        this.router.events
+            .pipe(
+                filter((evt: any) => evt instanceof NavigationEnd),
+                map((evt: NavigationEnd) => {
+                    return this.router.parseUrl(evt.url).root.children[PRIMARY_OUTLET]
+                        .segments;
+                })
+            )
+            .subscribe((urlSegments) => {
+                console.log('navigationend for %o', urlSegments);
+
+                const constPartIndex = urlSegments.findIndex(
+                    (seg) => seg.path === this.constPart
+                );
+                if (constPartIndex >= 0 && constPartIndex + 1 < urlSegments.length) {
+                    const newDisplayName = urlSegments
+                        .slice(constPartIndex + 1)
+                        .map((seg) => seg.path)
+                        .join('/');
+
+                    if (newDisplayName !== this.ignoreParts.join('/')) {
+                        this.userDefaultsSubject.subscribe((ud) => {
+                            if (ud.displayMode !== newDisplayName) {
+                                ud.displayMode = newDisplayName;
+                                this.setDisplayModeTo(newDisplayName);
+                            }
+                        });
+                    }
+                }
+            });
+    }
+
+    private getUserDefaultsFor(section: string): Observable<any> {
+        const accountsParam: InterfaceParamHttp<any> = {
+            method: 'post',
+            path: 'v1/users/default-user-for-screen',
+            params: {
+                screenName: section
+            },
+            isJson: true,
+            isProtected: true,
+            isAuthorization: true
+        };
+
+        return this.httpServices.sendHttp<any>(accountsParam).pipe(
+            map(
+                (result) =>
+                    result.body || {
+                        displayMode: this.defaultDisplayMode,
+                        numberOfRowsPerTable: 50,
+                        screenName: section
+                    }
+            )
+        );
+    }
+
+    private setUserDefaultsFor(paramsObj: any): Observable<any> {
+        const params: InterfaceParamHttp<any> = {
+            method: 'post',
+            path: 'v1/users/default-user-for-screen-update',
+            params: paramsObj,
+            isJson: true,
+            isProtected: true,
+            isAuthorization: true
+        };
+        return this.httpServices
+            .sendHttp<any>(params)
+            .pipe(map((result) => result.body));
+    }
+
+    private setDisplayModeTo(displayMode: string): void {
+        this.userDefaultsSubject
+            .pipe(
+                mergeMap((ud) => {
+                    ud.displayMode = displayMode;
+                    return this.setUserDefaultsFor(ud);
+                })
+            )
+            .subscribe((rslt) => {
+                let constPartSaved:any = this.storageService.localStorageGetterItem(this.constPart);
+                if (constPartSaved) {
+                    constPartSaved = JSON.parse(constPartSaved)
+                }
+                this.storageService.localStorageSetter(
+                    this.constPart,
+                    JSON.stringify({
+                        displayMode: displayMode,
+                        numberOfRowsPerTable: constPartSaved.numberOfRowsPerTable,
+                        screenName: this.constPart
+                    })
+                );
+                console.log(
+                    '%o: display mode set to %o ===> %o',
+                    this.constPart,
+                    displayMode,
+                    rslt
+                );
+            });
+    }
+
+    setNumberOfRowsAt(numberOfRowsPerTable: number): void {
+        this.userDefaultsSubject
+            .pipe(
+                mergeMap((ud) => {
+                    ud.numberOfRowsPerTable = numberOfRowsPerTable;
+                    return this.setUserDefaultsFor(ud);
+                })
+            )
+            .subscribe((rslt) => {
+                let constPartSaved:any = this.storageService.localStorageGetterItem(this.constPart);
+                if (constPartSaved) {
+                    constPartSaved = JSON.parse(constPartSaved)
+                }
+                this.storageService.localStorageSetter(
+                    this.constPart,
+                    JSON.stringify({
+                        displayMode: constPartSaved.displayMode,
+                        numberOfRowsPerTable: numberOfRowsPerTable,
+                        screenName: this.constPart
+                    })
+                );
+                console.log(
+                    '%o: number of rows set to %d ===> %o',
+                    this.constPart,
+                    numberOfRowsPerTable,
+                    rslt
+                );
+            });
+    }
+
+    resolve(
+        route: ActivatedRouteSnapshot,
+        state: RouterStateSnapshot
+    ): Observable<any> {
+        return this.userDefaultsSubject;
+    }
+
+    canActivate(
+        route: ActivatedRouteSnapshot,
+        state: RouterStateSnapshot
+    ): Observable<boolean> {
+        // return this.getUserDefaultsFor(this.constPart)
+        return this.userDefaultsSubject.pipe(
+            map((resp) => {
+                const defaultViewName = resp
+                    ? resp.screenName === 'checks'
+                        ? resp.displayMode === 'in-checks' ||
+                        resp.displayMode === 'out-checks'
+                            ? resp.displayMode
+                            : 'in-checks'
+                        : resp.displayMode
+                    : this.defaultDisplayMode;
+
+                const urlToNavigate = [state.url.split('?')[0], defaultViewName];
+                console.log(
+                    'resolved ===> aRoute: %o, defaultViewName: %o,  navigate to %o ',
+                    state,
+                    defaultViewName,
+                    urlToNavigate
+                );
+
+                this.router.navigate(urlToNavigate, {
+                    queryParamsHandling: 'preserve',
+                    replaceUrl: true
+                });
+                return false;
+            })
+        );
+    }
+
+    ngOnDestroy(): void {
+        console.log('UserDefaultsResolver for %o destroyed', this.constPart);
+    }
+}

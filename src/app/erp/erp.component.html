@@ -1,0 +1,95 @@
+<div class="containerPage">
+	<header class="toolbar station_id" id="header" #appHeader>
+		<div
+				style="
+        display: flex;
+        align-content: center;
+        justify-content: space-between;
+        align-items: center;
+        height: 100%;
+      "
+		>
+			<div style="display: flex">
+				<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/erp.png" alt="LogoERP"/>
+
+				<div
+						class="select-user-to-admin"
+						*ngIf="userService.appData.isAdmin"
+						style="margin-right: 50px"
+				>
+					<div *ngIf="userService.appData.userOnBehalf">
+						{{ userService.appData.userOnBehalf.name }}
+					</div>
+					<button
+							class="button-link"
+							(click)="userService.appData.userOnBehalfPrompt.visible = true"
+					>
+						{{ 'החלף' }}
+					</button>
+				</div>
+			</div>
+
+			<div>
+				<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/bizibox-erp.png" alt="Logo_bizibox"/>
+			</div>
+		</div>
+	</header>
+
+	<main id="main" class="station_id isClose" #mainSection>
+		<div id="content" class="scroll-chrome">
+			<router-outlet></router-outlet>
+		</div>
+	</main>
+</div>
+
+<ng-container *ngIf="userService?.appData?.isAdmin">
+	<p-dialog (visibleChange)="userService.appData.userOnBehalfPrompt.visible = false"
+			[visible]="(userService.appData.userOnBehalfPrompt.visible)"
+			appendTo="body"
+			[resizable]="false"
+			[style]="{width: '602px'}"
+			[draggable]="true"
+			[minX]="0"
+			[minY]="0"
+			[modal]="true"
+			[header]="'בחירת משתמש'"
+			[styleClass]="'user-on-behalf-select-dialog'"
+	>
+		<ng-container *ngIf="userService.appData.userOnBehalfPrompt.visible">
+			<app-user-to-admin-selector #userSelector></app-user-to-admin-selector>
+
+			<div class="p-dialog-footer">
+				<!--                <pre>{{userSelector.form.value| json}}</pre>-->
+				<!--            <div class="p-dialog-footer" *ngIf="adminService.usersToAdmin| async">-->
+				<button
+						class="button-dark"
+						(click)="
+            userService.appData.userOnBehalfPrompt.onApprove(
+              userSelector.form.get('user').value,
+              userSelector.adminService.usersToAdminCriteria.type ||
+                userSelector.searchTypesDD[0].value
+            )
+          "
+						[disabled]="
+            userService.appData.userOnBehalfPrompt.processing ||
+            userSelector.form.get('user').invalid ||
+            userSelector.form.get('user').value ===
+              userService.appData.userOnBehalf?.id
+          "
+				>
+					<i
+							class="fas fa-fw fa-circle-notch fa-spin"
+							*ngIf="userService.appData.userOnBehalfPrompt.processing"
+					></i>
+					{{ 'actions.approve' | translate }}
+				</button>
+				<button
+						class="button-white button-link"
+						(click)="userService.appData.userOnBehalfPrompt.visible = false"
+				>
+					{{ 'actions.cancellation' | translate }}
+				</button>
+			</div>
+		</ng-container>
+	</p-dialog>
+</ng-container>

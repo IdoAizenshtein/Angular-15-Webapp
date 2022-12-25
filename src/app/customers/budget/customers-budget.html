@@ -1,0 +1,2613 @@
+<div
+		*ngIf="
+    !privScreenEmpty &&
+    !loaderPrivScreen &&
+    !(dataBudgets && dataBudgets.length && dataBudgets[0].budgetId)
+  "
+		class="loader"
+		style="margin-top: 240px"
+>
+	<div class="circle"></div>
+</div>
+
+<div class="budget">
+	<div #header>
+		<div class="titles filterRow">
+			<h2
+					[matTooltip]="'appWalk.customers.budget.pageTitle' | translate"
+					class="titlePage"
+					matTooltipPosition="after"
+			>
+				תקציב
+			</h2>
+			<div></div>
+		</div>
+		
+		<!--<div class="no-rows-found no-rows-found-lg"-->
+		<!--*ngIf="userService.appData.userData?.accounts && !userService.appData.userData?.accountSelect?.length">-->
+		<!--<ng-container *ngIf="!userService.appData.userData.accountSelect?.length">-->
+		<!--{{'expressions.selectAccount'| translate}}-->
+		<!--</ng-container>-->
+		<!--</div>-->
+		<div
+				*ngIf="dataBudgets && dataBudgets.length && dataBudgets[0].budgetId"
+				[class.red]="accountsNotUpdates && accountsNotUpdates.length"
+				class="alert"
+				style="margin-top: 0"
+		>
+			<div>
+				<div
+						*ngIf="accountsNotUpdates && accountsNotUpdates.length === 1"
+						class="outdated-view"
+				>
+					<div>
+						<div>
+							<i class="fas fa-fw fa-exclamation-triangle"></i>
+							
+							{{ 'sumsTitles.notUpdates' | translate }}
+							{{ 'sumsTitles.forAccount' | translate }}
+							{{ 'banks.' + accountsNotUpdates[0]['bankId'] | translate }}
+							{{ accountsNotUpdates[0].bankAccountId }}
+							({{ accountsNotUpdates[0].currency | currencySymbol }})
+							{{ 'sumsTitles.lastUpdate' | translate }}
+							{{
+							accountsNotUpdates[0].balanceLastUpdatedDate
+									| todayRelativeHumanize: 'days'
+							}}
+						</div>
+					</div>
+				</div>
+				
+				<div
+						*ngIf="accountsNotUpdates && accountsNotUpdates.length > 1"
+						class="outdated-view"
+				>
+					<div>
+						<div>
+							<div class="accountSelectOneHariga hoverUnderline">
+								<i class="fas fa-fw fa-exclamation-triangle"></i>
+								
+								{{ 'sumsTitles.notUpdates' | translate }} עבור
+								{{ accountsNotUpdates.length }}
+								{{ 'sumsTitles.accounts' | translate }} |
+								
+								<span
+										(click)="tooltipAccDeviation.toggle($event)"
+										[class.active]="tooltipAccDeviation.overlayVisible"
+										class="link"
+								>
+                  {{ 'sumsTitles.forDetails' | translate }}
+                </span>
+							</div>
+					
+							<p-overlayPanel
+									#tooltipAccDeviation
+									[style]="{     'margin-left': '180px',  'margin-top': '9px !important', 'width': 'auto' }"
+									appendTo="body"
+									styleClass="tooltip-bottom tooltip-acc-deviation accountsNotUpdates-budget dont-print"
+							>
+								<ul class="scroll-chrome">
+									<li
+											(click)="tooltipAccDeviation.hide()"
+											*ngFor="
+                      let acc of accountsNotUpdates
+                        | sortPipe: 'balanceLastUpdatedDate'
+                    "
+									>
+										<p>
+											{{ 'banks.' + acc.bankId | translate }}
+											{{ acc.bankAccountId }} ({{
+											acc.currency | currencySymbol
+											}})
+										</p>
+										<div>&nbsp; &nbsp;&nbsp;&nbsp;</div>
+										<small>
+											{{ 'sumsTitles.lastUpdate' | translate }}
+											{{
+											acc.balanceLastUpdatedDate
+													| todayRelativeHumanize: 'days'
+											}}
+										</small>
+									</li>
+								</ul>
+							</p-overlayPanel>
+						</div>
+					</div>
+				</div>
+			</div>
+			<button (click)="budgetCreate()">הוספת תקציב</button>
+		</div>
+	</div>
+	
+	<div>
+		<div *ngIf="privScreenEmpty" class="content alerts">
+			<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/budgetAlertIcon.png"/>
+			<h2>ברוכים הבאים למסך תקציב</h2>
+			<p>מומלץ להתחיל עם תקציב חודשי אשר מורכב מקטגוריות שתרצו לעקוב אחריהן.</p>
+			<button (click)="budgetCreate()" class="button-dark btnUpg" type="button">
+				הוספת תקציב
+			</button>
+		</div>
+		<div *ngIf="loaderPrivScreen" class="content alerts">
+			<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/budgetAlertIcon.png"/>
+			<div class="threePointsLoader">
+				<p>אנחנו מכינים עבורך את התקציב. התהליך יכול לקחת מספר שניות.</p>
+			</div>
+			
+			<div id="circleG">
+				<div class="circleG" id="circleG_1"></div>
+				<div class="circleG" id="circleG_2"></div>
+				<div class="circleG" id="circleG_3"></div>
+			</div>
+		</div>
+		
+		<div
+				#contentToPrint
+				*ngIf="dataBudgets && dataBudgets.length && dataBudgets[0].budgetId"
+				class="content printBlock"
+		>
+			<div
+					(scroll)="onScrollCubes()"
+					[appScrollHeight]="header.getBoundingClientRect().bottom + 11"
+					class="right scrollbar-dynamic showBarOnHover scroll-print"
+			>
+				<div
+						#budgetCubes
+						(click)="budgetActive(budget, true)"
+						*ngFor="let budget of dataBudgets"
+						[class.active]="budget.budgetId === budgetIdActive"
+						class="controlCube controlCubePrint"
+				>
+					<img
+							(click)="
+              budget.budgetId === budgetIdActive
+                ? openNav($event, budget, tooltipNav)
+                : null
+            "
+							[class.disabled]="budget.budgetId !== budgetIdActive"
+							class="navPoints"
+							height="16"
+							src="/assets/images/navPoints.png"
+							width="4"
+					/>
+					
+					<h3>{{ budget.budgetName }}</h3>
+					
+					<img
+							*ngIf="budget.indDefault === 1 && budget.indDefaultVar === 1"
+							[matTooltip]="
+              '
+                    התקציב של bizibox מכיל את כל הקטגוריות שהיו
+               \n
+                    בשימוש ב 12 החודשים האחרונים ואת כל חשבונות
+                \n
+                    הבנק. סכומי התקציב של הקטגוריות מעודכנים
+            \n
+                    לפי הממוצע של הקטגוריה ב 11 החודשים האחרונים.
+                         '
+            "
+							class="iconBizibox"
+							height="21"
+							matTooltipPosition="below"
+							src="/assets/images/indDefaultBudget.png"
+							width="21"
+					/>
+					<div
+							*ngIf="budget.showPanelDD && budget.budgetsDetails"
+							[@slideInOutDD]="
+              budget.showPanelDD && budget.budgetsDetails ? 'open' : 'closed'
+            "
+							class="data"
+					>
+						<ng-container
+								*ngIf="
+                budget.budgetTotalType === 'both' ||
+                budget.budgetTotalType === 'income'
+              "
+						>
+							<h4>תקציב הכנסות</h4>
+							<h4 class="text-ellipsis">
+								{{ formatWithoutPointsSum(budget.totalIncome) }}
+								{{ budget.currency }}
+							</h4>
+							<div class="bar">
+								<div *ngIf="budget.budgetsDetails" class="right">
+									<div class="top">
+										<p>
+											נותרו
+											
+											<span
+													*ngIf="
+                          budget.totalIncome !== 0 &&
+                          budget.budgetsDetails.totalIncomeUse >= 0
+                        "
+													class="ltrNum"
+													style="display: inline-block"
+											>
+                        {{
+												budget.budgetsDetails.totalIncomeUse >
+												budget.totalIncome
+														? 0
+														: formatWithoutPointsSum(
+																budget.totalIncome -
+																budget.budgetsDetails.totalIncomeUse
+														)
+												}}
+                      </span>
+											
+											{{ budget.currency }}
+										</p>
+										<p class="ltrNum">
+											{{ budget.currency }}
+											{{
+											formatWithoutPointsSum(
+													budget.budgetsDetails.totalIncomeUse
+											)
+											}}
+										</p>
+									</div>
+									<div class="line">
+										<div
+												[ngClass]="{
+                        green1:
+                          (budget.totalIncome === 0 &&
+                            budget.budgetsDetails.totalIncomeUse !== 0) ||
+                          round(
+                            budget.budgetsDetails.totalIncomeUse /
+                              (budget.totalIncome / 100)
+                          ) <= 33,
+                        green2:
+                          !(
+                            budget.totalIncome === 0 &&
+                            budget.budgetsDetails.totalIncomeUse !== 0
+                          ) &&
+                          round(
+                            budget.budgetsDetails.totalIncomeUse /
+                              (budget.totalIncome / 100)
+                          ) >= 34 &&
+                          round(
+                            budget.budgetsDetails.totalIncomeUse /
+                              (budget.totalIncome / 100)
+                          ) <= 66,
+                        green3:
+                          !(
+                            budget.totalIncome === 0 &&
+                            budget.budgetsDetails.totalIncomeUse !== 0
+                          ) &&
+                          round(
+                            budget.budgetsDetails.totalIncomeUse /
+                              (budget.totalIncome / 100)
+                          ) >= 67 &&
+                          round(
+                            budget.budgetsDetails.totalIncomeUse /
+                              (budget.totalIncome / 100)
+                          ) <= 99,
+                        green4:
+                          !(
+                            budget.totalIncome === 0 &&
+                            budget.budgetsDetails.totalIncomeUse !== 0
+                          ) &&
+                          round(
+                            budget.budgetsDetails.totalIncomeUse /
+                              (budget.totalIncome / 100)
+                          ) >= 100
+                      }"
+												[ngStyle]="{
+                        width:
+                          budget.budgetsDetails.totalIncomeUse < 0
+                            ? '0%'
+                            : budget.totalIncome === 0 &&
+                              budget.budgetsDetails.totalIncomeUse !== 0
+                            ? '20%'
+                            : budget.budgetsDetails.totalIncomeUse /
+                                (budget.totalIncome / 100) +
+                              '%'
+                      }"
+												class="fill"
+										></div>
+									</div>
+									<div class="bottom">
+										<p class="ltrNum">
+											({{
+											budget.totalIncome !== 0 &&
+											budget.budgetsDetails.totalIncomeUse >= 0
+													? (budget.budgetsDetails.totalIncomeUse /
+													(budget.totalIncome / 100) | number: '1.0-0')
+													: 0
+											}}
+											%)
+										</p>
+									</div>
+								</div>
+								<div
+										*ngIf="!budget.budgetsDetails"
+										class="right"
+										style="position: relative"
+								>
+									<div class="loaderPercent">
+										<div class="circle"></div>
+									</div>
+								</div>
+								<div class="left">
+									<img
+											(click)="
+                      budget.incomeAlert = !budget.incomeAlert;
+                      submitChangesMain(budget, true, false)
+                    "
+											[ngStyle]="
+                      ((budget.incomeAlert && !budget.hoverAlertIncome) ||
+                        (!budget.incomeAlert && budget.hoverAlertIncome)) && {
+                        margin: '0px 10px'
+                      }
+                    "
+											 [src]="
+                      budget.incomeAlert
+                        ? !budget?.hoverAlertIncome
+                          ? '/assets/images/bellOn.png'
+                          : '/assets/images/bellOff.png'
+                        : !budget?.hoverAlertIncome
+                        ? '/assets/images/bellOff.png'
+                        : '/assets/images/bellOn.png'
+                    "
+											[style.height]="
+                      budget.incomeAlert
+                        ? !budget?.hoverAlertIncome
+                          ? '20px'
+                          : '22px'
+                        : !budget?.hoverAlertIncome
+                        ? '22px'
+                        : '20px'
+                    "
+											[style.width]="
+                      budget.incomeAlert
+                        ? !budget?.hoverAlertIncome
+                          ? '16px'
+                          : '22px'
+                        : !budget?.hoverAlertIncome
+                        ? '22px'
+                        : '16px'
+                    "
+											class="bell-click"
+									/>
+									<p>
+										<input
+												#inputBoxTotalIncome
+												(blur)="submitChangesMain(budget)"
+												(change)="budget.prcIncome = $event.target.value"
+												(focus)="
+                        startDescriptionEditAtMain(budget, inputBoxTotalIncome)
+                      "
+												(keyup.enter)="submitChangesMain(budget)"
+												(keyup.esc)="inputBoxTotalIncome.blur()"
+												[disabled]="!budget.incomeAlert"
+												[ngModel]="budget.prcIncome | noComma"
+												appNumbersOnly="percentNum"
+												type="text"
+										/>
+										<span>%</span>
+									</p>
+								</div>
+							</div>
+						</ng-container>
+						<ng-container
+								*ngIf="
+                budget.budgetTotalType === 'both' ||
+                budget.budgetTotalType === 'outcome'
+              "
+						>
+							<h4>תקציב הוצאות</h4>
+							<h4 class="text-ellipsis">
+								{{ formatWithoutPointsSum(budget.totalOutcome) }}
+								{{ budget.currency }}
+							</h4>
+							<div class="bar">
+								<div *ngIf="budget.budgetsDetails" class="right">
+									<div class="top">
+										<p>
+											נותרו
+											
+											<span
+													*ngIf="
+                          budget.totalOutcome !== 0 &&
+                          budget.budgetsDetails.totalOutcomeUse >= 0
+                        "
+													class="ltrNum"
+													style="display: inline-block"
+											>
+                        {{
+												budget.budgetsDetails.totalOutcomeUse >
+												budget.totalOutcome
+														? 0
+														: formatWithoutPointsSum(
+																budget.totalOutcome -
+																budget.budgetsDetails.totalOutcomeUse
+														)
+												}}
+                      </span>
+											
+											{{ budget.currency }}
+										</p>
+										<p class="ltrNum">
+											{{ budget.currency }}
+											{{
+											formatWithoutPointsSum(
+													budget.budgetsDetails.totalOutcomeUse
+											)
+											}}
+										</p>
+									</div>
+									<div class="line">
+										<div
+												[ngClass]="{
+                        red1:
+                          (budget.totalOutcome === 0 &&
+                            budget.budgetsDetails.totalOutcomeUse !== 0) ||
+                          round(
+                            budget.budgetsDetails.totalOutcomeUse /
+                              (budget.totalOutcome / 100)
+                          ) <= 33,
+                        red2:
+                          !(
+                            budget.totalOutcome === 0 &&
+                            budget.budgetsDetails.totalOutcomeUse !== 0
+                          ) &&
+                          round(
+                            budget.budgetsDetails.totalOutcomeUse /
+                              (budget.totalOutcome / 100)
+                          ) >= 34 &&
+                          round(
+                            budget.budgetsDetails.totalOutcomeUse /
+                              (budget.totalOutcome / 100)
+                          ) <= 66,
+                        red3:
+                          !(
+                            budget.totalOutcome === 0 &&
+                            budget.budgetsDetails.totalOutcomeUse !== 0
+                          ) &&
+                          round(
+                            budget.budgetsDetails.totalOutcomeUse /
+                              (budget.totalOutcome / 100)
+                          ) >= 67 &&
+                          round(
+                            budget.budgetsDetails.totalOutcomeUse /
+                              (budget.totalOutcome / 100)
+                          ) <= 99,
+                        red4:
+                          !(
+                            budget.totalOutcome === 0 &&
+                            budget.budgetsDetails.totalOutcomeUse !== 0
+                          ) &&
+                          round(
+                            budget.budgetsDetails.totalOutcomeUse /
+                              (budget.totalOutcome / 100)
+                          ) >= 100
+                      }"
+												[ngStyle]="{
+                        width:
+                          budget.budgetsDetails.totalOutcomeUse < 0
+                            ? '0%'
+                            : budget.totalOutcome === 0 &&
+                              budget.budgetsDetails.totalOutcomeUse !== 0
+                            ? '20%'
+                            : budget.budgetsDetails.totalOutcomeUse /
+                                (budget.totalOutcome / 100) +
+                              '%'
+                      }"
+												class="fill"
+										></div>
+									</div>
+									<div class="bottom">
+										<p class="ltrNum">
+											({{
+											budget.totalOutcome !== 0 &&
+											budget.budgetsDetails.totalOutcomeUse >= 0
+													? (budget.budgetsDetails.totalOutcomeUse /
+													(budget.totalOutcome / 100) | number: '1.0-0')
+													: 0
+											}}
+											%)
+										</p>
+									</div>
+								</div>
+								<div
+										*ngIf="!budget.budgetsDetails"
+										class="right"
+										style="position: relative"
+								>
+									<div class="loaderPercent">
+										<div class="circle"></div>
+									</div>
+								</div>
+								<div class="left">
+									<img
+											(click)="
+                      budget.outcomeAlert = !budget.outcomeAlert;
+                      submitChangesMain(budget, true, true)
+                    "
+											[ngStyle]="
+                      ((budget.outcomeAlert && !budget.hoverAlertOut) ||
+                        (!budget.outcomeAlert && budget.hoverAlertOut)) && {
+                        margin: '0px 10px'
+                      }
+                    "
+										 [src]="
+                      budget.outcomeAlert
+                        ? !budget?.hoverAlertOut
+                          ? '/assets/images/bellOn.png'
+                          : '/assets/images/bellOff.png'
+                        : !budget?.hoverAlertOut
+                        ? '/assets/images/bellOff.png'
+                        : '/assets/images/bellOn.png'
+                    "
+											[style.height]="
+                      budget.outcomeAlert
+                        ? !budget?.hoverAlertOut
+                          ? '20px'
+                          : '22px'
+                        : !budget?.hoverAlertOut
+                        ? '22px'
+                        : '20px'
+                    "
+											[style.width]="
+                      budget.outcomeAlert
+                        ? !budget?.hoverAlertOut
+                          ? '16px'
+                          : '22px'
+                        : !budget?.hoverAlertOut
+                        ? '22px'
+                        : '16px'
+                    "
+											class="bell-click"
+									/>
+									<p>
+										<input
+												#inputBoxTotalOut
+												(blur)="submitChangesMain(budget)"
+												(change)="budget.prcOutcome = $event.target.value"
+												(focus)="
+                        startDescriptionEditAtMain(budget, inputBoxTotalOut)
+                      "
+												(keyup.enter)="submitChangesMain(budget)"
+												(keyup.esc)="inputBoxTotalOut.blur()"
+												[disabled]="!budget.outcomeAlert"
+												[ngModel]="budget.prcOutcome | noComma"
+												appNumbersOnly="percentNum"
+												type="text"
+										/>
+										<span>%</span>
+									</p>
+								</div>
+							</div>
+						</ng-container>
+					</div>
+					<div class="bottomTitle">
+						<div class="line"></div>
+						<div class="text">
+							<div class="right">
+								<img
+										height="20"
+										src="/assets/images/view-bankAccount.png"
+										width="20"
+								/>
+								
+								<ng-container *ngIf="budget.budgetAccounts.length > 1">
+									<p
+											(click)="
+                      tooltipAcc.toggle($event); $event.stopPropagation()
+                    "
+									>
+										{{ budget.budgetAccounts.length }}
+										{{ 'sumsTitles.accounts' | translate }}
+									</p>
+									
+									<p-overlayPanel
+											#tooltipAcc
+											[style]="{
+                      transform: 'translate(-50%, 10px)',
+                      width: 'auto'
+                    }"
+											appendTo="body"
+											styleClass="tooltip-acc-list budget-tooltip-list dont-print"
+									>
+										<ul class="scroll-chrome">
+											<li *ngFor="let acc of budget.budgetAccounts">
+												{{ getInfoAcc(acc, 'accountNickname') }}
+											</li>
+										</ul>
+									</p-overlayPanel>
+								</ng-container>
+								<ng-container *ngIf="budget.budgetAccounts.length === 1">
+									<p class="one">
+										{{
+										getInfoAcc(budget.budgetAccounts[0], 'accountNickname')
+										}}
+									</p>
+								</ng-container>
+							</div>
+							<div
+									*ngIf="!budget.budgetsDetails && budget.showPanelDD"
+									class="loaderPercent"
+							>
+								<div class="circle"></div>
+							</div>
+							<div class="left">
+								<img
+										height="16"
+										src="/assets/images/clockSmall.png"
+										width="16"
+								/>
+								
+								<strong>
+									{{
+									budget.frequencyDesc === 'MONTH'
+											? 'חודשי'
+											: budget.frequencyDesc === 'ONE_TIME'
+													? 'חד פעמי'
+													: 'שנתי'
+									}}
+								</strong>
+								
+								<div
+										*ngIf="budget.frequencyDesc !== 'ONE_TIME'"
+										class="dateFilter"
+								>
+									<!--                            <div class="dateFilter" *ngIf="accountsNotUpdatesOldestTransDate && getBudgetsDetails().frequencyDesc !== 'ONE_TIME'">-->
+									<i
+											(click)="
+                      budget.budgetId === budgetIdActive ? prevDate() : null
+                    "
+											[class.disabled]="
+                      budget.budgetId !== budgetIdActive || !budget.canGoBack
+                    "
+											class="fa fa-angle-right"
+									></i>
+									<!--                                <i class="fa fa-angle-right" (click)="prevDate()"-->
+									<!--                                   [class.disabled]="disabledNavDate('prev')"></i>-->
+									<ng-container *ngIf="budget.frequencyDesc === 'MONTH'"
+									>{{ dtPipe.transform(budget.dateTill, 'MM') }} /
+									</ng-container>
+									{{ dtPipe.transform(budget.dateTill, 'yyyy') }}
+									<i
+											(click)="
+                      budget.budgetId === budgetIdActive ? nextDate() : null
+                    "
+											[class.disabled]="
+                      budget.budgetId !== budgetIdActive || !budget.canGoForward
+                    "
+											class="fa fa-angle-left"
+									></i>
+									<!--                                <i class="fa fa-angle-left" (click)="nextDate()"-->
+									<!--                                   [class.disabled]="disabledNavDate('next')"></i>-->
+								</div>
+								
+								<span
+										*ngIf="budget.frequencyDesc === 'ONE_TIME'"
+										class="ltrNum"
+								>
+                  ({{ budget.dateFrom | date: 'dd/MM/yy' }} -
+									{{ budget.dateTill | date: 'dd/MM/yy' }})
+                </span>
+								
+								<!--                                <span *ngIf="budget.frequencyDesc === 'YEAR'">-->
+								<!--                                    ({{budget.dateFrom | date:'yyyy'}})-->
+								<!--                                </span>-->
+							</div>
+						</div>
+						<div style="height: 24px">
+							<button
+									(click)="
+                  budget.showPanelDD = !budget.showPanelDD;
+                  budgetActive(budget, false);
+                  $event.stopPropagation()
+                "
+									class="showPanelDD"
+									style="height: 24px"
+							>
+								<!--                                *ngIf="!budget.showPanelDD || budget.budgetsDetails"-->
+								<img
+										style="height: auto; width: auto; position: relative;" fill [ngSrc]="
+                    '/assets/images/arrow-' +
+                    (budget.showPanelDD ? 'up' : 'down') +
+                    '.png'
+                  "
+								/>
+							</button>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="center controlCubePrint"></div>
+			<div class="left">
+				<div
+						*ngIf="
+            (budgetIdActive && !isShowBudgetsDetails()) ||
+            (budgetIdActive &&
+              !getBudgetsDetails().budgetsDetails.details.length)
+          "
+						class="controlCube active"
+						style="position: relative; height: 300px"
+				>
+					<div class="loader">
+						<div class="circle"></div>
+					</div>
+				</div>
+				
+				<div
+						*ngIf="
+            isShowBudgetsDetails() &&
+            getBudgetsDetails().budgetsDetails.details &&
+            getBudgetsDetails().budgetsDetails.details.length
+          "
+						class="controlCube active html-inlined"
+						style="margin-bottom: 20px"
+				>
+					<div
+							[class.isIndDefaultMargin]="
+              getBudgetsDetails().indDefault === 2 ||
+              getBudgetsDetails().indDefaultVar === 2
+            "
+							class="rowOfTitles"
+							style="padding-left: 7px"
+					>
+						<div class="rightCubeTitle">
+							<div
+									*ngIf="
+                  (totals.length &&
+                    getBudgetsDetails().budgetTotalType === 'both') ||
+                  getBudgetsDetails().budgetTotalType === 'income'
+                "
+							>
+								סה”כ קטגוריות הכנסה {{ formatWithoutPointsSum(totals[1]) }}
+								{{ getBudgetsDetails().currency }}
+								
+								<div
+										*ngIf="getBudgetsDetails().totalIncome - totals[1] !== 0"
+										class="rowBottom"
+								>
+                  <span *ngIf="getBudgetsDetails().totalIncome - totals[1] > 0">
+                    נמוך
+                  </span>
+									<span *ngIf="getBudgetsDetails().totalIncome - totals[1] < 0">
+                    גבוה
+                  </span>
+									
+									ב
+									{{
+									formatWithoutPointsSum(
+											getBudgetsDetails().totalIncome - totals[1]
+									)
+									}}
+									{{ getBudgetsDetails().currency }} מהתקציב שהגדרת
+								</div>
+							</div>
+							<div
+									*ngIf="
+                  (totals.length &&
+                    getBudgetsDetails().budgetTotalType === 'both') ||
+                  getBudgetsDetails().budgetTotalType === 'outcome'
+                "
+							>
+								סה”כ קטגוריות הוצאה {{ formatWithoutPointsSum(totals[0]) }}
+								{{ getBudgetsDetails().currency }}
+								
+								<div
+										*ngIf="getBudgetsDetails().totalOutcome - totals[0] !== 0"
+										class="rowBottom"
+								>
+                  <span
+		                  *ngIf="getBudgetsDetails().totalOutcome - totals[0] > 0"
+                  >
+                    נמוך
+                  </span>
+									<span
+											*ngIf="getBudgetsDetails().totalOutcome - totals[0] < 0"
+									>
+                    גבוה
+                  </span>
+									
+									ב
+									{{
+									formatWithoutPointsSum(
+											getBudgetsDetails().totalOutcome - totals[0]
+									)
+									}}
+									{{ getBudgetsDetails().currency }} מהתקציב שהגדרת
+								</div>
+							</div>
+						</div>
+						<div class="leftCubeTitle">
+							<div
+									class="ddWrapBudgetOrderType"
+									style="
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                "
+							>
+								<mat-icon
+										(click)="changeSort()"
+										[svgIcon]="
+                    !sortDown
+                      ? getBudgetsDetails().budgetsDetails
+                          .budgetOrderTypeDesc === 'CATEGORY'
+                        ? 'descending_sort'
+                        : 'ascending_sort'
+                      : getBudgetsDetails().budgetsDetails
+                          .budgetOrderTypeDesc === 'CATEGORY'
+                      ? 'ascending_sort'
+                      : 'descending_sort'
+                  "
+										style="
+                    height: 16px;
+                    cursor: pointer;
+                    width: 16px;
+                    color: #022258;
+                    fill: #022258;
+                    margin: 5px 0px 0px 1px;
+                  "
+								></mat-icon>
+								<p-dropdown
+										(onChange)="submitChangesOPERATIONTYPE($event)"
+										[(ngModel)]="
+                    getBudgetsDetails().budgetsDetails.budgetOrderTypeDesc
+                  "
+										[dropdownIcon]="'p-dropdown-icon'"
+										[options]="budgetOrderType"
+										[style]="{
+                    width: '110px',
+                    'margin-left': '14px',
+                    height: '27px',
+                    'border-bottom-width': '1px'
+                  }"
+								
+								>
+								</p-dropdown>
+							</div>
+						</div>
+					</div>
+					<div
+							*ngIf="
+              getBudgetsDetails().indDefault === 2 ||
+              getBudgetsDetails().indDefault === 1
+            "
+							class="indDefault2"
+							style="padding-left: 20px"
+					>
+						<p (click)="restorePopupOpen = true">
+							{{
+							getBudgetsDetails().indDefault === 2 ||
+							getBudgetsDetails().indDefaultVar === 2
+									? 'שיחזור תקציב bizibox'
+									: 'רענון נתונים'
+							}}
+						</p>
+						<img
+								[matTooltip]="
+                '
+                        הסכומים יתעדכנו לפי הממוצע ב 11 החודשים
+               \n
+                        האחרונים. אם נוספו או הוסרו קטגוריות או חשבונות
+                \n
+                        בנק מהמערכת הרשימה תתעדכן בהתאם.
+                         '
+              "
+								matTooltipPosition="below"
+								src="/assets/images/infoBudgetCreate.png"
+						/>
+					</div>
+					<div class="mainTable">
+						<div class="header" style="padding-left: 7px">
+							<div class="tr">
+								<div></div>
+								<div></div>
+								<div *ngIf="getBudgetsDetails().budgetTotalType === 'both'">
+									הוצאה
+								</div>
+								<div
+										*ngIf="getBudgetsDetails().budgetTotalType !== 'both'"
+										[class.flexZero]="
+                    getBudgetsDetails().budgetTotalType === 'income'
+                  "
+								></div>
+								<div *ngIf="getBudgetsDetails().budgetTotalType === 'both'">
+									הכנסה
+								</div>
+								<div
+										*ngIf="getBudgetsDetails().budgetTotalType !== 'both'"
+										[class.flexZero]="
+                    getBudgetsDetails().budgetTotalType === 'outcome'
+                  "
+								></div>
+								<div></div>
+								<div></div>
+								<div></div>
+							</div>
+						</div>
+						<div
+								[appScrollHeight]="header.getBoundingClientRect().bottom + 130"
+								class="body scrollbar-dynamic scroll-print"
+								style="padding-left: 7px"
+						>
+							<div
+									#budgetCategoryRows
+									*ngFor="
+                  let detailsRow of getBudgetsDetails().budgetsDetails.details;
+                  let idxs = index
+                "
+									[class.bank-acc-details-row-selected]="
+                  selectedTransaction === detailsRow
+                "
+									[class.deleted]="detailsRow.deleted"
+									class="tr"
+									tabindex="-1"
+							>
+								<ng-container *ngIf="!detailsRow?.deleted">
+									<div>
+										<ng-container [ngSwitch]="detailsRow?.favorite">
+											<ng-container *ngSwitchCase="false">
+												<img
+														(click)="
+                            detailsRow.favorite = true;
+                            changeFavoriteAndAlert(detailsRow)
+                          "
+														style="height: auto; width: auto;"  [src]="
+                            !detailsRow?.hover
+                              ? '/assets/images/starRegular.png'
+                              : '/assets/images/starCheck.png'
+                          "
+														matTooltip="סימון כמועדף"
+														matTooltipPosition="below"
+												/>
+											</ng-container>
+											<ng-container *ngSwitchCase="true">
+												<img
+														(click)="
+                            detailsRow.favorite = false;
+                            changeFavoriteAndAlert(detailsRow)
+                          "
+														style="height: auto; width: auto;"  [src]="
+                            !detailsRow?.hover
+                              ? '/assets/images/starCheck.png'
+                              : '/assets/images/starRegular.png'
+                          "
+														matTooltip="סימון כלא מועדף"
+														matTooltipPosition="below"
+												/>
+											</ng-container>
+										</ng-container>
+									</div>
+									<div>{{ detailsRow.keyName }}</div>
+									<div
+											(blur)="
+                      !getBudgetsDetails().canGoForward &&
+                        detailsRow.expence &&
+                        statesRows(
+                          'leave',
+                          detailsRow,
+                          getBudgetsDetails().budgetsDetails.details
+                        )
+                    "
+											(click)="
+                      !getBudgetsDetails().canGoForward &&
+                        detailsRow.expence &&
+                        statesRows(
+                          'focus',
+                          detailsRow,
+                          getBudgetsDetails().budgetsDetails.details,
+                          idxs
+                        )
+                    "
+											(focus)="
+                      !getBudgetsDetails().canGoForward &&
+                        detailsRow.expence &&
+                        statesRows(
+                          'focus',
+                          detailsRow,
+                          getBudgetsDetails().budgetsDetails.details,
+                          idxs
+                        )
+                    "
+											[class.disabled]="getBudgetsDetails().canGoForward"
+											[class.flexZero]="
+                      getBudgetsDetails().budgetTotalType === 'income'
+                    "
+									>
+										<!--                                    <div-->
+										<!--                                            [class.flexZero]="getBudgetsDetails().budgetTotalType === 'income'"-->
+										<!--                                            [class.disabled]="!disabledNavDate('next')"-->
+										<!--                                         (blur)="disabledNavDate('next') && detailsRow.expence && statesRows('leave', detailsRow, getBudgetsDetails().budgetsDetails.details)"-->
+										<!--                                         (focus)="disabledNavDate('next') && detailsRow.expence && statesRows('focus', detailsRow, getBudgetsDetails().budgetsDetails.details, idxs);"-->
+										<!--                                         (click)="disabledNavDate('next') && detailsRow.expence && statesRows('focus', detailsRow, getBudgetsDetails().budgetsDetails.details, idxs);">-->
+										<span
+												*ngIf="detailsRow.expence && !detailsRow.totalEdit"
+												class="text-item text-ellipsis"
+										>
+                      {{ formatWithoutPointsSum(detailsRow.total) }}
+                    </span>
+										<i *ngIf="detailsRow.expence && !detailsRow.totalEdit"
+										>&nbsp;</i
+										>
+										<input
+												#inputBoxTotal
+												(blur)="submitChanges($event, 'total')"
+												(change)="
+                        detailsRow.total = $event.target.value; submitChangesTemp()
+                      "
+												(focus)="
+                        startDescriptionEditAt(detailsRow, inputBoxTotal)
+                      "
+												(keyup.enter)="submitChanges($event, 'total')"
+												(keyup.esc)="cancelChanges(); inputBoxTotal.blur()"
+												*ngIf="
+                        detailsRow.expence && detailsRow.totalEdit === true
+                      "
+												[id]="detailsRow.keyId + detailsRow.expence"
+												[ngModel]="detailsRow.total | noComma"
+												appNumbersOnly="positiveInt"
+												type="text"
+										/>
+									</div>
+									<div
+											(blur)="
+                      !getBudgetsDetails().canGoForward &&
+                        !detailsRow.expence &&
+                        statesRows(
+                          'leave',
+                          detailsRow,
+                          getBudgetsDetails().budgetsDetails.details
+                        )
+                    "
+											(click)="
+                      !getBudgetsDetails().canGoForward &&
+                        !detailsRow.expence &&
+                        statesRows(
+                          'focus',
+                          detailsRow,
+                          getBudgetsDetails().budgetsDetails.details,
+                          idxs
+                        )
+                    "
+											(focus)="
+                      !getBudgetsDetails().canGoForward &&
+                        !detailsRow.expence &&
+                        statesRows(
+                          'focus',
+                          detailsRow,
+                          getBudgetsDetails().budgetsDetails.details,
+                          idxs
+                        )
+                    "
+											[class.disabled]="getBudgetsDetails().canGoForward"
+											[class.flexZero]="
+                      getBudgetsDetails().budgetTotalType === 'outcome'
+                    "
+									>
+										<!--                                    <div [class.flexZero]="getBudgetsDetails().budgetTotalType === 'outcome'"-->
+										<!--                                         [class.disabled]="!disabledNavDate('next')"-->
+										<!--                                         (blur)="disabledNavDate('next') && !detailsRow.expence && statesRows('leave', detailsRow, getBudgetsDetails().budgetsDetails.details)"-->
+										<!--                                         (focus)="disabledNavDate('next') && !detailsRow.expence && statesRows('focus', detailsRow, getBudgetsDetails().budgetsDetails.details, idxs);"-->
+										<!--                                         (click)="disabledNavDate('next') && !detailsRow.expence && statesRows('focus', detailsRow, getBudgetsDetails().budgetsDetails.details, idxs);">-->
+										<span
+												*ngIf="!detailsRow.expence && !detailsRow.totalEdit"
+												class="text-item text-ellipsis"
+										>
+                      {{ formatWithoutPointsSum(detailsRow.total) }}
+                    </span>
+										<i *ngIf="!detailsRow.expence && !detailsRow.totalEdit"
+										>&nbsp;</i
+										>
+										<input
+												#inputBoxTotal
+												(blur)="submitChanges($event, 'total')"
+												(change)="
+                        detailsRow.total = $event.target.value; submitChangesTemp()
+                      "
+												(focus)="
+                        startDescriptionEditAt(detailsRow, inputBoxTotal)
+                      "
+												(keyup.enter)="submitChanges($event, 'total')"
+												(keyup.esc)="cancelChanges(); inputBoxTotal.blur()"
+												*ngIf="
+                        !detailsRow.expence && detailsRow.totalEdit === true
+                      "
+												[id]="detailsRow.keyId + detailsRow.expence"
+												[ngModel]="detailsRow.total | noComma"
+												appNumbersOnly="positiveInt"
+												type="text"
+										/>
+									</div>
+									<div>
+										<div class="bar">
+											<div class="top">
+												<p>
+													נותרו
+													
+													<span
+															*ngIf="
+                              detailsRow.total !== 0 &&
+                              detailsRow.totalKeyUse >= 0
+                            "
+													>
+                            {{
+														detailsRow.total - detailsRow.totalKeyUse < 0 ||
+														detailsRow.totalKeyUse > detailsRow.total
+																? 0
+																: formatWithoutPointsSum(
+																		detailsRow.total - detailsRow.totalKeyUse
+																)
+														}}
+                          </span>
+													
+													<span
+															*ngIf="
+                              detailsRow.total === 0 ||
+                              detailsRow.totalKeyUse < 0
+                            "
+													>-</span
+													>
+													{{ getBudgetsDetails().currency }}
+												</p>
+												<div class="leftTopBar">
+													<p class="ltrNum">
+														{{ getBudgetsDetails().currency }}
+														{{ formatWithoutPointsSum(detailsRow.totalKeyUse) }}
+													</p>
+													<p class="ltrNum">
+														({{
+														detailsRow.total &&
+														getNumber(detailsRow.total) !== 0 &&
+														detailsRow.totalKeyUse >= 0
+																? (detailsRow.totalKeyUse /
+																(getNumber(detailsRow.total) / 100)
+																		| number: '1.0-0')
+																: 0
+														}}
+														%)
+													</p>
+												</div>
+											</div>
+											<div class="line">
+												<div
+														[ngClass]="{
+                            green1:
+                              (!detailsRow.expence &&
+                                detailsRow.total === 0 &&
+                                detailsRow.totalKeyUse !== 0) ||
+                              (!detailsRow.expence &&
+                                round(
+                                  detailsRow.totalKeyUse /
+                                    (detailsRow.total / 100)
+                                ) <= 33.999999),
+                            green2:
+                              !(
+                                detailsRow.total === 0 &&
+                                detailsRow.totalKeyUse !== 0
+                              ) &&
+                              !detailsRow.expence &&
+                              round(
+                                detailsRow.totalKeyUse /
+                                  (detailsRow.total / 100)
+                              ) >= 34 &&
+                              round(
+                                detailsRow.totalKeyUse /
+                                  (detailsRow.total / 100)
+                              ) <= 66.999999,
+                            green3:
+                              !(
+                                detailsRow.total === 0 &&
+                                detailsRow.totalKeyUse !== 0
+                              ) &&
+                              !detailsRow.expence &&
+                              round(
+                                detailsRow.totalKeyUse /
+                                  (detailsRow.total / 100)
+                              ) >= 67 &&
+                              round(
+                                detailsRow.totalKeyUse /
+                                  (detailsRow.total / 100)
+                              ) <= 99.999999,
+                            green4:
+                              !(
+                                detailsRow.total === 0 &&
+                                detailsRow.totalKeyUse !== 0
+                              ) &&
+                              !detailsRow.expence &&
+                              round(
+                                detailsRow.totalKeyUse /
+                                  (detailsRow.total / 100)
+                              ) >= 100,
+                            red1:
+                              (detailsRow.expence &&
+                                detailsRow.total === 0 &&
+                                detailsRow.totalKeyUse !== 0) ||
+                              (detailsRow.expence &&
+                                round(
+                                  detailsRow.totalKeyUse /
+                                    (detailsRow.total / 100)
+                                ) <= 33.999999),
+                            red2:
+                              !(
+                                detailsRow.total === 0 &&
+                                detailsRow.totalKeyUse !== 0
+                              ) &&
+                              detailsRow.expence &&
+                              round(
+                                detailsRow.totalKeyUse /
+                                  (detailsRow.total / 100)
+                              ) >= 34 &&
+                              round(
+                                detailsRow.totalKeyUse /
+                                  (detailsRow.total / 100)
+                              ) <= 66.999999,
+                            red3:
+                              !(
+                                detailsRow.total === 0 &&
+                                detailsRow.totalKeyUse !== 0
+                              ) &&
+                              detailsRow.expence &&
+                              round(
+                                detailsRow.totalKeyUse /
+                                  (detailsRow.total / 100)
+                              ) >= 67 &&
+                              round(
+                                detailsRow.totalKeyUse /
+                                  (detailsRow.total / 100)
+                              ) <= 99.999999,
+                            red4:
+                              !(
+                                detailsRow.total === 0 &&
+                                detailsRow.totalKeyUse !== 0
+                              ) &&
+                              detailsRow.expence &&
+                              round(
+                                detailsRow.totalKeyUse /
+                                  (detailsRow.total / 100)
+                              ) >= 100
+                          }"
+														[ngStyle]="{
+                            width:
+                              detailsRow.totalKeyUse < 0
+                                ? '0%'
+                                : detailsRow.total === 0 &&
+                                  detailsRow.totalKeyUse !== 0
+                                ? '20%'
+                                : detailsRow.totalKeyUse /
+                                    (detailsRow.total / 100) +
+                                  '%'
+                          }"
+														class="fill"
+												></div>
+											</div>
+										</div>
+									</div>
+									<div>
+										<div class="bell">
+											<img
+													(click)="
+                          detailsRow.alert = !detailsRow.alert;
+                          changeFavoriteAndAlert(detailsRow, true)
+                        "
+													[ngStyle]="
+                          ((detailsRow.alert && !detailsRow.hoverAlert) ||
+                            (!detailsRow.alert && detailsRow.hoverAlert)) && {
+                            margin: '0px 10px'
+                          }
+                        "
+											 [src]="
+                          detailsRow.alert
+                            ? !detailsRow?.hoverAlert
+                              ? '/assets/images/bellOn.png'
+                              : '/assets/images/bellOff.png'
+                            : !detailsRow?.hoverAlert
+                            ? '/assets/images/bellOff.png'
+                            : '/assets/images/bellOn.png'
+                        "
+													[style.height]="
+                          detailsRow.alert
+                            ? !detailsRow?.hoverAlert
+                              ? '20px'
+                              : '22px'
+                            : !detailsRow?.hoverAlert
+                            ? '22px'
+                            : '20px'
+                        "
+													[style.width]="
+                          detailsRow.alert
+                            ? !detailsRow?.hoverAlert
+                              ? '16px'
+                              : '22px'
+                            : !detailsRow?.hoverAlert
+                            ? '22px'
+                            : '16px'
+                        "
+													class="bell-click"
+											/>
+											<p>
+												<input
+														#inputBoxTotal
+														(blur)="submitChanges($event, 'alertPrc')"
+														(change)="detailsRow.alertPrc = $event.target.value"
+														(focus)="
+                            startDescriptionEditAt(detailsRow, inputBoxTotal)
+                          "
+														(keyup.enter)="submitChanges($event, 'alertPrc')"
+														(keyup.esc)="cancelChanges(); inputBoxTotal.blur()"
+														[disabled]="!detailsRow.alert"
+														[ngModel]="detailsRow.alertPrc | noComma"
+														appNumbersOnly="percentNum"
+														type="text"
+												/>
+												<!--<span>{{detailsRow.alertPrc}}</span>-->
+												<span>%</span>
+											</p>
+										</div>
+									</div>
+									<div style="position: relative">
+										<img
+												(click)="budgetHistoryPrompt.show(detailsRow)"
+											 [src]="
+                        detailsRow.isBudgetTrans
+                          ? '/assets/images/isBudgetTransTrue.png'
+                          : '/assets/images/isBudgetTransFalse.png'
+                      "
+												height="13"
+												style="position: absolute; left: 14px; top: -8px"
+												width="13"
+										/>
+										<img
+												(click)="budgetHistoryPrompt.show(detailsRow)"
+												src="/assets/images/bar-chart.png"
+										/>
+									</div>
+								</ng-container>
+								
+								<ng-container *ngIf="detailsRow.deleted">
+									<div></div>
+									<div>{{ detailsRow.keyName }}</div>
+									<div></div>
+									<div></div>
+									<div>
+										הקטגוריה נמחקה.
+										
+										<span (click)="removeKey(detailsRow, idxs)">
+                      להסרה מהתקציב
+
+                      <img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/trash.png"/>
+                    </span>
+									</div>
+									<div></div>
+									<div></div>
+								</ng-container>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			
+			<p-overlayPanel
+					#tooltipNav
+					[style]="{     'margin-left': '82px',
+					'margin-top': '8px !important',
+					 width: 'auto' }"
+					appendTo="body"
+					styleClass="tooltip-bottom tooltip-acc-deviation tooltip-daily-edit controlCube-tooltipNav dont-print"
+			>
+				<ul *ngIf="budgetNav" style="width: 130px">
+					<li
+							(click)="
+              budgetActive(budgetNav, false, true, true); tooltipNav.hide()
+            "
+							(mouseout)="budgetNav.src1 = false"
+							(mouseover)="budgetNav.src1 = true"
+							style="padding: 0 6px"
+					>
+						<div
+								class="p-helper-clearfix"
+								style="display: flex; display: -ms-flexbox"
+						>
+							<div style="align-self: center; flex: 24; -ms-flex: 24">
+								<img
+								 [src]="
+                    !budgetNav.src1
+                      ? '/assets/images/pencil2.png'
+                      : '/assets/images/pencil2Hover.png'
+                  "
+								 width="14"
+								 height="14"
+										style="width: 14px; height: 14px; vertical-align: middle"
+								/>
+							</div>
+							<p
+									class="nameAcc"
+									style="
+                  overflow: hidden;
+                  white-space: nowrap;
+                  text-overflow: ellipsis;
+                  flex: 120;
+                  -ms-flex: 120;
+                "
+							>
+								עריכה
+							</p>
+						</div>
+					</li>
+					
+					<li
+							(click)="budgetActive(budgetNav, false, true); tooltipNav.hide()"
+							(mouseout)="budgetNav.src2 = false"
+							(mouseover)="budgetNav.src2 = true"
+							style="padding: 0 6px"
+					>
+						<div
+								class="p-helper-clearfix"
+								style="display: flex; display: -ms-flexbox"
+						>
+							<div style="align-self: center; flex: 24; -ms-flex: 24">
+								<img
+									[src]="
+                    !budgetNav.src2
+                      ? '/assets/images/duplication.png'
+                      : '/assets/images/duplicationHover.png'
+                  "
+										width="13"
+										height="15"
+										style="
+                    width: 13px;
+                    height: 15px;
+                    margin-top: -5px;
+                    display: inline-block;
+                    vertical-align: middle;
+                  "
+								/>
+							</div>
+							<p
+									class="nameAcc"
+									style="
+                  overflow: hidden;
+                  white-space: nowrap;
+                  text-overflow: ellipsis;
+                  flex: 120;
+                  -ms-flex: 120;
+                "
+							>
+								שיכפול תקציב
+							</p>
+						</div>
+					</li>
+					
+					<li
+							(click)="printBudget(contentToPrint); tooltipNav.hide()"
+							style="padding: 0 6px"
+					>
+						<div
+								class="p-helper-clearfix"
+								style="display: flex; display: -ms-flexbox"
+						>
+							<div style="align-self: center; flex: 24; -ms-flex: 24">
+								<img
+									 [ngSrc]="'/assets/images/to-printer-sm.png'"
+									 width="13"
+									 height="15"
+										style="
+                    width: 13px;
+                    height: 15px;
+                    margin-top: -5px;
+                    display: inline-block;
+                    vertical-align: middle;
+                  "
+								/>
+							</div>
+							<p
+									class="nameAcc"
+									style="
+                  overflow: hidden;
+                  white-space: nowrap;
+                  text-overflow: ellipsis;
+                  flex: 120;
+                  -ms-flex: 120;
+                "
+							>
+								הדפסה
+							</p>
+						</div>
+					</li>
+					
+					<li
+							(click)="onRemoveClick(budgetNav); tooltipNav.hide()"
+							(mouseout)="budgetNav.src3 = false"
+							(mouseover)="budgetNav.src3 = true"
+							*ngIf="budgetNav.indDefault !== 1 && budgetNav.indDefault !== 2"
+							style="padding: 0 6px"
+					>
+						<div
+								class="p-helper-clearfix"
+								style="display: flex; display: -ms-flexbox"
+						>
+							<div style="align-self: center; flex: 24; -ms-flex: 24">
+								<img
+									 [src]="
+                    !budgetNav.src3
+                      ? '/assets/images/trash2.png'
+                      : '/assets/images/trash2Hover.png'
+                  "
+										width="13"
+										height="16"
+										style="width: 13px; height: 16px; vertical-align: middle"
+								/>
+							</div>
+							<p
+									class="nameAcc"
+									style="
+                  overflow: hidden;
+                  white-space: nowrap;
+                  text-overflow: ellipsis;
+                  flex: 120;
+                  -ms-flex: 120;
+                "
+							>
+								מחיקה
+							</p>
+						</div>
+					</li>
+				</ul>
+			</p-overlayPanel>
+		</div>
+	</div>
+</div>
+
+<p-dialog (visibleChange)="deleteConfirmationPrompt.visible = false"
+          [draggable]="true"
+
+          [minX]="0"
+          [minY]="0"
+          [modal]="true"
+
+          [resizable]="false"
+          [style]="{width: 352 + 'px'}"
+          [visible]="(deleteConfirmationPrompt.visible)"
+          appendTo="body"
+          styleClass="deleteBudgetDialog"
+>
+	<p-header>{{ 'מחיקת תקציב' }}</p-header>
+	
+	<div [innerHTML]="deleteConfirmationPrompt?.message" class="mat-h3"></div>
+	
+	<p-footer>
+		<div
+				style="
+        width: 100%;
+        display: flex;
+        display: -ms-flexbox;
+        justify-content: flex-end;
+      "
+		>
+			<button
+					(click)="deleteConfirmationPrompt.visible = false"
+					class="button-white button-link"
+			>
+				{{ 'actions.cancellation' | translate }}
+			</button>
+			<button
+					(click)="deleteConfirmationPrompt.onApprove()"
+					[disabled]="deleteConfirmationPrompt?.processing"
+					class="button-dark"
+			>
+				<i
+						*ngIf="deleteConfirmationPrompt?.processing"
+						class="fas fa-fw fa-circle-notch fa-spin"
+				></i
+				>{{ 'actions.remove' | translate }}
+			</button>
+		</div>
+	</p-footer>
+</p-dialog>
+
+<p-dialog #popupBudgetCreateId
+          (onHide)="popupBudgetCreate = false"
+          (visibleChange)="popupBudgetCreate = false"
+          *ngIf="popupBudgetCreate"
+          [draggable]="true"
+          [minX]="0"
+          [minY]="0"
+          [modal]="true"
+          [resizable]="false"
+          [styleClass]="popupBudgetCreate.styleClass"
+          [style]="{width: popupBudgetCreate.width + 'px'}"
+          [visible]="(popupBudgetCreate)"
+          appendTo="body"
+>
+	<p-header *ngIf="popupBudgetCreate.header">
+		<div>
+			{{ popupBudgetCreate.type === 'edit' ? 'עריכת תקציב' : 'הוספת תקציב' }}
+		</div>
+	</p-header>
+	
+	<form [formGroup]="popupBudgetCreate.data">
+		<div *ngIf="popupBudgetCreate.body" class="bodyPopUp">
+			<div class="flexRow">
+				<label class="labelFlex" for="budgetName"> בחרו שם לתקציב </label>
+				<input
+						[class.validation-error]="
+            (popupBudgetCreate.data.get('budgetName').dirty || isSubmitted) &&
+            popupBudgetCreate.data.get('budgetName').invalid
+          "
+						[style.max-width]="'100%'"
+						autocomplete="off"
+						formControlName="budgetName"
+						id="budgetName"
+						name="budgetName"
+						required
+						style="width: 174px"
+						type="text"
+				/>
+			</div>
+			<div class="flexRow filterRow">
+				<label class="labelFlex"> בחרו את חשבונות הבנק הרלוונטים </label>
+				<app-acc-select
+						#accountSelector
+						(changedTrigger)="changeAcc($event)"
+						[accounts]="userService.appData.userData.accounts"
+						[class.validation-error]="
+            isSubmitted &&
+            !popupBudgetCreate.data.get('companyAccountIds').value.length
+          "
+						[disabled]="
+            popupBudgetCreate.type === 'edit' &&
+            popupBudgetCreate.data.get('frequencyDesc').value !== 'ONE_TIME'
+          "
+						[unFocus]="true"
+						style="align-self: center"
+				>
+				</app-acc-select>
+			</div>
+			<div class="flexRow">
+				<label class="labelFlex" for="budgetTotalType">
+					בחרו את סוג התקציב
+				</label>
+				<p-dropdown
+						[autoDisplayFirst]="false"
+						[options]="popupBudgetCreate.ddBudgetTotalType"
+						appendTo="body"
+						formControlName="budgetTotalType"
+						id="budgetTotalType"
+						[dropdownIcon]="'p-dropdown-icon'"
+						inputId="budgetTotalType"
+				>
+				</p-dropdown>
+			</div>
+			<div class="flexRow">
+				<label class="labelFlex" for="budgetType"> תקציב לפי </label>
+				<p-dropdown
+						[autoDisplayFirst]="false"
+						[options]="popupBudgetCreate.ddBudgetType"
+						appendTo="body"
+						formControlName="budgetType"
+						[dropdownIcon]="'p-dropdown-icon'"
+						inputId="budgetType"
+				>
+				</p-dropdown>
+			</div>
+			
+			<ng-container
+					*ngIf="popupBudgetCreate.data.get('budgetType').value === 'CATEGORY'"
+			>
+				<div
+						*ngIf="isSubmitted && !isPressCategories()"
+						class="labelFlex"
+						style="
+            color: #cd1010;
+            font-size: 14px;
+            line-height: 14px;
+            margin-right: 21px;
+          "
+				>
+					יש לבחור לפחות קטגוריה אחת
+				</div>
+				
+				<div
+						*ngIf="
+            !popupBudgetCreate ||
+            (popupBudgetCreate &&
+              popupBudgetCreate.ddCategories &&
+              !popupBudgetCreate.ddCategories.length)
+          "
+						class="loaderOfCarousel"
+				>
+					<div class="loaderPercent">
+						<div class="circle"></div>
+					</div>
+				</div>
+				<ngb-carousel
+						#myCarousel="ngbCarousel"
+						*ngIf="
+            popupBudgetCreate &&
+            popupBudgetCreate.ddCategories &&
+            popupBudgetCreate.ddCategories.length
+          "
+						[animation]="false"
+						[showNavigationArrows]="lengthSlides.length > 1"
+						[showNavigationIndicators]="lengthSlides.length > 1"
+				>
+					<!--           <div #budgetTypeElem> -->
+					<!--            -->
+					<!--           </div> -->
+					<ng-template
+							*ngFor="let item of lengthSlides; let i = index"
+							id="{{ i }}"
+							ngbSlide
+					>
+						<div id="budgetType">
+							<ng-container
+									*ngFor="
+                    let category of popupBudgetCreate.ddCategories
+                      | slice: i * 10:i * 10 + 10;
+                    index as idx;
+                    first as isFirst;
+                    last as isLast
+                  "
+							>
+								<!--                                    getPrecentOfFlex(popupBudgetCreate.ddCategories, category.transTypeName.length, i) +-->
+								
+								<ng-container
+										*ngIf="
+                      !isFirst &&
+                        !isLast &&
+                        getPrecentOfFlex(
+                          popupBudgetCreate.ddCategories,
+                          i,
+                          idx
+                        );
+                      else templateSpace
+                    "
+								>
+									<div
+											style="
+                        flex-basis: 100%;
+                        height: 0;
+                        margin: 0;
+                        border: none;
+                      "
+									></div>
+								</ng-container>
+								
+								<div
+										(click)="
+                      !category.disabled ? pressCategory(category) : null
+                    "
+										[ngClass]="{
+                      income: !category.hova,
+                      expence: category.hova,
+                      add: category.add,
+                      press: category.press,
+                      disabled: category.disabled
+                    }"
+										[style.flex-grow]="isLast ? '0' : '1'"
+								>
+									<ng-container *ngIf="!category.add">
+										{{ category.transTypeName }}
+									</ng-container>
+									<ng-container *ngIf="category.add">
+										<app-category-select
+												#categorySelector
+												(changed)="
+                          submitAddCategory($event, category, i * 10 + idx)
+                        "
+												*ngIf="category.add"
+												[autoDisplayFirst]="false"
+												[categoriesAllForNotAllowToPress]="
+                          copyTransTypesExpenceAll.concat(
+                            copyTransTypesIncomeAll
+                          )
+                        "
+												[categoriesAll]="
+                          category.hova
+                            ? copyTransTypesExpenceAll
+                            : copyTransTypesIncomeAll
+                        "
+												[categories]="
+                          category.hova
+                            ? copyTransTypesExpence
+                            : copyTransTypesIncome
+                        "
+												[companyId]="
+                          userService.appData.userData.companySelect.companyId
+                        "
+												
+												[eventItem]="categorySelector"
+												[labelText]="category"
+												[showMoreOption]="true"
+												[style]="{
+                          width: 'auto',
+                          border: 'none',
+                          cursor: 'pointer',
+                          'line-height': 'unset',
+                          padding: '0',
+                          margin: '0 !important'
+                        }"
+										>
+										</app-category-select>
+									</ng-container>
+								</div>
+								
+								<ng-template #templateSpace>
+									<div
+											*ngIf="!isFirst"
+											style="
+                        width: 0;
+                        padding: 0;
+                        border: none;
+                        flex: unset;
+                        flex-basis: 5px;
+                      "
+									></div>
+								</ng-template>
+								
+								<!--                                                                        <div style="flex-basis: 100%;height: 0;-->
+								<!--                                                                        margin: 0;-->
+								<!--                                    border:none;-->
+								<!--" *ngIf="((((i*12) + 12) - popupBudgetCreate.ddCategories.length) < 0) ? idx === 6 :-->
+								<!--idx === round((12 - (((i*12) + 12) - popupBudgetCreate.ddCategories.length)) / (-->
+								<!--(((i*12) + 12) - popupBudgetCreate.ddCategories.length) < 10 ? 1.8 : 3-->
+								<!--))"></div>-->
+								
+								<!--                                    <div style="flex-basis: 100%;height: 0;-->
+								<!--                                    margin: 0;-->
+								<!--border:none;-->
+								<!--" *ngIf="((((i*12) + 12) - popupBudgetCreate.ddCategories.length) < 0) ? idx === 6 :-->
+								<!--idx === 3"></div>-->
+								
+								<!--                                    <div style="flex-basis: 100%;height: 0; margin: 0;border:none; "-->
+								<!--                                   *ngIf="((((i*12) + 12) - popupBudgetCreate.ddCategories.length) < 0) ? idx === 9 :-->
+								<!--                                    (idx === round((((i*12) + 12) - popupBudgetCreate.ddCategories.length) / 2))">-->
+								<!--                                    </div>-->
+							</ng-container>
+						</div>
+					</ng-template>
+				</ngb-carousel>
+			</ng-container>
+			
+			<div>
+				<div class="labelFlex" style="display: flex; align-items: center">
+					כאשר מתבצעת עסקה בתשלומים, איך תרצו שנחשב אותה?
+					
+					<img
+							[matTooltip]="
+              '
+לדוגמה: רכשתם מחשב ב ₪10,000 ב 10 תשלומים.
+               \n
+תרצו שהקטגוריה מיחשוב תציג ₪1,000 (התשלום
+                \n
+החודשי) או ₪10,000 (כל העסקה)?
+                         '
+            "
+							height="14"
+							matTooltipPosition="below"
+							src="/assets/images/infoTooltip.png"
+							style="margin-right: 6px; margin-top: 9px; align-self: flex-start"
+							width="14"
+					/>
+				</div>
+				<div>
+					<p-radioButton
+							*ngFor="let opt of popupBudgetCreate.ddCreditCardCalcTypeDesc"
+							[inputId]="opt.label"
+							[label]="opt.label"
+							[style]="{ 'font-weight': 'bold', 'margin-left': '5px' }"
+							[value]="opt.value"
+							formControlName="creditCardCalcTypeDesc"
+							name="creditCardCalcTypeDesc"
+					></p-radioButton>
+				</div>
+			</div>
+			
+			<div class="flexRow">
+				<label class="labelFlex" for="frequencyDesc"> תקופת התקציב </label>
+				<p-dropdown
+						[autoDisplayFirst]="false"
+						[options]="popupBudgetCreate.ddFrequencyDesc"
+						appendTo="body"
+						formControlName="frequencyDesc"
+						id="frequencyDesc"
+						[dropdownIcon]="'p-dropdown-icon'"
+						inputId="frequencyDesc"
+				>
+				</p-dropdown>
+			</div>
+			
+			<ng-container
+					*ngIf="
+          popupBudgetCreate.data.get('frequencyDesc').value === 'ONE_TIME';
+          else frequencyDescText
+        "
+			>
+				<div class="flexRow">
+					<label class="labelFlex" for="dateFrom"> החל מתאריך </label>
+					<p-calendar
+							#transDateSelector
+							(onFocus)="scrollTillSelectable()"
+							(onSelect)="changeDatesFrequencyDesc('dateFrom')"
+							[inputStyle]="{ 'max-width': '121px' }"
+							[locale]="'langCalendar' | translate"
+							[readonlyInput]="true"
+							appendTo="body"
+							dateFormat="dd/mm/y"
+							formControlName="dateFrom"
+							id="dateFrom"
+							inputId="dateFrom"
+					>
+					</p-calendar>
+				</div>
+				
+				<div class="flexRow">
+					<label class="labelFlex" for="dateTill"> תאריך סיום </label>
+					<p-calendar
+							(onSelect)="changeDatesFrequencyDesc('dateTill')"
+							[inputStyle]="{ 'max-width': '121px' }"
+							[locale]="'langCalendar' | translate"
+							[readonlyInput]="true"
+							appendTo="body"
+							dateFormat="dd/mm/y"
+							formControlName="dateTill"
+							id="dateTill"
+							inputId="dateTill"
+					>
+					</p-calendar>
+				</div>
+			</ng-container>
+			<ng-template #frequencyDescText>
+				<div
+						*ngIf="popupBudgetCreate.data.get('frequencyDesc').value === 'MONTH'"
+						class="frequencyDescText"
+				>
+					התקציב יתחדש אוטומטית כאשר החודש הקלנדרי יתחיל
+				</div>
+				<div
+						*ngIf="popupBudgetCreate.data.get('frequencyDesc').value === 'YEAR'"
+						class="frequencyDescText"
+				>
+					התקציב יתחדש אוטומטית כאשר השנה הקלנדרית תתחיל
+				</div>
+			</ng-template>
+			<ng-container
+					*ngIf="
+          popupBudgetCreate.data.get('budgetTotalType').value === 'both' ||
+          popupBudgetCreate.data.get('budgetTotalType').value === 'income'
+        "
+			>
+				<div class="flexRow">
+					<label class="labelFlex" for="totalIncome"> סכום תקציב הכנסות </label>
+					<input
+							[appNumbersOnly]="'positiveInt'"
+							[class.validation-error]="
+              (popupBudgetCreate.data.get('totalIncome').dirty ||
+                isSubmitted) &&
+              popupBudgetCreate.data.get('totalIncome').invalid
+            "
+							[formControlName]="'totalIncome'"
+							[style.max-width]="'18ch'"
+							autocomplete="off"
+							id="totalIncome"
+							name="totalIncome"
+							required
+							style="width: 102px"
+							type="text"
+					/>
+				</div>
+			</ng-container>
+			
+			<ng-container
+					*ngIf="
+          popupBudgetCreate.data.get('budgetTotalType').value === 'both' ||
+          popupBudgetCreate.data.get('budgetTotalType').value === 'outcome'
+        "
+			>
+				<div class="flexRow">
+					<label class="labelFlex" for="totalIncome"> סכום תקציב הוצאות </label>
+					<input
+							[appNumbersOnly]="'positiveInt'"
+							[class.validation-error]="
+              (popupBudgetCreate.data.get('totalOutcome').dirty ||
+                isSubmitted) &&
+              popupBudgetCreate.data.get('totalOutcome').invalid
+            "
+							[formControlName]="'totalOutcome'"
+							[style.max-width]="'18ch'"
+							autocomplete="off"
+							id="totalOutcome"
+							name="totalOutcome"
+							required
+							style="width: 102px"
+							type="text"
+					/>
+				</div>
+			</ng-container>
+		</div>
+	</form>
+	<p-footer
+			*ngIf="popupBudgetCreate.footer"
+			style="flex-direction: column; justify-content: center"
+	>
+		<button (click)="budgetCreateWs(true)" class="button-dark" type="submit">
+			שמירה
+		</button>
+		
+		<div
+				*ngIf="popupBudgetCreate?.isKeyDetailsNotEqual"
+				class="isKeyDetailsNotEqual"
+		>
+			<img style="position: relative;"
+			     width="16"
+			     height="16"
+			     ngSrc="/assets/images/infoBudgetCreate.png"/>
+			
+			<p>
+				הקטגוריות שהוסרו לא יוצגו בהיסטורית התקציב. באפשרותך
+				<span
+						(click)="budgetActive(popupBudgetCreate?.sourceBudget, false, true)"
+						class="link"
+				>
+          לשכפל את התקציב
+        </span>
+				ולבצע בו את השינויים הרצויים ובכך לשמור על התקציב המקורי
+			</p>
+		</div>
+	</p-footer>
+</p-dialog>
+
+<p-dialog #budgetHistoryPromptDlg
+          (onHide)="budgetHistoryPrompt.hide()"
+          (visibleChange)="budgetHistoryPrompt.visible = false"
+          [draggable]="true"
+          [minX]="0"
+          [minY]="0"
+          [modal]="true"
+          [resizable]="false"
+          [style]="{width: 1076 + 'px'}"
+          [visible]="(budgetHistoryPrompt.visible)"
+          appendTo="body"
+          styleClass="beneficiaryHistoryPrompt budgetHistoryPrompt"
+>
+	<p-header>{{ budgetHistoryPrompt.budgetHistoryRow?.keyName }}</p-header>
+	<ng-container
+			*ngIf="
+      budgetHistoryPrompt.budgetHistoryRow && !budgetHistoryPrompt.reload;
+      else loading
+    "
+	>
+		<ng-container
+				*ngIf="
+        budgetHistoryPrompt.budgetHistory$ | async as budgetHistory;
+        else loading
+      "
+		>
+			<div
+					class="transData-section sums"
+					style="padding: 0px 15px 0px 0px; border-bottom: none; margin-top: 5px"
+			>
+				<div *ngIf="budgetHistoryPrompt.activeTab === 1" class="sum-data">
+					<h3>{{ 'titles.averageBudget' | translate }}</h3>
+					<p>
+						<span class="sum">{{ budgetHistory.average | sum: true }}</span>
+						<span class="currency">{{ 'ILS' | currencySymbol }}</span>
+					</p>
+				</div>
+				<p-checkbox *ngIf="budgetHistoryPrompt.activeTab === 1"
+				            [binary]="true"
+				            [formControl]="showValuesControl"
+				            [label]="'actions.displayValues' | translate"
+				            checkboxIcon="fa fa-check"
+				            class="checkboxGraph"
+				            id="p-showHideValuesInside"
+				            inputId="showHideValuesInside"
+				></p-checkbox>
+				
+				<div class="exports" style="flex-flow: column">
+					<button
+							(click)="
+              budgetHistoryPrompt.printContent(
+                budgetHistoryPromptDlg.contentViewChild.nativeElement
+              )
+            "
+							[matTooltip]="'appWalk.customers.report.printBtn' | translate"
+							matTooltipPosition="above"
+							style="align-self: flex-end; margin-left: 24px"
+					>
+						<img height="21" ngSrc="/assets/images/to-printer.png" width="24"/>
+					</button>
+					<div [class.one]="!budgetHistory.currentMonth" class="navChart">
+						<div
+								(click)="budgetHistoryPrompt.changeChart(1)"
+								[ngClass]="{ active: budgetHistoryPrompt.activeTab === 1 }"
+						>
+							שנתי
+						</div>
+						<div
+								(click)="
+                getBudgetsDetails().frequencyDesc === 'YEAR'
+                  ? null
+                  : budgetHistoryPrompt.changeChart(2)
+              "
+								*ngIf="budgetHistory.currentMonth"
+								[ngClass]="{ active: budgetHistoryPrompt.activeTab === 2 }"
+								[ngStyle]="{
+                opacity: getBudgetsDetails().frequencyDesc === 'YEAR' ? 0.2 : 1
+              }"
+						>
+							חודשי
+						</div>
+					</div>
+				</div>
+			</div>
+			<div
+					*ngIf="budgetHistoryPrompt.activeTab === 2"
+					class="transData-section sums"
+					style="
+          padding: 15px 0px 15px 0px;
+          margin-top: 5px;
+          align-items: center;
+          place-content: center space-around;
+          border-bottom: 1px solid #e1e1e1;
+          margin: 0 25px 20px 25px;
+        "
+			>
+				<div *ngIf="budgetHistoryPrompt.activeTab === 2" class="sum-data">
+					<h3>נותרו ליום</h3>
+					<p>
+            <span class="sum">{{
+	            budgetHistoryPrompt.budgetHistoryRow?.left | sum: true
+	            }}</span>
+						<span class="currency">{{ 'ILS' | currencySymbol }}</span>
+					</p>
+				</div>
+				<div *ngIf="budgetHistoryPrompt.activeTab === 2" class="sum-data">
+					<h3>נותרו</h3>
+					<p>
+            <span class="sum">
+              {{
+	            budgetHistoryPrompt.budgetHistoryRowSave?.total -
+	            (budgetHistoryPrompt.budgetHistoryRowSave?.totalKeyUse +
+			            budgetHistoryPrompt.transCalc) <
+	            0 ||
+	            budgetHistoryPrompt.budgetHistoryRowSave?.totalKeyUse +
+	            budgetHistoryPrompt.transCalc <
+	            0
+			            ? 0
+			            : formatWithoutPointsSum(
+					            budgetHistoryPrompt.budgetHistoryRowSave?.total -
+					            (budgetHistoryPrompt.budgetHistoryRowSave?.totalKeyUse +
+							            budgetHistoryPrompt.transCalc)
+			            )
+	            }}
+            </span>
+						<span class="currency">{{ 'ILS' | currencySymbol }}</span>
+						<small
+								style="
+                direction: ltr;
+                font-size: 16px;
+                font-weight: 400;
+                align-self: flex-end;
+                line-height: 19px;
+                padding-right: 4px;
+              "
+						>
+							({{
+							budgetHistoryPrompt.budgetHistoryRowSave?.total === 0 ||
+							budgetHistoryPrompt.budgetHistoryRowSave?.totalKeyUse +
+							budgetHistoryPrompt.transCalc <
+							0
+									? '0%)'
+									: 100 -
+									round(
+											((budgetHistoryPrompt.budgetHistoryRowSave
+																	?.totalKeyUse +
+															budgetHistoryPrompt.transCalc) /
+													budgetHistoryPrompt.budgetHistoryRowSave?.total) *
+											100
+									) <
+									0
+											? '0%)'
+											: (100 -
+									round(
+											((budgetHistoryPrompt.budgetHistoryRowSave
+																	?.totalKeyUse +
+															budgetHistoryPrompt.transCalc) /
+													budgetHistoryPrompt.budgetHistoryRowSave?.total) *
+											100
+									) | number: '1.0-0') + '%)'
+							}}
+						</small>
+					</p>
+				</div>
+				<div *ngIf="budgetHistoryPrompt.activeTab === 2" class="sum-data">
+					<h3>נוצלו</h3>
+					<p>
+            <span class="sum">{{
+	            budgetHistoryPrompt.budgetHistoryRowSave?.totalKeyUse +
+	            budgetHistoryPrompt.transCalc | sum: true
+	            }}</span>
+						<span class="currency">{{ 'ILS' | currencySymbol }}</span>
+						<small
+								style="
+                direction: ltr;
+                font-size: 16px;
+                font-weight: 400;
+                align-self: flex-end;
+                line-height: 19px;
+                padding-right: 4px;
+              "
+						>
+							{{
+							budgetHistoryPrompt.budgetHistoryRowSave?.total === 0 ||
+							budgetHistoryPrompt.budgetHistoryRowSave?.totalKeyUse +
+							budgetHistoryPrompt.transCalc <
+							0
+									? '(0%)'
+									: '(' +
+									(round(
+											((budgetHistoryPrompt.budgetHistoryRowSave?.totalKeyUse +
+															budgetHistoryPrompt.transCalc) /
+													budgetHistoryPrompt.budgetHistoryRowSave?.total) *
+											100
+									) | number: '1.0-0') +
+									'%)'
+							}}
+						</small>
+					</p>
+				</div>
+			</div>
+			<div *ngIf="budgetHistoryPrompt.activeTab === 2">
+				<p-checkbox [binary]="true"
+				            [formControl]="showValuesControl"
+				            [label]="'actions.displayValues' | translate"
+				            checkboxIcon="fa fa-check"
+				            class="checkboxGraph"
+				            inputId="showHideValuesInside"
+				></p-checkbox>
+			</div>
+			<div
+					*ngIf="budgetHistory.chartData"
+					[class.noBorder]="budgetHistoryPrompt.activeTab === 2"
+					class="chart-section"
+			>
+				<app-charts
+						[chartData]="budgetHistory.chartData"
+						[scrollHeight]="{
+            height: 220 + (budgetHistoryPrompt.activeTab === 2 ? 200 : 0)
+          }"
+				></app-charts>
+			</div>
+			<div
+					*ngIf="budgetHistoryPrompt.activeTab === 1"
+					class="bank-acc-details-table-container"
+					id="budgetHistoryTable"
+			>
+				<div class="bank-acc-details-table-header">
+					<div>{{ 'titles.date' | translate }}</div>
+					<div>{{ 'titles.beneficiary' | translate }}</div>
+					<div>{{ 'titles.description' | translate }}</div>
+					<div>{{ 'titles.typeOfPayment' | translate }}</div>
+					<div>{{ 'titles.categories' | translate }}</div>
+					<div>{{ 'titles.sum' | translate }}</div>
+					<div></div>
+				</div>
+				<div
+						[ngStyle]="{
+            opacity:
+              !budgetHistory.transes.length ||
+              (budgetHistory.transes.length && !budgetHistory.transes[0].newRow)
+                ? 1
+                : 0.4
+          }"
+						class="add"
+				>
+					<img
+							src="/assets/images/add.png"
+							style="
+              align-self: center;
+              flex: 0 0 auto;
+              -ms-flex: 0 0 auto;
+              margin: 0 0px 0px 4px;
+            "
+					/>
+					<span
+							(click)="
+              !budgetHistory.transes.length ||
+              (budgetHistory.transes.length && !budgetHistory.transes[0].newRow)
+                ? addHistory()
+                : null
+            "
+					>
+            הוספת תנועה ידנית
+          </span>
+				</div>
+				
+				<ng-container
+						*ngIf="budgetHistory.transes.length; else noRowsInHistory"
+				>
+					<div
+							#scrollContainer
+							[ngStyle]="{'height': '300px'}"
+							class="bank-acc-details-table-body"
+					>
+						<ng-scrollbar
+								#scrollbarCompanies
+								(updated)="onScroll(scrollbarCompanies)"
+								class="custom-scrollbar"
+								thumbClass="scrollbar-thumb"
+								trackClass="scrollbar">
+							
+							<cdk-virtual-scroll-viewport #virtualScroll itemSize="47" scrollViewport>
+								<div *cdkVirtualFor="let bnfTr of budgetHistory.transes; let i = index; trackBy: trackById">
+									<div
+											(click)="focusRowHistory(bnfTr, budgetHistory.transes)"
+											(focus)="focusRowHistory(bnfTr, budgetHistory.transes)"
+											(mouseleave)="
+                  !bnfTr.editRowFocus &&
+                  bnfTr.paymentDescSrc === 'Budget' &&
+                  !bnfTr.newRow
+                    ? (bnfTr.editRow = false)
+                    : null
+                "
+											(mouseover)="
+                  bnfTr.paymentDescSrc === 'Budget'
+                    ? (bnfTr.editRow = true)
+                    : null
+                "
+											[class.bank-acc-details-row-selected]="bnfTr.editRow"
+											class="bank-acc-details-row"
+											tabindex="-1"
+									>
+										<div>
+											<div
+													*ngIf="!bnfTr.editRow"
+													[class.hover]="bnfTr.editRow"
+													[innerHTML]="bnfTr.transDateFormat | todayRelativeHumanize"
+													[pTooltip]="bnfTr.transDate | todayRelativeHumanize"
+													class="text-item text-ellipsis dateInput"
+													tooltipPosition="top"
+											></div>
+											<p-calendar
+													#inputBoxCalendar
+													(onSelect)="updateBudgetTrans(bnfTr)"
+													*ngIf="bnfTr.editRow"
+													[(ngModel)]="bnfTr.transDateFormat"
+													[locale]="langCalendar"
+													[maxDate]="today"
+													[minDate]="maxPast"
+													[readonlyInput]="true"
+													[required]="true"
+													appendTo="body"
+													dateFormat="dd/mm/yy"
+													placeholder="{{ 'titles.date' | translate }}"
+											>
+											</p-calendar>
+										</div>
+										<div>
+                  <span
+		                  [pTooltip]="bnfTr.mutavName"
+		                  class="text-ellipsis"
+		                  tooltipPosition="top"
+                  >{{
+	                  bnfTr.mutavName
+			                  ? (bnfTr.paymentDescSrc === 'BankTransfer'
+			                  ? bnfTr.hova
+					                  ? 'העברה ל'
+					                  : 'העברה מ'
+			                  : '') + bnfTr.mutavName
+			                  : ''
+	                  }}</span
+                  >
+										</div>
+										<div>
+											<div
+													[innerHTML]="
+                      bnfTr.transName +
+                      (bnfTr.paymentMessage ? ' ' + bnfTr.paymentMessage : '')
+                    "
+													[ngStyle]="{ display: bnfTr.editRow ? 'none' : 'block' }"
+													[pTooltip]="
+                      bnfTr.transName +
+                      (bnfTr.paymentMessage ? ' ' + bnfTr.paymentMessage : '')
+                    "
+													class="text-item text-ellipsis"
+													tooltipPosition="top"
+											></div>
+											
+											<input
+													#inputBox
+													(blur)="updateBudgetTrans(bnfTr)"
+													(change)="bnfTr.transName = $event.target.value"
+													(keyup.esc)="inputBox.blur()"
+													[(ngModel)]="bnfTr.transName"
+													[ngStyle]="{ display: bnfTr.editRow ? 'block' : 'none' }"
+													[pTooltip]="bnfTr.transName"
+													tooltipPosition="top"
+													type="text"
+											/>
+										</div>
+										<div>
+											<div>
+                    <span
+		                    [pTooltip]="bnfTr.paymentDesc"
+		                    class="text-ellipsis"
+		                    tooltipPosition="top"
+                    >{{ bnfTr.paymentDesc }}</span
+                    >
+											</div>
+										</div>
+										<div
+												style="
+                    overflow: visible;
+                    min-width: 0px;
+                    align-content: center;
+                  "
+										>
+											<app-category-select
+													#categorySelector
+													(changed)="bnfTr.selectedTransType = $event.value; submitChangesHistory(bnfTr)"
+													
+													
+													[categories]="companyTransTypes"
+													[companyId]="
+                      userService.appData.userData.companySelect.companyId
+                    "
+													[ngModelVal]="bnfTr.selectedTransType"
+													[style]="{ width: '100%' }"
+											>
+											</app-category-select>
+										</div>
+										
+										<div
+												[ngClass]="{
+                    'sum-credit':
+                      (budgetHistoryPrompt.budgetHistoryRow?.expence &&
+                        getNum(bnfTr.total) < 0) ||
+                      (!budgetHistoryPrompt.budgetHistoryRow?.expence &&
+                        getNum(bnfTr.total) >= 0),
+                    'sum-debit':
+                      (budgetHistoryPrompt.budgetHistoryRow?.expence &&
+                        getNum(bnfTr.total) >= 0) ||
+                      (!budgetHistoryPrompt.budgetHistoryRow?.expence &&
+                        getNum(bnfTr.total) < 0)
+                  }"
+										>
+											<app-sum-view
+													*ngIf="!bnfTr.editRow"
+													[sum]="bnfTr.total"
+													class="text-item text-ellipsis"
+											>
+											</app-sum-view>
+											
+											<input
+													#inputBoxTotal
+													(blur)="updateBudgetTrans(bnfTr)"
+													(ngModelChange)="
+                      $event === '-'
+                        ? (bnfTr.total = $event)
+                        : (bnfTr.total = getNum($event));
+                      bnfTr.total !== '' &&
+                      bnfTr.total !== null &&
+                      bnfTr.total !== '0' &&
+                      bnfTr.total !== 0
+                        ? (bnfTr.errTotal = false)
+                        : null
+                    "
+													(keyup.esc)="inputBoxTotal.blur()"
+													*ngIf="bnfTr.editRow"
+													[ngModel]="bnfTr.total | noComma"
+													[ngStyle]="{
+                      'border-color': bnfTr.errTotal ? '#bd2c22' : '#012157'
+                    }"
+													appNumbersOnly="numWithTwoDec"
+													style="direction: ltr; text-align: right; color: #022258"
+													type="text"
+											/>
+										</div>
+										<div>
+											<img
+													(click)="removeRowFromHistory(bnfTr)"
+													*ngIf="bnfTr.editRow && !bnfTr.newRow"
+													src="/assets/images/trash.png"
+													style="width: 16px; height: auto; cursor: pointer"
+											/>
+										</div>
+									</div>
+								</div>
+							</cdk-virtual-scroll-viewport>
+						</ng-scrollbar>
+					</div>
+					<div class="bank-acc-details-table-footer">
+						<div>
+							<span>{{ 'sumsTitles.total' | translate }}</span>
+						</div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div *ngIf="!addHistoryParam"></div>
+						<div *ngIf="!addHistoryParam">
+							<app-sum-view [sum]="budgetHistory.transesTotal"></app-sum-view>
+						</div>
+						<p (click)="removeAddHistory()" *ngIf="addHistoryParam">ביטול</p>
+						<button (click)="approveaddHistory()" *ngIf="addHistoryParam">
+							שמירה
+						</button>
+						<div *ngIf="!addHistoryParam"></div>
+					</div>
+				</ng-container>
+			</div>
+		</ng-container>
+	</ng-container>
+</p-dialog>
+
+<ng-template #noRowsInHistory>
+	<div class="no-rows-found">
+		{{ 'expressions.noTransactionsFound' | translate }}
+	</div>
+</ng-template>
+<ng-template #loading>
+	<div class="loader">
+		<div class="circle"></div>
+	</div>
+</ng-template>
+
+<p-dialog (visibleChange)="restorePopupOpen = false"
+          *ngIf="restorePopupOpen"
+          [draggable]="false"
+          [modal]="true"
+          [resizable]="false"
+          [style]="{width: 352 + 'px'}"
+          [visible]="(restorePopupOpen)"
+          appendTo="body"
+          styleClass="deleteBudgetDialog"
+>
+	<p-header>{{
+		getBudgetsDetails().indDefault === 2 ||
+		getBudgetsDetails().indDefaultVar === 2
+				? 'שיחזור תקציב bizibox'
+				: 'רענון
+				נתונים'
+		}}</p-header>
+	
+	<div class="mat-h3">
+		<p style="margin-bottom: 5px">
+			הסכומים של כל הקטגוריות יתעדכנו לפי הממוצע ב-11 החודשים האחרונים.
+		</p>
+		<p>
+			אם נוספו או הוסרו קטגוריות או חשבונות בנק מהמערכת התקציב יתעדכן בהתאם.
+		</p>
+	</div>
+	
+	<p-footer>
+		<div
+				style="
+        width: 100%;
+        display: flex;
+        display: -ms-flexbox;
+        justify-content: flex-end;
+      "
+		>
+			<button
+					(click)="restorePopupOpen = false"
+					class="button-white button-link"
+			>
+				{{ 'actions.cancellation' | translate }}
+			</button>
+			<button
+					(click)="
+          restorePopupOpen = false; loaderPrivScreen = true; getBudget(true)
+        "
+					class="button-dark"
+			>
+				{{ 'actions.approve' | translate }}
+			</button>
+		</div>
+	</p-footer>
+</p-dialog>
+
+<app-category-change-prompt
+		(approved)="transTypeChangePrompt.apply($event)"
+		(hidden)="transTypeChangePrompt.cancel($event)"
+		*ngIf="transTypeChangePrompt && transTypeChangePrompt?.show"
+		[budgetHistory]="true"
+		[data]="transTypeChangePrompt?.data"
+></app-category-change-prompt>

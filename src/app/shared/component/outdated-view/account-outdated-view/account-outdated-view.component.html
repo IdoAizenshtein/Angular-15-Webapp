@@ -1,0 +1,27 @@
+<ng-container *ngIf="account">
+	<ng-container [ngSwitch]="account.alertStatus">
+		<!--<div *ngSwitchCase="account.alertStatus === null ? account.alertStatus : ''" class="problem-view">-->
+		<!--<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/x-letter.png" style="height: 1.5em"/>{{('alertStatusTranslate.account.Not found in bank website')| translate}}-->
+		<!--</div>-->
+		<div
+				*ngSwitchCase="'Not found in bank website'"
+				class="problem-view"
+				style="color: #df0000"
+		>
+			<!--      <img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/x-shield.png"/>-->
+			{{ 'alertStatusTranslate.account.' + account.alertStatus | translate }}
+		</div>
+		<div *ngSwitchCase="'Error itrot sequence'" class="problem-view">
+			<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/fb-logo-bizibox-32-32.png"/>{{
+			'alertStatusTranslate.account.' + account.alertStatus | translate
+			}}
+		</div>
+		<ng-container *ngSwitchDefault>
+			<app-token-credentials-update-button
+					[balanceLastUpdatedDate]="account.balanceLastUpdatedDate"
+					[tokenData]="{ companyId: account.companyId, tokenId: account.token }"
+			>
+			</app-token-credentials-update-button>
+		</ng-container>
+	</ng-container>
+</ng-container>

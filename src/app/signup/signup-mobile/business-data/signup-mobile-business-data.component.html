@@ -1,0 +1,134 @@
+<small class="mat-body" *ngIf="!parent.lite"
+  >&#42;{{ 'signup.businessInfoStep.subtitle' | translate }}</small
+>
+<form novalidate [formGroup]="business" (ngSubmit)="onSubmit()">
+  <div class="Signup__control">
+    <mat-form-field hideRequiredMarker="true">
+      <mat-label *ngIf="parent.lite">שם מלא/ שם העסק</mat-label>
+      <mat-label *ngIf="!parent.lite">{{
+        'signup.businessInfoStep.name' | translate
+      }}</mat-label>
+      <input
+        matInput
+        type="text"
+        formControlName="name"
+        name="name"
+        id="name"
+        autocomplete="off"
+      />
+    </mat-form-field>
+    <!--<label for="name">{{'signup.businessInfoStep.name'| translate}}</label>-->
+    <!--<div-->
+    <!--[ngClass]="{'Form__group': true, 'Form__group&#45;&#45;err': (!business.get('name').valid && business.get('name').dirty)}">-->
+    <!--<input type="text" formControlName="name" name="name" id="name" autocomplete="off">-->
+    <!--</div>-->
+  </div>
+  <div class="Signup__control">
+    <mat-form-field hideRequiredMarker="true">
+      <mat-label>{{ 'signup.businessInfoStep.id' | translate }}</mat-label>
+      <input
+        matInput
+        type="text"
+        formControlName="id"
+        name="id"
+        id="id"
+        autocomplete="off"
+      />
+      <mat-error *ngIf="business.get('id').hasError('idExists')">
+        <i class="fa fa-ban"></i>
+        {{ 'signup.businessInfoStep.idAlreadyRegistered' | translate }}
+      </mat-error>
+      <mat-error *ngIf="business.get('id').hasError('pattern')">
+        <i class="fa fa-exclamation-triangle"></i>
+        {{ 'signup.businessInfoStep.idPatternError' | translate }}
+      </mat-error>
+    </mat-form-field>
+    <!--<label for="id">{{'signup.businessInfoStep.id'| translate}}</label>-->
+    <!--<div-->
+    <!--[ngClass]="{'Form__group': true, 'Form__group&#45;&#45;err': (business.get('id').invalid && business.get('id').dirty)}">-->
+    <!--<input type="text" formControlName="id" name="id" id="id" autocomplete="off">-->
+    <!--<div class="Form__feedback Form__feedback&#45;&#45;status" *ngIf="business.get('id').hasError('idExists')">-->
+    <!--<i class="fa fa-ban"></i> {{'signup.businessInfoStep.idAlreadyRegistered'| translate}}-->
+    <!--</div>-->
+    <!--<div class="Form__feedback Form__feedback&#45;&#45;status" *ngIf="business.get('id').hasError('pattern')">-->
+    <!--<i class="fa fa-exclamation-triangle"></i> {{'signup.businessInfoStep.idPatternError'| translate}}-->
+    <!--</div>-->
+    <!--</div>-->
+  </div>
+  <div class="Signup__control Signup__control--status">
+    <mat-form-field hideRequiredMarker="true">
+      <mat-label
+        >{{
+          ('signup.businessInfoStep.profile' | translate) +
+            ' (' +
+            ((!parent.lite
+              ? 'signup.businessInfoStep.profile-placeholder'
+              : 'signup.businessInfoStep.profile-placeholder-light'
+            ) | translate) +
+            ')'
+        }}
+      </mat-label>
+      <input
+        matInput
+        autocomplete="off"
+        type="text"
+        formControlName="profile"
+        id="profile"
+        name="profile"
+      />
+      <mat-hint>{{
+        '* ' + ('expressions.optionalField' | translate)
+      }}</mat-hint>
+    </mat-form-field>
+    <!--<label for="profile">{{'signup.businessInfoStep.profile'| translate}}</label>-->
+    <!--<div-->
+    <!--[ngClass]="{'Form__group': true, 'Form__group&#45;&#45;err': (!business.get('profile').valid && business.get('profile').dirty)}">-->
+    <!--<input type="text" formControlName="profile" id="profile" name="profile" [placeholder]="'signup.businessInfoStep.profile-placeholder'| translate">-->
+    <!--</div>-->
+    <!--<div class="Form__feedback Form__feedback&#45;&#45;status">-->
+    <!--{{'* ' + ('expressions.optionalField'| translate)}}-->
+    <!--</div>-->
+  </div>
+  <div
+    class="Signup__control"
+    style="
+      display: flex;
+      display: -ms-flexbox;
+      align-items: baseline;
+      flex-flow: column nowrap;
+      align-items: stretch;
+      margin-top: 1em;
+    "
+  >
+    <button
+      mat-raised-button
+      color="primary"
+      type="submit"
+      [id]="'submitStep'"
+      [disabled]="!business.valid || (parent.formInProgress$ | async)"
+    >
+      <mat-spinner
+        diameter="20"
+        color="accent"
+        *ngIf="parent.formInProgress$ | async"
+      ></mat-spinner>
+      <span *ngIf="!(parent.formInProgress$ | async)">{{
+        'formLogin.continue' | translate
+      }}</span>
+    </button>
+    <a
+      mat-button
+      color="primary"
+      style="margin-top: 1em"
+      type="submit"
+      [id]="'stepBack'"
+      [disabled]="parent.formInProgress$ | async"
+      routerLink="../personal-data"
+      queryParamsHandling="preserve"
+    >
+      <i class="fa fa-fw fa-chevron-right" style="font-size: 0.9rem"></i
+      >{{ 'expressions.goBack' | translate }}
+    </a>
+  </div>
+  <!--<p>Form value: {{ business.value | json }}</p>-->
+</form>

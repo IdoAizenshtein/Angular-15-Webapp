@@ -1,0 +1,409 @@
+<div
+		style="
+    margin-bottom: 0.5em;
+    display: flex;
+    display: -ms-flexbox;
+    justify-content: center;
+    justify-items: center;
+  "
+		*ngIf="mode === EditingType.Series"
+>
+	<ul class="tabs" style="height: auto">
+		<li
+				[class.active]="
+        form.get('frequencyAutoUpdateTypeName').value === 'AVG_3_MONTHS'
+      "
+				(click)="frequencyAutoUpdateTypeNameUserChange('AVG_3_MONTHS')"
+				[title]="'הגדרות מומלצות'"
+				[innerText]="'הגדרות מומלצות'"
+		></li>
+		<li
+				[class.active]="
+        form.get('frequencyAutoUpdateTypeName').value === 'USER_DEFINED_TOTAL'
+      "
+				(click)="frequencyAutoUpdateTypeNameUserChange('USER_DEFINED_TOTAL')"
+				[title]="'ברצוני להגדיר בעצמי'"
+				[innerText]="'ברצוני להגדיר בעצמי'"
+		></li>
+	</ul>
+</div>
+<div
+		*ngFor="let fld of fields"
+		[formGroup]="form"
+		class="HorizontalForm__group"
+		[class.has-errors]="form.get(fld.name).invalid && form.get(fld.name).dirty"
+		[style.display]="!shouldDisplay(fld) ? 'none' : ''"
+		[style.align-items]="
+    fld.name === 'autoUpdateTypeName' ? 'flex-start' : 'center'
+  "
+>
+	<ng-container [ngSwitch]="fld.name">
+		<ng-container *ngSwitchCase="'companyAccountId'">
+			<label [for]="fld.name">{{
+				'formFixedMovement.field.' + fld.name | translate
+				}}</label>
+			<p-dropdown
+					[options]="userService.appData.userData.accounts"
+					[formControlName]="fld.name"
+					dataKey="companyAccountId"
+					optionLabel="accountNickname"
+					[inputId]="fld.name"
+					[placeholder]="('actions.select' | translate) + '...'"
+					[dropdownIcon]="'p-dropdown-icon'"
+					[autoDisplayFirst]="false"
+			>
+				<ng-template let-item pTemplate="selectedItem">
+					<div style="display: flex; display: -ms-flexbox; align-items: center">
+						<img
+								style="height: auto; width: 24px; position: relative;"  [src]="
+                !item.bankId
+                  ? ''
+                  : (item.bankId | toIconSrc: 'bank')
+              "
+						/>&nbsp;
+						<div class="text-ellipsis">{{ item?.accountNickname }}</div>
+						<div>
+							&nbsp;&#40;{{ item.currency | currencySymbol }}&#41;
+						</div>
+					</div>
+				</ng-template>
+				<ng-template let-option pTemplate="item">
+					<div
+							style="
+              position: relative;
+              display: flex;
+              display: -ms-flexbox;
+              align-items: center;
+            "
+					>
+						<img
+								style="height: auto; width: 24px; position: relative;" fill [ngSrc]="
+                (!option.bankId ? '' : option.bankId)
+                  | toIconSrc: 'bank'
+              "
+						/>&nbsp;
+						<div class="text-ellipsis">{{ option.accountNickname }}</div>
+						<div>
+							&nbsp;&#40;{{ option.currency | currencySymbol }}&#41;
+						</div>
+					</div>
+				</ng-template>
+			</p-dropdown>
+			<!--<pre>{{form.get(fld.name).value| json}}</pre>-->
+		</ng-container>
+		
+		<ng-container *ngSwitchCase="'transName'">
+			<label [for]="fld.name">{{
+				'formFixedMovement.field.' + fld.name | translate
+				}}</label>
+			<input
+					type="text"
+					[id]="fld.name"
+					[name]="fld.name"
+					[formControlName]="fld.name"
+					[style.max-width]="'100%'"
+					autocomplete="off"
+			/>
+		</ng-container>
+		
+		<ng-container *ngSwitchCase="'transTypeId'">
+			<label [for]="fld.name">{{
+				'formFixedMovement.field.' + fld.name | translate
+				}}</label>
+			<app-category-select
+					[categories]="companyTransTypes"
+					[companyId]="companyId"
+					[ngModelVal]="form.get(fld.name).value"
+					[disabled]="form.get(fld.name).disabled"
+					(changed)="form.get(fld.name).patchValue($event.value);"
+					[inputId]="fld.name"
+					[autoDisplayFirst]="false"
+					[filter]="false"
+					[filterBy]="'transTypeName'"
+					[placeholder]="('actions.select' | translate) + '...'"
+			>
+			</app-category-select>
+		</ng-container>
+		
+		<ng-container *ngSwitchCase="'paymentDesc'">
+			<label [for]="fld.name">{{
+				'formFixedMovement.field.' + fld.name | translate
+				}}</label>
+			<p-dropdown
+					[options]="fld.options"
+					[formControlName]="fld.name"
+					[inputId]="fld.name"
+					[dropdownIcon]="'p-dropdown-icon'"
+					[autoDisplayFirst]="false"
+					[placeholder]="('actions.select' | translate) + '...'"
+			>
+			</p-dropdown>
+			<!--<pre>{{form.get(fld.name).value| json}}</pre>-->
+		</ng-container>
+		
+		<ng-container *ngSwitchCase="'transDate'">
+			<ng-container *ngIf="mode === EditingType.Single">
+				<label [for]="fld.name">{{ 'titles.date' | translate }}</label>
+				<p-calendar
+						[formControlName]="fld.name"
+						[inputId]="fld.name"
+						[inputStyle]="{ 'max-width': '121px' }"
+						[locale]="'langCalendar' | translate"
+						dateFormat="dd/mm/y"
+						[minDate]="today"
+						[readonlyInput]="true"
+						(onFocus)="scrollTillSelectable()"
+						#transDateSelector
+				></p-calendar>
+				<!--<pre>{{form.get(fld.name).value}}</pre>-->
+			</ng-container>
+		</ng-container>
+		
+		<ng-container *ngSwitchCase="'total'">
+			<label [for]="fld.name">{{
+				'formFixedMovement.field.' + fld.name | translate
+				}}</label>
+			<input
+					type="text"
+					[id]="fld.name"
+					[name]="fld.name"
+					[formControlName]="fld.name"
+					[style.max-width]="'18ch'"
+					appNumbersOnly="positive"
+					autocomplete="off"
+			/>
+		</ng-container>
+		
+		<ng-container *ngSwitchCase="'transFrequencyName'">
+			<label [for]="fld.name" style="align-self: flex-start">{{
+				'formFixedMovement.field.' + fld.name | translate
+				}}</label>
+			<ng-container
+					*ngIf="
+          mode === EditingType.Series &&
+            form.get('frequencyAutoUpdateTypeName').value === 'AVG_3_MONTHS';
+          else editableTransFrequency
+        "
+			>
+				<p>{{ 'חישוב אוטומטי' }}</p>
+			</ng-container>
+			<ng-template #editableTransFrequency>
+				<div
+						style="display: flex; display: -ms-flexbox; flex-flow: column nowrap"
+				>
+					<div
+							style="
+              display: flex;
+              display: -ms-flexbox;
+              align-items: center;
+              min-height: 2em;
+            "
+					>
+						<p-dropdown
+								[options]="fld.options"
+								[formControlName]="fld.name"
+								[inputId]="fld.name"
+								[dropdownIcon]="'p-dropdown-icon'"
+								[autoDisplayFirst]="false"
+								[placeholder]="('actions.select' | translate) + '...'"
+								[style]="{ width: '100%' }"
+								style="width: 100%"
+						>
+						</p-dropdown>
+					</div>
+					
+					<ng-container *ngIf="form.get('transFrequencyName').enabled">
+						<div
+								style="
+                display: flex;
+                display: -ms-flexbox;
+                align-items: center;
+                line-height: 2em;
+                justify-content: space-between;
+              "
+								*ngIf="form.get(fld.name).value === 'MONTH'"
+								[class.has-errors]="
+                form.get(frequencyDayOfMonth.name).invalid &&
+                form.get(frequencyDayOfMonth.name).dirty
+              "
+						>
+							<div style="min-width: 10ch">{{ 'יום בחודש:' }}</div>
+							<p-dropdown
+									[options]="frequencyDayOfMonth.options"
+									[formControl]="frequencyDayOfMonth.control"
+									[inputId]="frequencyDayOfMonth.name"
+									[dropdownIcon]="'p-dropdown-icon'"
+									[autoDisplayFirst]="true"
+									[style]="{ width: '14ch' }"
+									[placeholder]="('actions.select' | translate) + '...'"
+							>
+							</p-dropdown>
+						</div>
+						
+						<div
+								style="
+                display: flex;
+                display: -ms-flexbox;
+                align-items: center;
+                line-height: 2em;
+                justify-content: space-between;
+              "
+								*ngIf="form.get(fld.name).value === 'WEEK'"
+								[class.has-errors]="
+                form.get(frequencyDayOfWeek.name).invalid &&
+                form.get(frequencyDayOfWeek.name).dirty
+              "
+						>
+							<div style="min-width: 10ch">{{ 'יום בשבוע:' }}</div>
+							<p-dropdown
+									[options]="frequencyDayOfWeek.options"
+									[formControl]="frequencyDayOfWeek.control"
+									[inputId]="frequencyDayOfWeek.name"
+									[dropdownIcon]="'p-dropdown-icon'"
+									[autoDisplayFirst]="true"
+									[style]="{ width: '14ch' }"
+									[placeholder]="('actions.select' | translate) + '...'"
+							>
+							</p-dropdown>
+						</div>
+					</ng-container>
+				</div>
+			</ng-template>
+			<!--<pre>{{form.get(fld.name).value}}</pre>-->
+		</ng-container>
+		
+		<ng-container *ngSwitchCase="'autoUpdateTypeName'">
+			<label [for]="fld.name">{{
+				'formFixedMovement.field.' + fld.name | translate
+				}}</label>
+			<div
+					style="display: flex; display: -ms-flexbox; flex-flow: column nowrap"
+			>
+				<ng-container
+						*ngIf="
+            form.get('frequencyAutoUpdateTypeName').value !== 'AVG_3_MONTHS';
+            else recommendedDefTotal
+          "
+				>
+					<ul>
+						<li
+								*ngFor="let opt of fld.options"
+								[class.has-errors]="
+                opt.value === 'USER_DEFINED_TOTAL' &&
+                form.get('autoUpdateTypeName').value === opt.value &&
+                form.get('total').invalid
+              "
+								style="
+                display: flex;
+                display: -ms-flexbox;
+                flex-flow: row wrap;
+                align-items: baseline;
+                align-content: baseline;
+              "
+						>
+							<!--<ng-container-->
+							<!--*ngIf="source.transFrequencyName === 'NONE' && opt.value === 'AVG_3_MONTHS'; else noSpecialTreatmentNeeded">-->
+							<!--<p-radioButton name="autoUpdateWithFrequencySelectionGroup" [disabled]="true"-->
+							<!--[value]="opt.value" [label]="opt.label"-->
+							<!--[inputId]="opt.value"-->
+							<!--[style]="{'font-weight': 'bold'}"></p-radioButton>-->
+							<!--</ng-container>-->
+							
+							<!--<ng-template #noSpecialTreatmentNeeded>-->
+							<p-radioButton
+									[name]="fld.name"
+									[formControlName]="fld.name"
+									[value]="opt.value"
+									[label]="opt.label"
+									[inputId]="opt.value"
+									[style]="{ 'font-weight': 'bold' }"
+							></p-radioButton>
+							<ng-container
+									*ngIf="
+                  opt.value === 'USER_DEFINED_TOTAL' &&
+                  mode === EditingType.Series
+                "
+							>
+								<div
+										style="
+                    display: flex;
+                    display: -ms-flexbox;
+                    align-content: baseline;
+                    align-items: baseline;
+                  "
+								>
+									<input
+											type="text"
+											[id]="'total'"
+											[name]="'total'"
+											[formControlName]="'total'"
+											[style.max-width]="'18ch'"
+											appNumbersOnly="positive"
+											autocomplete="off"
+									/>
+								</div>
+							</ng-container>
+							<!--</ng-template>-->
+							
+							<!--<ng-container [ngSwitch]="opt.value">-->
+							<!--<ng-container *ngSwitchCase="'USER_DEFINED_TOTAL$MONTH'">-->
+							<!--<div style="display: flex; display: -ms-flexbox; align-content: baseline; align-items: baseline;">-->
+							<!--<span>&nbsp;</span>-->
+							<!--<input type="text" [id]="'total$MONTH'" [name]="'total$MONTH'"-->
+							<!--formControlName="total$MONTH"-->
+							<!--[style.max-width]="'14ch'"-->
+							<!--(focus)="form.get(fld.name).setValue(opt.value)"-->
+							<!--appNumbersOnly="positive" autocomplete="off">-->
+							<!--&lt;!&ndash;<span>&nbsp;{{'ILS'| currencySymbol}}</span>&ndash;&gt;-->
+							<!--</div>-->
+							<!--<div style="display: flex; display: -ms-flexbox; align-items: center; min-height: 3em;"-->
+							<!--*ngIf="form.get(fld.name).value === opt.value">-->
+							<!--<div style="min-width: 12ch; text-align: end;">-->
+							<!--יום בחודש:-->
+							<!--</div>-->
+							<!--<span>&nbsp;</span>-->
+							<!--<p-dropdown [options]="frequencyDayOfMonth.options" [formControlName]="frequencyDayOfMonth.name"-->
+							<!--[inputId]="frequencyDayOfMonth.name"-->
+							<!-- [autoDisplayFirst]="true"-->
+							<!--[style]="{'width': '14ch'}"-->
+							<!--[placeholder]="('actions.select'| translate) + '...'">-->
+							<!--</p-dropdown>-->
+							<!--</div>-->
+							<!--</ng-container>-->
+							<!--<ng-container *ngSwitchCase="'USER_DEFINED_TOTAL$WEEK'">-->
+							<!--<div style="display: flex; display: -ms-flexbox; align-content: baseline; align-items: baseline;">-->
+							<!--<span>&nbsp;</span>-->
+							<!--<input type="text" [id]="'total$WEEK'" [name]="'total$WEEK'"-->
+							<!--formControlName="total$WEEK"-->
+							<!--[style.max-width]="'14ch'"-->
+							<!--(focus)="form.get(fld.name).setValue(opt.value)" appNumbersOnly autocomplete="off">-->
+							<!--&lt;!&ndash;<span>&nbsp;{{'ILS'|currencySymbol}}</span>&ndash;&gt;-->
+							<!--</div>-->
+							<!--<div style="display: flex; display: -ms-flexbox; align-items: center; min-height: 3em;"-->
+							<!--*ngIf="form.get(fld.name).value === opt.value">-->
+							<!--<div style="min-width: 12ch; text-align: end;">-->
+							<!--יום בשבוע:-->
+							<!--</div>-->
+							<!--<span>&nbsp;</span>-->
+							<!--<p-dropdown [options]="frequencyDayOfWeek.options" [formControlName]="frequencyDayOfWeek.name"-->
+							<!--[inputId]="frequencyDayOfWeek.name"-->
+							<!-- [autoDisplayFirst]="true"-->
+							<!--[style]="{'width': '14ch'}"-->
+							<!--[placeholder]="('actions.select'| translate) + '...'">-->
+							<!--</p-dropdown>-->
+							<!--</div>-->
+							<!--</ng-container>-->
+							<!--</ng-container>-->
+						</li>
+					</ul>
+				</ng-container>
+				<ng-template #recommendedDefTotal>
+					<label style="height: 1.6em">{{ 'לפי ממוצע' }}</label>
+					<em style="font-size: 0.95em; line-height: 1.3em">{{
+						'ההמוצע מתעדכן אוטומטית בהתאם להיסטוריית התנועה'
+						}}</em>
+				</ng-template>
+			</div>
+		</ng-container>
+	</ng-container>
+</div>

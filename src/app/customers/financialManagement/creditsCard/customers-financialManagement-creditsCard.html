@@ -1,0 +1,30 @@
+<h2 class="titlePage">
+  {{ 'menu.customers.financialManagement.creditsCard.main' | translate }}
+</h2>
+<ng-container
+  *ngIf="
+    !userService.appData?.userData?.creditCards ||
+      userService.appData.userData.creditCards.length ||
+      loader;
+    else noCardAvailable
+  "
+>
+  <router-outlet></router-outlet>
+</ng-container>
+<ng-template #noCardAvailable>
+  <div class="nothing-available-yet">
+    <img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/credit-cards.png" />
+    <em>{{ 'לא נמצאו כרטיסי אשראי המקושרים למערכת' }}</em>
+    <button
+      class="button-dark"
+      [routerLink]="[
+        !userService.appData.userData.accountant
+          ? '/cfl/settings/creditCard'
+          : '/accountants/companies/settings/creditCard'
+      ]"
+      [queryParamsHandling]="'preserve'"
+    >
+      {{ 'הוספת כרטיס' }}
+    </button>
+  </div>
+</ng-template>

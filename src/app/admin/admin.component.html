@@ -1,0 +1,21 @@
+<h2 class="titlePage">
+	{{ 'אדמין' }}
+</h2>
+<div class="settingsNav">
+	<ul>
+		<li>
+			<div
+					class="text-ellipsis"
+					routerLink="./searchkey-catalog"
+					queryParamsHandling="preserve"
+					routerLinkActive="active"
+					[routerLinkActiveOptions]="{ exact: false }"
+					#myAccLinkRef="routerLinkActive"
+			>
+				{{ 'קטלוג מילות מפתח' }}
+			</div>
+		</li>
+	</ul>
+</div>
+
+<router-outlet (activate)="componentRefChild = $event"></router-outlet>

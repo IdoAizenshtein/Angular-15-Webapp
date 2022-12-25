@@ -1,0 +1,660 @@
+<div>
+  <div class="navTable">
+    <div
+      id="addBankAccount"
+      (click)="addTokenPrompt.show()"
+      *ngIf="!((settingsComponent?.arrCompanies$ | async)?.length > 1)"
+    >
+      <img fill ngSrc="/assets/images/add.png"
+        style="
+        height: auto; width: auto; position: relative;
+          align-self: center;
+          flex: 0 0 auto;
+          -ms-flex: 0 0 auto;
+          margin: 0 0px 0px 4px;
+        "
+      />
+      <label>{{ 'actions.addAccount' | translate }}</label>
+    </div>
+    <ul style="display: flex; justify-content: space-between">
+      <li class="button-link" (click)="toggleExpandedForAllTo(true)">
+        {{ 'actions.expandAll' | translate }}
+      </li>
+      <li>|</li>
+      <li class="button-link" (click)="toggleExpandedForAllTo(false)">
+        {{ 'actions.collapseAll' | translate }}
+      </li>
+    </ul>
+    <div>
+      <p-checkbox checkboxIcon="fa fa-check"
+        id="p-showHideValuesInside"
+        inputId="showHideValuesInside"
+        class="checkboxGraph"
+        label="הצג חשבונות שנמחקו"
+        [formControl]="showDeletedAccounts"
+        [binary]="true"
+      >
+      </p-checkbox>
+    </div>
+  </div>
+  <div class="tableAccounts">
+    <div class="header" #header>
+      <div class="separator"></div>
+      <div></div>
+      <div class="separator"></div>
+      <div>שם החשבון</div>
+      <div class="separator"></div>
+      <div>מס׳ חשבון</div>
+      <div class="separator"></div>
+      <div>סניף</div>
+      <div class="separator"></div>
+      <div>כרטיסי אשראי</div>
+      <div class="separator"></div>
+      <div>משתמשים</div>
+      <div class="separator"></div>
+      <div>טעינה אחרונה</div>
+      <div class="separator"></div>
+      <div></div>
+      <div class="separator"></div>
+      <div></div>
+      <div class="separator"></div>
+      <div></div>
+      <div class="separator"></div>
+    </div>
+    <div
+      [appScrollHeight]="header.getBoundingClientRect().bottom + 5"
+      class="scrollPage scrollbar-dynamic"
+      style="position: relative"
+    >
+      <div *ngIf="loader" class="loader">
+        <div class="circle"></div>
+      </div>
+      <ng-container *ngIf="byTokenGroups$ | async as byTokenGroups">
+        <ng-template #nonDeletedAccountsOnly let-tokenGroup>
+          <div
+            (click)="
+              tokenGroup.children.length && toggleExpandedFor(tokenGroup.id)
+            "
+            [class.pointer]="tokenGroup.children.length > 0"
+          >
+            <i
+              *ngIf="tokenGroup.children.length"
+              class="fa fa-fw"
+              [ngClass]="
+                groupExpanded[tokenGroup.id] ? 'fa-caret-up' : 'fa-caret-down'
+              "
+            ></i>
+            <i *ngIf="!tokenGroup.children.length" class="fa fa-fw">&nbsp;</i>
+          </div>
+        </ng-template>
+
+        <ng-template #watchDeletedAccounts let-tokenGroup>
+          <ng-container *ngIf="deletedAccounts$ | async as deletedAccounts">
+            <div
+              (click)="
+                (tokenGroup.children.length ||
+                  deletedAccounts[tokenGroup.id]) &&
+                  toggleExpandedFor(tokenGroup.id)
+              "
+              [class.pointer]="
+                tokenGroup.children.length || deletedAccounts[tokenGroup.id]
+              "
+            >
+              <i
+                *ngIf="
+                  tokenGroup.children.length || deletedAccounts[tokenGroup.id]
+                "
+                class="fa fa-fw"
+                [ngClass]="
+                  groupExpanded[tokenGroup.id] ? 'fa-caret-up' : 'fa-caret-down'
+                "
+              ></i>
+              <i
+                *ngIf="
+                  !(
+                    tokenGroup.children.length || deletedAccounts[tokenGroup.id]
+                  )
+                "
+                class="fa fa-fw"
+                >&nbsp;</i
+              >
+            </div>
+          </ng-container>
+        </ng-template>
+
+        <div *ngFor="let tokenGroup of byTokenGroups">
+          <div class="rowTitle">
+            <ng-template
+              [ngTemplateOutlet]="
+                showDeletedAccounts.value
+                  ? watchDeletedAccounts
+                  : nonDeletedAccountsOnly
+              "
+              [ngTemplateOutletContext]="{ $implicit: tokenGroup }"
+            ></ng-template>
+
+            <img
+              style="height: auto; width: auto; position: relative;" fill [ngSrc]="tokenGroup.status.websiteTargetTypeId | toIconSrc: 'bank'"
+            />&nbsp;
+
+            <!--<input [(ngModel)]="tokenGroup.status.tokenNickname" #tokenNicknameInp-->
+            <!--(focus)="selectedToken = tokenGroup.status;" (blur)="selectedToken = null;"-->
+            <!--(keydown.enter)="tokenNicknameInp.blur();"-->
+            <!--(keydown.esc)="selectedToken.tokenNickname = ''; tokenNicknameInp.blur();"-->
+            <!--[readonly]="!tokenGroup.status.hasPrivs || selectedToken !== tokenGroup.status"-->
+            <!--[disabled]="!tokenGroup.status.hasPrivs">-->
+            {{ tokenGroup.status.tokenNickname }}
+
+            <ng-container>
+              <app-token-status-view
+                [status]="tokenGroup.status"
+                [hideUpdateDataLink]="tokenGroup.children"
+                [companyId]="
+                  (settingsComponent.selectedCompany$ | async).companyId
+                "
+                (creationSuccess)="forceReload$.next()"
+              >
+              </app-token-status-view>
+            </ng-container>
+          </div>
+
+          <ng-container
+            *ngIf="tokenGroup.children.length && groupExpanded[tokenGroup.id]"
+          >
+            <ng-container *ngFor="let itemChild of tokenGroup.children">
+              <div
+                tabindex="-1"
+                class="row"
+                *ngIf="
+                  itemChild.token === '88e6c85e-b914-4928-8436-47e86dddd3a4' ||
+                  itemChild.token === '88e6c85e-b914-4928-8436-47e86dddd3a5'
+                "
+                [class.row-outdated]="
+                  !(itemChild.balanceLastUpdatedDate | isToday: true:false)
+                "
+              >
+                <div class="separator"></div>
+                <div></div>
+                <div class="separator"></div>
+
+                <div>
+                  <input
+                    [(ngModel)]="itemChild.accountNickname"
+                    #accNicknameInp
+                    [readonly]="selectedAccount !== itemChild"
+                    disabled
+                    [appMaxInputLength]="19"
+                  />
+                  <!--{{itemChild.accountNickname}}-->
+                  <div class="nickname-with-currency">
+                    <div class="text-ellipsis">
+                      {{ itemChild.accountNickname }}
+                    </div>
+                    <div class="currency">
+                      ({{ itemChild.currency | currencySymbol }})
+                    </div>
+                  </div>
+                  <!--<i class="currency">({{itemChild.currency| currencySymbol}})</i>-->
+                  <i *ngIf="itemChild.primaryAccount"> - חשבון מוביל </i>
+                </div>
+                <div class="separator"></div>
+                <div>{{ itemChild.bankAccountId }}</div>
+                <div class="separator"></div>
+                <div>{{ itemChild.bankSnifId }}</div>
+                <div class="separator"></div>
+                <div>
+                  <div
+                    *ngIf="!itemChild.creditCardNum; else navigateToCardsLink"
+                  >
+                    ללא
+                  </div>
+                  <ng-template #navigateToCardsLink>
+                    <ng-container
+                      *ngIf="linkedCreditCards$ | async as linkedCreditCards"
+                    >
+                      <div
+                        class="link"
+                        *ngIf="
+                          linkedCreditCards[itemChild.companyAccountId]?.length
+                        "
+                        (click)="
+                          navigateToCreditCard(
+                            linkedCreditCards[itemChild.companyAccountId][0]
+                              .creditCardId
+                          )
+                        "
+                      >
+                        {{
+                          itemChild.creditCardNum > 1
+                            ? itemChild.creditCardNum + ' כרטיסים'
+                            : linkedCreditCards[itemChild.companyAccountId][0]
+                                .creditCardNo
+                        }}
+                        <!--{{(linkedCreditCards[itemChild.companyAccountId][0].creditCardNo) +-->
+                        <!--((itemChild.creditCardNum > 1)-->
+                        <!--? ' ועוד ' + (itemChild.creditCardNum - 1) + ' כרטיסים'-->
+                        <!--: '')}}-->
+                        <!--{{itemChild.creditCardNum}}-->
+                        <!--כרטיסים-->
+                      </div>
+                    </ng-container>
+                  </ng-template>
+                </div>
+                <div class="separator"></div>
+                <div>
+                  <ng-container
+                    *ngIf="itemChild.privsList?.length === 1; else usersList"
+                  >
+                    <ng-container [ngSwitch]="itemChild.privsList[0]">
+                      <p *ngSwitchCase="'all'">
+                        {{ 'expressions.usersListAll' | translate }}
+                      </p>
+                      <p *ngSwitchCase="'Denied Access'"></p>
+                    </ng-container>
+                  </ng-container>
+                  <ng-template #usersList>
+                    <p
+                      class="link"
+                      *ngIf="itemChild.privsList?.length > 0"
+                      routerLink="../users"
+                      queryParamsHandling="preserve"
+                    >
+                      {{
+                        'expressions.usersListPtrn'
+                          | translate: { length: itemChild.privsList.length }
+                      }}
+                    </p>
+                  </ng-template>
+                </div>
+                <div class="separator"></div>
+                <div>
+                  {{
+                    itemChild.balanceLastUpdatedDate
+                      | todayRelativeHumanize: 'dd/MM/yy'
+                  }}
+                </div>
+                <div class="separator"></div>
+                <div>
+                  <i
+                    *ngIf="
+                      itemChild.alertStatus
+                        | alertStatusHumanize as alertStatusHumanized
+                    "
+                    class="outdated"
+                  >
+                    {{ alertStatusHumanized }}
+                  </i>
+                </div>
+                <div class="separator"></div>
+                <div>
+                  <span
+                    *ngIf="!itemChild.primaryAccount"
+                    class="showHover"
+                    style="color: #038ed6"
+                    (click)="accountSetPrimary(itemChild)"
+                  >
+                    בחירת חשבון מוביל
+                  </span>
+                </div>
+                <div class="separator"></div>
+                <div>
+                  <button
+                    class="button-link"
+                    (click)="accountDelete(itemChild)"
+                    [disabled]="accountDeletePrompt.visible"
+                  >
+                    <img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/trash.png" class="showHover" />
+                  </button>
+                </div>
+                <div class="separator"></div>
+              </div>
+              <div
+                tabindex="-1"
+                class="row"
+                *ngIf="
+                  itemChild.token !== '88e6c85e-b914-4928-8436-47e86dddd3a4' &&
+                  itemChild.token !== '88e6c85e-b914-4928-8436-47e86dddd3a5'
+                "
+                [class.row-outdated]="
+                  !(itemChild.balanceLastUpdatedDate | isToday: true:false)
+                "
+                (focus)="selectedAccount = itemChild"
+                (blur)="selectedAccount = null"
+              >
+                <div class="separator"></div>
+                <div></div>
+                <div class="separator"></div>
+
+                <div>
+                  <input
+                    [(ngModel)]="itemChild.accountNickname"
+                    #accNicknameInp
+                    (focus)="selectedAccount = itemChild"
+                    (blur)="selectedAccount = null"
+                    (keydown.enter)="accNicknameInp.blur()"
+                    (keydown.esc)="
+                      selectedAccount.accountNickname = '';
+                      accNicknameInp.blur()
+                    "
+                    [readonly]="selectedAccount !== itemChild"
+                    [appMaxInputLength]="19"
+                  />
+                  <!--{{itemChild.accountNickname}}-->
+                  <div class="nickname-with-currency">
+                    <div class="text-ellipsis">
+                      {{ itemChild.accountNickname }}
+                    </div>
+                    <div class="currency">
+                      ({{ itemChild.currency | currencySymbol }})
+                    </div>
+                  </div>
+                  <!--<i class="currency">({{itemChild.currency| currencySymbol}})</i>-->
+                  <i *ngIf="itemChild.primaryAccount"> - חשבון מוביל </i>
+                </div>
+                <div class="separator"></div>
+                <div>{{ itemChild.bankAccountId }}</div>
+                <div class="separator"></div>
+                <div>{{ itemChild.bankSnifId }}</div>
+                <div class="separator"></div>
+                <div>
+                  <div
+                    *ngIf="!itemChild.creditCardNum; else navigateToCardsLink"
+                  >
+                    ללא
+                  </div>
+                  <ng-template #navigateToCardsLink>
+                    <ng-container
+                      *ngIf="linkedCreditCards$ | async as linkedCreditCards"
+                    >
+                      <div
+                        class="link"
+                        *ngIf="
+                          linkedCreditCards[itemChild.companyAccountId]?.length
+                        "
+                        (click)="
+                          navigateToCreditCard(
+                            linkedCreditCards[itemChild.companyAccountId][0]
+                              .creditCardId
+                          )
+                        "
+                      >
+                        {{
+                          itemChild.creditCardNum > 1
+                            ? itemChild.creditCardNum + ' כרטיסים'
+                            : linkedCreditCards[itemChild.companyAccountId][0]
+                                .creditCardNo
+                        }}
+                        <!--{{(linkedCreditCards[itemChild.companyAccountId][0].creditCardNo) +-->
+                        <!--((itemChild.creditCardNum > 1)-->
+                        <!--? ' ועוד ' + (itemChild.creditCardNum - 1) + ' כרטיסים'-->
+                        <!--: '')}}-->
+                        <!--{{itemChild.creditCardNum}}-->
+                        <!--כרטיסים-->
+                      </div>
+                    </ng-container>
+                  </ng-template>
+                </div>
+                <div class="separator"></div>
+                <div>
+                  <ng-container
+                    *ngIf="itemChild.privsList?.length === 1; else usersList"
+                  >
+                    <ng-container [ngSwitch]="itemChild.privsList[0]">
+                      <p *ngSwitchCase="'all'">
+                        {{ 'expressions.usersListAll' | translate }}
+                      </p>
+                      <p *ngSwitchCase="'Denied Access'"></p>
+                    </ng-container>
+                  </ng-container>
+                  <ng-template #usersList>
+                    <p
+                      class="link"
+                      *ngIf="itemChild.privsList?.length > 0"
+                      routerLink="../users"
+                      queryParamsHandling="preserve"
+                    >
+                      {{
+                        'expressions.usersListPtrn'
+                          | translate: { length: itemChild.privsList.length }
+                      }}
+                    </p>
+                  </ng-template>
+                </div>
+                <div class="separator"></div>
+                <div>
+                  {{
+                    itemChild.balanceLastUpdatedDate
+                      | todayRelativeHumanize: 'dd/MM/yy'
+                  }}
+                </div>
+                <div class="separator"></div>
+                <div>
+                  <i
+                    *ngIf="
+                      itemChild.alertStatus
+                        | alertStatusHumanize as alertStatusHumanized
+                    "
+                    class="outdated"
+                  >
+                    {{ alertStatusHumanized }}
+                  </i>
+                </div>
+                <div class="separator"></div>
+                <div>
+                  <span
+                    *ngIf="!itemChild.primaryAccount"
+                    class="showHover"
+                    style="color: #038ed6"
+                    (click)="accountSetPrimary(itemChild)"
+                  >
+                    בחירת חשבון מוביל
+                  </span>
+                </div>
+                <div class="separator"></div>
+                <div>
+                  <button
+                    class="button-link"
+                    (click)="accountDelete(itemChild)"
+                    [disabled]="accountDeletePrompt.visible"
+                  >
+                    <img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/trash.png" class="showHover" />
+                  </button>
+                </div>
+                <div class="separator"></div>
+              </div>
+            </ng-container>
+          </ng-container>
+          <ng-container
+            *ngIf="showDeletedAccounts.value && groupExpanded[tokenGroup.id]"
+          >
+            <ng-container *ngIf="deletedAccounts$ | async as deletedAccounts">
+              <div
+                *ngFor="let itemChild of deletedAccounts[tokenGroup.id]"
+                tabindex="-1"
+                class="row deletedAccountRow"
+              >
+                <div class="separator"></div>
+                <div></div>
+                <div class="separator"></div>
+
+                <div>
+                  <div class="nickname-with-currency">
+                    <div class="text-ellipsis">
+                      {{ itemChild.accountNickname }}
+                    </div>
+                    <div class="currency">
+                      ({{ itemChild.currency | currencySymbol }})
+                    </div>
+                  </div>
+                  <i> (נמחק) </i>
+                </div>
+                <div class="separator"></div>
+                <div>{{ itemChild.bankAccountId }}</div>
+                <div class="separator"></div>
+                <div>{{ itemChild.bankSnifId }}</div>
+                <div class="separator"></div>
+                <div *ngIf="itemChild.creditCardNum === 0">ללא</div>
+                <div
+                  *ngIf="itemChild.creditCardNum !== 0"
+                  style="color: #038ed6"
+                >
+                  {{ itemChild.creditCardNum }} כרטיסים
+                </div>
+                <div class="separator"></div>
+                <div>
+                  <ng-container
+                    *ngIf="itemChild.privsList?.length === 1; else usersList"
+                  >
+                    <ng-container [ngSwitch]="itemChild.privsList[0]">
+                      <p *ngSwitchCase="'all'">
+                        {{ 'expressions.usersListAll' | translate }}
+                      </p>
+                      <p *ngSwitchCase="'Denied Access'"></p>
+                    </ng-container>
+                  </ng-container>
+                  <ng-template #usersList>
+                    <p class="link" *ngIf="itemChild.privsList?.length > 0">
+                      {{
+                        'expressions.usersListPtrn'
+                          | translate: itemChild.privsList
+                      }}
+                    </p>
+                  </ng-template>
+                </div>
+                <div class="separator"></div>
+                <div>
+                  {{
+                    itemChild.balanceLastUpdatedDate
+                      | todayRelativeHumanize: 'dd/MM/yy'
+                  }}
+                </div>
+                <div class="separator"></div>
+                <div></div>
+                <div class="separator"></div>
+                <div>
+                  <span
+                    class="showHover link"
+                    (click)="accountRestore(itemChild)"
+                  >
+                    {{ 'actions.restoreAccount' | translate }}
+                  </span>
+                </div>
+                <div class="separator"></div>
+                <div></div>
+                <div class="separator"></div>
+              </div>
+            </ng-container>
+          </ng-container>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+</div>
+
+<app-token-create-dialog
+  *ngIf="addTokenPrompt.visible"
+  [(display)]="addTokenPrompt.visible"
+  [settings]="addTokenPrompt.form"
+  [companyId]="(settingsComponent.selectedCompany$ | async).companyId"
+  [type]="tokenTypes.ACCOUNT"
+  (openCallService)="sharedComponent.showOpenTicket()"
+  (creationSuccess)="forceReload$.next()"
+>
+</app-token-create-dialog>
+
+<p-dialog (visibleChange)=" accountRestorePrompt.visible = $event"
+		[visible]="(accountRestorePrompt?.visible)"
+
+  styleClass="deleteMovementDialog"
+  appendTo="body"
+  [style]="{width: 360 + 'px'}"
+  [modal]="true"
+>
+  <p-header>{{ 'actions.accountRestore.title' | translate }}</p-header>
+
+  <div
+    class="mat-h3"
+    style="font-weight: 700"
+    [innerHTML]="
+      'actions.accountRestore.subjectPtrn'
+        | translate: accountRestorePrompt.account
+    "
+  ></div>
+  <div
+		  style="
+    font-size: 15px;
+    line-height: 24px;
+    margin-bottom: 16px;
+"
+    class="mat-h4"
+    [innerHTML]="'actions.accountRestore.body' | translate"
+  ></div>
+
+  <p-footer>
+    <div style="justify-content: center">
+      <button
+        class="button-white button-link"
+        (click)="accountRestorePrompt.visible = false"
+      >
+        {{ 'actions.accountRestore.decline' | translate }}
+      </button>
+      <button
+        class="button-dark"
+        (click)="accountRestorePrompt.onApprove()"
+        [disabled]="accountRestorePrompt?.processing"
+      >
+        <i
+          class="fas fa-fw fa-circle-notch fa-spin"
+          *ngIf="accountRestorePrompt?.processing"
+        ></i>
+        {{ 'actions.accountRestore.approve' | translate }}
+      </button>
+    </div>
+  </p-footer>
+</p-dialog>
+
+<p-dialog (visibleChange)=" accountDeletePrompt.visible = $event"
+		[visible]="(accountDeletePrompt?.visible)"
+  
+  styleClass="deleteMovementDialog"
+  appendTo="body"
+  [style]="{width: 360 + 'px'}"
+  [modal]="true"
+>
+  <p-header>{{ 'actions.accountDelete.title' | translate }}</p-header>
+
+  <div
+    class="mat-h3"
+    style="font-weight: 700"
+    [innerHTML]="
+      'actions.accountDelete.subjectPtrn'
+        | translate: accountDeletePrompt.account
+    "
+  ></div>
+  <div
+    class="mat-h4"
+    [innerHTML]="'actions.accountDelete.body' | translate"
+  ></div>
+
+  <p-footer>
+    <div style="justify-content: center">
+      <button
+        class="button-white button-link"
+        (click)="accountDeletePrompt.visible = false"
+      >
+        {{ 'actions.accountRestore.decline' | translate }}
+      </button>
+      <button
+        class="button-dark"
+        (click)="accountDeletePrompt.onApprove()"
+        [disabled]="accountDeletePrompt.processing"
+      >
+        <i
+          class="fas fa-fw fa-circle-notch fa-spin"
+          *ngIf="accountDeletePrompt.processing"
+        ></i>
+        {{ 'actions.accountDelete.approve' | translate }}
+      </button>
+    </div>
+  </p-footer>
+</p-dialog>

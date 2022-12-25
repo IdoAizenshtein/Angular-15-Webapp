@@ -1,0 +1,113 @@
+<div class="mat-typography">
+	<h1>{{ 'signup.accountLinkStep.title' | translate }}</h1>
+	<p class="mat-caption">{{ 'signup.accountLinkStep.subtitle' | translate }}</p>
+	<p class="mat-caption">
+		{{ 'signup.accountLinkStep.subtitle2' | translate }}
+	</p>
+</div>
+
+<form (ngSubmit)="onSubmit()" [formGroup]="account" novalidate>
+	<div style="min-height: 15em">
+		<app-bank-foreign-credentials
+				[bankCredentialsGroup]="account"
+				[settings]="banksCredentialSettings"
+				[useMaterialComponents]="true"
+		></app-bank-foreign-credentials>
+	</div>
+	<div
+			[style.visibility]="account.invalid ? 'hidden' : 'visible'"
+			class="Form__feedback Form__feedback--warning Form__feedback--warning--block"
+	>
+		<i class="fa fa-fw fa-exclamation-triangle"></i>
+		{{
+		'foreignCredentialsUpdate.expressions.disconnectBankSiteWarn' | translate
+		}}
+	</div>
+	<div
+			[style.margin-top.em]="account.invalid ? 0 : 0.5"
+			class="Signup__control"
+	>
+		<button
+				[disabled]="
+        !account.get('bank')?.value ||
+        account.get('bank')?.value < 0 ||
+        !account.valid ||
+        (parent.formInProgress$ | async)
+      "
+				[id]="'submitStep'"
+				color="primary"
+				mat-raised-button
+				style="width: 100%"
+				type="submit"
+		>
+			<mat-spinner
+					*ngIf="parent.formInProgress$ | async"
+					color="accent"
+					diameter="20"
+			></mat-spinner>
+			<span *ngIf="!(parent.formInProgress$ | async)">
+        <!--{{'signup.startFreeTrial'| translate}}-->
+				{{
+				parent.agreementId !== '11'
+						? 'לחודש התנסות בחינם'
+						: 'ל-3 חודשים התנסות בחינם'
+				}}
+      </span>
+		</button>
+	</div>
+</form>
+
+<div
+		style="
+    display: flex;
+    display: -ms-flexbox;
+    align-items: center;
+    flex-flow: wrap;
+    align-content: space-between;
+    width: 100%;
+    margin-top: 0.4em;
+    font-size: 18px;
+  "
+>
+	<hr style="flex: 1 1 auto"/>
+	<div
+			style="
+      flex: 0 0 8ch;
+      -ms-flex: 0 0 8ch;
+      text-align: center;
+      font-weight: 600;
+    "
+	>
+		{{ 'expressions.or' | translate }}
+	</div>
+	<hr style="flex: 1 1 auto; -ms-flex: 1 1 auto"/>
+	<a
+			(click)="parent.onSkipToDemoCompanyClick()"
+			color="primary"
+			mat-button
+			style="
+      flex: 2 1 100%;
+      -ms-flex: 2 1 100%;
+      padding: 0 0.5em;
+      min-height: 2.35em;
+      font-size: 1em;
+    "
+	>
+		<mat-spinner
+				*ngIf="parent.formInProgress$ | async"
+				color="accent"
+				diameter="20"
+		></mat-spinner>
+		<span *ngIf="!(parent.formInProgress$ | async)">
+      {{ 'signup.accountLinkStep.skipToDemoBusiness' | translate }}
+			<i class="fa fa-fw fa-chevron-left"></i>
+    </span>
+	</a>
+</div>
+
+<div>
+	{{
+	'signup.accountLinkStep.disclaimerRegistrationCancelForBankAccounts'
+			| translate
+	}}
+</div>

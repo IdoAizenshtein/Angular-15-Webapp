@@ -1,0 +1,34 @@
+<mat-grid-list
+  cols="3"
+  gutterSize="2em"
+  rowHeight="2:1"
+  id="all-available-video"
+>
+  <ng-container
+    *ngFor="
+      let vid of customersHelpCenterComponent.videosList$
+        | async
+        | filterSearchables
+          : customersHelpCenterComponent.searchFC.value as videoList
+    "
+  >
+    <ng-container
+      *ngIf="vid.vimeoData | async as vimeoData; else noVideoAvailable"
+    >
+      <mat-grid-tile
+        [title]="vid.subject"
+        style="cursor: pointer"
+        (click)="playVideoInDialog(vimeoData)"
+      >
+        <img
+          style="width: 100%; height: auto; position: relative;" fill [ngSrc]="vimeoData.thumbnail_url_with_play_button"
+        />
+        <mat-grid-tile-footer>{{ vid.subject }}</mat-grid-tile-footer>
+      </mat-grid-tile>
+    </ng-container>
+    <ng-template #noVideoAvailable>
+      <
+      <mat-grid-tile>{{ vid.subject }}</mat-grid-tile>
+    </ng-template>
+  </ng-container>
+</mat-grid-list>

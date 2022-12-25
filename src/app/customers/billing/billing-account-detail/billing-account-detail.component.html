@@ -1,0 +1,439 @@
+<!--{{billingAccountDetails$| async | json}}-->
+<ng-template #loader>
+	<div *ngIf="loader" class="loader">
+		<div class="circle"></div>
+	</div>
+</ng-template>
+
+<ng-template #noRowsFound>
+	<div class="no-rows-found">
+		{{ 'expressions.noBillingPaymentsFound' | translate }}
+	</div>
+</ng-template>
+
+<ng-template #noLinkedAccountPaymentTypeDesc>
+	{{ 'ממתין לפרטים' }}
+</ng-template>
+<ng-template #plainPaymentTypeDesc let-billingAccountDetails>
+	{{ 'billingPaymentTypes.' + billingAccountDetails.paymentTypeId | translate }}
+</ng-template>
+<ng-template #creditCardDesc let-billingAccountDetails>
+	<img style="height: auto; width: auto; position: relative;" fill [ngSrc]="billingAccountDetails.extspMutag24 | toIconSrc: 'billing'"/>
+	<div>
+		<i>{{
+			'billingCreditCardTypes.' + billingAccountDetails.extspMutag24 | translate
+			}}</i>
+		<i>{{ billingAccountDetails.extspCardnumber5 }}</i>
+	</div>
+</ng-template>
+
+<ng-container
+		*ngIf="billingAccountDetails$ | async as billingAccountDetails; else loader"
+>
+	<div
+			*ngIf="!(loadingDetails$ | async); else loader"
+			id="billingAccountDetails"
+	>
+		<form (ngSubmit)="detailsFormSubmit()" [formGroup]="detailsForm">
+			<button style="display: none" type="submit"></button>
+			<section
+					*ngIf="billingAccountDetails.billingAccountId === preHandledAccountId"
+					id="registerSection"
+			>
+				<header>
+					<span>{{ 'אמצעי תשלום' }}</span>
+				</header>
+				
+				<div class="body">
+					<h1>{{ 'הסליקה מתבצעת דרך חברת קארדקום בע"מ' }}</h1>
+					<small>{{ 'אנא וודאו שפרטי החשבונית הרשומים מטה נכונים' }}</small>
+					<button
+							(click)="detailsFormSubmit(true)"
+							class="button-dark"
+							type="submit"
+					>
+						{{ 'לחצו למעבר לתשלום' }}
+					</button>
+				</div>
+			</section>
+			
+			<section
+					*ngIf="billingAccountDetails.billingAccountId !== preHandledAccountId"
+					[class.billing-error]="billingAccountDetails.operationresponse !== 0"
+			>
+				<header>
+          <span
+          >{{ 'אמצעי תשלום' }}
+	          <span *ngIf="billingAccountDetails.operationresponse !== 0">
+              &nbsp;&minus;&nbsp;<span class="error">{{ 'לא תקין' }}</span>
+            </span>
+          </span>
+					
+					<button
+							(click)="detailsFormSubmit(true)"
+							class="button-link"
+							type="submit"
+					>
+						{{ 'עדכון' }}
+					</button>
+				</header>
+				
+				<div class="body readonly">
+					<label>
+						<span>{{ 'תשלום באמצעות' }}</span>
+						<span class="divider"></span>
+						<span>{{
+							'billingPaymentTypes.' + billingAccountDetails.paymentTypeId
+									| translate
+							}}</span>
+					</label>
+					<ng-container *ngIf="billingAccountDetails.paymentTypeId === 3">
+						<label>
+							<span>{{ 'סוג כרטיס' }}</span>
+							<span class="divider"></span>
+							<span>{{
+								billingAccountDetails.extspMutag24 === 0
+										? 'אחר'
+										: ('billingCreditCardTypes.' +
+										billingAccountDetails.extspMutag24 | translate)
+								}}</span>
+						</label>
+						<label>
+							<span>{{ 'מסתיים בספרות' }}</span>
+							<span class="divider"></span>
+							<span>{{ billingAccountDetails.extspCardnumber5 }}</span>
+						</label>
+						<label>
+							<span>{{ 'תוקף' }}</span>
+							<span class="divider"></span>
+							<span class="forceLTR">
+                <ng-container
+		                *ngIf="billingAccountDetails.cardvalidityyear > 0"
+                >
+                  {{ billingAccountDetails.cardvaliditymonth }}/{{
+	                billingAccountDetails.cardvalidityyear
+	                }}
+                </ng-container>
+              </span>
+						</label>
+					</ng-container>
+				</div>
+			</section>
+			
+			<section>
+				<header>
+					<span>{{ 'פרטים לחשבונית' }}</span>
+					<span>{{ 'עדכון פרטי החשבונית אינו משנה את' }}</span>
+					<button
+							[queryParamsHandling]="'preserve'"
+							[routerLink]="
+              !userService.appData.userData.accountant
+                ? '/cfl/settings/businessDetails'
+                : '/accountants/companies/settings/businessDetails'
+            "
+							class="button-link"
+							type="button"
+					>
+						{{ 'פרטי העסק' }}
+					</button>
+				</header>
+				
+				<div class="body">
+					<label
+							[class.error]="
+              detailsForm.get('billingAccountCompanyName').dirty &&
+              detailsForm.get('billingAccountCompanyName').invalid
+            "
+					>
+						<span>{{ 'שם מלא/ שם העסק' }}</span>
+						<span class="divider"></span>
+						<input
+								[formControl]="detailsForm.get('billingAccountCompanyName')"
+						/>
+					</label>
+					<label
+							[class.error]="
+              detailsForm.get('billingAccountHp').dirty &&
+              detailsForm.get('billingAccountHp').invalid
+            "
+					>
+						<span>{{ 'ת.ז. / ח.פ.' }}</span>
+						<span class="divider"></span>
+						<input [formControl]="detailsForm.get('billingAccountHp')"/>
+					</label>
+					<label
+							[class.error]="
+              detailsForm.get('billingAccountCity').dirty &&
+              detailsForm.get('billingAccountCity').invalid
+            "
+					>
+						<span>{{ 'עיר' }}</span>
+						<span class="divider"></span>
+						<p-dropdown
+								#cityDD
+								(onChange)="hideDDForcibly(cityDD)"
+								[dropdownIcon]="'p-dropdown-icon'"
+								[emptyFilterMessage]="'לא נמצאו תוצאות'"
+								[filter]="true"
+								[formControl]="detailsForm.get('billingAccountCity')"
+								[options]="sharedService.cities$ | async"
+								
+								[placeholder]="'בחר עיר'"
+								[scrollHeight]="'135px'"
+								dataKey="cityId"
+								optionLabel="cityName"
+						>
+						</p-dropdown>
+					</label>
+					<label
+							[class.error]="
+              detailsForm.get('billingAccountAddress').dirty &&
+              detailsForm.get('billingAccountAddress').invalid
+            "
+					>
+						<span>{{ 'כתובת' }}</span>
+						<span class="divider"></span>
+						<input [formControl]="detailsForm.get('billingAccountAddress')"/>
+					</label>
+					<label
+							[class.error]="
+              detailsForm.get('billingAccountName').dirty &&
+              detailsForm.get('billingAccountName').invalid
+            "
+					>
+						<span>{{ 'שם איש קשר' }}</span>
+						<span class="divider"></span>
+						<input [formControl]="detailsForm.get('billingAccountName')"/>
+					</label>
+					<label
+							[class.error]="
+              detailsForm.get('billingAccountEmail').dirty &&
+              detailsForm.get('billingAccountEmail').invalid
+            "
+					>
+						<span>{{ 'מייל' }}</span>
+						<span class="divider"></span>
+						<input
+								[formControl]="detailsForm.get('billingAccountEmail')"
+								type="email"
+						/>
+					</label>
+					<label
+							[class.error]="
+              detailsForm.get('billingAccountPhone').dirty &&
+              detailsForm.get('billingAccountPhone').invalid
+            "
+					>
+						<span>{{ 'טלפון' }}</span>
+						<span class="divider"></span>
+						<input
+								[formControl]="detailsForm.get('billingAccountPhone')"
+								type="tel"
+						/>
+					</label>
+				</div>
+				
+				<div
+						[class.flexCancelService]="userService.appData?.userData?.billingLite"
+				>
+					<p-checkbox [binary]="true"
+					            [formControl]="detailsForm.get('leloMaam')"
+					            [label]="'expressions.dutyFree' | translate"
+					            [style.display]="
+              detailsForm.get('leloMaam').disabled &&
+              detailsForm.get('leloMaam').value === false
+                ? 'none'
+                : null
+            "
+					            checkboxIcon="fa fa-check"
+					></p-checkbox>
+					
+					<a
+							(click)="cancelServiceShow()"
+							*ngIf="userService.appData?.userData?.billingLite"
+							href="javascript:void(0)"
+							role="button"
+							style="color: #038ed6"
+					>{{ 'ביטול
+							שירות' }}</a
+					>
+				</div>
+			</section>
+		</form>
+		
+		<div>
+			<section>
+				<header>
+					<span>{{ 'החיוב הבא' }}</span>
+				</header>
+				
+				<div class="bank-acc-details-table-container client-payments-table">
+					<div class="bank-acc-details-table-header">
+						<div>{{ 'תאריך' }}</div>
+						<div>{{ 'אמצעי תשלום' }}</div>
+						<div></div>
+						<div>{{ 'סכום' }}</div>
+						<div></div>
+					</div>
+					<div class="bank-acc-details-table-body">
+						<div class="bank-acc-details-row">
+							<div>
+								{{ billingAccountDetails.nextPaymentDate | date: 'dd/MM/yy' }}
+							</div>
+							<div style="overflow: visible">
+								<ng-template
+										[ngTemplateOutletContext]="{
+                    $implicit: billingAccountDetails
+                  }"
+										[ngTemplateOutlet]="
+                    billingAccountDetails.billingAccountId !==
+                    preHandledAccountId
+                      ? billingAccountDetails.paymentTypeId === 3
+                        ? creditCardDesc
+                        : plainPaymentTypeDesc
+                      : noLinkedAccountPaymentTypeDesc
+                  "
+								></ng-template>
+							</div>
+							<div></div>
+							<div>
+								<app-sum-view
+										[sum]="billingAccountDetails.nextPaymentTotal"
+								></app-sum-view>
+							</div>
+							<div></div>
+						</div>
+					</div>
+				</div>
+			</section>
+			
+			<section>
+				<header>
+					<span>{{ 'חיובים אחרונים' }}</span>
+				</header>
+				
+				<div class="bank-acc-details-table-container client-payments-table">
+					<div class="bank-acc-details-table-header">
+						<div>{{ 'תאריך' }}</div>
+						<div>{{ 'אמצעי תשלום' }}</div>
+						<div>{{ 'אסמכתא' }}</div>
+						<div>{{ 'סכום' }}</div>
+						<div>{{ 'חשבונית מס' }}</div>
+					</div>
+					<div
+							*ngIf="billingAccountPayments$ | async as billingAccountPayments"
+							class="bank-acc-details-table-body"
+					>
+						<ng-container
+								*ngIf="billingAccountPayments.length; else noRowsFound"
+						>
+							<div
+									*ngFor="let billingAccountPayment of billingAccountPayments"
+									class="bank-acc-details-row"
+							>
+								<div>
+									{{ billingAccountPayment.paymentDate | date: 'dd/MM/yy' }}
+								</div>
+								<div>
+									<ng-template
+											[ngTemplateOutletContext]="{
+                      $implicit: billingAccountPayment
+                    }"
+											[ngTemplateOutlet]="
+                      billingAccountPayment.paymentTypeId === 3
+                        ? creditCardDesc
+                        : plainPaymentTypeDesc
+                    "
+									></ng-template>
+								</div>
+								<div>{{ billingAccountPayment.invoiceNumber }}</div>
+								<div>
+									<app-sum-view
+											[sum]="billingAccountPayment.sumtobill"
+									></app-sum-view>
+								</div>
+								<div>
+									<div>
+										<button
+												(click)="downloadInvoice(billingAccountPayment)"
+												class="button-link"
+										>
+											<i class="fas fa-lg fa-download"></i>
+										</button>
+										<button
+												(click)="
+                        toggledPayment = billingAccountPayment;
+                        reportMailSubmitterToggle = true
+                      "
+												class="button-link"
+										>
+											<i class="fas fa-lg fa-envelope"></i>
+										</button>
+									</div>
+								</div>
+							</div>
+						</ng-container>
+					</div>
+				</div>
+			</section>
+		</div>
+	</div>
+	<app-report-mail-scheduler
+			(recipientApproved)="sendInvoice($event)"
+	 [visible]="(reportMailSubmitterToggle)"
+	></app-report-mail-scheduler>
+</ng-container>
+
+<p-dialog (visibleChange)="cancelServicePopUp.visible = false; onCancelServicePopUpHide()"
+		(onHide)="onCancelServicePopUpHide()"
+		[modal]="true"
+		  position="top"
+		  [style]="{'margin-top':'100px'}"
+		[styleClass]="
+    valuesEndBiziboxService.reason !== null
+      ? 'cancelServicePopUp step2'
+      : 'cancelServicePopUp'
+  "
+		 [visible]="(cancelServicePopUp.visible)"
+		appendTo="body"
+>
+	<p-header>
+		<div class="p-dialog-title-flex">
+			<p>ביטול שירות</p>
+			<img
+					class="logo"
+					src="/assets/images/logoUpgradePopup.png"
+					style="height: 21px; width: auto; position: relative;" fill
+			
+			/>
+		</div>
+	</p-header>
+	<h2>קיבלנו את בקשתך לביטול השירות, נציגנו יצרו איתך קשר בהקדם</h2>
+	
+	<div class="dd">
+		<p>ספרו לנו מהי סיבת הביטול</p>
+		<p-dropdown
+				[(ngModel)]="valuesEndBiziboxService.reason"
+				[dropdownIcon]="'p-dropdown-icon'"
+				[options]="reasonList"
+				[style]="{ 'min-width': '170px', 'margin-top': '2px' }"
+				placeholder=""
+		></p-dropdown>
+	</div>
+	
+	<div
+			*ngIf="valuesEndBiziboxService.reason !== null"
+			style="display: flex; flex-direction: column"
+	>
+    <textarea
+		    [(ngModel)]="valuesEndBiziboxService.text"
+		    class="scroll-chrome"
+		    placeholder="מלל חופשי"
+		    style="resize: none"
+		    wrap="soft"
+    ></textarea>
+		<button (click)="endBiziboxService()" class="button-dark" type="button">
+			{{ 'שליחה' }}
+		</button>
+	</div>
+</p-dialog>

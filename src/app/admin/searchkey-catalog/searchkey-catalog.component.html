@@ -1,0 +1,352 @@
+<div class="inline-form">
+	<!--  <div class="search" [formGroup]="searchForm">-->
+	<!--    <input type="text" placeholder="{{('titles.searchkey'|translate)}}" autocomplete="on"-->
+	<!--           formControlName="query">-->
+	<!--  </div>-->
+	
+	<ng-container [formGroup]="filter">
+		<div class="search">
+			<input
+					type="text"
+					placeholder="{{ 'titles.searchkey' | translate }}"
+					autocomplete="on"
+					formControlName="searchkey"
+			/>
+		</div>
+		<!--    <p-dropdown [options]="paymentTypes$ | async" formControlName="paymentDesc"-->
+		<!--                [placeholder]="('titles.typeOfPayment'| translate)"></p-dropdown>-->
+		<!--    <button class="button-link" [style.visibility]="filter.get('paymentDesc').value ? 'visible': 'collapse'">-->
+		<!--      <i class="fas fa-times" (click)="filter.patchValue({paymentDesc: ''})"></i>-->
+		<!--    </button>-->
+		
+		<div class="form-field">
+			<label>{{ 'מופעים מעל' }}</label>
+			<input formControlName="misparHofaot" type="number"/>
+		</div>
+		
+		<!--    <p-dropdown [options]="categories$ | async" formControlName="transTypeId"-->
+		<!--                [placeholder]="('titles.category'| translate)"></p-dropdown>-->
+		<!--    <button class="button-link" [style.visibility]="filter.get('transTypeId').value ? 'visible': 'collapse'">-->
+		<!--      <i class="fas fa-times" (click)="filter.patchValue({transTypeId: ''})"></i>-->
+		<!--    </button>-->
+		
+		<!--    <p-dropdown [options]="banks$ | async" formControlName="bankId" [style]="{'width': '180px'}"-->
+		<!--                [placeholder]="('titles.bank'| translate)">-->
+		<!--      <ng-template let-item pTemplate="selectedItem">-->
+		<!--        <div class="text-ellipsis"-->
+		<!--             style="position: relative; display: flex; display: -ms-flexbox; align-items: center;">-->
+		<!--          <img style="height: auto; width: auto; position: relative;" fill [ngSrc]="!(item.value) ? '' : (item.value| toIconSrc:'any')" style="width: 24px;"/>&nbsp;{{item.label}}-->
+		<!--        </div>-->
+		<!--      </ng-template>-->
+		<!--      <ng-template let-bank pTemplate="item">-->
+		<!--        <div class="text-ellipsis"-->
+		<!--             style="position: relative; display: flex; display: -ms-flexbox; align-items: center;">-->
+		<!--          <img style="height: auto; width: auto; position: relative;" fill [ngSrc]="bank.value| toIconSrc:'any'"-->
+		<!--               style="width: 24px;"/>&nbsp;{{bank.label}}-->
+		<!--        </div>-->
+		<!--      </ng-template>-->
+		<!--    </p-dropdown>-->
+	</ng-container>
+	<!--  <button class="button-link" [style.visibility]="filter.get('bankId').value ? 'visible': 'collapse'">-->
+	<!--    <i class="fas fa-times" (click)="filter.patchValue({bankId: ''})"></i>-->
+	<!--  </button>-->
+	
+	<!--  <div class="search" [formGroup]="searchForm">-->
+	<!--    <input type="text" placeholder="{{('titles.searchkey'|translate)}}" autocomplete="on"-->
+	<!--           formControlName="query">-->
+	<!--  </div>-->
+	<div
+			*ngIf="searchkeys$ | async as searchkeys"
+			class="paginator-custom"
+			style="margin-right: auto"
+	>
+		<button
+				mat-icon-button
+				[disabled]="!(currentPage > 0)"
+				(click)="prevPage()"
+				pTooltip="עמוד קודם"
+				tooltipPosition="right"
+		>
+			<mat-icon>navigate_next</mat-icon>
+		</button>
+		<button
+				mat-icon-button
+				[disabled]="searchkeys.length < entryLimit"
+				(click)="nextPage()"
+				pTooltip="עמוד הבא"
+				tooltipPosition="left"
+		>
+			<mat-icon>navigate_before</mat-icon>
+		</button>
+	</div>
+	
+	<ul class="tabs" id="serchkeyTypesFilter" style="font-size: 1em">
+		<li
+				id="typeNotFixed"
+				(click)="filter.patchValue({ type: 'notFixed' })"
+				[class.active]="filter.get('type').value === 'notFixed'"
+				[title]="'filters.handleNeeded' | translate"
+		>
+			{{ 'filters.handleNeeded' | translate }}
+		</li>
+		<li
+				id="typeFixed"
+				(click)="filter.patchValue({ type: 'fixed' })"
+				[class.active]="filter.get('type').value === 'fixed'"
+				[title]="'filters.handled' | translate"
+		>
+			{{ 'filters.handled' | translate }}
+		</li>
+	</ul>
+</div>
+
+<div
+		class="bank-acc-details-table-container serarchkey-table"
+		style="position: relative"
+>
+	<div class="bank-acc-details-table-header" #tableHeader>
+		<div style="overflow: visible">
+			<app-tooltip-category
+					[type]="'bankId'"
+					[filter]="false"
+					[title]="'titles.bankOrCreditCardTransactions' | translate"
+					[data]="bankIdFilterOptions$ | async"
+					[selectionMode]="'single'"
+					(changed)="
+          filter.patchValue({
+            bankId:
+              $event.checked && $event.checked.length && $event.checked[0]
+                ? $event.checked[0].id
+                : ''
+          })
+        "
+			>
+			</app-tooltip-category>
+			<!--      {{'titles.bank'| translate}}-->
+			<!--      <button class="button-link" (click)="toggleSort('bank')">-->
+			<!--        <i class="fas"-->
+			<!--          [class.fa-sort]="!sortBy || sortBy[0] !== 'bank'"-->
+			<!--          [class.fa-sort-up]="sortBy && sortBy['bank'] === 'asc'"-->
+			<!--          [class.fa-sort-down]="sortBy && sortBy['bank'] === 'desc'"></i>-->
+			<!--      </button>-->
+		</div>
+		<div>
+			{{ 'titles.searchkey' | translate }}
+			<button class="button-link" (click)="toggleSort('searchkey')">
+				<i
+						class="fas"
+						[class.fa-sort]="!sortBy || sortBy[0] !== 'searchkey'"
+						[class.fa-sort-up]="sortBy && sortBy['searchkey'] === 'asc'"
+						[class.fa-sort-down]="sortBy && sortBy['searchkey'] === 'desc'"
+				></i>
+			</button>
+		</div>
+		<div>
+			{{ 'titles.appearancesCount' | translate }}
+			<button class="button-link" (click)="toggleSort('misparHofaot')">
+				<i
+						class="fas"
+						[class.fa-sort]="!sortBy || sortBy[0] !== 'misparHofaot'"
+						[class.fa-sort-up]="sortBy && sortBy['misparHofaot'] === 'asc'"
+						[class.fa-sort-down]="sortBy && sortBy['misparHofaot'] === 'desc'"
+				></i>
+			</button>
+		</div>
+		<div style="overflow: visible">
+			<app-tooltip-category
+					[type]="'transTypeId'"
+					[filter]="false"
+					[title]="'titles.typeOfPayment' | translate"
+					[data]="paymentTypeFilterOptions$ | async"
+					[selectionMode]="'single'"
+					(changed)="paymentTypeFilterChanged($event.checked)"
+			>
+				<!--                            (onChange)="filter.patchValue({paymentDesc: $event.checked && $event.checked.length && $event.checked[0] ? $event.checked[0].id : ''})">-->
+			</app-tooltip-category>
+			<!--      {{'titles.methodsOfPayment'| translate}}-->
+			<!--      <button class="button-link" (click)="toggleSort('searchkeyCatName')">-->
+			<!--        <i class="fas"-->
+			<!--           [class.fa-sort]="!sortBy || sortBy[0] !== 'searchkeyCatName'"-->
+			<!--           [class.fa-sort-up]="sortBy && sortBy['searchkeyCatName'] === 'asc'"-->
+			<!--           [class.fa-sort-down]="sortBy && sortBy['searchkeyCatName'] === 'desc'"></i>-->
+			<!--      </button>-->
+		</div>
+		<div
+				[ngStyle]="
+        filter.get('type').value === 'fixed' ? { overflow: 'visible' } : {}
+      "
+		>
+			<ng-container
+					*ngIf="filter.get('type').value !== 'fixed'; else categoryWhenFixed"
+			>
+				{{ 'titles.category' | translate }}
+			</ng-container>
+			<ng-template #categoryWhenFixed>
+				<app-tooltip-category
+						[type]="'transTypeId'"
+						[filter]="false"
+						[title]="'titles.category' | translate"
+						[data]="transTypeFilterOptions$ | async"
+						[selectionMode]="'single'"
+						(changed)="
+            filter.patchValue({
+              transTypeId:
+                $event.checked && $event.checked.length && $event.checked[0]
+                  ? $event.checked[0].id
+                  : ''
+            })
+          "
+				>
+				</app-tooltip-category>
+			</ng-template>
+		</div>
+	</div>
+	<ng-container *ngIf="loading$ | async">
+		<ng-container *ngTemplateOutlet="loader"></ng-container>
+	</ng-container>
+	<div
+			[appScrollHeight]="
+      tableHeader.getBoundingClientRect().bottom +
+      (paginator?.pageLinks?.length > 1 ? 45 : 10)
+    "
+			class="scrollbar-dynamic bank-acc-details-table-body"
+			style="position: relative"
+			(scroll)="hideDropdowns()"
+	>
+		<ng-container *ngIf="searchkeys$ | async as searchkeys; else loader">
+			<ng-container *ngIf="searchkeys.length > 0; else noRows">
+				<div
+						class="bank-acc-details-row"
+						*ngFor="
+            let item of searchkeys;
+            first as isFirst;
+            last as isLast;
+            trackBy: recordTrack
+          "
+						tabindex="-1"
+						[class.bank-acc-details-row-selected]="selectedRow === item"
+						(focus)="selectedRow = item"
+				>
+					<!--        <div class="bank-acc-details-row"-->
+					<!--             *ngFor="let item of searchkeys| slice:(currentPage*entryLimit):((currentPage*entryLimit) + entryLimit); first as isFirst; last as isLast; trackBy: recordTrack"-->
+					<!--             tabindex="-1"-->
+					<!--             [class.bank-acc-details-row-selected]="selectedRow === item"-->
+					<!--             (focus)="selectedRow = item;">-->
+					<div>
+						<img
+								 fill [ngSrc]="item.bankId | toIconSrc"
+								[alt]="'banks.' + item.bankId | translate"
+								style="
+								height: auto; width: auto; position: relative;
+                align-self: center;
+                flex: 0 0 auto;
+                -ms-flex: 0 0 auto;
+                margin: 0 4px;
+              "
+						/>
+						{{ item.bankName }}
+					</div>
+					<div
+							class="text-ellipsis"
+							[pTooltip]="item.searchkey"
+							tooltipPosition="top"
+							#serchKeyContainer
+					>
+						{{ item.searchkey }}
+					</div>
+					<div>
+						{{ item.misparHofaot }}
+					</div>
+					<div>
+						<div class="seamless-edit-prepare">{{ item.searchkeyCatName }}</div>
+						<div
+								class="dropdown-stub"
+								*ngIf="editingRow !== item"
+								(click)="editingRow = item; paymentDescDD.onMouseclick($event)"
+						>
+							<span class="text-ellipsis">{{ item.searchkeyCatName }}</span>
+							<!--<i class="fa fa-fw fa-caret-down"></i>-->
+							<i class="fas fa-fw fa-angle-down"></i>
+						</div>
+						<!--suppress TypeScriptUnresolvedVariable -->
+						<p-dropdown
+								#paymentDescDD
+								[hidden]="editingRow !== item"
+								[options]="paymentTypesById$ | async"
+								[placeholder]="('titles.typeOfPayment' | translate) + '...'"
+								[(ngModel)]="item.searchkeyCatId"
+								[style]="{
+                width: '100%',
+                display: editingRow !== item ? 'none' : null
+              }"
+								
+								appendTo="body"
+								(onChange)="
+                update({
+                  searchkeyCatId: $event.value,
+                  searchkeyId: item.searchkeyId,
+                  transTypeId: item.transTypeId || null
+                })
+              "
+						></p-dropdown>
+					</div>
+					<div>
+						<div class="seamless-edit-prepare">{{ item.transTypeName }}</div>
+						<div
+								class="dropdown-stub"
+								*ngIf="editingRow !== item"
+								(click)="editingRow = item; categoriesDD.onMouseclick($event)"
+						>
+              <span class="text-ellipsis">{{
+	              item.transTypeName || ('actions.selectCategory' | translate)
+	              }}</span>
+							<!--<i class="fa fa-fw fa-caret-down"></i>-->
+							<i class="fas fa-fw fa-angle-down"></i>
+						</div>
+						<p-dropdown
+								#categoriesDD
+								[hidden]="editingRow !== item"
+								[options]="categories$ | async"
+								[placeholder]="'actions.selectCategory' | translate"
+								[(ngModel)]="item.transTypeId //noinspection UnresolvedVariable"
+								[style]="{
+                width: '100%',
+                display: editingRow !== item ? 'none' : null
+              }"
+								
+								appendTo="body"
+								(onChange)="
+                update({
+                  searchkeyCatId: item.searchkeyCatId,
+                  searchkeyId: item.searchkeyId,
+                  transTypeId: $event.value
+                })
+              "
+								[filter]="true"
+						></p-dropdown>
+					</div>
+				</div>
+			</ng-container>
+		</ng-container>
+		<ng-template #noRows>
+			<div class="no-rows-found">
+				{{ 'expressions.noDataFoundForCriteria' | translate }},
+				{{ 'expressions.changeCriteria' | translate }}
+			</div>
+		</ng-template>
+		<ng-template #loader>
+			<div class="loader">
+				<div class="circle"></div>
+			</div>
+		</ng-template>
+	</div>
+	
+	<!--  <ng-container *ngIf="searchkeys$| async as searchkeys">-->
+	<!--    &lt;!&ndash;suppress AngularUndefinedBinding &ndash;&gt;-->
+	<!--    <app-paginator [rows]="entryLimit" [alwaysShow]="false" #paginator-->
+	<!--                   [totalRecords]="(searchkeys$| async).length"-->
+	<!--                   (onPageChange)="currentPage = $event.page">-->
+	<!--    </app-paginator>-->
+	<!--  </ng-container>-->
+</div>
+<!--<pre>{{searchkeys$| async | json}}</pre>-->

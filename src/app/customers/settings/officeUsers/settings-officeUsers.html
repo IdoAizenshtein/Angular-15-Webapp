@@ -1,0 +1,1397 @@
+<div *ngIf="hasPermission; else notPermission">
+	<div class="settingsOfficeUsersTitle">
+		<app-autocomplete-empty-optioned
+				#autoFilter
+				[showEmptyMessage]="true"
+				(completeMethod)="filterCompanies($event)"
+				(onClear)="clear()"
+				(onSelect)="selectCompany()"
+				[(ngModel)]="selectedCompany"
+				[forceSelection]="false"
+				[minLength]="1"
+				[scrollHeight]="'440px'"
+				[size]="30"
+				[suggestions]="filteredCompanies"
+				emptyMessage="true"
+				field="companyName"
+				inputStyleClass="selectedCompany_input_autoComplete"
+				placeholder="הקלידו שם חברה או ח.פ"
+				styleClass="selectedCompany_autoComplete"
+		>
+			<ng-template let-company pTemplate="item">
+				<div>
+					<div class="p-helper-clearfix" style="display: flex">
+						<div>{{ company.companyName }}</div>
+						<div>&nbsp;</div>
+						<div>{{ company.companyHp }}</div>
+					</div>
+				</div>
+			</ng-template>
+			<ng-template pTemplate="empty">
+				<div class="noData">
+					<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/companiesSNotFound.png"/>
+					<ng-container
+							*ngIf="userService.appData.exporterState === 'OK'; else notOk"
+					>
+						<h1>החברה שחיפשתם לא נמצאת במאגר</h1>
+						<p (click)="sharedComponent.showOpenTicket()" class="link">
+							פתחו קריאת שירות
+						</p>
+					</ng-container>
+					<ng-template #notOk>
+						<h1>לא ניתן לאתר את החברה כי בסיס הנתונים לא מחובר</h1>
+						<p>
+							בדקו כי המחשב של "{{ userService.appData.expComputerName }}" דולק,
+							במידה ודולק
+							<span (click)="sharedComponent.showOpenTicket()" class="link">
+                פתחו קריאת שירות
+              </span>
+						</p>
+					</ng-template>
+				</div>
+			</ng-template>
+		</app-autocomplete-empty-optioned>
+		
+		<button (click)="addTeamMembers()" class="button-link">
+			<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/add.png"/>
+			הוספת איש צוות
+		</button>
+	</div>
+	<div class="settingsOfficeUsers">
+		<div #header class="header">
+			<div>
+				<app-tooltip-category
+						(changed)="filterCategory($event)"
+						[data]="firstNameArr"
+						[title]="'שם פרטי'"
+						[type]="'firstName'"
+				>
+				</app-tooltip-category>
+			</div>
+			<div>
+				<app-tooltip-category
+						(changed)="filterCategory($event)"
+						[data]="lastNameArr"
+						[title]="'שם משפחה'"
+						[type]="'lastName'"
+				>
+				</app-tooltip-category>
+			</div>
+			<div>טלפון</div>
+			<div>מייל</div>
+			<div (click)="toggleCompanyFilesOrderTo('companiesCount')">
+				משוייך לחברות
+				
+				<mat-icon
+						*ngIf="officeUsers && officeUsers.length"
+						[class.active]="
+            companyFilesSortControl.value?.orderBy === 'companiesCount'
+          "
+						[svgIcon]="
+            (companyFilesSortControl.value?.orderBy === 'companiesCount'
+              ? companyFilesSortControl.value.order
+              : null
+            ) | sortIcon
+          "
+						class="sort-icon"
+				>
+				</mat-icon>
+			</div>
+			<div>
+				<app-tooltip-category
+						(changed)="filterCategory($event)"
+						[data]="otpDetArr"
+						[title]="'מקבל OTP'"
+						[type]="'otpDet'"
+				>
+				</app-tooltip-category>
+			</div>
+			<div (click)="toggleCompanyFilesOrderTo('lastLoginDate')">
+				כניסה אחרונה
+				
+				<mat-icon
+						*ngIf="officeUsers && officeUsers.length"
+						[class.active]="
+            companyFilesSortControl.value?.orderBy === 'lastLoginDate'
+          "
+						[svgIcon]="
+            (companyFilesSortControl.value?.orderBy === 'lastLoginDate'
+              ? companyFilesSortControl.value.order
+              : null
+            ) | sortIcon
+          "
+						class="sort-icon"
+				>
+				</mat-icon>
+			</div>
+			<div>
+				<app-tooltip-category
+						(changed)="filterCategory($event)"
+						[data]="privTypeArr"
+						[title]="'סוג משתמש'"
+						[type]="'privType'"
+				>
+				</app-tooltip-category>
+			</div>
+			<div>&nbsp;</div>
+		</div>
+		<div
+				#scrollContainer
+				(scroll)="onScrollCubes()"
+				[appScrollHeight]="
+        header.getBoundingClientRect().bottom +
+        (paginator?.pageLinks?.length > 1 ? 45 : 10) +
+        30
+      "
+				class="body scrollbar-dynamic containerList2"
+				style="position: relative"
+		>
+			<div *ngIf="loader" class="loader">
+				<div class="circle"></div>
+			</div>
+			<ng-container *ngIf="officeUsers && officeUsers.length">
+				<ng-container
+						*ngFor="
+            let row of officeUsers
+              | slice
+                : currentPage * entryLimit
+                : currentPage * entryLimit + entryLimit;
+            let i = index;
+            trackBy: trackById
+          "
+				>
+					<div
+							[class.active]="row.activeRow"
+							[class.freeze]="row.freeze"
+							class="row"
+							tabindex="1"
+					>
+						<div class="text-ellipsis">
+							<input
+									#inputElement
+									(blur)="updateUserDetails(row, 'firstName')"
+									(focus)="row.activeRow = true"
+									*ngIf="row.firstNameInput"
+									[formControl]="row.firstNameInput"
+									[pTooltip]="row.firstNameInput.value"
+									[tooltipDisabled]="
+                  inputElement.offsetWidth >= inputElement.scrollWidth
+                "
+									appNumbersOnly="alpha"
+									class="text-ellipsis"
+									size="{{
+                  row.firstNameInput.value
+                    ? row.firstNameInput.value.length
+                    : 40
+                }}"
+									tooltipPosition="top"
+									type="text"
+							/>
+							
+							<input
+									#inputElement
+									(focus)="row.activeRow = true"
+									*ngIf="!row.firstNameInput"
+									[ngModel]="row.firstName"
+									[pTooltip]="row.firstName"
+									[tooltipDisabled]="
+                  inputElement.offsetWidth >= inputElement.scrollWidth
+                "
+									class="text-ellipsis"
+									size="{{ row.firstName ? row.firstName.length : 40 }}"
+									tooltipPosition="top"
+									type="text"
+							/>
+						</div>
+						<div class="text-ellipsis">
+							<input
+									#inputElement
+									(blur)="updateUserDetails(row, 'lastName')"
+									(focus)="row.activeRow = true"
+									*ngIf="row.lastNameInput"
+									[formControl]="row.lastNameInput"
+									[pTooltip]="row.lastNameInput.value"
+									[tooltipDisabled]="
+                  inputElement.offsetWidth >= inputElement.scrollWidth
+                "
+									appNumbersOnly="alpha"
+									class="text-ellipsis"
+									size="{{
+                  row.lastNameInput.value ? row.lastNameInput.value.length : 40
+                }}"
+									tooltipPosition="top"
+									type="text"
+							/>
+							<input
+									#inputElement
+									(focus)="row.activeRow = true"
+									*ngIf="!row.lastNameInput"
+									[(ngModel)]="row.lastName"
+									[pTooltip]="row.lastName"
+									[tooltipDisabled]="
+                  inputElement.offsetWidth >= inputElement.scrollWidth
+                "
+									class="text-ellipsis"
+									size="{{ row.lastName ? row.lastName.length : 40 }}"
+									tooltipPosition="top"
+									type="text"
+							/>
+						</div>
+						<div class="text-ellipsis">
+							<ng-container *ngIf="row.cellPhoneInput">
+								<input
+										#inputElement
+										(blur)="updateUserDetails(row, 'cellPhone')"
+										(focus)="row.activeRow = true"
+										*ngIf="row.cellPhoneInput"
+										[class.error]="
+                    row.cellPhoneInput.dirty &&
+                    row.cellPhoneInput.value &&
+                    row.cellPhoneInput.invalid
+                  "
+										[formControl]="row.cellPhoneInput"
+										[pTooltip]="row.cellPhoneInput.value"
+										[tooltipDisabled]="
+                    inputElement.offsetWidth >= inputElement.scrollWidth
+                  "
+										appNumbersOnly="phoneNo"
+										class="text-ellipsis"
+										size="{{
+                    row.cellPhoneInput.value
+                      ? row.cellPhoneInput.value.length
+                      : 40
+                  }}"
+										tooltipPosition="top"
+										type="text"
+								/>
+								<div
+										*ngIf="
+                    row.cellPhoneInput.dirty &&
+                    row.cellPhoneInput.value &&
+                    row.cellPhoneInput.invalid
+                  "
+										class="invalidAlert"
+								>
+									המספר לא תקין
+								</div>
+							</ng-container>
+							<input
+									#inputElement
+									(focus)="row.activeRow = true"
+									*ngIf="!row.cellPhoneInput"
+									[(ngModel)]="row.cellPhone"
+									[pTooltip]="row.cellPhone"
+									[tooltipDisabled]="
+                  inputElement.offsetWidth >= inputElement.scrollWidth
+                "
+									class="text-ellipsis"
+									size="{{ row.cellPhone ? row.cellPhone.length : 40 }}"
+									tooltipPosition="top"
+									type="text"
+							/>
+						</div>
+						<div class="text-ellipsis">
+							<ng-container *ngIf="row.mailInput">
+								<input
+										#inputElement
+										(blur)="updateUserDetails(row, 'mail')"
+										(focus)="row.activeRow = true"
+										[class.error]="
+                    row.mailInput.dirty &&
+                    row.mailInput.value &&
+                    row.mailInput.invalid
+                  "
+										[formControl]="row.mailInput"
+										[pTooltip]="row.mailInput.value"
+										[tooltipDisabled]="
+                    inputElement.offsetWidth >= inputElement.scrollWidth
+                  "
+										class="text-ellipsis"
+										size="{{
+                    row.mailInput.value ? row.mailInput.value.length : 40
+                  }}"
+										tooltipPosition="top"
+										type="email"
+								/>
+								
+								<div
+										*ngIf="
+                    row.mailInput.dirty &&
+                    row.mailInput.value &&
+                    row.mailInput.invalid &&
+                    !row.mailInput.hasError('exist')
+                  "
+										class="invalidAlert"
+								>
+									כתובת המייל לא תקינה
+								</div>
+								
+								<div
+										*ngIf="row.mailInput.hasError('exist')"
+										class="invalidAlert"
+								>
+									<ng-container
+											*ngIf="row.mailInput.hasError('freeze'); else notFreeze"
+									>
+										מקושר לאיש צוות מוקפא
+									</ng-container>
+									<ng-template #notFreeze> המייל כבר קיים</ng-template>
+								</div>
+							</ng-container>
+							<input
+									#inputElement
+									(focus)="row.activeRow = true"
+									*ngIf="!row.mailInput"
+									[(ngModel)]="row.mail"
+									[pTooltip]="row.mail"
+									[tooltipDisabled]="
+                  inputElement.offsetWidth >= inputElement.scrollWidth
+                "
+									class="text-ellipsis"
+									size="{{ row.mail ? row.mail.length : 40 }}"
+									tooltipPosition="top"
+									type="text"
+							/>
+						</div>
+						<div class="text-ellipsis">
+							<div
+									#inputElement
+									(click)="
+                  row.freeze
+                    ? null
+                    : row.companiesCount
+                    ? openCompaniesListModal(row)
+                    : openCompaniesAddListModal(row)
+                "
+									[innerHTML]="row.companiesCount || '+'"
+									[ngStyle]="{
+                  'margin-right': row.companiesCount !== null ? '41px' : '12%'
+                }"
+									[pTooltip]="row.companiesCount"
+									[tooltipDisabled]="
+                  inputElement.offsetWidth >= inputElement.scrollWidth
+                "
+									class="text-ellipsis"
+									tooltipPosition="top"
+							></div>
+						</div>
+						<div class="text-ellipsis">
+							<i
+									#actualTarget
+									(mouseleave)="op.hide()"
+									(mouseover)="op.show($event, actualTarget)"
+									*ngIf="row.otpDet"
+									class="fas fa-fw fa-check"
+							></i>
+						</div>
+						<div class="text-ellipsis">
+							<div
+									#inputElement
+									[innerHTML]="(row.lastLoginDate | date: 'dd/MM/yy') || '-'"
+									[ngStyle]="{
+                  'margin-right': row.lastLoginDate !== null ? '0' : '12%'
+                }"
+									[pTooltip]="row.lastLoginDate | date: 'dd/MM/yy'"
+									[tooltipDisabled]="
+                  inputElement.offsetWidth >= inputElement.scrollWidth
+                "
+									class="text-ellipsis"
+									tooltipPosition="top"
+							></div>
+						</div>
+						<div class="text-ellipsis">
+							<p-dropdown
+									#dd11
+									(click)="row.activeRow = true"
+									(onBlur)="row.activeRow = false"
+									(onChange)="changeOfficePriv(row)"
+									(onFocus)="clearFilter(dd11)"
+									[(ngModel)]="row.privType"
+									[disabled]="hasPermission !== 'OFFICESUPERADMIN' || row.freeze"
+									[dropdownIcon]="'p-dropdown-icon'"
+									[options]="privTypeList"
+									appendTo="body"
+									placeholder="בחירה"
+									
+									styleClass="ddInfoCompanyForm"
+							>
+							</p-dropdown>
+						</div>
+						<div>
+							<i
+									(click)="onScrollCubes(i); tooltipEdit.toggle($event)"
+									*ngIf="
+                  (hasPermission === 'OFFICESUPERADMIN' && row.freeze) ||
+                  !row.freeze
+                "
+									class="fas fa-ellipsis-v"
+							></i>
+						</div>
+						<p-overlayPanel
+								#tooltipEdit
+								[style]="{ transform: 'translate(-10px, 10px)', width: 'auto' }"
+								appendTo="body"
+								styleClass="tooltip-bottom tooltip-acc-deviation tooltip-daily-edit overlayPanelRightClick"
+						>
+							<ul style="width: 185px">
+								<ng-container *ngIf="!row.freeze; else freezeAdminNav">
+									<li
+											(click)="
+                      openCompaniesAddListModal(row, row.companiesCount);
+                      tooltipEdit.hide()
+                    "
+									>
+										<div
+												class="p-helper-clearfix"
+												style="display: flex; display: -ms-flexbox"
+										>
+											<div style="align-self: center; flex: 20; -ms-flex: 20">
+												<mat-icon
+														style="width: 16px; vertical-align: middle"
+														svgIcon="pencil"
+												></mat-icon>
+											</div>
+											<p
+													class="nameAcc"
+													style="
+                          overflow: hidden;
+                          white-space: nowrap;
+                          text-overflow: ellipsis;
+                          flex: 85;
+                          -ms-flex: 85;
+                        "
+											>
+												עריכת שיוך חברות
+											</p>
+										</div>
+									</li>
+									<li
+											(click)="
+                      openCompaniesReplaceListModal(row, row.companiesCount);
+                      tooltipEdit.hide()
+                    "
+											*ngIf="
+                      row.companyIds &&
+                      row.companyIds.length &&
+                      row.companiesCount
+                    "
+									>
+										<div
+												class="p-helper-clearfix"
+												style="display: flex; display: -ms-flexbox"
+										>
+											<div style="align-self: center; flex: 20; -ms-flex: 20">
+												<mat-icon
+														style="width: 17px; vertical-align: middle"
+														svgIcon="swap-office-users"
+												></mat-icon>
+											</div>
+											<p
+													class="nameAcc"
+													style="
+                          overflow: hidden;
+                          white-space: nowrap;
+                          text-overflow: ellipsis;
+                          flex: 85;
+                          -ms-flex: 85;
+                        "
+											>
+												החלפת איש צוות
+											</p>
+										</div>
+									</li>
+									<li
+											(click)="openUserFreezeModal(row); tooltipEdit.hide()"
+											*ngIf="
+                      !(
+                        userService.appData.userData.officePriv ===
+                          'OFFICEADMIN' && row.privType === 'officeSuperAdmin'
+                      ) &&
+                     !row.mailInput   || (row.mailInput && userService.appData.userData.mail !== row.mailInput.value)
+                    "
+									>
+										<div
+												class="p-helper-clearfix"
+												style="display: flex; display: -ms-flexbox"
+										>
+											<div style="align-self: center; flex: 20; -ms-flex: 20">
+												<mat-icon
+														style="width: 17px; vertical-align: middle"
+														svgIcon="snowflake-office-users"
+												></mat-icon>
+											</div>
+											<p
+													class="nameAcc"
+													style="
+                          overflow: hidden;
+                          white-space: nowrap;
+                          text-overflow: ellipsis;
+                          flex: 85;
+                          -ms-flex: 85;
+                        "
+											>
+												הקפאת איש צוות
+											</p>
+										</div>
+									</li>
+								</ng-container>
+								<ng-template #freezeAdminNav>
+									<li
+											(click)="openUserRestoreModal(row); tooltipEdit.hide()"
+											*ngIf="!row.current"
+									>
+										<div
+												class="p-helper-clearfix"
+												style="display: flex; display: -ms-flexbox"
+										>
+											<div style="align-self: center; flex: 20; -ms-flex: 20">
+												<mat-icon
+														style="width: 17px; vertical-align: middle"
+														svgIcon="refresh-office-users"
+												></mat-icon>
+											</div>
+											<p
+													class="nameAcc"
+													style="
+                          overflow: hidden;
+                          white-space: nowrap;
+                          text-overflow: ellipsis;
+                          flex: 85;
+                          -ms-flex: 85;
+                        "
+											>
+												שחזור איש צוות
+											</p>
+										</div>
+									</li>
+									<li
+											(click)="openUserDeleteModal(row); tooltipEdit.hide()"
+											*ngIf="!row.current"
+									>
+										<div
+												class="p-helper-clearfix"
+												style="display: flex; display: -ms-flexbox"
+										>
+											<div style="align-self: center; flex: 20; -ms-flex: 20">
+												<mat-icon
+														style="width: 17px; vertical-align: middle"
+														svgIcon="trash"
+												></mat-icon>
+											</div>
+											<p
+													class="nameAcc"
+													style="
+                          overflow: hidden;
+                          white-space: nowrap;
+                          text-overflow: ellipsis;
+                          flex: 85;
+                          -ms-flex: 85;
+                        "
+											>
+												מחיקת איש צוות
+											</p>
+										</div>
+									</li>
+								</ng-template>
+							</ul>
+						</p-overlayPanel>
+						
+						<p-overlayPanel
+								#op
+								[dismissable]="true"
+								[showCloseIcon]="false"
+								[style]="{ 'margin-left': '130px' }"
+								appendTo="body"
+								styleClass="otpDet"
+						>
+							<h2 style="margin-bottom: 5px">
+								{{ row.firstName }} {{ row.lastName }} מקבל/ת הודעות טקסט
+								<br/>
+								בניסיונות כניסה לטוקנים הבאים:
+							</h2>
+							<ul *ngIf="row.otpDet && row.otpDet.length">
+								<li
+										*ngFor="let det of row.otpDet"
+										style="border-top: 1px solid #a0a0a0; padding: 5px"
+								>
+									<div class="regular" style="display: flex">
+										<p>{{ det.otpCell }}</p>
+										<p style="margin: 0 5px">OTP</p>
+										<img style="height: auto; width: auto; position: relative;" fill [ngSrc]="det.websiteTargetTypeId | toIconSrc: 'bank'"/>
+									</div>
+									<div class="light">{{ det.companyName }}</div>
+								</li>
+							</ul>
+						</p-overlayPanel>
+					</div>
+					<div class="line-sep"></div>
+				</ng-container>
+			</ng-container>
+			
+			<div *ngIf="officeUsersSave && !officeUsersSave.length" class="noData">
+				<mat-icon
+						style="
+            vertical-align: middle;
+            width: auto;
+            height: 61px;
+            margin-bottom: 10px;
+          "
+						svgIcon="export2"
+				></mat-icon>
+				
+				<h1>לא קיימות תנועות</h1>
+			</div>
+			<div
+					*ngIf="
+          officeUsersSave &&
+          officeUsersSave.length &&
+          officeUsers &&
+          !officeUsers.length
+        "
+					class="noData"
+			>
+				<mat-icon
+						style="
+            vertical-align: middle;
+            width: auto;
+            height: 61px;
+            margin-bottom: 10px;
+          "
+						svgIcon="interface"
+				></mat-icon>
+				
+				<h1>לא נמצאו תנועות לחיפוש המבוקש</h1>
+			</div>
+		</div>
+		
+		<app-paginator
+				#paginator
+				(onPageChange)="paginate($event)"
+				[alwaysShow]="false"
+				[rowsPerPageOptions]="[50, 100, 200]"
+				[rows]="entryLimit"
+				[totalRecords]="officeUsers.length"
+		>
+		</app-paginator>
+	</div>
+</div>
+<ng-template #notPermission>
+	<div class="notPermission">
+		<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/companiesSNotFound.png"/>
+		<p>
+			אינך מורשה לצפות במסך זה.
+			<br/>
+			יש לפנות למנהל במשרדך
+		</p>
+	</div>
+</ng-template>
+<ng-container *ngIf="companiesListModal">
+	<p-dialog (visibleChange)="companiesListModal = false"
+			(onHide)="companiesListModal = false"
+			[visible]="(companiesListModal)"
+			
+			[closable]="true"
+			[closeOnEscape]="true"
+			[draggable]="false"
+			[modal]="true"
+			[resizable]="false"
+			appendTo="body"
+			styleClass="companiesListBelongModal"
+	>
+		<p-header> החברות שמשוייכות ל{{ companiesListModal.lastName }} </p-header>
+		<div class="search">
+			<input
+					(keyup)="filterCompaniesModal($event)"
+					autocomplete="off"
+					type="text"
+			/>
+		</div>
+		<div
+				class="scrollbar-dynamic scroll-chrome"
+				style="max-height: 296px; overflow: auto"
+		>
+			<mat-list>
+				<mat-list-item
+						*ngFor="let item of companiesListModal.list; trackBy: trackCompany"
+				>
+					<div matLine style="display: flex; justify-content: space-between">
+						<p
+								#elementTooltip
+								[pTooltip]="item.companyName"
+								[tooltipDisabled]="
+                elementTooltip.offsetWidth >= elementTooltip.scrollWidth
+              "
+								class="text-ellipsis"
+						>
+							{{ item.companyName }}
+						</p>
+						<p
+								#elementTooltip2
+								[pTooltip]="item.companyHp"
+								[tooltipDisabled]="
+                elementTooltip2.offsetWidth >= elementTooltip2.scrollWidth
+              "
+								class="text-ellipsis"
+						>
+							{{ item.companyHp }}
+						</p>
+					</div>
+				</mat-list-item>
+			</mat-list>
+		</div>
+		<p-footer>
+			<button (click)="companiesListModal = false" class="button-dark">
+				סגירה
+			</button>
+		</p-footer>
+	</p-dialog>
+</ng-container>
+
+<ng-container *ngIf="companiesAddListModal">
+	<p-dialog (visibleChange)="companiesAddListModal = false"
+			(onHide)="companiesAddListModal = false"
+			[visible]="(companiesAddListModal)"
+			[closable]="true"
+			[closeOnEscape]="true"
+			[draggable]="false"
+			[modal]="true"
+			[resizable]="false"
+			appendTo="body"
+			styleClass="companiesListModal"
+	>
+		<p-header>
+			{{ companiesAddListModal.edit ? 'עריכת ' : '' }} שיוך חברות ל{{
+			companiesAddListModal.firstName
+			}}
+			{{ companiesAddListModal.lastName }}
+		</p-header>
+		<div *ngIf="numberOfSelected && companiesAddListModal.edit" class="title">
+			{{
+			numberOfSelected === 1
+					? 'חברה אחת משוייכת ל'
+					: numberOfSelected + ' ' + 'חברות משוייכות ל'
+			}}{{ companiesAddListModal.firstName }},
+			<br/>
+			ניתן להוסיף ולבטל חברות ע״י סימון הצ׳ק בוקס
+		</div>
+		<div *ngIf="numberOfSelected && !companiesAddListModal.edit" class="title">
+			{{
+			numberOfSelected === 1
+					? 'חברה אחת נבחרה'
+					: numberOfSelected + ' ' + 'חברות נבחרו'
+			}}
+		</div>
+		<div *ngIf="!numberOfSelected" class="title">
+			בחרו את החברות שאותן תרצו לשייך, לא ניתן לבחור חברות שאין לכם
+			<br/>
+			הרשאה אליהן
+		</div>
+		<div class="search">
+			<input
+					(keyup)="filterCompaniesAddModal($event)"
+					autocomplete="off"
+					placeholder="הקלידו שם חברה, ח.פ או איש צוות"
+					type="text"
+			/>
+		</div>
+		
+		<div
+				[class.hasScroll]="
+        scrollContainer.scrollHeight > scrollContainer.clientHeight
+      "
+				class="header"
+		>
+			<div class="check">
+				<p-checkbox (onChange)="checkAll = !checkAll; changeAll()"
+				            [binary]="true"
+				            [inputId]="'all'"
+				            [ngModel]="checkAll"
+				            checkboxIcon="fa fa-check"
+				>
+				</p-checkbox>
+			</div>
+			<div class="companyName">שם חברה</div>
+			<div class="hp">ח.פ</div>
+			<div class="contactIcon">
+        <span
+		        class="icon-user-circle-o"
+		        style="
+            color: #022258;
+            vertical-align: middle;
+            cursor: pointer;
+            font-size: 16px;
+          "
+        ></span>
+			</div>
+		</div>
+		<div
+				#scrollContainer
+				class="scrollbar-dynamic scroll-chrome table"
+				style="max-height: 341px; overflow: auto"
+		>
+			<mat-list>
+				<mat-list-item
+						*ngFor="
+            let item of companiesAddListModal.list;
+            let i = index;
+            trackBy: trackCompany
+          "
+				>
+					<div
+							[class.line]="lineInIndex !== false && i === lineInIndex"
+							[ngStyle]="{ opacity: item.hasPrivs === false ? 0.4 : 1 }"
+							matLine
+					>
+						<div class="check">
+							<p-checkbox (onChange)="item.selcetCompany = !item.selcetCompany; checkSelected(item)"
+							            [ngModel]="item.selcetCompany"
+							            [binary]="true"
+							            [disabled]="item.hasPrivs === false"
+							            checkboxIcon="fa fa-check"
+							>
+							</p-checkbox>
+						</div>
+						<p
+								#elementTooltip
+								[pTooltip]="item.companyName"
+								[tooltipDisabled]="
+                elementTooltip.offsetWidth >= elementTooltip.scrollWidth
+              "
+								class="text-ellipsis companyName"
+						>
+							{{ item.companyName }}
+						</p>
+						<p class="hp">{{ item.companyHp }}</p>
+						<div class="contactIcon">
+              <span
+		              [touchendHideDelay]="9999999999999"
+		              [hideDelay]="999999999999999999"
+		              #tooltip="matTooltip"
+		              [matTooltip]="item.contactsListTootip"
+		              matTooltipClass="multiline-tooltip"
+		              matTooltipPosition="below"
+		              class="icon-user-circle"
+		              style="
+                  color: #abaaaa;
+                  vertical-align: middle;
+                  cursor: pointer;
+                  font-size: 16px;
+                "
+              ></span>
+						</div>
+					</div>
+				</mat-list-item>
+			</mat-list>
+		</div>
+		<p-footer>
+			<button (click)="companiesAddListModal = false" class="button-link">
+				{{ 'actions.cancellation' | translate }}
+			</button>
+			<button
+					(click)="setCompanyPrivs()"
+					[disabled]="
+          (!numberOfSelected && !companiesAddListModal.edit) ||
+          (companiesAddListModal.edit && theSameSelctedCompanies())
+        "
+					class="button-dark"
+			>
+				{{ 'actions.approve' | translate }}
+			</button>
+		</p-footer>
+	</p-dialog>
+</ng-container>
+
+<ng-container *ngIf="companiesReplaceListModal">
+	<p-dialog (visibleChange)="companiesReplaceListModal = false"
+			(onHide)="companiesReplaceListModal = false"
+			[visible]="(companiesReplaceListModal)"
+			[closable]="true"
+			[closeOnEscape]="true"
+			[draggable]="false"
+			[modal]="true"
+			[resizable]="false"
+			appendTo="body"
+			styleClass="companiesListModal notBorder"
+	>
+		<p-header> החלפת איש צוות</p-header>
+		<div *ngIf="loaderTableSwap" class="loaderPercent">
+			<div class="circle"></div>
+		</div>
+		<div class="title">
+			בחרו את איש הצוות אליו תרצו לשייך את החברות של
+			<strong>{{ companiesReplaceListModal.firstName }}</strong>
+		</div>
+		
+		<div class="title ddTeam">
+			שם איש הצוות:
+			
+			<p-dropdown
+					#dd22
+					(onChange)="companiesReplaceListModalChange($event)"
+					(onFocus)="clearFilter(dd22)"
+					[(ngModel)]="companiesReplaceListModal.newUserId"
+					[dropdownIcon]="'p-dropdown-icon'"
+					[options]="teamList"
+					[style]="{ width: '160px' }"
+					appendTo="body"
+					placeholder=" "
+					styleClass="ddInfoCompanyForm"
+			
+			>
+			</p-dropdown>
+		</div>
+		
+		<div *ngIf="companiesReplaceListModal.alreadyBelong" class="title">
+			{{
+			companiesReplaceListModal.alreadyBelong > 1
+					? companiesReplaceListModal.alreadyBelong + ' חברות כבר משוייכות'
+					: 'חברה
+					אחת כבר משוייכת'
+			}}
+		</div>
+		<div *ngIf="numberOfSelected" class="title">
+			{{
+			numberOfSelected === 1
+					? 'חברה אחת נבחרה'
+					: numberOfSelected + ' ' + 'חברות נבחרו'
+			}}
+		</div>
+		<div
+				[class.hasScroll]="
+        scrollContainer.scrollHeight > scrollContainer.clientHeight
+      "
+				class="header"
+		>
+			<div class="check">
+				<p-checkbox (onChange)="checkAll = !checkAll; changeAllReplace()"
+				            [binary]="true"
+				            [disabled]="!companiesReplaceListModal.newUserId"
+				            [inputId]="'all'"
+				            [ngModel]="checkAll"
+				            checkboxIcon="fa fa-check"
+				>
+				</p-checkbox>
+			</div>
+			<div class="companyName">שם חברה</div>
+			<div class="hp">ח.פ</div>
+		</div>
+		<div
+				#scrollContainer
+				class="scrollbar-dynamic scroll-chrome table"
+				style="max-height: 341px; overflow: auto"
+		>
+			<mat-list>
+				<mat-list-item
+						*ngFor="
+            let item of companiesReplaceListModal.listSave;
+            trackBy: trackCompany
+          "
+				>
+					<div
+							[ngStyle]="{
+              opacity:
+                item.hasPrivs === false || !companiesReplaceListModal.newUserId
+                  ? 0.4
+                  : 1
+            }"
+							matLine
+					>
+						<div class="check">
+							<p-checkbox (onChange)="
+                  item.selcetCompany = !item.selcetCompany;
+                  checkSelectedReplace(item)
+                "
+							            [ngModel]="item.selcetCompany"
+							            [binary]="true"
+							            [disabled]="
+                  item.hasPrivs === false ||
+                  !companiesReplaceListModal.newUserId
+                "
+							            checkboxIcon="fa fa-check"
+							>
+							</p-checkbox>
+						</div>
+						<p
+								#elementTooltip
+								[pTooltip]="item.companyName"
+								[tooltipDisabled]="
+                elementTooltip.offsetWidth >= elementTooltip.scrollWidth
+              "
+								class="text-ellipsis companyName"
+						>
+							{{ item.companyName }}
+						</p>
+						<p class="hp">{{ item.companyHp }}</p>
+					</div>
+				</mat-list-item>
+			</mat-list>
+		</div>
+		<div *ngIf="companiesReplaceListModal.listSave.length" class="footer">
+			<div class="check">&nbsp;</div>
+			<div class="companyName">
+				סה״כ
+				{{
+				companiesReplaceListModal.listSave.length > 1
+						? companiesReplaceListModal.listSave.length + ' חברות'
+						: 'חברה אחת'
+				}}
+			</div>
+		</div>
+		<p-footer>
+			<button (click)="companiesReplaceListModal = false" class="button-link">
+				{{ 'actions.cancellation' | translate }}
+			</button>
+			<button
+					(click)="companyPrivsSwap()"
+					[disabled]="
+          !numberOfSelected ||
+          !companiesReplaceListModal.newUserId ||
+          companiesReplaceListModal.listSave.length === numberOfSelected
+        "
+					class="button-dark"
+			>
+				שמירה והמשך שיוך
+			</button>
+			<button
+					(click)="companyPrivsSwap(true)"
+					[disabled]="!numberOfSelected || !companiesReplaceListModal.newUserId"
+					class="button-dark"
+			>
+				אישור וסיום
+			</button>
+		</p-footer>
+	</p-dialog>
+</ng-container>
+
+<ng-container *ngIf="userFreezeModal">
+	<p-dialog (visibleChange)="userFreezeModal = false"
+			(onHide)="userFreezeModal = false"
+			[visible]="(userFreezeModal)"
+			
+			[closable]="true"
+			[closeOnEscape]="true"
+			[draggable]="false"
+			[modal]="true"
+			[resizable]="false"
+			appendTo="body"
+			styleClass="userDeleteModal"
+	>
+		<p-header> הקפאת איש צוות</p-header>
+		<div>
+			האם להקפיא את איש הצוות {{ userFreezeModal.firstName }}
+			{{ userFreezeModal.lastName }}?
+			<ng-container *ngIf="userFreezeModal.row.companiesCount > 0">
+				<br/>
+				אנו ממליצים לפני ההקפאה
+				<span
+						(click)="
+            openCompaniesReplaceListModal(
+              userFreezeModal.row,
+              userFreezeModal.row.companiesCount
+            )
+          "
+						class="link"
+				>
+          לשייך את כל החברות
+        </span>
+				לאיש צוות אחר.
+			</ng-container>
+		</div>
+		<p-footer>
+			<button (click)="userFreezeModal = false" class="button-link">
+				{{ 'actions.cancellation' | translate }}
+			</button>
+			<button (click)="userFreeze()" class="button-dark">
+				{{ 'actions.approve' | translate }}
+			</button>
+		</p-footer>
+	</p-dialog>
+</ng-container>
+
+<ng-container *ngIf="userFreezeAlertModal">
+	<p-dialog (visibleChange)="userFreezeAlertModal = false"
+			(onHide)="userFreezeAlertModal = false"
+			[visible]="(userFreezeAlertModal)"
+			
+			[closable]="true"
+			[closeOnEscape]="true"
+			[draggable]="false"
+			[modal]="true"
+			[resizable]="false"
+			appendTo="body"
+			styleClass="userDeleteModal"
+	>
+		<p-header> לידיעה</p-header>
+		<div>
+			החברות לא שוויכו לאף איש צוות אחר, יהיה ניתן לראותן תחת מנהל מערכת
+		</div>
+		<p-footer>
+			<button (click)="userFreezeAlertModal = false" class="button-dark">
+				{{ 'actions.approve' | translate }}
+			</button>
+		</p-footer>
+	</p-dialog>
+</ng-container>
+
+<ng-container *ngIf="userRestoreModal">
+	<p-dialog (visibleChange)="userRestoreModal = false"
+			(onHide)="userRestoreModal = false"
+			[visible]="(userRestoreModal)"
+			
+			[closable]="true"
+			[closeOnEscape]="true"
+			[draggable]="false"
+			[modal]="true"
+			[resizable]="false"
+			appendTo="body"
+			styleClass="userDeleteModal"
+	>
+		<p-header> שחזור איש צוות</p-header>
+		<div>
+			האם ברצונך לשחזר את איש הצוות ״{{ userRestoreModal.firstName }}
+			{{ userRestoreModal.lastName }}״?
+			<br/>
+			השחזור יחזיר גם את כל החברות שהיו משוייכות
+		</div>
+		<p-footer>
+			<button (click)="userRestoreModal = false" class="button-link">
+				{{ 'actions.cancellation' | translate }}
+			</button>
+			<button (click)="userRestore()" class="button-dark">
+				{{ 'actions.approve' | translate }}
+			</button>
+		</p-footer>
+	</p-dialog>
+</ng-container>
+
+<ng-container *ngIf="userDeleteModal">
+	<p-dialog (visibleChange)="userDeleteModal = false"
+			(onHide)="userDeleteModal = false"
+			[visible]="(userDeleteModal)"
+			
+			[closable]="true"
+			[closeOnEscape]="true"
+			[draggable]="false"
+			[modal]="true"
+			[resizable]="false"
+			appendTo="body"
+			styleClass="userDeleteModal"
+	>
+		<p-header> מחיקת איש צוות</p-header>
+		<div>
+			איש הצוות "{{ userDeleteModal.firstName }} {{ userDeleteModal.lastName }}"
+			ימחק לצמיתות ללא אפשרות שחזור
+		</div>
+		<p-footer>
+			<button (click)="userDeleteModal = false" class="button-link">
+				{{ 'actions.cancellation' | translate }}
+			</button>
+			<button (click)="officeUserDelete()" class="button-dark">
+				{{ 'actions.approve' | translate }}
+			</button>
+		</p-footer>
+	</p-dialog>
+</ng-container>
+
+<ng-container *ngIf="addTeamMembersModal">
+	<p-dialog (visibleChange)="addTeamMembersModal = false"
+			(onHide)="addTeamMembersModal = false"
+			[visible]="(addTeamMembersModal)"
+			
+			[closable]="true"
+			[closeOnEscape]="true"
+			[draggable]="false"
+			[modal]="true"
+			[resizable]="false"
+			appendTo="body"
+			styleClass="addTeamModal"
+	>
+		<p-header> הוספת איש צוות</p-header>
+		
+		<div>
+			<div
+					[class.hasScroll]="
+          scrollContainer.scrollHeight > scrollContainer.clientHeight
+        "
+					class="header"
+			>
+				<div>שם פרטי</div>
+				<div>שם משפחה</div>
+				<div>טלפון</div>
+				<div>אימייל</div>
+				<div>סוג משתמש</div>
+				<div>&nbsp;</div>
+			</div>
+			<div
+					#scrollContainer
+					class="scrollbar-dynamic scroll-chrome table"
+					style="max-height: 225px; overflow: auto"
+			>
+				<mat-list>
+					<mat-list-item *ngFor="let row of addTeamMembersModal; let i = index">
+						<div [class.active]="row.activeRow" matLine tabindex="1">
+							<div class="text-ellipsis">
+								<input
+										#inputElement
+										(blur)="row.activeRow = false"
+										(focus)="row.activeRow = true"
+										*ngIf="row.firstNameInput"
+										[formControl]="row.firstNameInput"
+										[pTooltip]="row.firstNameInput.value"
+										[tooltipDisabled]="
+                    inputElement.offsetWidth >= inputElement.scrollWidth
+                  "
+										appNumbersOnly="alpha"
+										class="text-ellipsis"
+										tooltipPosition="top"
+										type="text"
+								/>
+							</div>
+							<div class="text-ellipsis">
+								<input
+										#inputElement
+										(blur)="row.activeRow = false"
+										(focus)="row.activeRow = true"
+										*ngIf="row.lastNameInput"
+										[formControl]="row.lastNameInput"
+										[pTooltip]="row.lastNameInput.value"
+										[tooltipDisabled]="
+                    inputElement.offsetWidth >= inputElement.scrollWidth
+                  "
+										appNumbersOnly="alpha"
+										class="text-ellipsis"
+										tooltipPosition="top"
+										type="text"
+								/>
+							</div>
+							<div class="text-ellipsis">
+								<ng-container *ngIf="row.cellPhoneInput">
+									<input
+											#inputElement
+											(blur)="row.activeRow = false"
+											(focus)="row.activeRow = true"
+											*ngIf="row.cellPhoneInput"
+											[class.error]="
+                      row.cellPhoneInput.dirty &&
+                      row.cellPhoneInput.value &&
+                      row.cellPhoneInput.invalid
+                    "
+											[formControl]="row.cellPhoneInput"
+											[pTooltip]="row.cellPhoneInput.value"
+											[tooltipDisabled]="
+                      inputElement.offsetWidth >= inputElement.scrollWidth
+                    "
+											appNumbersOnly="phoneNo"
+											class="text-ellipsis"
+											tooltipPosition="top"
+											type="text"
+									/>
+									<div
+											*ngIf="
+                      row.cellPhoneInput.dirty &&
+                      row.cellPhoneInput.value &&
+                      row.cellPhoneInput.invalid
+                    "
+											class="invalidAlert"
+									>
+										המספר לא תקין
+									</div>
+								</ng-container>
+							</div>
+							<div class="text-ellipsis">
+								<ng-container *ngIf="row.mailInput">
+									<input
+											#inputElement
+											(focus)="row.activeRow = true"
+											[class.error]="
+                      row.mailInput.dirty &&
+                      row.mailInput.value &&
+                      row.mailInput.invalid
+                    "
+											[formControl]="row.mailInput"
+											[pTooltip]="row.mailInput.value"
+											[tooltipDisabled]="
+                      inputElement.offsetWidth >= inputElement.scrollWidth
+                    "
+											class="text-ellipsis"
+											tooltipPosition="top"
+											type="email"
+									/>
+									<div
+											*ngIf="
+                      row.mailInput.dirty &&
+                      row.mailInput.value &&
+                      row.mailInput.invalid &&
+                      !row.mailInput.hasError('exist')
+                    "
+											class="invalidAlert"
+									>
+										כתובת המייל לא תקינה
+									</div>
+									<div
+											*ngIf="row.mailInput.hasError('exist')"
+											class="invalidAlert"
+									>
+										<ng-container
+												*ngIf="row.mailInput.hasError('freeze'); else notFreeze"
+										>
+											מקושר לאיש צוות מוקפא
+										</ng-container>
+										<ng-template #notFreeze> המייל כבר קיים</ng-template>
+									</div>
+								</ng-container>
+							</div>
+							<div class="text-ellipsis">
+								<p-dropdown
+										#dd11
+										(click)="row.activeRow = true"
+										(onBlur)="row.activeRow = false"
+										(onFocus)="clearFilter(dd11)"
+										[(ngModel)]="row.privType"
+										[dropdownIcon]="'p-dropdown-icon'"
+										[options]="
+                    hasPermission === 'OFFICESUPERADMIN'
+                      ? privTypeList
+                      : privTypeListLowPer
+                  "
+										appendTo="body"
+										placeholder="בחירה"
+										styleClass="ddInfoCompanyForm"
+								
+								>
+								</p-dropdown>
+							</div>
+							<div>
+								<button
+										(click)="deleteMember(i)"
+										class="button-link"
+										type="button"
+								>
+									<img class="showHover" style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/trash.png"/>
+								</button>
+							</div>
+						</div>
+					</mat-list-item>
+				</mat-list>
+			</div>
+			<div class="add-link">
+				<button (click)="addNewTeamMembers()" class="button-link">
+					<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/add.png"/>&nbsp; הוספת איש צוות חדש
+				</button>
+			</div>
+		</div>
+		
+		<p-footer>
+			<button (click)="addTeamMembersModal = false" class="button-link">
+				{{ 'actions.cancellation' | translate }}
+			</button>
+			<button
+					(click)="createNewOfficeUser()"
+					[disabled]="notValidFl()"
+					class="button-dark"
+			>
+				{{ 'actions.approve' | translate }}
+			</button>
+		</p-footer>
+	</p-dialog>
+</ng-container>

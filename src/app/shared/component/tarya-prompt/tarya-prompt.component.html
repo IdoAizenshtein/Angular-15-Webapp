@@ -1,0 +1,39 @@
+<p-dialog (visibleChange)="visible = false"
+		styleClass="taryaInvitePrompt"
+		appendTo="body"
+		[modal]="true"
+		[visible]="(visible)"
+		(onHide)="hide()"
+>
+	<p-header>
+		<img class="logo"  src="/assets/images/logo-big.png"/>
+	</p-header>
+	<form novalidate [formGroup]="form" (ngSubmit)="apply()">
+		<h2>{{ ('taryaInvitePrompt.content' | translate)[0] }}</h2>
+		<h3>{{ ('taryaInvitePrompt.content' | translate)[1] }}</h3>
+		<p>
+			{{ ('taryaInvitePrompt.content' | translate)[2] }}
+			<p-dropdown
+					[options]="companiesSelectable"
+					[formControl]="form.get('company')"
+					[placeholder]="'actions.company' | translate"
+			></p-dropdown>
+		</p>
+		<div
+				style="
+        display: flex;
+        display: -ms-flexbox;
+        justify-content: center;
+        margin: 1em 0;
+      "
+		>
+			<button type="submit" class="button-dark" (click)="markInvalidIfNeeded()">
+				{{ 'לפרטים נוספים' }}
+			</button>
+		</div>
+		<mat-checkbox [formControl]="form.get('dontShowAgain')" color="primary">{{
+			'expressions.dontShowAgain' | translate
+			}}</mat-checkbox>
+		<section>{{ 'taryaInvitePrompt.smallLetters' | translate }}</section>
+	</form>
+</p-dialog>

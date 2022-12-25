@@ -1,0 +1,368 @@
+<h2 class="titlePage">
+	<i>{{ 'menu.accountants.companies.general' | translate }}</i>
+</h2>
+<div>
+	<div
+			class="filterRow journalTransTitles"
+			style="margin-top: 0px; margin-bottom: 5px; justify-content: space-between"
+	>
+		<h1 style="position: relative">
+      <span
+		      (mouseleave)="tooltipMoreData.hide()"
+		      (mouseover)="eventRightPos($event); tooltipMoreData.show($event)"
+      >
+        {{ userService.appData?.userData?.companySelect?.companyName }}
+      </span>
+			<p-overlayPanel
+					#tooltipMoreData
+					[style]="{
+													        'margin-left': '-20px',
+              'margin-top': '10px',
+          width: 'auto',
+          left: 'inherit !important',
+          right: rightSideTooltip + 'px'
+        }"
+					appendTo="body"
+					styleClass="tooltip-bottom tooltip-acc-deviation tooltipInfoCompany"
+			>
+				<ng-container *ngIf="tooltipMoreData.overlayVisible; else loader">
+					<div>
+						<p>
+							שם בסיס נתונים |
+							{{
+							!userService.appData?.userData?.companySelect?.yearlyProgram
+									? 'רב שנתי'
+									: 'שנתי'
+							}}
+						</p>
+						
+						<p
+								*ngIf="companyDataObj && companyDataObj?.dbName"
+								style="margin-right: 20px"
+						>
+							{{ companyDataObj?.dbName }}
+						</p>
+					</div>
+					<ng-container
+							*ngIf="getCompanyData$ | async as companyData; else loader"
+					></ng-container>
+					<div>
+						<small> טעינה אחרונה </small>
+						
+						<small
+								*ngIf="companyDataObj && companyDataObj?.dataReceiveDate"
+								style="margin-right: 20px"
+						>
+							{{
+							companyDataObj?.dataReceiveDate
+									| todayRelativeHumanize: 'dataReceiveDate'
+							}}
+						</small>
+					</div>
+				</ng-container>
+				
+				<ng-template #loader>
+					<div class="loaderPercent" style="justify-content: center">
+						<div class="circle"></div>
+					</div>
+				</ng-template>
+			</p-overlayPanel>
+		</h1>
+	</div>
+	<div style="display: flex; justify-content: space-between">
+		<p class="journalTrans_infoCompany" style="line-height: 20px">
+      <span style="display: inline-block; direction: rtl">
+        כתובת המייל לשליחת מסמכים ב - bizibox -
+      </span>
+			<a
+					[href]="'mailto:' + companyHpEmail"
+					class="link"
+					style="
+          display: inline-block;
+          direction: ltr;
+          text-align: left;
+          margin-right: 5px;
+        "
+					target="_blank"
+			>{{ companyHpEmail }}</a
+			>
+			
+			<br/>
+			<span style="font-size: 15px">
+        לשינוי שדות נעולים יש לפנות למנהל מערכת
+      </span>
+		</p>
+		
+		<button
+				[routerLinkActiveOptions]="{ exact: true }"
+				[routerLink]="['/accountants/companies/companyProducts/addProducts']"
+				class="addCompanyBtn"
+				queryParamsHandling="merge"
+				routerLinkActive="active"
+				style="width: 150px; height: 31px">
+			הוספת חברה/ מוצר
+		</button>
+	</div>
+</div>
+<ul
+		class="tabs boldActive detailsCompanyTabs"
+		style="margin-top: 25px; font-size: 17px"
+>
+	<li
+			[routerLinkActiveOptions]="{ exact: true }"
+			[routerLink]="['./details']"
+			queryParamsHandling="merge"
+			routerLinkActive="active"
+			style="width: 70px"
+	>
+		פרטים
+	</li>
+	<li
+			[routerLinkActiveOptions]="{ exact: true }"
+			[routerLink]="['./general']"
+			queryParamsHandling="merge"
+			routerLinkActive="active"
+			style="width: 60px"
+	>
+		כללי
+	</li>
+	<li
+			[routerLinkActiveOptions]="{ exact: true }"
+			[routerLink]="['./account']"
+			queryParamsHandling="merge"
+			routerLinkActive="active"
+			style="width: 120px"
+	>
+		חשבונות בנק
+	</li>
+	<li
+			[routerLinkActiveOptions]="{ exact: true }"
+			[routerLink]="['./creditCard']"
+			queryParamsHandling="merge"
+			routerLinkActive="active"
+			style="width: 125px"
+	>
+		כרטיסי אשראי
+	</li>
+	<li
+			[routerLinkActiveOptions]="{ exact: true }"
+			[routerLink]="['./export']"
+			queryParamsHandling="merge"
+			routerLinkActive="active"
+			style="width: 60px"
+	>
+		יצוא
+	</li>
+	<li
+			[routerLinkActiveOptions]="{ exact: true }"
+			[routerLink]="['./accountingCards']"
+			queryParamsHandling="merge"
+			routerLinkActive="active"
+			style="width: 125px"
+	>
+		כרטיסי הנה"ח
+	</li>
+	<li
+			[routerLinkActiveOptions]="{ exact: true }"
+			[routerLink]="['./transType']"
+			queryParamsHandling="merge"
+			routerLinkActive="active"
+			style="width: 110px"
+	>
+		סוגי תנועה
+	</li>
+	<li
+			[routerLinkActiveOptions]="{ exact: true }"
+			[routerLink]="['./journalVendorAndCustomer']"
+			queryParamsHandling="merge"
+			routerLinkActive="active"
+			style="width: 180px"
+	>
+		פ. יומן ספקים ולקוחות
+	</li>
+	<li
+			[routerLinkActiveOptions]="{ exact: true }"
+			[routerLink]="['./journalBankAndCredit']"
+			queryParamsHandling="merge"
+			routerLinkActive="active"
+			style="width: 160px"
+	>
+		פ. יומן בנק ואשראי
+	</li>
+	<li
+			[routerLinkActiveOptions]="{ exact: true }"
+			[routerLink]="['./contacts']"
+			queryParamsHandling="merge"
+			routerLinkActive="active"
+			style="width: 100px"
+	>
+		אנשי קשר
+	</li>
+	<ng-container *ngIf="userService.appData?.isAdmin">
+		<li
+				[routerLinkActiveOptions]="{ exact: true }"
+				[routerLink]="['./management']"
+				queryParamsHandling="merge"
+				routerLinkActive="active"
+				style="width: 75px"
+		>
+			ניהול
+		</li>
+	</ng-container>
+</ul>
+
+<router-outlet (activate)="onActivate($event)"></router-outlet>
+
+<!--<div [appScrollHeight]="250" class="scrollPage scrollbar-dynamic">-->
+<!--    <div class="myaccSett formDetailsCompany">-->
+<!--        <div style="width: 400px;flex: none;">-->
+<!--            <form novalidate [formGroup]="personalInfo">-->
+<!--                <div class="sett-table">-->
+<!--                    <div>-->
+<!--                        <div>-->
+<!--                            דיווח מע"מ-->
+<!--                        </div>-->
+<!--                        <div>-->
+<!--                            <p-dropdown #dd-->
+<!--                                        styleClass="listCities"-->
+<!--                                        placeholder="בחירה"-->
+<!--                                        [options]="esderMaamArr"-->
+<!--                                        formControlName="esderMaam"-->
+<!--                                        [scrollHeight]="'135px'"-->
+<!--                                        (onFocus)="clearFilter(dd)"-->
+<!--                                        [dropdownIcon]="'p-dropdown-icon'"-->
+<!--                                        appendTo="body"-->
+<!--                                        -->
+<!--                                        [style]="{'width': '100%'}"-->
+<!--                                        (onChange)="updateCompany()">-->
+<!--                            </p-dropdown>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                    <div>-->
+<!--                        <div>-->
+<!--                            שיטת דיווח-->
+<!--                        </div>-->
+<!--                        <div>-->
+<!--                            <p-dropdown #dd-->
+<!--                                        styleClass="listCities"-->
+<!--                                        placeholder="בחירה"-->
+<!--                                        [options]="vatReportTypeArr"-->
+<!--                                        formControlName="vatReportType"-->
+<!--                                        [scrollHeight]="'135px'"-->
+<!--                                        (onFocus)="clearFilter(dd)"-->
+<!--                                        [dropdownIcon]="'p-dropdown-icon'"-->
+<!--                                        appendTo="body"-->
+<!--                                        -->
+<!--                                        [style]="{'width': '100%'}"-->
+<!--                                        (onChange)="updateCompany()">-->
+<!--                            </p-dropdown>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                    <div>-->
+<!--                        <div>-->
+<!--                            מספר חשבונית-->
+<!--                            <strong>בהוצאה</strong>-->
+<!--                        </div>-->
+<!--                        <div>-->
+<!--                            <div style="padding: 0px 16px">-->
+<!--                                <p-radioButton-->
+<!--                                        (onClick)="updateValues('expenseAsmachtaType', '1')"-->
+<!--                                        name="radioGroupExpenseAsmachtaType"-->
+<!--                                        value="1"-->
+<!--                                        formControlName="expenseAsmachtaType"-->
+<!--                                        [label]="'אסמכתא 1'"-->
+<!--                                        inputId="radio1">-->
+<!--                                </p-radioButton>-->
+<!--                                <span style="padding: 0px 8px"></span>-->
+<!--                                <p-radioButton-->
+<!--                                        (onClick)="updateValues('expenseAsmachtaType', '2')"-->
+<!--                                        name="radioGroupExpenseAsmachtaType"-->
+<!--                                        value="2"-->
+<!--                                        formControlName="expenseAsmachtaType"-->
+<!--                                        [label]="'אסמכתא 2'"-->
+<!--                                        inputId="radio1">-->
+<!--                                </p-radioButton>-->
+<!--                            </div>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                    <div>-->
+<!--                        <div>-->
+<!--                            מספר חשבונית-->
+<!--                            <strong>בהכנסה</strong>-->
+<!--                        </div>-->
+<!--                        <div>-->
+<!--                            <div style="padding: 0px 16px">-->
+<!--                                <p-radioButton-->
+<!--                                        (onClick)="updateValues('incomeAsmachtaType', '1')"-->
+<!--                                        name="radioGroupIncomeAsmachtaType"-->
+<!--                                        value="1"-->
+<!--                                        formControlName="incomeAsmachtaType"-->
+<!--                                        [label]="'אסמכתא 1'"-->
+<!--                                        inputId="radio1">-->
+<!--                                </p-radioButton>-->
+<!--                                <span style="padding: 0px 8px"></span>-->
+<!--                                <p-radioButton-->
+<!--                                        (onClick)="updateValues('incomeAsmachtaType', '2')"-->
+<!--                                        name="radioGroupIncomeAsmachtaType"-->
+<!--                                        value="2"-->
+<!--                                        formControlName="incomeAsmachtaType"-->
+<!--                                        [label]="'אסמכתא 2'"-->
+<!--                                        inputId="radio1">-->
+<!--                                </p-radioButton>-->
+<!--                            </div>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                    <div>-->
+<!--                        <div>-->
+<!--                            כרטיס "קופה קטנה"-->
+<!--                        </div>-->
+<!--                        <div>-->
+<!--                            <ng-container *ngIf="companyCustomerDetails$ | async as companyCustomerDetails">-->
+<!--                                <p-dropdown-->
+<!--                                        *ngIf="companyCustomerDetails && companyCustomerDetails.length"-->
+<!--                                        formControlName="pettyCashCustId"-->
+<!--                                        [options]="companyCustomerDetails"-->
+<!--                                        [autoDisplayFirst]="false"-->
+<!--                                        [filter]="true"-->
+<!--                                        styleClass="listCities"-->
+<!--                                        (onFocus)="clearFilter(formDropdowns)"-->
+<!--                                        (onChange)="updateCompany()"-->
+<!--                                        filterBy="lName,custId,hp"-->
+<!--                                        emptyFilterMessage="לא נמצאו תוצאות"-->
+<!--                                        optionLabel="custId"-->
+<!--                                        dataKey="custId"-->
+<!--                                        -->
+<!--                                        appendTo="body"-->
+<!--                                        placeholder="בחירה"-->
+<!--                                        [style]="{'width': '230px'}"-->
+<!--                                        panelStyleClass="company-customer-dropdown-panel cardsDD"-->
+<!--                                        #formDropdowns>-->
+<!--                                    <ng-template let-item pTemplate="selectedItem">-->
+<!--                                        <span style="vertical-align:middle;display: block;white-space: nowrap;overflow: hidden;text-overflow: ellipsis;"-->
+<!--                                              #spanElement-->
+<!--                                              [tooltipDisabled]="spanElement.offsetWidth >= spanElement.scrollWidth"-->
+<!--                                              [pTooltip]="item.custId + ' - ' + item.lName"-->
+<!--                                              tooltipPosition="top">{{item.custId}}</span>-->
+<!--                                    </ng-template>-->
+<!--                                    <ng-template let-item pTemplate="item">-->
+<!--                                        <div class="p-helper-clearfix" style="flex: 1;">-->
+<!--                                            <div>-->
+<!--                                                <span class="text-ellipsis">{{item.custId}}</span>-->
+<!--                                            </div>-->
+<!--                                            <div class="separator" *ngIf="item.lName"><span>-</span></div>-->
+<!--                                            <div>-->
+<!--                                                <span class="text-ellipsis" *ngIf="item.lName">{{item.lName}}</span>-->
+<!--                                                <span class="text-ellipsis secondary" *ngIf="item.hp">-->
+<!--                        ח.פ./ע.מ. {{item.hp}}</span>-->
+<!--                                            </div>-->
+<!--                                        </div>-->
+<!--                                    </ng-template>-->
+<!--                                </p-dropdown>-->
+<!--                            </ng-container>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--            </form>-->
+<!--        </div>-->
+<!--    </div>-->
+<!--</div>-->

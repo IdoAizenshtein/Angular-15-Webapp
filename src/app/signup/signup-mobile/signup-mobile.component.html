@@ -1,0 +1,523 @@
+<div class="Signup-mobile__container" *ngIf="translate.get('signup') | async">
+  <div class="Signup-mobile__card-header">
+    <img src="/assets/images/logo-big.png" alt="bizibox" />
+    <img
+      style="
+        align-self: center;
+        display: block;
+        margin-top: 5px;
+        margin-bottom: 10px;
+        height: auto; width: auto; position: relative;
+      "
+  fill ngSrc="/assets/images/isracard.png"
+      alt="IsraCard"
+      *ngIf="agreementId === '11'"
+    />
+    <h1>
+      {{
+        (!lite
+          ? agreementId === '11'
+            ? 'signup.mainTitleIsracard'
+            : 'signup.mainTitle'
+          : 'signup.mainTitleLite'
+        ) | translate
+      }}
+    </h1>
+  </div>
+
+  <div class="Signup-mobile__card-body">
+    <div class="steps-nav">
+      <div class="step">
+        <img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/user.png" />
+        <span>{{ 'signup.personalInfoStep.title' | translate }}</span>
+      </div>
+      <div class="step" [class.not-done]="currentStepIdx < 2">
+        <img
+          style="height: auto; width: auto; position: relative;" fill [ngSrc]="
+            '/assets/images/diploma' +
+            (currentStepIdx < 2 ? '-inactive' : '') +
+            '.png'
+          "
+        />
+        <span>{{
+          !lite ? ('signup.businessInfoStep.title' | translate) : 'פרטים נוספים'
+        }}</span>
+      </div>
+      <div
+        class="step"
+        [class.not-done]="currentStepIdx < 3"
+        [class.prev-not-done]="currentStepIdx < 2"
+      >
+        <img
+          style="height: auto; width: auto; position: relative;" fill [ngSrc]="
+            '/assets/images/wallet' +
+            (currentStepIdx < 3 ? '-inactive' : '') +
+            '.png'
+          "
+        />
+        <!--<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/wallet.png"/>-->
+        <span>{{ 'signup.accountLinkStep.title' | translate }}</span>
+      </div>
+    </div>
+
+    <div class="Signup__card-steps">
+      <router-outlet (activate)="stepChangedTo($event)"></router-outlet>
+    </div>
+    <!--<div class="Signup__card-steps" [ngSwitch]="currentStep">-->
+
+    <!--<div *ngSwitchCase="personal">-->
+    <!--<small class="mat-body">&#42;{{'signup.personalInfoStep.subtitle'| translate}}</small>-->
+    <!--<form novalidate [formGroup]="personal" (ngSubmit)="onSubmit(personal)">-->
+    <!--<div class="Signup__control">-->
+    <!--<mat-form-field hideRequiredMarker="true">-->
+    <!--<mat-label>{{'signup.personalInfoStep.firstName' | translate}}</mat-label>-->
+    <!--<input matInput type="text" id="firstName" name="firstName" formControlName="firstName"-->
+    <!--autocomplete="given-name">-->
+    <!--</mat-form-field>-->
+    <!--</div>-->
+    <!--<div class="Signup__control">-->
+    <!--<mat-form-field hideRequiredMarker="true">-->
+    <!--<mat-label>{{'signup.personalInfoStep.lastName' | translate}}</mat-label>-->
+    <!--<input matInput type="text" id="lastName" name="lastName" formControlName="lastName"-->
+    <!--autocomplete="family-name">-->
+    <!--</mat-form-field>-->
+    <!--</div>-->
+    <!--<div class="Signup__control">-->
+    <!--<mat-form-field hideRequiredMarker="true" [floatLabel]="'always'">-->
+    <!--<mat-label>{{'signup.personalInfoStep.cell' | translate}}</mat-label>-->
+    <!--<input matInput type="text" id="cell" name="cell" formControlName="cell" (keypress)="handleKeyPress($event)" #cellInp-->
+    <!--[placeholder]="'signup.personalInfoStep.cell-placeholder'| translate"-->
+    <!--autocomplete="tel-national">-->
+    <!--<mat-hint *ngIf="!isValidCellPart && cellInp.ownerDocument.activeElement === cellInp">-->
+    <!--<i class="fa fa-exclamation-triangle"></i> {{'signup.businessInfoStep.idPatternError' | translate}}-->
+    <!--</mat-hint>-->
+    <!--</mat-form-field>-->
+    <!--</div>-->
+    <!--<div class="Signup__control">-->
+    <!--<mat-form-field hideRequiredMarker="true">-->
+    <!--<mat-label>{{'signup.personalInfoStep.email' | translate}}</mat-label>-->
+    <!--<input matInput type="text" id="mail" name="mail" formControlName="mail"  (keypress)="handleKeyPress($event)" #mailInp-->
+    <!--autocomplete="mail">-->
+    <!--<mat-hint *ngIf="isHebrew && mailInp.ownerDocument.activeElement === mailInp">-->
+    <!--<i class="fa fa-exclamation-triangle"></i> {{'validation.isHebrew' | translate}}-->
+    <!--</mat-hint>-->
+    <!--<mat-error *ngIf="personal.get('mail').hasError('emailExists')">-->
+    <!--<i class="fa fa-ban"></i> {{'מייל זה קיים במערכת, עבור ל-'}}<a href="/">{{'מסך כניסה'}}</a>-->
+    <!--</mat-error>-->
+    <!--</mat-form-field>-->
+    <!--</div>-->
+    <!--<div class="Signup__control Signup__control&#45;&#45;status" style="margin-bottom: .2em;">-->
+    <!--<mat-form-field hideRequiredMarker="true">-->
+    <!--<mat-label>{{'formLogin.password' | translate}}</mat-label>-->
+    <!--<input matInput [type]="passwordHide ? 'password' : 'text'" formControlName="password" id="password" #pwdInp-->
+    <!--name="password"-->
+    <!--(keypress)="handleKeyPress($event)" (keydown)="handleKeyDown($event)"-->
+    <!--autocomplete="new-password">-->
+    <!--<mat-icon matSuffix (click)="passwordHide = !passwordHide">{{passwordHide ? 'visibility_off' : 'visibility'}}</mat-icon>-->
+    <!--<mat-hint *ngIf="isHebrew && pwdInp.ownerDocument.activeElement === pwdInp">-->
+    <!--<i class="fa fa-exclamation-triangle"></i> {{'signup.businessInfoStep.idPatternError' | translate}}-->
+    <!--</mat-hint>-->
+    <!--</mat-form-field>-->
+    <!--<div class="hints-container">-->
+    <!--<div class="Form__feedback Form__feedback&#45;&#45;status">-->
+    <!--<i class="fa"-->
+    <!--[ngClass]="(personal.get('password').hasError('minlength') || personal.get('password').hasError('maxlength') || personal.get('password').hasError('required'))  ? 'fa-ban' : 'fa-check'"></i>-->
+    <!--{{'validation.passwordLength' | translate}}-->
+    <!--</div>-->
+    <!--<div class="Form__feedback Form__feedback&#45;&#45;status">-->
+    <!--<i class="fa"-->
+    <!--[ngClass]="personal.get('password').hasError('nodigit') ? 'fa-ban' : 'fa-check'"></i>-->
+    <!--{{'validation.oneDigit' | translate}}-->
+    <!--</div>-->
+    <!--<div class="Form__feedback Form__feedback&#45;&#45;status">-->
+    <!--<i class="fa"-->
+    <!--[ngClass]="personal.get('password').hasError('noletter') ? 'fa-ban' : 'fa-check'"></i>-->
+    <!--{{'validation.oneLetter' | translate}}-->
+    <!--</div>-->
+    <!--</div>-->
+    <!--</div>-->
+    <!--<div class="Signup__control" style="text-align: start;">-->
+    <!--<mat-checkbox formControlName="agreementConfirm" color="primary">{{'קראתי ואני מסכים ל'}}-->
+    <!--<a href="https://bizibox.biz/terms-of-use-portal-app" target="bizibox-marketing">{{'תנאי שימוש'}}</a>{{' ו'}}-->
+    <!--<a href="https://bizibox.biz/privacy-policy-portal-app" target="bizibox-marketing">{{'מדיניות הפרטיות'}}</a></mat-checkbox>-->
+    <!--&lt;!&ndash;<mat-checkbox formControlName="marketingMessagesAgreed" color="primary">{{'הנני מסכים/ה לקבל דיוור שיווקי לתיבת המייל'}}</mat-checkbox>&ndash;&gt;-->
+    <!--</div>-->
+    <!--<div class="Login__submit">-->
+    <!--<button mat-raised-button-->
+    <!--color="primary"-->
+    <!--type="submit"-->
+    <!--[id]="'submitStep'"-->
+    <!--[disabled]="!personal.valid || personal.get('agreementConfirm').value !== true">-->
+    <!--{{'formLogin.continue' | translate}}-->
+    <!--</button>-->
+    <!--</div>-->
+    <!--&lt;!&ndash;<p>Form value: {{ personal.value | json }}</p>&ndash;&gt;-->
+    <!--</form>-->
+    <!--</div>-->
+
+    <!--<div *ngSwitchCase="business">-->
+    <!--<small class="mat-body">&#42;{{'signup.businessInfoStep.subtitle'| translate}}</small>-->
+    <!--<form novalidate [formGroup]="business" (ngSubmit)="onSubmit(business)">-->
+    <!--<div class="Signup__control">-->
+    <!--<mat-form-field hideRequiredMarker="true">-->
+    <!--<mat-label>{{'signup.businessInfoStep.name' | translate}}</mat-label>-->
+    <!--<input matInput type="text" formControlName="name" name="name" id="name" autocomplete="off">-->
+    <!--</mat-form-field>-->
+    <!--&lt;!&ndash;<label for="name">{{'signup.businessInfoStep.name'| translate}}</label>&ndash;&gt;-->
+    <!--&lt;!&ndash;<div&ndash;&gt;-->
+    <!--&lt;!&ndash;[ngClass]="{'Form__group': true, 'Form__group&#45;&#45;err': (!business.get('name').valid && business.get('name').dirty)}">&ndash;&gt;-->
+    <!--&lt;!&ndash;<input type="text" formControlName="name" name="name" id="name" autocomplete="off">&ndash;&gt;-->
+    <!--&lt;!&ndash;</div>&ndash;&gt;-->
+    <!--</div>-->
+    <!--<div class="Signup__control">-->
+    <!--<mat-form-field hideRequiredMarker="true">-->
+    <!--<mat-label>{{'signup.businessInfoStep.id' | translate}}</mat-label>-->
+    <!--<input matInput type="text" formControlName="id" name="id" id="id" autocomplete="off">-->
+    <!--<mat-error *ngIf="business.get('id').hasError('idExists')">-->
+    <!--<i class="fa fa-ban"></i> {{'signup.businessInfoStep.idAlreadyRegistered'| translate}}-->
+    <!--</mat-error>-->
+    <!--<mat-error *ngIf="business.get('id').hasError('pattern')">-->
+    <!--<i class="fa fa-exclamation-triangle"></i> {{'signup.businessInfoStep.idPatternError'| translate}}-->
+    <!--</mat-error>-->
+    <!--</mat-form-field>-->
+    <!--&lt;!&ndash;<label for="id">{{'signup.businessInfoStep.id'| translate}}</label>&ndash;&gt;-->
+    <!--&lt;!&ndash;<div&ndash;&gt;-->
+    <!--&lt;!&ndash;[ngClass]="{'Form__group': true, 'Form__group&#45;&#45;err': (business.get('id').invalid && business.get('id').dirty)}">&ndash;&gt;-->
+    <!--&lt;!&ndash;<input type="text" formControlName="id" name="id" id="id" autocomplete="off">&ndash;&gt;-->
+    <!--&lt;!&ndash;<div class="Form__feedback Form__feedback&#45;&#45;status" *ngIf="business.get('id').hasError('idExists')">&ndash;&gt;-->
+    <!--&lt;!&ndash;<i class="fa fa-ban"></i> {{'signup.businessInfoStep.idAlreadyRegistered'| translate}}&ndash;&gt;-->
+    <!--&lt;!&ndash;</div>&ndash;&gt;-->
+    <!--&lt;!&ndash;<div class="Form__feedback Form__feedback&#45;&#45;status" *ngIf="business.get('id').hasError('pattern')">&ndash;&gt;-->
+    <!--&lt;!&ndash;<i class="fa fa-exclamation-triangle"></i> {{'signup.businessInfoStep.idPatternError'| translate}}&ndash;&gt;-->
+    <!--&lt;!&ndash;</div>&ndash;&gt;-->
+    <!--&lt;!&ndash;</div>&ndash;&gt;-->
+    <!--</div>-->
+    <!--<div class="Signup__control Signup__control&#45;&#45;status">-->
+    <!--<mat-form-field hideRequiredMarker="true">-->
+    <!--<mat-label>{{('signup.businessInfoStep.profile' | translate) + ' (' + ('signup.businessInfoStep.profile-placeholder'| translate)+ ')'}}</mat-label>-->
+    <!--<input matInput type="text" formControlName="profile" id="profile" name="profile">-->
+    <!--<mat-hint>{{'* ' + ('expressions.optionalField'| translate)}}</mat-hint>-->
+    <!--</mat-form-field>-->
+    <!--&lt;!&ndash;<label for="profile">{{'signup.businessInfoStep.profile'| translate}}</label>&ndash;&gt;-->
+    <!--&lt;!&ndash;<div&ndash;&gt;-->
+    <!--&lt;!&ndash;[ngClass]="{'Form__group': true, 'Form__group&#45;&#45;err': (!business.get('profile').valid && business.get('profile').dirty)}">&ndash;&gt;-->
+    <!--&lt;!&ndash;<input type="text" formControlName="profile" id="profile" name="profile" [placeholder]="'signup.businessInfoStep.profile-placeholder'| translate">&ndash;&gt;-->
+    <!--&lt;!&ndash;</div>&ndash;&gt;-->
+    <!--&lt;!&ndash;<div class="Form__feedback Form__feedback&#45;&#45;status">&ndash;&gt;-->
+    <!--&lt;!&ndash;{{'* ' + ('expressions.optionalField'| translate)}}&ndash;&gt;-->
+    <!--&lt;!&ndash;</div>&ndash;&gt;-->
+    <!--</div>-->
+    <!--<div class="Signup__control" style="display: flex; display: -ms-flexbox; align-items: baseline; flex-flow: column nowrap; align-items: stretch;">-->
+    <!--<button mat-raised-button color="primary"-->
+    <!--type="submit"-->
+    <!--[id]="'submitStep'"-->
+    <!--[disabled]="!business.valid || formInProgress">-->
+    <!--<mat-spinner diameter="20" color="accent" *ngIf="formInProgress"></mat-spinner>-->
+    <!--<span *ngIf="!formInProgress">{{'formLogin.continue' | translate}}</span>-->
+    <!--</button>-->
+    <!--<a mat-button color="primary"-->
+    <!--type="submit"-->
+    <!--[id]="'stepBack'"-->
+    <!--[disabled]="formInProgress" (click)="onBack(business)">-->
+    <!--<i class="fa fa-fw fa-chevron-right" style="font-size: .9rem;"></i>{{'expressions.goBack'| translate}}-->
+    <!--</a>-->
+    <!--</div>-->
+    <!--&lt;!&ndash;<p>Form value: {{ business.value | json }}</p>&ndash;&gt;-->
+    <!--</form>-->
+    <!--</div>-->
+
+    <!--<div *ngSwitchCase="account">-->
+    <!--<div><small class="mat-body" style="font-size: 15px;">{{'signup.accountLinkStep.subtitle'| translate}}</small></div>-->
+    <!--<div style="margin: .5em 0;"><small class="mat-body" style="font-size: 15px; font-weight: 600;">{{'signup.accountLinkStep.disclaimerEncryptedConnection'| translate}}</small></div>-->
+
+    <!--<form novalidate [formGroup]="account" (ngSubmit)="onSubmit(account)">-->
+    <!--<div class="Signup__control mat-selector-alike">-->
+    <!--<a mat-button style="display: flex; display: -ms-flex; justify-content: space-between;"-->
+    <!--color="primary" (click)="toggleBankSelectContainer()">-->
+    <!--<ng-container *ngIf="account.get('bank').value as bank; else bankPlaceholder">-->
+    <!--<span style="line-height: 100%; display: flex; display: -ms-flex;">-->
+    <!--<img style="height: auto; width: auto; position: relative;" fill [ngSrc]="(bank.value ? bank.value : '')| toIconSrc:'bank'"/>&nbsp;{{bank.label}}-->
+    <!--</span>-->
+    <!--</ng-container>-->
+    <!--<ng-template #bankPlaceholder>-->
+    <!--<span>{{'expressions.bankName'| translate}}</span>-->
+    <!--</ng-template>-->
+    <!--<mat-icon matSuffix class="mat-icon-rtl-mirror">chevron_right</mat-icon>-->
+    <!--</a>-->
+    <!--&lt;!&ndash;<mat-form-field hideRequiredMarker="true">&ndash;&gt;-->
+    <!--&lt;!&ndash;<mat-select [placeholder]="'expressions.bankName'| translate" formControlName="bank" name="bank" id="bank" #banksSelect&ndash;&gt;-->
+    <!--&lt;!&ndash;(selectionChange)="setBankControlsFor($event.value ? $event.value.value : null)"&ndash;&gt;-->
+    <!--&lt;!&ndash;(openedChange)="setupOverlay(banksSelect)">&ndash;&gt;-->
+    <!--&lt;!&ndash;<mat-select-trigger>&ndash;&gt;-->
+    <!--&lt;!&ndash;<div *ngIf="account.get('bank').value as bank"&ndash;&gt;-->
+    <!--&lt;!&ndash;class="text-ellipsis"&ndash;&gt;-->
+    <!--&lt;!&ndash;style="position: relative; display: flex; display: -ms-flexbox; align-items: center;">&ndash;&gt;-->
+    <!--&lt;!&ndash;<img style="height: auto; width: auto; position: relative;" fill [ngSrc]="(bank.value ? bank.value : '')| toIconSrc:'bank'"/>&nbsp;{{bank.label}}&ndash;&gt;-->
+    <!--&lt;!&ndash;</div>&ndash;&gt;-->
+    <!--&lt;!&ndash;</mat-select-trigger>&ndash;&gt;-->
+    <!--&lt;!&ndash;<mat-option *ngFor="let bank of banks" [value]="bank">&ndash;&gt;-->
+    <!--&lt;!&ndash;<div class="text-ellipsis"&ndash;&gt;-->
+    <!--&lt;!&ndash;style="position: relative; display: flex; display: -ms-flexbox; align-items: center;">&ndash;&gt;-->
+    <!--&lt;!&ndash;<img style="height: auto; width: auto; position: relative;" fill [ngSrc]="(bank.value ? bank.value : '')| toIconSrc:'bank'"/>&nbsp;{{bank.label}}&ndash;&gt;-->
+    <!--&lt;!&ndash;</div>&ndash;&gt;-->
+    <!--&lt;!&ndash;</mat-option>&ndash;&gt;-->
+    <!--&lt;!&ndash;</mat-select>&ndash;&gt;-->
+    <!--&lt;!&ndash;</mat-form-field>&ndash;&gt;-->
+    <!--</div>-->
+
+    <!--&lt;!&ndash;<div style="min-height: 4em;">&ndash;&gt;-->
+    <!--&lt;!&ndash;<app-bank-foreign-credentials [bankCredentialsGroup]="account" [useMaterialComponents]="true"&ndash;&gt;-->
+    <!--&lt;!&ndash;[settings]="banksCredentialSettings"></app-bank-foreign-credentials>&ndash;&gt;-->
+    <!--&lt;!&ndash;</div>&ndash;&gt;-->
+    <!--<div class="Signup__control" *ngFor="let fc of foreignControls" [formGroup]="account">-->
+    <!--<mat-form-field hideRequiredMarker="true">-->
+    <!--<mat-label>{{fc.label}}</mat-label>-->
+    <!--<input matInput [type]="fc.controlType !== 'password' ? fc.controlType : !passwordHide ? 'text' : fc.controlType"-->
+    <!--[id]="fc.key" [name]="fc.key" [formControlName]="fc.key"-->
+    <!--[autocomplete]="fc.controlType === 'password' && passwordHide ? 'new-password' : 'nope'">-->
+    <!--<mat-icon matSuffix *ngIf="fc.controlType === 'password'"-->
+    <!--(click)="passwordHide = !passwordHide">{{passwordHide ? 'visibility_off' : 'visibility'}}</mat-icon>-->
+    <!--<mat-error *ngIf="account.get(fc.key).invalid && account.get(fc.key).dirty">-->
+    <!--<ng-container *ngFor="let rule of fc.rules">-->
+    <!--<i class="fa fa-fw fa-exclamation-triangle"></i> {{rule}}-->
+    <!--</ng-container>-->
+    <!--</mat-error>-->
+    <!--</mat-form-field>-->
+    <!--</div>-->
+
+    <!--<ng-container *ngIf="(account.get('bank').value ? banksCredentialSettings[account.get('bank').value.value] : null) as selectedSettings">-->
+    <!--<div *ngIf="selectedSettings.otp" class="Form__foreignOtpTypes">-->
+    <!--<div *ngIf="account.get('bank').value.value === '157' || account.get('bank').value.value === '158'"-->
+    <!--[formGroup]="account" class="mat-typography">-->
+    <!--<div class="selected-desc">{{selectedSettings.description}}</div>-->
+    <!--<div *ngFor="let otpType of selectedSettings.otpTypes; first as isFirst"-->
+    <!--class="otp-credential-option"-->
+    <!--[style.background]="account.get('otpType').value === otpType.value ? '#f7f7f7' : 'transparent'">-->
+    <!--<p-radioButton name="otpTypeGroup" formControlName="otpType"-->
+    <!--[value]="otpType.value" [label]="otpType.label"-->
+    <!--[style]="{'font-weight': 'bold'}"></p-radioButton>-->
+    <!--<span *ngIf="isFirst" class="tag success">מומלץ!</span>-->
+    <!--<i class="fas fa-info-circle" [pTooltip]="otpType.info" [escape]="false" [tooltipPosition]="'top'" app></i>-->
+    <!--<div class="Signup__control" style="padding: 0 2em;"-->
+    <!--*ngIf="account.get('otpType').value === otpType.value">-->
+    <!--<p>{{otpType.description}}</p>-->
+
+    <!--<mat-form-field hideRequiredMarker="true" *ngIf="otpType.value === 'constant' || otpType.value === 'application'">-->
+    <!--<input matInput type="text" formControlName="otpCode">-->
+    <!--<mat-error *ngIf="account.get('otpCode').invalid && account.get('otpCode')">-->
+    <!--<ng-container *ngFor="let rule of otpType.code.rules">-->
+    <!--<i class="fa fa-fw fa-exclamation-triangle"></i> {{rule}}-->
+    <!--</ng-container>-->
+    <!--</mat-error>-->
+    <!--</mat-form-field>-->
+    <!--</div>-->
+    <!--</div>-->
+    <!--</div>-->
+    <!--<div *ngIf="account.get('bank').value.value === '122'" class="mat-typography">-->
+    <!--<p [innerHTML]="selectedSettings.message"></p>-->
+    <!--</div>-->
+    <!--</div>-->
+    <!--</ng-container>-->
+
+    <!--<div class="Form__feedback Form__feedback&#45;&#45;warning Form__feedback&#45;&#45;warning&#45;&#45;block"-->
+    <!--[style.visibility]="(account.invalid || account.get('bank').value.value === '122') ? 'hidden' : 'visible'">-->
+    <!--<i class="fa fa-fw fa-exclamation-triangle"></i>  {{'foreignCredentialsUpdate.expressions.disconnectBankSiteWarn'| translate}}-->
+    <!--</div>-->
+    <!--<div class="Signup__control">-->
+    <!--<button mat-raised-button style="width: 100%;"-->
+    <!--color="primary"-->
+    <!--type="submit"-->
+    <!--[id]="'submitStep'"-->
+    <!--[disabled]="!account || !account.get('bank')?.value || account.get('bank')?.value < 0 || !account.valid || formInProgress">-->
+    <!--<mat-spinner diameter="20" color="accent" *ngIf="formInProgress"></mat-spinner>-->
+    <!--<span *ngIf="!formInProgress">{{'signup.startFreeTrial'| translate}}</span>-->
+    <!--</button>-->
+    <!--</div>-->
+    <!--</form>-->
+
+    <!--<div style="display: flex; display: -ms-flexbox; align-items: center; flex-flow: wrap; align-content: space-between; width: 100%;">-->
+    <!--<hr style="flex: 1 1 auto;">-->
+    <!--<div style="flex: 0 0 8ch;-ms-flex:0 0 8ch; text-align: center;">{{'expressions.or'| translate}}</div>-->
+    <!--<hr style="flex: 1 1 auto;-ms-flex:1 1 auto;">-->
+    <!--<a mat-button style="flex: 2 1 100%;-ms-flex:2 1 100%; padding: 0 0.5em; min-height: 2.35em;"-->
+    <!--color="primary" (click)="onSkipToDemoCompanyClick()">-->
+    <!--<mat-spinner diameter="20" color="accent" *ngIf="formInProgress"></mat-spinner>-->
+    <!--<span *ngIf="!formInProgress">-->
+    <!--{{'signup.accountLinkStep.skipToDemoBusiness'| translate}} <i class="fa fa-fw fa-chevron-left"></i>-->
+    <!--</span>-->
+    <!--</a>-->
+    <!--</div>-->
+    <!--</div>-->
+
+    <!--<ng-container *ngSwitchCase="tokenTrack">-->
+    <!--<div *ngIf="tokenStatus| async as tokenStatus; else loading" class="polling-section">-->
+    <!--&lt;!&ndash;{{tokenStatus| json}}&ndash;&gt;-->
+    <!--<form novalidate [formGroup]="tokenTrack" (ngSubmit)="onSubmit(tokenTrack)">-->
+    <!--<ng-container [ngSwitch]="tokenStatus.uiStatus">-->
+    <!--<ng-container *ngSwitchCase="'SUCCESS'">-->
+    <!--<h1><i class="fas fa-check-circle"></i>&nbsp;{{'signup.tokenTrackStep.tokenSuccess.title'| translate}}</h1>-->
+    <!--<p [innerHTML]="'signup.tokenTrackStep.tokenSuccess.subtitle'| translate"></p>-->
+    <!--<button mat-raised-button style="width: 100%; padding: 0 0.5em; min-height: 2.35em;"-->
+    <!--color="primary"-->
+    <!--type="submit"-->
+    <!--[id]="'submitStep'"-->
+    <!--[disabled]="formInProgress">-->
+    <!--<mat-spinner diameter="20" color="accent" *ngIf="formInProgress"></mat-spinner>-->
+    <!--<span *ngIf="!formInProgress">{{'formLogin.login'| translate}}</span>-->
+    <!--</button>-->
+    <!--</ng-container>-->
+    <!--<ng-container *ngSwitchCase="'FAILURE'">-->
+    <!--<h1><i class="fas fa-ban"></i>&nbsp;{{'signup.tokenTrackStep.tokenFailed.title'| translate}}</h1>-->
+    <!--<p [innerHTML]="'signup.tokenTrackStep.tokenFailed.subtitle'| translate"></p>-->
+    <!--<button mat-raised-button style="width: 100%; padding: 0 0.5em; min-height: 2.35em;"-->
+    <!--color="primary"-->
+    <!--type="submit"-->
+    <!--[id]="'submitStep'"-->
+    <!--[disabled]="formInProgress">-->
+    <!--<mat-spinner diameter="20" color="accent" *ngIf="formInProgress"></mat-spinner>-->
+    <!--<span *ngIf="!formInProgress">{{'signup.accountLinkStep.skipToDemoBusiness'| translate}}</span>-->
+    <!--</button>-->
+    <!--</ng-container>-->
+    <!--<ng-container *ngSwitchCase="'UPDATE_AND_RETRY'">-->
+    <!--<h2><i class="fas fa-exclamation-triangle"></i>&nbsp;{{'signup.tokenTrackStep.tokenUpdateAndRetry.title'|-->
+    <!--translate}}</h2>-->
+    <!--<p [innerHTML]="'signup.tokenTrackStep.tokenUpdateAndRetry.subtitle'| translate"></p>-->
+    <!--<button mat-raised-button style="width: 100%; padding: 0 0.5em; min-height: 2.35em;"-->
+    <!--color="primary"-->
+    <!--type="button" (click)="currentStep = account"-->
+    <!--[id]="'submitStep'"-->
+    <!--[disabled]="formInProgress">-->
+    <!--<mat-spinner diameter="20" color="accent" *ngIf="formInProgress"></mat-spinner>-->
+    <!--<span *ngIf="!formInProgress">{{'formLogin.tryAgain'| translate}}</span>-->
+    <!--</button>-->
+    <!--</ng-container>-->
+    <!--<ng-container *ngSwitchCase="'TIMED_OUT'">-->
+    <!--<h2><i class="fas fa-exclamation-triangle"></i>&nbsp;{{'signup.tokenTrackStep.tokenTimedOut.title'|-->
+    <!--translate}}</h2>-->
+    <!--<p [innerHTML]="'signup.tokenTrackStep.tokenTimedOut.subtitle'| translate"></p>-->
+    <!--<button mat-raised-button style="width: 100%; padding: 0 0.5em; min-height: 2.35em;"-->
+    <!--color="primary"-->
+    <!--type="button" (click)="startTokenStatusPolling()"-->
+    <!--[id]="'retryStep'"-->
+    <!--[disabled]="formInProgress">-->
+    <!--<mat-spinner diameter="20" color="accent" *ngIf="formInProgress"></mat-spinner>-->
+    <!--<span-->
+    <!--*ngIf="!formInProgress">{{'signup.tokenTrackStep.tokenTimedOut.keepWaiting'| translate}}</span>-->
+    <!--</button>-->
+    <!--<button mat-raised-button style="width: 100%; padding: 0 0.5em; min-height: 2.35em;"-->
+    <!--color="primary"-->
+    <!--type="submit"-->
+    <!--[id]="'submitStep'"-->
+    <!--[disabled]="formInProgress">-->
+    <!--<mat-spinner diameter="20" color="accent" *ngIf="formInProgress"></mat-spinner>-->
+    <!--<span-->
+    <!--*ngIf="!formInProgress">{{'signup.tokenTrackStep.tokenTimedOut.stopWaiting'| translate}}</span>-->
+    <!--</button>-->
+    <!--</ng-container>-->
+    <!--<ng-container *ngSwitchDefault>-->
+    <!--<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/bizb-loading.gif" height="74" width="107"/>-->
+    <!--<h2>{{'signup.tokenTrackStep.waitingMessage'| translate}}</h2>-->
+    <!--&lt;!&ndash;{{tokenStatus.extractdate| date: 'HH:mm:ss'}}&ndash;&gt;-->
+    <!--</ng-container>-->
+    <!--</ng-container>-->
+    <!--</form>-->
+    <!--</div>-->
+    <!--<ng-template #loading>-->
+    <!--<div class="polling-section">-->
+    <!--<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/bizb-loading.gif" height="74" width="107"/>-->
+    <!--<h2>{{'signup.tokenTrackStep.waitingMessage'| translate}}</h2>-->
+    <!--</div>-->
+    <!--</ng-template>-->
+    <!--</ng-container>-->
+    <!--</div>-->
+  </div>
+
+  <div class="Signup-mobile__card-footer">
+    <div class="disclaimer">
+      {{ 'signup.disclaimerRegistrationCancel' | translate }}
+    </div>
+    <div class="disclaimer small">
+      {{ 'signup.disclaimerSecure' | translate }}
+    </div>
+    <div class="sec-logos">
+      <img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/128bit-logo-g.png" alt="128bit" />
+      <img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/fortinet-logo-g.png" alt="Fortinet" />
+      <img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/verisign-logo-g.png" alt="Verisign" />
+    </div>
+    <hr />
+    <div class="disclaimer">
+      {{ 'signup.disclaimerHelp' | translate }}&nbsp;
+      <a
+        href="https://bizibox.biz/contact-us/"
+        target="_blank"
+        class="disclaimer small"
+        *ngIf="lite"
+        >{{ 'signup.disclaimerSupportLight' | translate }}</a
+      >
+      <span
+        class="disclaimer small"
+        *ngIf="!lite"
+        [innerHTML]="'signup.disclaimerSupport' | translate"
+      ></span>
+    </div>
+
+    <div class="disclaimer" *ngIf="agreementId !== '11'">
+      <ng-container *ngIf="currentStepIdx < 3; else backToMainAfterLogin">
+        <button class="button-link" [routerLink]="['/login']">
+          {{ 'expressions.backToMainPage' | translate }}
+        </button>
+      </ng-container>
+      <ng-template #backToMainAfterLogin>
+        <button class="button-link" (click)="authService.logout()">
+          {{ 'expressions.backToMainPage' | translate }}
+        </button>
+      </ng-template>
+    </div>
+    <!--<div class="disclaimer">{{'signup.disclaimerHelp'| translate}}</div>-->
+    <!--<div class="disclaimer small">{{'signup.disclaimerSupport'| translate}}</div>-->
+  </div>
+</div>
+
+<ng-container *ngIf="showPopUpPreSighUp">
+  <p-dialog (visibleChange)="showPopUpPreSighUp = false"
+    [visible]="(showPopUpPreSighUp)"
+    appendTo="body"
+    [modal]="true"
+    [resizable]="false"
+    styleClass="signUpTypesMobile"
+  >
+    <div id="logoPreSignUpMobile">
+      <img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/logoPreSignUpMobile.png" />
+    </div>
+
+    <h1>בחרו את המוצר שאליו תרצו להירשם</h1>
+
+    <button (click)="lite = true; showPopUpPreSighUp = false">
+      <p>bizibox ניהול תקציב</p>
+      <small> החל מ- 19 ש”ח כולל מע”מ </small>
+    </button>
+
+    <button (click)="lite = false; showPopUpPreSighUp = false">
+      <p>bizibox עסקים</p>
+      <small> החל מ- 179 ש”ח מע”מ כולל מע”מ </small>
+    </button>
+
+    <div class="infoText">
+      <p>
+        <strong> ההרשמה היא להתנסות חינם </strong>
+        וניתן לבטלה בכל עת
+        <br />
+        המערכת מאובטחת בסטנדרטים בנקאיים
+      </p>
+      <img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/logoSecurePreSignUp.png" />
+    </div>
+
+    <div class="navLinks">
+      <p>
+        נתקלתם בבעיה?
+        <a href="https://bizibox.biz/contact-us/" target="_blank">צרו קשר</a>
+      </p>
+      <p><a [routerLink]="['/login']" id="loginLink">חזרה למסך כניסה</a></p>
+    </div>
+  </p-dialog>
+</ng-container>

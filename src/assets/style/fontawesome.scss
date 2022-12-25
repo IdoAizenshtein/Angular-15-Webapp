@@ -1,0 +1,50 @@
+@import './fontawesome/fontawesome';
+@import './fontawesome/fa-solid';
+@import './fontawesome/fa-brands';
+@import './fontawesome/fa-regular';
+@import './fontawesome/fontello';
+@import 'buttons';
+@import 'fonts';
+
+button.create-item-button {
+  @extend %base-button;
+  background: $bg-button-white !important;
+  height: $height-button-white !important;
+  line-height: $height-button-dark !important;
+  padding: 0 15px !important;
+  border: 2px solid;
+  @include font(semi-bold, 16px, 32px);
+  position: relative;
+
+  &:hover {
+    background: $bg-button-white-hover !important;
+  }
+
+  &:active {
+    background: $bg-button-white-active !important;
+  }
+
+  &:disabled {
+    border-color: $color-border-button-white-disabled !important;
+    background: $bg-button-white-disabled !important;
+    color: $color-button-white-disabled !important;
+  }
+
+  &:before {
+    @include fa-icon;
+    @extend .fas;
+    font-family: 'Font Awesome 5 Free';
+    font-weight: getFont(bold);
+    content: fa-content($fa-var-plus-circle);
+  }
+
+  &.create-item-button-green {
+    color: $add-check-in !important;
+    border-color: $add-check-in !important;
+  }
+
+  &.create-item-button-red {
+    color: $add-check-out !important;
+    border-color: $add-check-out !important;
+  }
+}

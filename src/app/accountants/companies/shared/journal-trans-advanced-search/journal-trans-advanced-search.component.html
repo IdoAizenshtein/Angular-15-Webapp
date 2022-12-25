@@ -1,0 +1,596 @@
+<div class="menu-dd menu-with-panel" style="position: relative">
+	<div
+			#selector
+			(click)="togglePanel()"
+			[class.opened]="showPanelDD"
+			class="advancedSearchBtn"
+	>
+		{{ title }}
+	</div>
+	<div
+			(closed)="showPanelDD = false"
+			*ngIf="showPanelDD"
+			[@slideInOutDD]
+			[class.isCredit]="isCredit"
+			appClickDocument
+			class="panelDD advancedSearchPanel"
+	>
+		<ng-container *ngIf="!isCredit; else CreditForm">
+			<form [formGroup]="advancedSearchParams" novalidate>
+				<div class="rows-advancedSearchParams">
+					<div class="row">
+						<div class="label">תיאור/ פרטים</div>
+						<div class="content">
+							<input
+									autocomplete="off"
+									formControlName="description"
+									type="text"
+							/>
+						</div>
+					</div>
+					<div class="row">
+						<div class="label">אסמכתא</div>
+						<div class="content">
+							<input
+									autocomplete="off"
+									formControlName="asmachta"
+									type="text"
+							/>
+						</div>
+					</div>
+					<div class="row">
+						<div class="label">סכום</div>
+						<div class="content flexRow">
+							<label class="labelFlex" for="totalFrom"> מ- </label>
+							<input
+									[ngClass]="{
+                  err:
+                    !advancedSearchParams.get('totalFrom').value &&
+                    advancedSearchParams.get('totalTill').value
+                }"
+									appNumbersOnly="numWithTwoDec"
+									autocomplete="off"
+									formControlName="totalFrom"
+									id="totalFrom"
+									type="text"
+							/>
+							<span style="padding: 0px 12.5px"></span>
+							
+							<label class="labelFlex" for="totalTill"> עד- </label>
+							<input
+									[ngClass]="{
+                  err:
+                    advancedSearchParams.get('totalFrom').value &&
+                    !advancedSearchParams.get('totalTill').value
+                }"
+									appNumbersOnly="numWithTwoDec"
+									autocomplete="off"
+									formControlName="totalTill"
+									id="totalTill"
+									type="text"
+							/>
+						</div>
+					</div>
+					<div class="row">
+						<div class="label">כרטיס נגדי</div>
+						<div class="content flexRow">
+							<label class="labelFlex" for="custFrom"> מ- </label>
+							<p-dropdown
+									#formDropdowns
+									(onFocus)="clearFilter(formDropdowns)"
+									[autoDisplayFirst]="false"
+									[filter]="true"
+									
+									[ngClass]="{
+                  err:
+                    !advancedSearchParams.get('custFrom').value &&
+                    advancedSearchParams.get('custTill').value
+                }"
+									[options]="
+                  userService.appData.userData.companyCustomerDetails.all
+                "
+									[style]="{ width: '68px' }"
+									dataKey="custId"
+									emptyFilterMessage="לא נמצאו תוצאות"
+									filterBy="lName,custId,hp"
+									formControlName="custFrom"
+									
+									id="custFrom"
+									optionLabel="custId"
+									panelStyleClass="company-customer-dropdown-panel cardsDD"
+									placeholder=""
+							>
+								<ng-template let-item pTemplate="selectedItem">
+                  <span
+		                  [pTooltip]="item.cartisName"
+		                  #spanElement
+		                  [tooltipDisabled]="
+                      spanElement.offsetWidth >= spanElement.scrollWidth
+                    "
+		                  style="
+                      vertical-align: middle;
+                      display: block;
+                      white-space: nowrap;
+                      overflow: hidden;
+                      text-overflow: ellipsis;
+                    "
+		                  tooltipPosition="top"
+                  >{{ item.custId }}</span
+                  >
+								</ng-template>
+								<ng-template let-item pTemplate="item">
+									<div class="p-helper-clearfix" style="flex: 1">
+										<div>
+											<span class="text-ellipsis">{{ item.custId }}</span>
+										</div>
+										<div
+												*ngIf="item.lName || item.hp"
+												class="separator"
+										>
+											<span>-</span>
+										</div>
+										<div>
+                      <span *ngIf="item.lName" class="text-ellipsis">{{
+	                      item.lName
+	                      }}</span>
+											<span
+													*ngIf="item.hp"
+													class="text-ellipsis secondary"
+											>
+                        ח.פ./ע.מ. {{ item.hp }}</span
+											>
+										</div>
+									</div>
+								</ng-template>
+							</p-dropdown>
+							
+							<span style="padding: 0px 12.5px"></span>
+							
+							<label class="labelFlex" for="custTill"> עד- </label>
+							<p-dropdown
+									#formDropdowns1
+									(onFocus)="clearFilter(formDropdowns1)"
+									[autoDisplayFirst]="false"
+									[filter]="true"
+									
+									[ngClass]="{
+                  err:
+                    advancedSearchParams.get('custFrom').value &&
+                    !advancedSearchParams.get('custTill').value
+                }"
+									[options]="
+                  userService.appData.userData.companyCustomerDetails.all
+                "
+									[style]="{ width: '68px' }"
+									dataKey="custId"
+									emptyFilterMessage="לא נמצאו תוצאות"
+									filterBy="lName,custId,hp"
+									formControlName="custTill"
+									id="custTill"
+									
+									optionLabel="custId"
+									panelStyleClass="company-customer-dropdown-panel cardsDD"
+									placeholder=""
+							>
+								<ng-template let-item pTemplate="selectedItem">
+                  <span
+		                  #spanElement
+		                  [pTooltip]="item.cartisName"
+		                  [tooltipDisabled]="
+                      spanElement.offsetWidth >= spanElement.scrollWidth
+                    "
+		                  style="
+                      vertical-align: middle;
+                      display: block;
+                      white-space: nowrap;
+                      overflow: hidden;
+                      text-overflow: ellipsis;
+                    "
+		                  tooltipPosition="top"
+                  >{{ item.custId }}</span
+                  >
+								</ng-template>
+								<ng-template let-item pTemplate="item">
+									<div class="p-helper-clearfix" style="flex: 1">
+										<div>
+											<span class="text-ellipsis">{{ item.custId }}</span>
+										</div>
+										<div
+												*ngIf="item.lName || item.hp"
+												class="separator"
+										>
+											<span>-</span>
+										</div>
+										<div>
+                      <span *ngIf="item.lName" class="text-ellipsis">{{
+	                      item.lName
+	                      }}</span>
+											<span
+													*ngIf="item.hp"
+													class="text-ellipsis secondary"
+											>
+                        ח.פ./ע.מ. {{ item.hp }}</span
+											>
+										</div>
+									</div>
+								</ng-template>
+							</p-dropdown>
+						</div>
+					</div>
+					<div class="row">
+						<div class="label">מספר מנה</div>
+						<div class="content">
+							<input
+									[ngClass]="{
+                  err:
+                    advancedSearchParams.get('doseNumber').value &&
+                    advancedSearchParams.get('doseNumber').errors
+                }"
+									appNumbersOnly
+									autocomplete="off"
+									formControlName="doseNumber"
+									type="text"
+							/>
+						</div>
+					</div>
+					
+					<div class="row">
+						<div class="label">מספר פקודה</div>
+						<div class="content">
+							<input
+									[ngClass]="{
+                  err:
+                    advancedSearchParams.get('orderNumber').value &&
+                    advancedSearchParams.get('orderNumber').errors
+                }"
+									appNumbersOnly
+									autocomplete="off"
+									formControlName="orderNumber"
+									type="text"
+							/>
+						</div>
+					</div>
+				</div>
+				
+				<div class="btns">
+					<button (click)="togglePanel()" class="button-link" type="button">
+						{{ 'actions.cancellation' | translate }}
+					</button>
+					<button (click)="search()" class="button-dark" type="button">
+						חיפוש
+					</button>
+				</div>
+			</form>
+		</ng-container>
+		<ng-template #CreditForm>
+			<form [formGroup]="advancedSearchParams" novalidate>
+				<div class="rows-advancedSearchParams">
+					<div class="row">
+						<div class="label">תאריך עסקה</div>
+						<div class="content flexRow">
+							<label class="labelFlex" for="sendDateFrom"> מ- </label>
+							<p-calendar
+									#transDateSelector
+									(onSelect)="changeDatesFrequencyDesc('sendDateFrom')"
+									[inputStyle]="{ 'max-width': '121px' }"
+									[locale]="'langCalendar' | translate"
+									[ngClass]="{
+                  err:
+                    !advancedSearchParams.get('sendDateFrom').value &&
+                    advancedSearchParams.get('sendDateTill').value
+                }"
+									dateFormat="d/m/y"
+									formControlName="sendDateFrom"
+									id="sendDateFrom"
+									inputId="sendDateFrom"
+							>
+							</p-calendar>
+							<span style="padding: 0px 12.5px"></span>
+							<label class="labelFlex" for="sendDateTill"> עד- </label>
+							<p-calendar
+									(onSelect)="changeDatesFrequencyDesc('sendDateTill')"
+									[inputStyle]="{ 'max-width': '121px' }"
+									[locale]="'langCalendar' | translate"
+									[ngClass]="{
+                  err:
+                    advancedSearchParams.get('sendDateFrom').value &&
+                    !advancedSearchParams.get('sendDateTill').value
+                }"
+									dateFormat="d/m/y"
+									formControlName="sendDateTill"
+									id="sendDateTill"
+									inputId="sendDateTill"
+							>
+							</p-calendar>
+						</div>
+					</div>
+					<div class="row">
+						<div class="label">תיאור</div>
+						<div class="content">
+							<input
+									autocomplete="off"
+									formControlName="description"
+									type="text"
+							/>
+						</div>
+					</div>
+					<div class="row">
+						<div class="label">סכום העסקה</div>
+						<div class="content flexRow">
+							<label class="labelFlex" for="totalFrom"> מ- </label>
+							<input
+									[ngClass]="{
+                  err:
+                    !advancedSearchParams.get('totalFrom').value &&
+                    advancedSearchParams.get('totalTill').value
+                }"
+									appNumbersOnly="numWithTwoDec"
+									autocomplete="off"
+									formControlName="totalFrom"
+									id="totalFrom"
+									type="text"
+							/>
+							<span style="padding: 0px 12.5px"></span>
+							
+							<label class="labelFlex" for="totalTill"> עד- </label>
+							<input
+									[ngClass]="{
+                  err:
+                    advancedSearchParams.get('totalFrom').value &&
+                    !advancedSearchParams.get('totalTill').value
+                }"
+									appNumbersOnly="numWithTwoDec"
+									autocomplete="off"
+									formControlName="totalTill"
+									id="totalTill"
+									type="text"
+							/>
+						</div>
+					</div>
+					<div class="row">
+						<div class="label">סכום לחיוב</div>
+						<div class="content flexRow">
+							<label class="labelFlex" for="totalIncludeMaamFrom"> מ- </label>
+							<input
+									[ngClass]="{
+                  err:
+                    !advancedSearchParams.get('totalIncludeMaamFrom').value &&
+                    advancedSearchParams.get('totalIncludeMaamTill').value
+                }"
+									appNumbersOnly="numWithTwoDec"
+									autocomplete="off"
+									formControlName="totalIncludeMaamFrom"
+									id="totalIncludeMaamFrom"
+									type="text"
+							/>
+							<span style="padding: 0px 12.5px"></span>
+							
+							<label class="labelFlex" for="totalIncludeMaamTill"> עד- </label>
+							<input
+									[ngClass]="{
+                  err:
+                    advancedSearchParams.get('totalIncludeMaamFrom').value &&
+                    !advancedSearchParams.get('totalIncludeMaamTill').value
+                }"
+									appNumbersOnly="numWithTwoDec"
+									autocomplete="off"
+									formControlName="totalIncludeMaamTill"
+									id="totalIncludeMaamTill"
+									type="text"
+							/>
+						</div>
+					</div>
+					<div class="row">
+						<div class="label">כרטיס נגדי</div>
+						<div class="content flexRow">
+							<label class="labelFlex" for="custFrom"> מ- </label>
+							<p-dropdown
+									#formDropdowns
+									(onFocus)="clearFilter(formDropdowns)"
+									[autoDisplayFirst]="false"
+									[filter]="true"
+									
+									[ngClass]="{
+                  err:
+                    !advancedSearchParams.get('custFrom').value &&
+                    advancedSearchParams.get('custTill').value
+                }"
+									[options]="
+                  userService.appData.userData.companyCustomerDetails.all
+                "
+									[style]="{ width: '68px' }"
+									dataKey="custId"
+									emptyFilterMessage="לא נמצאו תוצאות"
+									filterBy="lName,custId,hp"
+									formControlName="custFrom"
+									
+									id="custFrom"
+									optionLabel="custId"
+									panelStyleClass="company-customer-dropdown-panel cardsDD"
+									placeholder=""
+							>
+								<ng-template let-item pTemplate="selectedItem">
+                  <span
+		                  #spanElement
+		                  [pTooltip]="item.cartisName"
+		                  [tooltipDisabled]="
+                      spanElement.offsetWidth >= spanElement.scrollWidth
+                    "
+		                  style="
+                      vertical-align: middle;
+                      display: block;
+                      white-space: nowrap;
+                      overflow: hidden;
+                      text-overflow: ellipsis;
+                    "
+		                  tooltipPosition="top"
+                  >{{ item.custId }}</span
+                  >
+								</ng-template>
+								<ng-template let-item pTemplate="item">
+									<div class="p-helper-clearfix" style="flex: 1">
+										<div>
+											<span class="text-ellipsis">{{ item.custId }}</span>
+										</div>
+										<div
+												*ngIf="item.lName || item.hp"
+												class="separator"
+										>
+											<span>-</span>
+										</div>
+										<div>
+                      <span *ngIf="item.lName" class="text-ellipsis">{{
+	                      item.lName
+	                      }}</span>
+											<span
+													*ngIf="item.hp"
+													class="text-ellipsis secondary"
+											>
+                        ח.פ./ע.מ. {{ item.hp }}</span
+											>
+										</div>
+									</div>
+								</ng-template>
+							</p-dropdown>
+							
+							<span style="padding: 0px 12.5px"></span>
+							
+							<label class="labelFlex" for="custTill"> עד- </label>
+							<p-dropdown
+									#formDropdowns1
+									(onFocus)="clearFilter(formDropdowns1)"
+									[autoDisplayFirst]="false"
+									[filter]="true"
+									
+									[ngClass]="{
+                  err:
+                    advancedSearchParams.get('custFrom').value &&
+                    !advancedSearchParams.get('custTill').value
+                }"
+									[options]="
+                  userService.appData.userData.companyCustomerDetails.all
+                "
+									[style]="{ width: '68px' }"
+									dataKey="custId"
+									emptyFilterMessage="לא נמצאו תוצאות"
+									filterBy="lName,custId,hp"
+									formControlName="custTill"
+									id="custTill"
+									
+									optionLabel="custId"
+									panelStyleClass="company-customer-dropdown-panel cardsDD"
+									placeholder=""
+							>
+								<ng-template let-item pTemplate="selectedItem">
+                  <span
+		                  #spanElement
+		                  [pTooltip]="item.cartisName"
+		                  [tooltipDisabled]="
+                      spanElement.offsetWidth >= spanElement.scrollWidth
+                    "
+		                  style="
+                      vertical-align: middle;
+                      display: block;
+                      white-space: nowrap;
+                      overflow: hidden;
+                      text-overflow: ellipsis;
+                    "
+		                  tooltipPosition="top"
+                  >{{ item.custId }}</span
+                  >
+								</ng-template>
+								<ng-template let-item pTemplate="item">
+									<div class="p-helper-clearfix" style="flex: 1">
+										<div>
+											<span class="text-ellipsis">{{ item.custId }}</span>
+										</div>
+										<div
+												*ngIf="item.lName || item.hp"
+												class="separator"
+										>
+											<span>-</span>
+										</div>
+										<div>
+                      <span *ngIf="item.lName" class="text-ellipsis">{{
+	                      item.lName
+	                      }}</span>
+											<span
+													*ngIf="item.hp"
+													class="text-ellipsis secondary"
+											>
+                        ח.פ./ע.מ. {{ item.hp }}</span
+											>
+										</div>
+									</div>
+								</ng-template>
+							</p-dropdown>
+						</div>
+					</div>
+					<div class="row">
+						<div class="label">פרטים</div>
+						<div class="content">
+							<input autocomplete="off" formControlName="info" type="text"/>
+						</div>
+					</div>
+					<div class="row">
+						<div class="label">מספר מנה</div>
+						<div class="content">
+							<input
+									[ngClass]="{
+                  err:
+                    advancedSearchParams.get('doseNumber').value &&
+                    advancedSearchParams.get('doseNumber').errors
+                }"
+									appNumbersOnly
+									autocomplete="off"
+									formControlName="doseNumber"
+									type="text"
+							/>
+						</div>
+					</div>
+					
+					<div class="row">
+						<div class="label">מספר פקודה</div>
+						<div class="content">
+							<input
+									[ngClass]="{
+                  err:
+                    advancedSearchParams.get('orderNumber').value &&
+                    advancedSearchParams.get('orderNumber').errors
+                }"
+									appNumbersOnly
+									autocomplete="off"
+									formControlName="orderNumber"
+									type="text"
+							/>
+						</div>
+					</div>
+					
+					<div class="row">
+						<div>
+							<div>
+								<p-checkbox [binary]="true"
+								            [label]="'ללא מט״ח'"
+								            checkboxIcon="fa fa-check"
+								            formControlName="matah"
+								            id="p-matah"
+								            inputId="matah"
+								>
+								</p-checkbox>
+							</div>
+						</div>
+					</div>
+				</div>
+				
+				<div class="btns">
+					<button (click)="togglePanel()" class="button-link" type="button">
+						{{ 'actions.cancellation' | translate }}
+					</button>
+					<button (click)="search()" class="button-dark" type="button">
+						חיפוש
+					</button>
+				</div>
+			</form>
+		</ng-template>
+	</div>
+</div>

@@ -1,0 +1,234 @@
+<p-dialog (visibleChange)="visible = false"
+		styleClass="beneficiaryCreatePrompt"
+		appendTo="body"
+		modal="true"
+		[visible]="(visible)"
+		resizable="false"
+		(onHide)="hide()"
+>
+	<p-header>{{ beneficiaryId ? 'עריכת מוטב' : 'הוספת מוטב חדש' }}</p-header>
+	<form novalidate [formGroup]="createForm" (ngSubmit)="apply()">
+		<div
+				class="HorizontalForm__group"
+				[class.has-errors]="
+        createForm.get('accountMutavName').invalid &&
+        createForm.get('accountMutavName').dirty
+      "
+		>
+			<label for="accountMutavName">{{
+				'titles.beneficiaryName' | translate
+				}}</label>
+			<input
+					type="text"
+					id="accountMutavName"
+					name="accountMutavName"
+					[formControl]="createForm.get('accountMutavName')"
+					autocomplete="off"
+			/>
+		</div>
+		
+		<div
+				class="HorizontalForm__group"
+				[class.has-errors]="
+        (createForm.get('bankId').invalid && createForm.get('bankId').dirty) ||
+        createForm.hasError('existingBeneficiaries')
+      "
+		>
+			<label [for]="'bankId'">{{ 'titles.bank' | translate }}</label>
+			<p-dropdown
+					[options]="banks"
+					[formControl]="createForm.get('bankId')"
+					selectId="bankId"
+					name="bankId"
+					[placeholder]="'actions.select' | translate"
+					dropdownIcon="p-dropdown-icon"
+					
+					[autoDisplayFirst]="false"
+			>
+				<ng-template let-item pTemplate="selectedItem">
+					<div style="display: flex; display: -ms-flexbox; align-items: center">
+						<img
+								style="height: auto; width: 24px; position: relative;" fill [ngSrc]="item.value | toIconSrc: 'bank'"
+							
+						/>&nbsp;
+						<div class="text-ellipsis">{{ item.label }}</div>
+					</div>
+				</ng-template>
+				<ng-template let-option pTemplate="item">
+					<div style="display: flex; display: -ms-flexbox; align-items: center">
+						<img
+								style="height: auto; width: 24px; position: relative;" fill [ngSrc]="option.value | toIconSrc: 'bank'"
+						/>&nbsp;
+						<div class="text-ellipsis">{{ option.label }}</div>
+					</div>
+				</ng-template>
+			</p-dropdown>
+		</div>
+		
+		<div
+				class="HorizontalForm__group"
+				[class.has-errors]="
+        (createForm.get('snifId').invalid && createForm.get('snifId').dirty) ||
+        createForm.hasError('existingBeneficiaries')
+      "
+		>
+			<label for="snifId">{{ 'titles.branch' | translate }}</label>
+			<input
+					type="text"
+					id="snifId"
+					name="snifId"
+					[formControl]="createForm.get('snifId')"
+					autocomplete="off"
+					appNumbersOnly="positiveInt"
+					(keydown.enter)="$event.target.blur()"
+			/>
+		</div>
+		
+		<div
+				class="HorizontalForm__group"
+				[class.has-errors]="
+        (createForm.get('accountId').invalid &&
+          createForm.get('accountId').dirty) ||
+        createForm.hasError('existingBeneficiaries')
+      "
+		>
+			<label for="accountId">{{ 'sumsTitles.account' | translate }}</label>
+			<input
+					type="text"
+					id="accountId"
+					name="accountId"
+					[formControl]="createForm.get('accountId')"
+					autocomplete="off"
+					appNumbersOnly="positiveInt"
+					(keydown.enter)="$event.target.blur()"
+			/>
+		</div>
+		
+		<div
+				class="HorizontalForm__group"
+				[class.has-errors]="
+        createForm.get('transTypeId').invalid &&
+        createForm.get('transTypeId').dirty
+      "
+		>
+			<label [for]="'transTypeId'">{{ 'titles.category' | translate }}</label>
+			<app-category-select
+					[categories]="transTypesService.selectedCompanyTransTypes | async"
+					[companyId]="userService.appData?.userData?.companySelect?.companyId"
+					[ngModelVal]="createForm.get('transTypeId').value"
+					[disabled]="createForm.get('transTypeId').disabled"
+					
+					(changed)="createForm.get('transTypeId').patchValue($event.value);"
+					selectId="transTypeId"
+					name="transTypeId"
+					placeholder="{{ 'actions.select' | translate }}"
+			>
+			</app-category-select>
+		</div>
+		
+		<div class="HorizontalForm__group">
+			<label for="contactName">{{ 'titles.contactName' | translate }}</label>
+			<input
+					type="text"
+					id="contactName"
+					name="contactName"
+					[formControl]="createForm.get('contactName')"
+					[placeholder]="!beneficiaryId ? 'לא חובה' : ''"
+					autocomplete="off"
+			/>
+		</div>
+		
+		<div
+				class="HorizontalForm__group"
+				[class.has-errors]="
+        createForm.get('contactMail').invalid &&
+        createForm.get('contactMail').dirty
+      "
+		>
+			<label for="contactMail">{{ 'titles.contactMail' | translate }}</label>
+			<input
+					type="text"
+					id="contactMail"
+					name="contactMail"
+					[formControl]="createForm.get('contactMail')"
+					[placeholder]="!beneficiaryId ? 'לא חובה' : ''"
+					appNoNationalCharacters
+					autocomplete="mail"
+			/>
+		</div>
+		
+		<div
+				class="HorizontalForm__group"
+				[class.has-errors]="
+        createForm.get('contactPhone').invalid &&
+        createForm.get('contactPhone').dirty
+      "
+		>
+			<label for="contactPhone">{{ 'titles.contactPhone' | translate }}</label>
+			<input
+					type="text"
+					id="contactPhone"
+					name="contactPhone"
+					[formControl]="createForm.get('contactPhone')"
+					[placeholder]="!beneficiaryId ? 'לא חובה' : ''"
+					appNumbersOnly="phoneNo"
+					autocomplete="tel-national"
+			/>
+		</div>
+		
+		<div
+				class="HorizontalForm__group"
+				[class.has-errors]="
+        createForm.get('accountMutavHp').invalid &&
+        createForm.get('accountMutavHp').dirty
+      "
+		>
+			<label for="accountMutavHp">{{
+				'titles.accountMutavHp' | translate
+				}}</label>
+			<input
+					type="text"
+					id="accountMutavHp"
+					name="accountMutavHp"
+					[formControl]="createForm.get('accountMutavHp')"
+					[placeholder]="!beneficiaryId ? 'לא חובה' : ''"
+					appNumbersOnly="positiveInt"
+			/>
+		</div>
+		
+		<!--    <div class="HorizontalForm__group has-errors" *ngIf="beneficiariesAreadyExist$| async as beneficiariesAreadyExist">-->
+		<!--      <i>{{'validation.beneficiaryExistsPtrn'| translate:({accountMutavName: beneficiariesAreadyExist.existingBeneficiaries[0]})}}</i>-->
+		<!--    </div>-->
+		<div
+				class="HorizontalForm__group has-errors"
+				*ngIf="createForm.hasError('existingBeneficiaries')"
+		>
+			<i>{{
+				'validation.beneficiaryExistsPtrn'
+						| translate
+						: {accountMutavName: createForm.errors.existingBeneficiaries[0]}
+				}}</i>
+		</div>
+		
+		<div
+				style="
+        display: flex;
+        display: -ms-flexbox;
+        justify-content: center;
+        margin-top: 1em;
+      "
+		>
+			<button class="button-link" type="button" (click)="hide()">
+				{{ 'actions.cancellation' | translate }}
+			</button>
+			<button
+					class="button-dark"
+					type="submit"
+					[disabled]="createForm.status === 'PENDING'"
+					(click)="highlightIfInvalid()"
+			>
+				{{ 'actions.approve' | translate }}
+			</button>
+		</div>
+	</form>
+</p-dialog>

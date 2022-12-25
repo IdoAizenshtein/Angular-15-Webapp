@@ -1,0 +1,280 @@
+<div class="tokenStatusView" *ngIf="!showModalStatus">
+	<ng-container *ngIf="status">
+		<button
+				class="button-link"
+				*ngIf="status.tokenStatus === null"
+				(click)="addTokenPrompt.form.reset(); addTokenPrompt.visible = true"
+		>
+			{{ 'אין פרטי זיהוי' }}
+		</button>
+		<ng-container
+				*ngIf="
+        [
+          TokenStatus.INVALIDPASSORDANDACCESS,
+          TokenStatus.SUSPENDED,
+          TokenStatus.TechnicalProblem
+        ].includes(status.tokenStatus | toTokenStatusEnumValue);
+        else progressOrAction
+      "
+		></ng-container>
+		<ng-template #progressOrAction>
+			<ng-container
+					*ngIf="
+          !(status.hasPrivs === false) ||
+          tokenService.isTokenStatusProgressing(status.tokenStatus)
+        "
+			>
+				<div
+						class="action"
+						[ngSwitch]="status.tokenStatus"
+						[class.linkOnly]="is_station"
+				>
+					<ng-container
+							*ngSwitchCase="
+              tokenService.isTokenStatusProgressing(status.tokenStatus)
+                ? status.tokenStatus
+                : ''
+            "
+					>
+						<mat-progress-bar
+								[mode]="'determinate'"
+								[value]="
+                tokenService.tokenStatusToCompletionPercentage(
+                  status.tokenStatus
+                )
+              "
+						></mat-progress-bar>
+					</ng-container>
+<!-- 					                   tokenStatus :{{status.tokenStatus}} {{(status.tokenStatus|toTokenStatusEnumValue)}} -->
+					<ng-container
+							*ngSwitchCase="tokenService.shouldTokenUpdatePassword(status.tokenStatus)? status.tokenStatus : ''">
+						
+						<ng-container
+								[ngSwitch]="status.tokenStatus | toTokenStatusEnumValue"
+						>
+							<ng-container *ngSwitchCase="TokenStatus.DISCODREQUIRED">
+								<!--<button (click)="onUpdateOTPClick()"-->
+								<button (click)="onUpdatePasswordClick()" class="button-dark">
+									{{ 'actions.setCode' | translate }}
+								</button>
+							</ng-container>
+							<ng-container *ngSwitchCase="TokenStatus.MARCODRequired">
+								<!--<button (click)="onUpdateOTPClick()"-->
+								<button (click)="onUpdatePasswordClick()" class="button-dark">
+									{{ 'actions.setCode' | translate }}
+								</button>
+							</ng-container>
+							<ng-container *ngSwitchCase="TokenStatus.OTPRequired">
+								<!--<button (click)="onUpdateOTPClick()"-->
+								<button (click)="onUpdatePasswordClick()" class="button-dark">
+									{{ 'actions.setCode' | translate }}
+								</button>
+							</ng-container>
+							<ng-container *ngSwitchCase="TokenStatus.Expired">
+								<button (click)="onUpdatePasswordClick()" class="button-dark">
+									{{ 'actions.updating' | translate }}
+								</button>
+							</ng-container>
+							<ng-container *ngSwitchCase="TokenStatus.Blocked">
+								<button (click)="onUpdatePasswordClick()" class="button-dark">
+									{{
+									'foreignCredentialsUpdate.expressions.unBlock' | translate
+									}}
+								</button>
+							</ng-container>
+							<ng-container *ngSwitchCase="TokenStatus.OTP_WAS_NOT_PROVIDED">
+								<button (click)="onUpdatePasswordClick()" class="button-dark">
+									{{
+									'foreignCredentialsUpdate.expressions.updatePassword_otp'
+											| translate
+									}}
+								</button>
+							</ng-container>
+							<ng-container *ngSwitchDefault>
+								<button (click)="onUpdatePasswordClick()" class="button-dark">
+									{{
+									'foreignCredentialsUpdate.expressions.updatePassword'
+											| translate
+									}}
+								</button>
+							</ng-container>
+						</ng-container>
+					</ng-container>
+					
+					<a
+							*ngSwitchCase="
+              !(status.hasPrivs === false) &&
+              (status.tokenStatus | toTokenStatusEnumValue) ===
+                TokenStatus.AGREEMENT_REQUIRED
+                ? status.tokenStatus
+                : ''
+            "
+							[href]="
+              'foreignCredentials.urls.passwordRecovery.' +
+                status.websiteTargetTypeId | translate
+            "
+							target="_blank"
+							class="button-dark"
+					>{{
+						'foreignCredentialsCreate.' +
+						targetTypeDesc +
+						'.blockedAccount.navigateToTarget' | translate
+						}}</a
+					>
+					<ng-container
+							*ngIf="
+              !hideUpdate &&
+              status.token !== '88e6c85e-b914-4928-8436-47e86dddd3a4' &&
+              status.token !== '88e6c85e-b914-4928-8436-47e86dddd3a5'
+            "
+					>
+						<button
+								*ngSwitchCase="
+                !hideUpdateDataLinks &&
+                !(status.hasPrivs === false) &&
+                [TokenStatus.Valid, TokenStatus.VALIDPOALIMBAASAKIM].includes(
+                  status.tokenStatus | toTokenStatusEnumValue
+                )
+                  ? status.tokenStatus
+                  : ''
+              "
+								(click)="onUpdateCredentialsClick()"
+								class="button-link"
+						>
+							{{
+							'foreignCredentialsUpdate.expressions.updateCredentialsLong'
+									| translate
+							}}
+						</button>
+					</ng-container>
+					
+					<div *ngSwitchDefault></div>
+				</div>
+			</ng-container>
+		</ng-template>
+		
+		<div
+				class="text"
+				*ngIf="
+        !(is_station && hasStationSpecialTokenStatusPoalim());
+        else station_special
+      "
+				[class.error]="
+        is_station &&
+        [
+          TokenStatus.LoginFailed,
+          TokenStatus.Expired,
+          TokenStatus.OTP_WAS_NOT_PROVIDED,
+          TokenStatus.WRONG_PASS
+        ].includes(status.tokenStatus | toTokenStatusEnumValue)
+      "
+				[class.valid]="
+        status.tokenStatus === 'VALID' || status.tokenStatus === 'Valid'
+      "
+				[innerHTML]="
+        status.tokenStatus !== null
+          ? ('foreignCredentials.statusHumanized.' + status.tokenStatus
+            | translate)
+          : ''
+      "
+		></div>
+		
+		<ng-template #station_special>
+			<ng-container *ngIf="is_station && hasStationSpecialTokenStatusPoalim()">
+				<ng-container
+						*ngIf="
+            hasStationSpecialTokenStatus();
+            else station_special_UP_TO_DATE
+          "
+				>
+					<div class="action linkOnly">
+						<button
+								style="text-align: right; padding-right: 5px !important"
+								(click)="onHashOtpUpdateClick()"
+								class="button-dark"
+						>
+							{{ 'טעינת הבנק' }}
+						</button>
+					</div>
+					<div class="text error">נדרשת טעינה ידנית</div>
+				</ng-container>
+				
+				<ng-template #station_special_UP_TO_DATE>
+					<div class="action linkOnly">
+						<button
+								style="text-align: right; padding-right: 5px !important"
+								(click)="onHashOtpUpdateClick()"
+								class="button-dark"
+						>
+							{{ 'טעינת חוזרת לבנק' }}
+						</button>
+					</div>
+					<div class="text">נטען בהצלחה.</div>
+				</ng-template>
+			</ng-container>
+		</ng-template>
+		
+		<ng-container *ngIf="!is_station">
+			<div
+					class="icon"
+					[ngSwitch]="status.tokenStatus | toTokenStatusEnumValue"
+			>
+				<ng-container *ngSwitchCase="TokenStatus.SUSPENDED">
+					<i class="far fa-lg fa-snowflake"></i>
+				</ng-container>
+				<ng-container *ngSwitchCase="TokenStatus.AGREEMENT_REQUIRED">
+					<!--<i class="fas fa-lg fa-file-alt"></i>-->
+					<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/letter.png"/>
+				</ng-container>
+				<ng-container *ngSwitchDefault>
+					<img style="height: auto; width: auto; position: relative;" fill [ngSrc]="status.tokenStatus | tokenStatusAsIconSrc"/>
+				</ng-container>
+			</div>
+		</ng-container>
+	</ng-container>
+</div>
+
+<app-bank-update-foreign-credentials-dialog
+		*ngIf="updatePromptVisible"
+		#credsUpdateDlg
+		[(display)]="updatePromptVisible"
+		[is_station]="is_station"
+		[accFromBank]="accFromBank"
+		(creationSuccess)="creationSuccess.next($event)"
+		(closeAndOpenOTP)="onHashOtpUpdateClick()"
+		(displayChange)="
+    $event === false && onUpdateDialogVisibilityChange(credsUpdateDlg.state)
+  "
+		[tokenData]="status"
+		[companyId]="companyId"
+>
+</app-bank-update-foreign-credentials-dialog>
+
+<!--<app-otp-update-dialog *ngIf="updateOtpVisible" [(display)]="updateOtpVisible"-->
+<!--[tokenData]="status" [companyId]="companyId">-->
+<!--</app-otp-update-dialog>-->
+
+<app-token-create-dialog
+		*ngIf="addTokenPrompt.visible"
+		[(display)]="addTokenPrompt.visible"
+		[type]="targetType"
+		[settings]="addTokenPrompt.form"
+		[companyId]="companyId"
+		(creationSuccess)="creationSuccess.next($event)"
+>
+</app-token-create-dialog>
+
+<app-hash-otp-update-dialog
+		*ngIf="hashOtpUpdatePrompt.visible"
+		[(display)]="hashOtpUpdatePrompt.visible"
+		#hashOtpUpdateDlg
+		[tokenData]="status"
+		[companyId]="companyId"
+		[stationId]="is_station"
+		(creationSuccess)="creationSuccess.next($event)"
+		(displayChange)="
+    $event === false &&
+      onHashOtpDialogVisibilityChange(hashOtpUpdateDlg.tokenLastPollResult)
+  "
+>
+</app-hash-otp-update-dialog>

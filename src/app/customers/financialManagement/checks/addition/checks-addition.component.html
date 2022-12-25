@@ -1,0 +1,619 @@
+<div [formGroup]="form" class="bodyPopUp">
+	<div class="titlesSelects">
+		<div
+				[class.validation-error]="form.dirty && form.get('account').invalid"
+				style="display: flex; display: -ms-flexbox; align-items: center"
+		>
+			<label [for]="'account'">{{ 'titles.account' | translate }}</label>
+			
+			<p-dropdown
+					[inputId]="'account'"
+					[options]="accounts"
+					[placeholder]="'actions.account' | translate"
+					[scrollHeight]="'10em'"
+					[style]="{ 'min-width': '30ch' }"
+					
+					dataKey="companyAccountId"
+					formControlName="account"
+					optionLabel="accountNickname"
+			>
+				<ng-template let-slctdItem pTemplate="selectedItem">
+					<div
+							class="p-helper-clearfix"
+							style="display: flex; align-items: center"
+					>
+						<img
+								[alt]="slctdItem.accountNickname"
+								style="height: auto; width: auto; position: relative;" fill [ngSrc]="slctdItem.bankId | toIconSrc: 'bank'"
+						/>
+						<div
+								[pTooltip]="slctdItem.accountNickname"
+								class="text-ellipsis"
+								style="padding: 0 0.1em"
+								tooltipPosition="top"
+						>
+							{{ slctdItem.accountNickname }}
+						</div>
+						
+						<div style="flex: 0 0 auto; padding-left: 0">
+							&nbsp;&#40;{{ slctdItem.currency | currencySymbol }}&#41;
+						</div>
+					</div>
+				</ng-template>
+				<ng-template let-item pTemplate="item">
+					<div
+							class="p-helper-clearfix"
+							style="display: flex; align-items: center"
+					>
+						<img
+								[alt]="item.accountNickname"
+								style="height: auto; width: auto; position: relative;" fill [ngSrc]="item.bankId | toIconSrc: 'bank'"
+						/>
+						<div
+								[pTooltip]="item.accountNickname"
+								class="text-ellipsis"
+								style="padding: 0 0.1em"
+								tooltipPosition="top"
+						>
+							{{ item.accountNickname }}
+						</div>
+						<div style="flex: 0 0 auto; padding-left: 0">
+							&#40;{{ item.currency | currencySymbol }}&#41;
+						</div>
+					</div>
+				</ng-template>
+			</p-dropdown>
+		</div>
+		
+		<div
+				*ngIf="allowPaymentTypeChange"
+				[class.validation-error]="form.dirty && form.get('paymentType').invalid"
+		>
+			<label [for]="'paymentType'">{{
+				'titles.typeOfPayment' | translate
+				}}</label>
+			<p-dropdown
+					(onChange)="
+          form.get('paymentType').value === 'Checks' &&
+            !checkNumberGuides.stopIt &&
+            checkNumberGuideOvP.show(
+              $event.originalEvent,
+              checkNumberOrReferenceColumn
+            )
+        "
+					[inputId]="'paymentType'"
+					[options]="paymentTypes"
+					[placeholder]="'actions.select' | translate"
+					
+					[style]="{ 'min-width': '10ch' }"
+					formControlName="paymentType"
+			>
+			</p-dropdown>
+		</div>
+		
+		<div
+				style="
+        display: flex;
+        display: -ms-flexbox;
+        align-items: center;
+        margin-right: 20px;
+      "
+		>
+			<label [for]="'ddMutav'">{{ 'מוטב' }}</label>
+			<app-beneficiary-select
+					(changed)="form.get('ddMutav').patchValue($event.value);"
+					[createWith]="{
+          companyAccountId: form.get('account').value
+            ? form.get('account').value.companyAccountId
+            : userService?.appData?.userData?.accounts[0].companyAccountId,
+          paymentDesc: form.get('paymentType').value
+        }"
+					
+					[ngModelVal]="form.get('ddMutav').value"
+					[placeholder]="'actions.select' | translate"
+					[showBtnAddBeneficiary]="false"
+					[showGuide]="false"
+					[style]="{ width: '25ch' }"
+			>
+			</app-beneficiary-select>
+		</div>
+		<!--{{selectedValue?.companyAccountId}}-->
+	</div>
+	
+	<ul>
+		<li class="titleTable extra">
+			<div>
+				<div>&nbsp;</div>
+				<div>
+					{{
+					(form.get('paymentType').value === 'Checks'
+									? 'titles.dueDate'
+									: 'titles.date'
+					) | translate
+					}}
+				</div>
+				<div #checkNumberOrReferenceColumn>
+					{{
+					(form.get('paymentType').value === 'Checks'
+									? 'titles.checkNumber'
+									: 'titles.reference'
+					) | translate
+					}}
+					<span
+							*ngIf="form.get('paymentType').value !== 'Checks'"
+							style="font-weight: normal"
+					>
+            ({{ 'expressions.ifExists' | translate }})</span
+					>
+				</div>
+				<div>
+					{{ 'titles.category' | translate }}
+				</div>
+				
+				<div>
+					{{ 'titles.description' | translate }}
+				</div>
+				<div>
+					{{ 'titles.sum' | translate }}
+					<!--{{'titles.sumILS' | translate}}-->
+				</div>
+				<div>&nbsp;</div>
+				<div
+						*ngIf="
+            scrollContainerInside.clientHeight <
+            scrollContainerInside.scrollHeight
+          "
+						style="flex: 0 0 0.8em; padding: 0"
+				>
+					&nbsp;
+				</div>
+			</div>
+		</li>
+		<li>
+			<ul
+					#scrollContainerInside
+					class="scroll-chrome tableRows"
+					formArrayName="cheques"
+			>
+				<li
+						*ngFor="let item of cheques.controls; let i = index"
+						[formGroupName]="i"
+						class="extra"
+				>
+					<div>
+						<div>
+							{{ cheques.controls.length > 1 ? i + 1 + '.' : ' ' }}
+						</div>
+						<div
+								[class.validation-error]="
+                cheques.at(i).get('dueDate').dirty &&
+                cheques.at(i).get('dueDate').invalid
+              "
+						>
+							<ng-container *ngIf="typeId !== 400; else plainCalendarInput">
+								<app-recommendation-calendar-input
+										(sumFromRecommendationApplied)="
+                    cheques.at(i).get('total').setValue($event)
+                  "
+										[panelStyleClass]="'app-recommendation-calendar-input'"
+										[locale]="'langCalendar' | translate"
+										[maxDate]="calendarMax"
+										[minDate]="today"
+										[monthNavigator]="true"
+										[presetData]="{
+                    account: form.get('account').value,
+                    sum: cheques.at(i).get('total').value
+                  }"
+										[required]="true"
+										[yearNavigator]="true"
+										[yearRange]="
+                    today.getFullYear() + ':' + calendarMax.getFullYear()
+                  "
+										appendTo="body"
+										dateFormat="dd/mm/yy"
+										formControlName="dueDate"
+								>
+								</app-recommendation-calendar-input>
+							</ng-container>
+							<ng-template #plainCalendarInput>
+								<p-calendar
+										[locale]="'langCalendar' | translate"
+										[maxDate]="calendarMax"
+										[minDate]="today"
+										[readonlyInput]="true"
+										appendTo="body"
+										dateFormat="dd/mm/y"
+										formControlName="dueDate"
+										required
+								>
+								</p-calendar>
+							</ng-template>
+						</div>
+						<div>
+							<input
+									appNumbersOnly="positiveInt"
+									formControlName="asmachta"
+									type="text"
+							/>
+						</div>
+						<div style="overflow: visible; min-width: 0">
+							<app-category-select
+									[disabled]="cheques.at(i).get('transType').disabled"
+									
+									(changed)="cheques.at(i).get('transType').setValue($event.value)"
+									[autoDisplayFirst]="false"
+									[categories]="companyTransTypes"
+									[companyId]="
+                  userService.appData?.userData?.companySelect?.companyId
+                "
+									[inputId]="'transTypeId$' + i"
+									[ngModelVal]="cheques.at(i).get('transType').value"
+									[placeholder]="('actions.select' | translate) + '...'"
+									[style]="{ width: '100%' }"
+							>
+							</app-category-select>
+						</div>
+						<div
+								[class.validation-error]="
+                cheques.at(i).get('paymentDesc').dirty &&
+                cheques.at(i).get('paymentDesc').invalid
+              "
+						>
+							<input formControlName="paymentDesc" required type="text"/>
+						</div>
+						<div
+								[class.validation-error]="
+                cheques.at(i).get('total').dirty &&
+                cheques.at(i).get('total').invalid
+              "
+						>
+							<input
+									#totalFields
+									(keyup.enter)="cheques.controls[i].valid && addPayments(true)"
+									appNumbersOnly
+									formControlName="total"
+									required
+									type="text"
+							/>
+						</div>
+						<div>
+							<img
+									(click)="removeItem(i)"
+									*ngIf="cheques.controls.length > 1"
+									alt="trash"
+									src="/assets/images/trash.png"
+							/>
+						</div>
+					</div>
+					<div
+							*ngIf="
+              asmachtaVsExistingChecksMap[
+                cheques.controls[i].get('asmachta').value
+              ]?.length
+            "
+							class="isCheckExist"
+					>
+						<ng-container
+								[ngSwitch]="
+                asmachtaVsExistingChecksMap[
+                  cheques.controls[i].get('asmachta').value
+                ][0].source
+              "
+						>
+							<ng-container *ngSwitchDefault>
+								מס׳ צ׳ק זה מופיע בתאריך
+								
+								{{
+								asmachtaVsExistingChecksMap[
+										cheques.controls[i].get('asmachta').value
+										][0].dueDate | todayRelativeHumanize: 'dd/MM/yy'
+								}}
+								
+								בסכום של &nbsp;
+								<span style="direction: ltr">{{
+									asmachtaVsExistingChecksMap[
+											cheques.controls[i].get('asmachta').value
+											][0].total | sum: true
+									}}</span>
+								&nbsp; ש״ח
+							</ng-container>
+							<ng-container *ngSwitchCase="'original'">
+								מס׳ צ׳ק זה מופיע בתאריך
+								
+								{{
+								asmachtaVsExistingChecksMap[
+										cheques.controls[i].get('asmachta').value
+										][0].dueDate | todayRelativeHumanize: 'dd/MM/yy'
+								}}
+								
+								בסכום של &nbsp;
+								<span style="direction: ltr">{{
+									asmachtaVsExistingChecksMap[
+											cheques.controls[i].get('asmachta').value
+											][0].total | sum: true
+									}}</span>
+								&nbsp; ש״ח
+							</ng-container>
+							<ng-container *ngSwitchCase="'originalWithBank'">
+								מס׳ צ׳ק זה מופיע בחשבון
+								
+								{{
+								asmachtaVsExistingChecksMap[
+										cheques.controls[i].get('asmachta').value
+										][0].accountNickname
+								}}
+								
+								בתאריך
+								
+								{{
+								asmachtaVsExistingChecksMap[
+										cheques.controls[i].get('asmachta').value
+										][0].dueDate | todayRelativeHumanize: 'dd/MM/yy'
+								}}
+								
+								בסכום של &nbsp;
+								<span style="direction: ltr">{{
+									asmachtaVsExistingChecksMap[
+											cheques.controls[i].get('asmachta').value
+											][0].total | sum: true
+									}}</span>
+								&nbsp; ש״ח
+							</ng-container>
+							<ng-container *ngSwitchCase="'check'">
+								<ng-container
+										*ngIf="
+                    asmachtaVsExistingChecksMap[
+                      cheques.controls[i].get('asmachta').value
+                    ][0].accountMutavName;
+                    else accountMutavName
+                  "
+								>
+									צ'ק ל{{
+									asmachtaVsExistingChecksMap[
+											cheques.controls[i].get('asmachta').value
+											][0].accountMutavName
+									}}
+									
+									מופיע ב{{
+									asmachtaVsExistingChecksMap[
+											cheques.controls[i].get('asmachta').value
+											][0].accountNickname
+									}}
+									
+									בתאריך
+									
+									{{
+									asmachtaVsExistingChecksMap[
+											cheques.controls[i].get('asmachta').value
+											][0].dueDate | todayRelativeHumanize: 'dd/MM/yy'
+									}}
+									
+									בסכום של &nbsp;
+									<span style="direction: ltr">{{
+										asmachtaVsExistingChecksMap[
+												cheques.controls[i].get('asmachta').value
+												][0].total | sum: true
+										}}</span>
+									&nbsp; ש״ח
+								</ng-container>
+								<ng-template #accountMutavName>
+									צ'ק ל{{
+									asmachtaVsExistingChecksMap[
+											cheques.controls[i].get('asmachta').value
+											][0].paymentDesc
+									}}
+									
+									מופיע ב{{
+									asmachtaVsExistingChecksMap[
+											cheques.controls[i].get('asmachta').value
+											][0].accountNickname
+									}}
+									
+									בתאריך
+									
+									{{
+									asmachtaVsExistingChecksMap[
+											cheques.controls[i].get('asmachta').value
+											][0].dueDate | todayRelativeHumanize: 'dd/MM/yy'
+									}}
+									
+									בסכום של &nbsp;
+									<span style="direction: ltr">{{
+										asmachtaVsExistingChecksMap[
+												cheques.controls[i].get('asmachta').value
+												][0].total | sum: true
+										}}</span>
+									&nbsp; ש״ח
+								</ng-template>
+							</ng-container>
+							<ng-container *ngSwitchCase="'wireTranfer'">
+								<ng-container
+										*ngIf="
+                    asmachtaVsExistingChecksMap[
+                      cheques.controls[i].get('asmachta').value
+                    ][0].accountMutavName;
+                    else accountMutavName
+                  "
+								>
+									העברה בנקאית ל{{
+									asmachtaVsExistingChecksMap[
+											cheques.controls[i].get('asmachta').value
+											][0].accountMutavName
+									}}
+									
+									מופיע ב{{
+									asmachtaVsExistingChecksMap[
+											cheques.controls[i].get('asmachta').value
+											][0].accountNickname
+									}}
+									
+									בתאריך
+									
+									{{
+									asmachtaVsExistingChecksMap[
+											cheques.controls[i].get('asmachta').value
+											][0].dueDate | todayRelativeHumanize: 'dd/MM/yy'
+									}}
+									
+									בסכום של &nbsp;
+									<span style="direction: ltr">{{
+										asmachtaVsExistingChecksMap[
+												cheques.controls[i].get('asmachta').value
+												][0].total | sum: true
+										}}</span>
+									&nbsp; ש״ח
+								</ng-container>
+								<ng-template #accountMutavName>
+									העברה בנקאית ל{{
+									asmachtaVsExistingChecksMap[
+											cheques.controls[i].get('asmachta').value
+											][0].paymentDesc
+									}}
+									
+									מופיע ב{{
+									asmachtaVsExistingChecksMap[
+											cheques.controls[i].get('asmachta').value
+											][0].accountNickname
+									}}
+									
+									בתאריך
+									
+									{{
+									asmachtaVsExistingChecksMap[
+											cheques.controls[i].get('asmachta').value
+											][0].dueDate | todayRelativeHumanize: 'dd/MM/yy'
+									}}
+									
+									בסכום של &nbsp;
+									<span style="direction: ltr">{{
+										asmachtaVsExistingChecksMap[
+												cheques.controls[i].get('asmachta').value
+												][0].total | sum: true
+										}}</span>
+									&nbsp; ש״ח
+								</ng-template>
+							</ng-container>
+							<ng-container *ngSwitchCase="'other'">
+								<ng-container
+										*ngIf="
+                    asmachtaVsExistingChecksMap[
+                      cheques.controls[i].get('asmachta').value
+                    ][0].accountMutavName;
+                    else accountMutavName
+                  "
+								>
+									אחר ל{{
+									asmachtaVsExistingChecksMap[
+											cheques.controls[i].get('asmachta').value
+											][0].accountMutavName
+									}}
+									
+									מופיע ב{{
+									asmachtaVsExistingChecksMap[
+											cheques.controls[i].get('asmachta').value
+											][0].accountNickname
+									}}
+									
+									בתאריך
+									
+									{{
+									asmachtaVsExistingChecksMap[
+											cheques.controls[i].get('asmachta').value
+											][0].dueDate | todayRelativeHumanize: 'dd/MM/yy'
+									}}
+									
+									בסכום של &nbsp;
+									<span style="direction: ltr">{{
+										asmachtaVsExistingChecksMap[
+												cheques.controls[i].get('asmachta').value
+												][0].total | sum: true
+										}}</span>
+									&nbsp; ש״ח
+								</ng-container>
+								<ng-template #accountMutavName>
+									אחר ל{{
+									asmachtaVsExistingChecksMap[
+											cheques.controls[i].get('asmachta').value
+											][0].paymentDesc
+									}}
+									
+									מופיע ב{{
+									asmachtaVsExistingChecksMap[
+											cheques.controls[i].get('asmachta').value
+											][0].accountNickname
+									}}
+									
+									בתאריך
+									
+									{{
+									asmachtaVsExistingChecksMap[
+											cheques.controls[i].get('asmachta').value
+											][0].dueDate | todayRelativeHumanize: 'dd/MM/yy'
+									}}
+									
+									בסכום של &nbsp;
+									<span style="direction: ltr">{{
+										asmachtaVsExistingChecksMap[
+												cheques.controls[i].get('asmachta').value
+												][0].total | sum: true
+										}}</span>
+									&nbsp; ש״ח
+								</ng-template>
+							</ng-container>
+						</ng-container>
+					</div>
+				</li>
+			</ul>
+		</li>
+	</ul>
+	
+	<div id="addPayments">
+		<p>
+			<img
+					src="/assets/images/add.png"
+					style="align-self: center; flex: 0 0 auto; margin: 0 0px 0px 4px"
+			/>
+			<span (click)="addPayments()">
+        {{ 'actions.addPayments' | translate }}
+      </span>
+		</p>
+	</div>
+</div>
+
+<p-overlayPanel
+		#checkNumberGuideOvP
+		(onHide)="onCheckNumberGuideHide()"
+		[dismissable]="true"
+		[style]="{ transform: 'translate(-40%, 3em)', 'padding-top': '0' }"
+		appendTo="body"
+		styleClass="checkNumberGuideDialog"
+>
+	<div class="p-dialog-header p-helper-clearfix p-corner-top">
+    <span
+		    class="p-dialog-title ng-tns-c13-48 ng-star-inserted"
+		    id="p-dialog-2-label"
+    >
+      <div>{{ 'guides.checkNumber.title' | translate }}</div>
+    </span>
+		<a
+				(click)="checkNumberGuideOvP.hide()"
+				class="p-dialog-header-icon p-dialog-header-close p-corner-all"
+				role="button"
+		>
+			<span class="fa fa-fw fa-times"></span>
+		</a>
+	</div>
+	<div class="p-dialog-content mat-typography">
+		<h3 [innerHTML]="'guides.checkNumber.content' | translate"></h3>
+	</div>
+	<div class="p-dialog-footer">
+		<p-checkbox [(ngModel)]="checkNumberGuides.stopIt"
+		            [binary]="true"
+		            [label]="'guides.checkNumber.stopDisplaying' | translate"
+		            checkboxIcon="fa fa-check"
+		></p-checkbox>
+		<button (click)="checkNumberGuideOvP.hide()" class="button-dark">
+			{{ 'guides.checkNumber.gotIt' | translate }}
+		</button>
+	</div>
+</p-overlayPanel>

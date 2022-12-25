@@ -1,0 +1,510 @@
+<div [appScrollHeight]="330" class="scrollPage scrollbar-dynamic">
+	<div class="infoCompanyForm journalVendorAndCustomerForm">
+		<form [formGroup]="info" novalidate>
+			<div class="columns">
+				<div class="sett-table">
+					<div>
+						<div
+								[matTooltip]="'כמות ספרות באסמכתא לתוכנת הנה״ח'"
+								matTooltipClass="allow-cr"
+								matTooltipPosition="above"
+								style="cursor: pointer"
+						>
+							מספר ספרות באסמכתא לפ. יומן בנק
+						</div>
+						<div>
+							<p-dropdown
+									#dd11
+									(onChange)="updateBankJournal()"
+									(onFocus)="clearFilter(dd11)"
+									[dropdownIcon]="'p-dropdown-icon'"
+									[options]="izuAsmachtaNumCharArr"
+									[scrollHeight]="'135px'"
+									[style]="{ width: '275px' }"
+									appendTo="body"
+									formControlName="bankAsmachtaNumChar"
+
+									placeholder="בחירה"
+									styleClass="ddInfoCompanyForm"
+							>
+							</p-dropdown>
+						</div>
+					</div>
+				</div>
+				<div class="sett-table">
+					<div>
+						<div>תכולת קובץ פ. יומן בנק ואשראי</div>
+						<div>
+							<!--                            <p-dropdown #dd11-->
+							<!--                                        styleClass="ddInfoCompanyForm"-->
+							<!--                                        placeholder="בחירה"-->
+							<!--                                        [options]="exportFileTypeIdArr"-->
+							<!--                                        formControlName="exportFileTypeId"-->
+							<!--                                        [scrollHeight]="'135px'"-->
+							<!--                                        (onFocus)="clearFilter(dd11)"-->
+							<!--                                        [dropdownIcon]="'p-dropdown-icon'"-->
+							<!--                                        appendTo="body"-->
+							<!--                                        -->
+							<!--                                        [style]="{'width': '275px'}"-->
+							<!--                                        (onChange)="updateBankJournal()">-->
+							<!--                            </p-dropdown>-->
+
+							<div style="padding: 0px 10px; height: 30px">
+								<p-radioButton
+										(onClick)="updateValuesExportFileTypeId(1)"
+										[label]="'בנק ואשראי ביחד'"
+										[value]="'1'"
+										formControlName="exportFileTypeId"
+										inputId="radio3"
+										name="exportFileTypeId"
+								>
+								</p-radioButton>
+								<span style="padding: 0px 8px"></span>
+								<p-radioButton
+										(onClick)="updateValuesExportFileTypeId(2)"
+										[label]="'בנק ואשראי כל אחד בנפרד'"
+										[value]="'2'"
+										formControlName="exportFileTypeId"
+										inputId="radio4"
+										name="exportFileTypeId"
+								>
+								</p-radioButton>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="sett-table">
+					<div>
+						<div style="cursor: pointer">תקופת קובץ פ. יומן בנק ואשראי</div>
+
+						<div>
+							<div style="padding: 0px 10px; height: 30px">
+								<p-radioButton
+										(onClick)="updateValues('exportFileBankPeriod', 1)"
+										[label]="'מצטבר (קובץ אחד)'"
+										[value]="'1'"
+										formControlName="exportFileBankPeriod"
+										inputId="radio5"
+										name="exportFileBankPeriod"
+								>
+								</p-radioButton>
+								<span style="padding: 0px 8px"></span>
+								<p-radioButton
+										(onClick)="updateValues('exportFileBankPeriod', 2)"
+										[label]="'שנתי (קובץ לכל שנה)'"
+										[value]="'2'"
+										formControlName="exportFileBankPeriod"
+										inputId="radio6"
+										name="exportFileBankPeriod"
+								>
+								</p-radioButton>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div *ngIf="!hide_bankProcessTransType" class="sett-table">
+					<div>
+						<div>סוגי תנועה (לבנק ואשראי בלבד)</div>
+						<div>
+							<div style="padding: 0px 10px; height: 30px">
+								<p-radioButton
+										(onClick)="updateValues('bankProcessTransType', false)"
+										[label]="'ללא סוג תנועה'"
+										[value]="false"
+										formControlName="bankProcessTransType"
+										inputId="radio33"
+										name="bankProcessTransType"
+								>
+								</p-radioButton>
+								<span style="padding: 0px 8px"></span>
+								<p-radioButton
+										(onClick)="updateValues('bankProcessTransType', true)"
+										[label]="'עם סוג תנועה'"
+										[value]="true"
+										formControlName="bankProcessTransType"
+										inputId="radio44"
+										name="bankProcessTransType"
+								>
+								</p-radioButton>
+							</div>
+						</div>
+						<div
+								*ngIf="!info.get('bankProcessTransType').disabled"
+								style="font-size: 15px; line-height: 15px"
+						>
+							ניתן להגדיר סוגי תנועה בטאב "סוגי תנועה"
+						</div>
+					</div>
+				</div>
+				<div class="sett-table">
+					<div>
+						<div>כרטיס נגדי קבוע לצ'קים נכנסים</div>
+						<div>
+							<div style="padding: 0px 10px; height: 30px">
+								<p-dropdown
+										#formDropdowns
+										(onChange)="
+                    updateValues('oppositeCustForChecks', $event.value)
+                  "
+										(onFocus)="clearFilter(formDropdowns)"
+										[autoDisplayFirst]="false"
+										[dropdownIcon]="'p-dropdown-icon'"
+										[filter]="true"
+										[resetFilterOnHide]="true"
+										[options]="oppositeCustForChecksArr"
+										optionDisabled="disabled"
+										[scrollHeight]="'135px'"
+										[style]="{ width: '275px' }"
+										appendTo="body"
+										dataKey="custId"
+										emptyFilterMessage="לא נמצאו תוצאות"
+										filterBy="lName,custId,hp"
+										formControlName="oppositeCustForChecks"
+										optionLabel="custId"
+										panelStyleClass="company-customer-dropdown-panel cardsDD card275"
+										placeholder="בחירה"
+										styleClass="ddInfoCompanyForm">
+									<ng-template let-item pTemplate="selectedItem">
+                    <span
+		                    #spanElement
+		                    [pTooltip]="item.cartisName"
+		                    [tooltipDisabled]="
+                        spanElement.offsetWidth >= spanElement.scrollWidth
+                      "
+		                    style="
+                        vertical-align: middle;
+                        display: block;
+                        white-space: nowrap;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                      "
+		                    tooltipPosition="top"
+                    >{{ item.custId
+	                    }}{{
+	                    item.lName ? ' - ' + item.lName : ''
+	                    }}</span
+                    >
+									</ng-template>
+									<ng-template let-item pTemplate="item">
+										<div *ngIf="item.title"
+										     class="p-helper-clearfix"
+										     style="font-size: 0.95em;padding: 0.3em 1em;border-bottom: 1px solid #cacaca;line-height: 20px;flex: 1;display: block;">
+											<div style="
+    padding: 0;
+    margin: 0;
+    flex: 1;
+    font-size: 15px;
+    font-weight: 400;
+">לא מצאתם את הכרטיס שחיפשתם?</div>
+											<button
+													(click)="
+                            cupaAllTheOptions = true;
+                            setAllCompanyCustomerDetails(formDropdowns);
+                            $event.stopPropagation();
+                          "
+													class="button-link"
+													style="padding: 0;font-size: 15px;font-weight: 400; pointer-events: auto; cursor: pointer !important"
+											>
+												חפשו בין כל הכרטיסים בהנה״ח
+											</button>
+										</div>
+										<div *ngIf="!item.title"
+										     class="p-helper-clearfix cust-item">
+											<div>
+                        <span class="text-ellipsis">{{
+	                        item.cartisName
+	                        }}</span>
+											</div>
+										</div>
+									</ng-template>
+									<ng-template pTemplate="empty">
+										<div
+												class="p-helper-clearfix" style="display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    line-height: 33px;
+    text-overflow: ellipsis;
+    margin: 0px 14px !important;">
+											לא נמצאו תוצאות
+										</div>
+									</ng-template>
+									<ng-template pTemplate="emptyfilter">
+										<div
+												class="p-helper-clearfix" style="display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    line-height: 33px;
+    text-overflow: ellipsis;
+    margin: 0px 14px !important;">
+											לא נמצאו תוצאות
+										</div>
+									</ng-template>
+									<!--                                    <ng-template let-item pTemplate="selectedItem">-->
+									<!--                                                                        <span style="vertical-align:middle;display: block;white-space: nowrap;overflow: hidden;text-overflow: ellipsis;"-->
+									<!--                                                                              #spanElement-->
+									<!--                                                                              [tooltipDisabled]="spanElement.offsetWidth >= spanElement.scrollWidth"-->
+									<!--                                                                              [pTooltip]="item.custId + ' - ' + item.lName"-->
+									<!--                                                                              tooltipPosition="top">{{item.custId}}</span>-->
+									<!--                                    </ng-template>-->
+									<!--                                    <ng-template let-item pTemplate="item">-->
+									<!--                                        <div class="p-helper-clearfix" style="flex: 1;">-->
+									<!--                                            <div>-->
+									<!--                                                <span class="text-ellipsis">{{item.custId}}</span>-->
+									<!--                                            </div>-->
+									<!--                                            <div class="separator" *ngIf="item.lName"><span>-</span></div>-->
+									<!--                                            <div>-->
+									<!--                                                <span class="text-ellipsis"-->
+									<!--                                                      *ngIf="item.lName">{{item.lName}}</span>-->
+									<!--                                                <span class="text-ellipsis secondary" *ngIf="item.hp">-->
+									<!--                                                        ח.פ./ע.מ. {{item.hp}}</span>-->
+									<!--                                            </div>-->
+									<!--                                        </div>-->
+									<!--                                    </ng-template>-->
+								</p-dropdown>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="sett-table">
+					<div>
+						<div>לא לקלוט הכנסות</div>
+						<div>
+							<div style="padding: 0px 10px; height: 30px">
+								<div
+										(click)="tooltipEdit.toggle($event)"
+										class="btn-notExportIncomes"
+								>
+									<div>{{ notExportIncomes.title }}</div>
+									<div
+											class="p-dropdown-trigger p-state-default p-corner-right"
+									>
+                    <span
+		                    class="p-dropdown-trigger-icon p-clickable p-dropdown-icon"
+                    ></span>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div *ngIf="hide_bankProcessTransType && report856" class="sett-table">
+					<div>
+						<div>
+							<i style="color: #df0000">*</i>
+
+							כרטיס "ניכוי מס במקור לספקים"
+						</div>
+						<div>
+							<!--                            (onChange)="updateBankJournal()"-->
+
+							<p-dropdown
+									#formDropdowns
+									(onFocus)="clearFilter(formDropdowns)"
+									[autoDisplayFirst]="false"
+									[filter]="true"
+
+									[options]="supplierTaxDeductionCustIdArr"
+									[scrollHeight]="'135px'"
+									[style]="{ width: '100%' }"
+									appendTo="body"
+									dataKey="custId"
+									emptyFilterMessage="לא נמצאו תוצאות"
+									filterBy="lName,custId,hp"
+									formControlName="supplierTaxDeductionCustId"
+									id="supplierTaxDeductionCustId"
+
+									optionLabel="custId"
+									panelStyleClass="company-customer-dropdown-panel cardsDD"
+									placeholder="בחירה"
+									styleClass="ddInfoCompanyForm"
+							>
+								<ng-template let-item pTemplate="selectedItem">
+                  <span
+		                  #spanElement
+		                  [pTooltip]="item.cartisName"
+		                  [tooltipDisabled]="
+                      spanElement.offsetWidth >= spanElement.scrollWidth
+                    "
+		                  style="
+                      vertical-align: middle;
+                      display: block;
+                      white-space: nowrap;
+                      overflow: hidden;
+                      text-overflow: ellipsis;
+                    "
+		                  tooltipPosition="top"
+                  >{{ item.custId
+	                  }}{{
+	                  item.lName ? ' - ' + item.lName : ''
+	                  }}</span
+                  >
+								</ng-template>
+								<ng-template let-item pTemplate="item">
+									<div class="p-helper-clearfix cust-item">
+										<div>
+                      <span class="text-ellipsis">{{
+	                      item.cartisName
+	                      }}</span>
+										</div>
+									</div>
+								</ng-template>
+								<ng-template pTemplate="empty">
+									<div
+											class="p-helper-clearfix"
+											style="font-size: 0.95em; padding: 0.3em 1em"
+									>
+										<div>לא מצאת את הכרטיס שחיפשת?</div>
+										<div>צרו כרטיס חדש בהנה"ח</div>
+										<button
+												class="button-link"
+												style="padding: 0; font-size: inherit"
+										>
+											ולחצו על רענון הנתונים
+										</button>
+									</div>
+								</ng-template>
+								<ng-template pTemplate="emptyfilter">
+									<div
+											class="p-helper-clearfix"
+											style="font-size: 0.95em; padding: 0.3em 1em"
+									>
+										<div>לא מצאת את הכרטיס שחיפשת?</div>
+										<div>צרו כרטיס חדש בהנה"ח</div>
+										<button
+												class="button-link"
+												style="padding: 0; font-size: inherit"
+										>
+											ולחצו על רענון הנתונים
+										</button>
+									</div>
+								</ng-template>
+							</p-dropdown>
+						</div>
+					</div>
+				</div>
+
+				<!--                <div class="sett-table">-->
+				<!--                    <div>-->
+				<!--                        <div style="cursor: pointer"-->
+				<!--                             matTooltipClass="allow-cr"-->
+
+				<!--                             [matTooltip]="'כן - יש לאשר ידנית כל פקודת יומן\n'-->
+				<!--+-->
+				<!--'לא - תיווצר פקודת יומן אוטומטית להנה״ח'"-->
+				<!--                             matTooltipPosition="above">-->
+				<!--                            פ. יומן אוטומטיות לתנועות בנק ואשראי-->
+				<!--                        </div>-->
+
+				<!--                        <div>-->
+				<!--                            <div style="padding: 0px 10px;height: 30px;">-->
+				<!--                                <p-radioButton-->
+				<!--                                        (onClick)="updateValues('bankAutoJournalTrans', true)"-->
+				<!--                                        name="radioGroup_bankAutoJournalTrans"-->
+				<!--                                        [value]="true"-->
+				<!--                                        formControlName="bankAutoJournalTrans"-->
+				<!--                                        [label]="'כן'"-->
+				<!--                                        inputId="radio3">-->
+				<!--                                </p-radioButton>-->
+				<!--                                <span style="padding: 0px 8px"></span>-->
+				<!--                                <p-radioButton-->
+				<!--                                        (onClick)="updateValues('bankAutoJournalTrans', false)"-->
+				<!--                                        name="radioGroup_bankAutoJournalTrans"-->
+				<!--                                        [value]="false"-->
+				<!--                                        formControlName="bankAutoJournalTrans"-->
+				<!--                                        [label]="'לא'"-->
+				<!--                                        inputId="radio4">-->
+				<!--                                </p-radioButton>-->
+				<!--                            </div>-->
+				<!--                        </div>-->
+				<!--                    </div>-->
+				<!--                </div>-->
+			</div>
+		</form>
+	</div>
+</div>
+
+<p-overlayPanel
+		#tooltipEdit
+		(onHide)="detachOverlayHideListener()"
+		[style]="{
+		 												        'margin-left': '0px',
+              'margin-top': '2px',
+	 width: 'auto' }"
+		appendTo="body"
+		styleClass="notExportIncomes"
+>
+	<ul *ngIf="isReady">
+		<li
+				*ngFor="let item of notExportIncomes?.notExportIncomes"
+				style="display: flex; height: 25px; align-items: center"
+		>
+			<div>
+				<p-checkbox (onChange)="
+            item.value = !item.value;
+            setTitles_notExportIncomes(item.name === 'all')
+          "
+				            [binary]="true"
+				            [label]="item.title"
+				            [ngModel]="item.value"
+				            checkboxIcon="fa fa-check"
+				>
+				</p-checkbox>
+			</div>
+		</li>
+	</ul>
+</p-overlayPanel>
+
+<ng-container *ngIf="modalUpdateValuesExportFileTypeId">
+	<p-dialog (onHide)="modalUpdateValuesExportFileTypeId = false"
+	          (visibleChange)="modalUpdateValuesExportFileTypeId = false"
+	          [modal]="true"
+	          [resizable]="false"
+	          [visible]="(modalUpdateValuesExportFileTypeId)"
+	          appendTo="body"
+	          styleClass="modalUpdateValuesExportFileTypeId"
+	>
+		<p-header>
+			<h1>תכולת קובץ פ. יומן בנק ואשראי</h1>
+		</p-header>
+
+		<ng-container *ngIf="modalUpdateValuesExportFileTypeId === 1">
+			<p style="margin-top: 15px">
+				האם אתם בטוחים שתרצו לאחד את חשבונות הבנק וכרטיסי האשראי?
+			</p>
+			<p>
+				האיחוד יתבצע לכל הקבצים והתנועות (יש לייצא מחדש קובץ שנוצר וממתין
+				לקליטה)
+			</p>
+		</ng-container>
+		<ng-container *ngIf="modalUpdateValuesExportFileTypeId === 2">
+			<p style="margin-top: 15px">
+				האם אתם בטוחים שתרצו להפריד את חשבונות הבנק וכרטיסי האשראי?
+			</p>
+			<p>
+				ההפרדה תתבצע לכל הקבצים והתנועות (יש לייצא מחדש קובץ שנוצר וממתין
+				לקליטה)
+			</p>
+		</ng-container>
+
+		<p style="margin-top: 10px">האם להמשיך?</p>
+
+		<p-footer style="justify-content: center">
+			<button
+					(click)="modalUpdateValuesExportFileTypeId = false"
+					class="button-link"
+			>
+				{{ 'actions.cancellation' | translate }}
+			</button>
+			<button
+					(click)="
+          updateValuesTypeId(modalUpdateValuesExportFileTypeId);
+          modalUpdateValuesExportFileTypeId = false
+        "
+					class="button-dark"
+					style="width: 121px; height: 33px !important; padding: 0"
+			>
+				{{ 'actions.approve' | translate }}
+			</button>
+		</p-footer>
+	</p-dialog>
+</ng-container>

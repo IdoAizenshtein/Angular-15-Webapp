@@ -1,0 +1,52 @@
+<div style="position: relative; min-height: 150px">
+  <ng-container
+    *ngIf="
+      (userService.appData && userService.appData.isAdmin) ||
+        (settingsComponent.isUsersTabAvailableForSelectedCompany$ | async);
+      else notAvailable
+    "
+  >
+    <router-outlet></router-outlet>
+  </ng-container>
+  <ng-template #notAvailable>
+    <section class="forbidden-disclaimer">
+      <img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/no-entry-lg.png" />
+      {{ 'אינכם מורשים לצפות בעמוד זה' }}
+    </section>
+  </ng-template>
+</div>
+
+<p-dialog (visibleChange)="userAddedPrompt.visible = false"
+  [visible]="(userAddedPrompt.visible)"
+
+  styleClass="userAddedPrompt"
+  appendTo="body"
+  [modal]="true"
+>
+  <p-header>{{ 'actions.userAddedPrompt.title' | translate }}</p-header>
+
+  <ng-container *ngIf="userAddedPrompt.visible">
+    <div class="mat-h1">
+      <i class="fas fa-fw fa-check"></i
+      >{{ 'actions.userAddedPrompt.body.perfect' | translate }}
+    </div>
+    <div
+      class="mat-h2"
+      [innerHTML]="
+        'actions.userAddedPrompt.body.content0' | translate: userAddedPrompt
+      "
+    ></div>
+    <div
+      class="mat-h3"
+      [innerHTML]="
+        'actions.userAddedPrompt.body.content1' | translate: userAddedPrompt
+      "
+    ></div>
+  </ng-container>
+
+  <p-footer>
+    <button class="button-dark" (click)="userAddedPrompt.visible = false">
+      {{ 'actions.gotIt' | translate }}
+    </button>
+  </p-footer>
+</p-dialog>

@@ -1,0 +1,478 @@
+<div
+  class="tableUsers"
+  *ngIf="
+    settingsUsers.selectedCompanyUsers$ | async as companyUsers;
+    else loader
+  "
+>
+  <ng-container *ngIf="!(settingsUsers.loading$ | async); else loader">
+    <div class="header" #header>
+      <div></div>
+      <div>שם</div>
+      <div>טלפון</div>
+      <div>כתובת מייל</div>
+      <div>גישה לחשבונות בנק</div>
+      <div>כניסה אחרונה</div>
+      <div>סוג משתמש</div>
+      <div>גישה לנתונים</div>
+      <div></div>
+    </div>
+
+    <div
+      [appScrollHeight]="header.getBoundingClientRect().bottom + 5"
+      class="scrollbar-dynamic"
+    >
+      <div class="row" *ngFor="let user of companyUsers">
+        <div>
+          <!--          <ng-container *ngIf="(settingsComponent.selectedCompany$| async).privs.includes('COMPANYSUPERADMIN')">-->
+          <ng-container
+            *ngTemplateOutlet="
+              user.userPrivType !== 'COMPANYSUPERADMIN'
+                ? adminTypeControl
+                : superAdminTypeControl;
+              context: { $implicit: user }
+            "
+          ></ng-container>
+          <!--            <ng-container *ngIf="user.userPrivType !== 'COMPANYSUPERADMIN'; else goldStar">-->
+
+          <!--            </ng-container>-->
+          <!--            <img style="height: auto; width: auto; position: relative;" fill [ngSrc]="'/assets/images/star' + (user.userPrivType === 'COMPANYSUPERADMIN' ? '-toggled' : '') + '.png'" class="showHover"-->
+          <!--                [matTooltip]="user.userPrivType| privilegeTypeHumanize" matTooltipPosition="after" alt="userPrivType"/>-->
+          <!--          </ng-container>-->
+        </div>
+        <div>{{ user.firstName }}&nbsp;{{ user.lastName }}</div>
+        <div>{{ user.cellPhone }}</div>
+        <div>{{ user.userMail }}</div>
+        <div>
+          <ng-container *ngIf="user.accountNicknameList?.length > 1">
+            <div
+              class="link"
+              (click)="selectedUser = user; opUserAccounts.toggle($event)"
+            >
+              {{
+                user.accountNicknameList.length + ' ' + 'חשבונות' | translate
+              }}
+            </div>
+          </ng-container>
+          <ng-container *ngIf="user.accountNicknameList?.length === 1">
+            {{ user.accountNicknameList[0] }}
+          </ng-container>
+          <ng-container *ngIf="!user.accountNicknameList?.length">
+            {{ 'אין' }}
+          </ng-container>
+        </div>
+        <div>
+          {{ (user.userLastLogin | todayRelativeHumanize) || 'ממתין לכניסה' }}
+        </div>
+        <div>{{ user.userPrivType | privilegeTypeHumanize }}</div>
+        <div>{{ user.dataAccess | accessTypeHumanize }}</div>
+        <div>
+          <!--          {{(settingsComponent.selectedCompany$| async).privs| privilegeTypeMax}}&nbsp;{{(user.userPrivType| privilegeTypeMax)}}-->
+          <ng-container
+            *ngIf="
+              ((settingsComponent.selectedCompany$ | async).privs
+                | privilegeTypeMax) > (user.userPrivType | privilegeTypeMax)
+            "
+          >
+            <button
+              class="button-link showHover"
+              [routerLink]="[user.userId]"
+              queryParamsHandling="preserve"
+            >
+              <img
+		              style="height: auto; width: 14px; position: relative;vertical-align: middle" fill
+		
+		              ngSrc="/assets/images/pencil.png"
+              />
+            </button>
+            <button
+              class="button-link showHover"
+              (click)="
+                deleteUserPrompt.user = user; deleteUserPrompt.visible = true
+              "
+            >
+              <img
+		              style="height: auto; width: 14px; position: relative;vertical-align: middle" fill
+                ngSrc="/assets/images/trash.png"
+              />
+            </button>
+          </ng-container>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+</div>
+
+<ng-template #loader>
+  <div class="loader">
+    <div class="circle"></div>
+  </div>
+</ng-template>
+
+<ng-template #adminTypeControl let-user>
+  <img
+    style="height: auto; width: auto; position: relative;cursor: pointer" fill ngSrc="/assets/images/star.png"
+    class="showHover"
+    alt="regular"
+    *ngIf="
+      (settingsComponent.selectedCompany$ | async).privs.includes(
+        'COMPANYSUPERADMIN'
+      )
+    "
+    (click)="companySuperAdminPrivTransferPrompt.show(user)"
+  />
+</ng-template>
+<ng-template #superAdminTypeControl let-user>
+  <img
+    style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/star-toggled.png"
+    alt="superadmin"
+    [matTooltip]="user.userPrivType | privilegeTypeHumanize"
+    matTooltipPosition="after"
+  />
+</ng-template>
+
+<p-overlayPanel
+  styleClass="tooltip-bottom tooltip-acc-deviation"
+  [dismissable]="true"
+  [style]="{ transform: 'translate(-50%, -.2em)', width: 'auto' }"
+  #opUserAccounts
+  appendTo="body"
+>
+  <ul class="scroll-chrome" *ngIf="selectedUser">
+    <li *ngFor="let acc of selectedUser.accountNicknameList">
+      {{ acc }}
+    </li>
+  </ul>
+</p-overlayPanel>
+
+<p-dialog (visibleChange)="deleteUserPrompt.visible = false"
+		[visible]="(deleteUserPrompt.visible)"
+		
+  styleClass="deleteUserPrompt"
+  appendTo="body"
+  [modal]="true"
+  (onHide)="deleteUserPrompt.user = null"
+>
+  <p-header>{{ 'actions.deleteUser.title' | translate }}</p-header>
+
+  <ng-container *ngIf="deleteUserPrompt.user">
+    <ng-container
+      *ngIf="
+        deleteUserPrompt.foundInCompanies$ | async as userCompanies;
+        else loader
+      "
+    >
+      <ng-container *ngIf="userCompanies.length === 1">
+        <div
+          class="mat-h3"
+          [innerHTML]="
+            'actions.deleteUser.body.single.content'
+              | translate
+                : {
+                    companyName: userCompanies[0].companyName,
+                    firstName: deleteUserPrompt.user.firstName,
+                    lastName: deleteUserPrompt.user.lastName
+                  }
+          "
+        ></div>
+      </ng-container>
+      <ng-container *ngIf="userCompanies.length > 1">
+        <div
+          class="mat-h3"
+          [innerHTML]="
+            'actions.deleteUser.body.multi.content'
+              | translate
+                : {
+                    firstName: deleteUserPrompt.user.firstName,
+                    lastName: deleteUserPrompt.user.lastName
+                  }
+          "
+        ></div>
+        <form [formGroup]="deleteUserPrompt.form">
+          <ng-container *ngIf="userCompanies.length > 3; else listFullHeight">
+            <ul
+              class="scrollbar-dynamic"
+              [appScrollHeight]="120"
+              appendTo="parent"
+              [class.invalid]="
+                deleteUserPrompt.form.get('companies').invalid &&
+                deleteUserPrompt.form.get('companies').dirty
+              "
+            >
+              <li *ngFor="let comp of userCompanies; index as i">
+                <p-checkbox checkboxIcon="fa fa-check"
+                  [formControl]="deleteUserPrompt.form.get('companies')"
+                  [label]="comp.companyName"
+                  [value]="comp.companyId"
+                ></p-checkbox>
+              </li>
+            </ul>
+          </ng-container>
+          <ng-template #listFullHeight>
+            <ul
+              [class.invalid]="
+                deleteUserPrompt.form.get('companies').invalid &&
+                deleteUserPrompt.form.get('companies').dirty
+              "
+            >
+              <li *ngFor="let comp of userCompanies; index as i">
+                <p-checkbox checkboxIcon="fa fa-check"
+                  [formControl]="deleteUserPrompt.form.get('companies')"
+                  [label]="comp.companyName"
+                  [value]="comp.companyId"
+                ></p-checkbox>
+              </li>
+            </ul>
+          </ng-template>
+        </form>
+      </ng-container>
+      <div
+        class="mat-h3"
+        style="margin: 1em 0 0"
+        [innerHTML]="'actions.deleteUser.body.toProceed' | translate"
+      ></div>
+    </ng-container>
+  </ng-container>
+
+  <p-footer>
+    <div style="width: 100%; display: flex; justify-content: center">
+      <ng-container *ngIf="deleteUserPrompt.user">
+        <button
+          class="button-white button-link"
+          (click)="deleteUserPrompt.visible = false"
+        >
+          {{ 'actions.cancellation' | translate }}
+        </button>
+        <button
+          class="button-dark"
+          (click)="deleteUserPrompt.approve()"
+          [disabled]="deleteUserPrompt.loading$ | async"
+        >
+          <i
+            class="fas fa-fw fa-circle-notch fa-spin"
+            *ngIf="deleteUserPrompt.loading$ | async"
+          ></i>
+          {{ 'actions.remove' | translate }}
+        </button>
+      </ng-container>
+    </div>
+  </p-footer>
+</p-dialog>
+
+<p-dialog (visibleChange)="companySuperAdminPrivTransferPrompt.visible = false"
+		[visible]="(companySuperAdminPrivTransferPrompt.visible)"
+		
+  styleClass="companySuperAdminPrivTransferPrompt"
+  appendTo="body"
+  [modal]="true"
+  (onHide)="companySuperAdminPrivTransferPrompt.hide()"
+>
+  <p-header>{{
+    'actions.companySuperAdminPrivTransfer.title' | translate
+  }}</p-header>
+
+  <ng-container *ngIf="companySuperAdminPrivTransferPrompt.candidate">
+    <ng-container [ngSwitch]="companySuperAdminPrivTransferPrompt.step">
+      <ng-container *ngSwitchCase="1">
+        <ng-container
+          *ngIf="
+            companySuperAdminPrivTransferPrompt.otpVerifyStep.initiateCode$
+              | async as initOtpResult;
+            else loader
+          "
+        >
+          <ng-container
+            *ngIf="companySuperAdminPrivTransferPrompt.otpVerifyStep.mayRetry"
+          >
+            <form
+              [formGroup]="
+                companySuperAdminPrivTransferPrompt.otpVerifyStep.confirmForm
+              "
+              novalidate
+              (ngSubmit)="
+                companySuperAdminPrivTransferPrompt.otpVerifyStep.submitForm()
+              "
+            >
+              <mat-form-field hideRequiredMarker="true">
+                <mat-label>{{
+                  'formLogin.codeSent'
+                    | translate: { phone: initOtpResult.maskedPhoneNumber }
+                }}</mat-label>
+                <input
+                  matInput
+                  type="text"
+                  [formControl]="
+                    companySuperAdminPrivTransferPrompt.otpVerifyStep.confirmForm.get(
+                      'code'
+                    )
+                  "
+                  class="forceLTR"
+                  id="code"
+                  [errorStateMatcher]="
+                    companySuperAdminPrivTransferPrompt.otpVerifyStep
+                      .immediateErrorMatcher
+                  "
+                  (focus)="
+                    companySuperAdminPrivTransferPrompt.otpVerifyStep.confirmForm.hasError(
+                      'incorrect'
+                    ) &&
+                      companySuperAdminPrivTransferPrompt.otpVerifyStep.confirmForm
+                        .get('code')
+                        .setValue('')
+                  "
+                  autocomplete="off"
+                  appNumbersOnly="positiveInt"
+                />
+
+                <mat-hint
+                  *ngIf="
+                    companySuperAdminPrivTransferPrompt.otpVerifyStep.confirmForm
+                      .get('code')
+                      .hasError('pattern')
+                  "
+                >
+                  <i class="fa fa-exclamation-triangle"></i>
+                  {{ 'formLogin.codeContainsNumbersOnly' | translate }}
+                </mat-hint>
+              </mat-form-field>
+              <div
+                class="mat-h4 error"
+                *ngIf="
+                  companySuperAdminPrivTransferPrompt.otpVerifyStep.confirmForm.hasError(
+                    'incorrect'
+                  ) ||
+                  (companySuperAdminPrivTransferPrompt.otpVerifyStep.tryCount >
+                    0 &&
+                    !companySuperAdminPrivTransferPrompt.otpVerifyStep.confirmForm.get(
+                      'code'
+                    ).value)
+                "
+              >
+                {{ 'validation.codeNotValid' | translate }}
+              </div>
+              <!--              {{companySuperAdminPrivTransferPrompt.otpVerifyStep.confirmForm.errors| json}}-->
+              <!--              {{companySuperAdminPrivTransferPrompt.otpVerifyStep.confirmForm.controls.code.errors| json}}-->
+            </form>
+          </ng-container>
+
+          <ng-container
+            *ngIf="!companySuperAdminPrivTransferPrompt.otpVerifyStep.mayRetry"
+          >
+            <div
+              class="mat-h1"
+              style="font-size: 1.2em; margin-top: 1em"
+              [innerHTML]="
+                'validation.unableToContinueIdentificationProcess' | translate
+              "
+            ></div>
+          </ng-container>
+        </ng-container>
+      </ng-container>
+      <ng-container *ngSwitchCase="2">
+        <div class="mat-h2" style="margin-top: 0.5em">
+          <img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/stars-splash.png" alt="success" />
+        </div>
+        <div
+          class="mat-h1"
+          style="margin-bottom: 0"
+          [innerHTML]="
+            'actions.companySuperAdminPrivTransfer.body.success' | translate
+          "
+        ></div>
+      </ng-container>
+      <ng-container *ngSwitchDefault>
+        <div
+          class="mat-h3"
+          [innerHTML]="
+            'actions.companySuperAdminPrivTransfer.body.warning'
+              | translate: companySuperAdminPrivTransferPrompt.candidate
+          "
+        ></div>
+        <div
+          class="mat-h4"
+          [innerHTML]="
+            'actions.companySuperAdminPrivTransfer.body.otpRequirement'
+              | translate
+          "
+        ></div>
+      </ng-container>
+    </ng-container>
+  </ng-container>
+
+  <p-footer>
+    <div style="justify-content: center; align-items: center">
+      <ng-container *ngIf="companySuperAdminPrivTransferPrompt.candidate">
+        <ng-container [ngSwitch]="companySuperAdminPrivTransferPrompt.step">
+          <ng-container *ngSwitchCase="1">
+            <ng-container
+              *ngIf="companySuperAdminPrivTransferPrompt.otpVerifyStep.mayRetry"
+            >
+              <button
+                class="button-dark"
+                style="padding: 0.2em 4em; font-size: 1.1em !important"
+                (click)="
+                  companySuperAdminPrivTransferPrompt.otpVerifyStep.submitForm()
+                "
+                [disabled]="
+                  companySuperAdminPrivTransferPrompt.loading$ | async
+                "
+              >
+                <i
+                  class="fas fa-fw fa-circle-notch fa-spin"
+                  *ngIf="companySuperAdminPrivTransferPrompt.loading$ | async"
+                ></i>
+                {{ 'actions.approve' | translate }}
+              </button>
+            </ng-container>
+            <ng-container
+              *ngIf="
+                !companySuperAdminPrivTransferPrompt.otpVerifyStep.mayRetry
+              "
+            >
+              {{ 'נתקלתם בבעיה? נשמח לעזור לכם,' }}&nbsp;
+              <button
+                class="button-link"
+                style="font: inherit; margin: 0; padding: 0"
+                (click)="
+                  companySuperAdminPrivTransferPrompt.otpVerifyStep.openTicket()
+                "
+              >
+                {{ 'פתחו קריאת שירות' }}
+              </button>
+            </ng-container>
+          </ng-container>
+
+          <ng-container *ngSwitchCase="2">
+            <button
+              class="button-dark"
+              (click)="
+                companySuperAdminPrivTransferPrompt.visible = false;
+                settingsUsers.forceReload$.next()
+              "
+            >
+              {{ 'actions.closing' | translate }}
+            </button>
+          </ng-container>
+
+          <ng-container *ngSwitchDefault>
+            <button
+              class="button-white button-link"
+              (click)="companySuperAdminPrivTransferPrompt.visible = false"
+            >
+              {{ 'actions.cancellation' | translate }}
+            </button>
+            <button
+              class="button-dark"
+              (click)="
+                companySuperAdminPrivTransferPrompt.step =
+                  companySuperAdminPrivTransferPrompt.step + 1
+              "
+            >
+              {{ 'actions.sendOtpCode' | translate }}
+            </button>
+          </ng-container>
+        </ng-container>
+      </ng-container>
+    </div>
+  </p-footer>
+</p-dialog>

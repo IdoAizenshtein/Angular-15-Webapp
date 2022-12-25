@@ -1,0 +1,187 @@
+<div
+		class="additional-details-container"
+		[style.width.px]="containerWidth"
+		[style.height.px]="containerHeight"
+		tabindex="-1"
+		(keydown.esc)="hideInfo()"
+>
+	<div class="arrow"></div>
+	
+	<ng-container
+			*ngIf="additionalDetails$ | async as additionalDetails; else loading"
+	>
+		<div *ngIf="!(additionalDetails?.length > 0)" class="no-rows-found">
+			{{ 'expressions.noDetailsForTransfer' | translate }}
+		</div>
+		
+		<div
+				*ngIf="additionalDetails.length > 0"
+				style="
+        display: flex;
+        flex-flow: row nowrap;
+        justify-content: flex-end;
+        margin-bottom: 0.4em;
+      "
+		>
+			<div style="display: flex; width: 80px; justify-content: space-between">
+				<img
+						class="button-link"
+					 ngSrc="/assets/images/to-printer-sm.png"
+						height="19"
+						width="20"
+						(click)="printAdditionalDetails()"
+				/>
+				<!--<span class="fa fa-print fa-fw button-link"></span>-->
+				<!--        <img class="button-link" style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/to-xls-sm.png" height="19" width="20"-->
+				<!--             (click)="exportAdditionalDetails('EXCEL')"/>-->
+				<!--<span class="fa fa-file-excel fa-fw button-link"></span>-->
+				<span class="fa fa-times fa-fw button-link" (click)="hideInfo()"></span>
+			</div>
+		</div>
+		
+		<div
+				*ngIf="additionalDetails.length > 0"
+				class="additional-details-transfer"
+		>
+			<div class="header-container">
+				<div class="header-row">
+					<div class="cell-1 text-ellipsis">
+						{{ 'titles.beneficiaryName' | translate }}
+					</div>
+					<!--          <div class="cell-1">{{(transaction.hova ? 'titles.beneficiaryName' :-->
+					<!--            'titles.transferExecutor')| translate}}-->
+					<!--          </div>-->
+					<div class="cell-2">{{ 'titles.bank' | translate }}</div>
+					<div class="cell-3">{{ 'titles.branch' | translate }}</div>
+					<div class="cell-4">{{ 'titles.accountNumber' | translate }}</div>
+					<div class="cell-5">{{ 'titles.category' | translate }}</div>
+					<!--          <div class="cell-6">{{'titles.note'| translate}}</div>-->
+					<div class="cell-7">{{ 'titles.sum' | translate }}</div>
+					<div class="cell-8">
+						<img  ngSrc="/assets/images/matching.png" height="16" width="16"/>
+					</div>
+				</div>
+			</div>
+			<div
+					class="scroll-chrome"
+					[appScrollHeight]="234"
+					appendTo="parent"
+					*ngIf="
+          transTypesService.selectedCompanyTransTypes | async as categories
+        "
+			>
+				<div class="body-row" *ngFor="let adtnlRow of additionalDetails">
+					<div class="cell-1 text-ellipsis">
+						{{ adtnlRow.accountMutavName }}
+					</div>
+					<div class="cell-2 text-ellipsis">
+						<app-bank-view
+								[bankNumber]="adtnlRow.bankId"
+								[showName]="true"
+								style="align-self: center; flex: 0 0 auto; -ms-flex: 0 0 auto"
+						></app-bank-view>
+						<!--<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/bank{{adtnlRow.banktransfernumber}}.png"-->
+						<!--*ngIf="adtnlRow.banktransfernumber"-->
+						<!--alt="{{adtnlRow.banktransfernumber}}"-->
+						<!--style="align-self: center; flex: 0 0 auto; margin: 0 4px;">-->
+					</div>
+					<div class="cell-3">{{ adtnlRow.snifId }}</div>
+					<div class="cell-4">{{ adtnlRow.accountId }}</div>
+					<div class="cell-5">
+						<app-category-select
+								[categories]="categories"
+								[companyId]="
+                userService.appData?.userData?.companySelect?.companyId
+              "
+								[ngModelVal]="adtnlRow.transType"
+								(changed)="adtnlRow.transType = $event.value; promptForTransTypeChangeApply(adtnlRow, $event)"
+						>
+						</app-category-select>
+						<!--            {{adtnlRow.transTypeId}}-->
+					</div>
+					<!--          <div class="cell-6 text-ellipsis">{{adtnlRow.detailstransfer}}</div>-->
+					<div
+							class="cell-7 ltrNum"
+							[ngClass]="
+              transaction?.hova !== undefined
+                ? transaction?.hova
+                  ? 'sum-debit'
+                  : 'sum-credit'
+                : transaction?.expence
+                ? 'sum-debit'
+                : 'sum-credit'
+            "
+					>
+						<app-sum-view [sum]="adtnlRow.total"></app-sum-view>
+					</div>
+					<div class="cell-8">
+						<i
+								class="fas"
+								style="cursor: pointer"
+								(click)="
+                hideInfo();
+                router.navigate(
+                  [
+                    !this.userService.appData.userData.accountant
+                      ? adtnlRow.matchPrc !== 100
+                        ? '/cfl/cash-flow/bankmatch/bank'
+                        : '/cfl/cash-flow/bankmatch/bank/matched'
+                      : adtnlRow.matchPrc !== 100
+                      ? '/accountants/companies/cash-flow/bankmatch/bank'
+                      : '/accountants/companies/cash-flow/bankmatch/bank/matched'
+                  ],
+                  { queryParamsHandling: 'preserve' }
+                )
+              "
+								[ngClass]="adtnlRow.isMatched ? 'fa-check' : 'fa-ban'"
+								[matTooltip]="
+                'appWalk.customers.financialManagement.bankAccount.additionals.' +
+                  (adtnlRow.isMatched
+                    ? 'matchHandle-matched'
+                    : 'matchHandle-notMatched') | translate
+              "
+								matTooltipPosition="before"
+						></i>
+					</div>
+				</div>
+			</div>
+			<div class="footer-container" *ngIf="additionalDetails.length > 0">
+				<div>
+					{{ 'sumsTitles.total' | translate }} {{ additionalDetails.length }}
+					{{ 'expressions.transfers' | translate }}
+				</div>
+				<div
+						class="ltrNum"
+						[ngClass]="
+            transaction?.hova !== undefined
+              ? transaction?.hova
+                ? 'sum-debit'
+                : 'sum-credit'
+              : transaction?.expence
+              ? 'sum-debit'
+              : 'sum-credit'
+          "
+				>
+					<app-sum-view [sum]="transactionAdditionalDetailsSum"></app-sum-view>
+				</div>
+			</div>
+		</div>
+	</ng-container>
+	
+	<ng-container *ngIf="transTypeChangePrompt.data">
+		<app-beneficiary-category-change-prompt
+				[data]="transTypeChangePrompt.data"
+				[mode]="isFutureTransaction ? null : 'optionalFuture'"
+				[skipBeneficiaryUpdateIfSingleSelected]="false"
+				(approved)="transTypeChangePrompt.apply()"
+				(hidden)="transTypeChangePrompt.data = null"
+				(beneficiaryCategoryUpdated)="reload()"
+		></app-beneficiary-category-change-prompt>
+	</ng-container>
+	
+	<ng-template #loading>
+		<div class="loader">
+			<div class="circle"></div>
+		</div>
+	</ng-template>
+</div>

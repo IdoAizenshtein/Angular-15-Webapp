@@ -1,0 +1,145 @@
+<p id="title">
+	בחרו את שם הכרטיס שאליו תרצו לשייך את
+	<ng-container *ngIf="rowForMatchCust; else allTrans">
+		{{ rowForMatchCust.mainDesc || rowForMatchCust.accountMutavName }}
+	</ng-container>
+	<ng-template #allTrans> התנועות</ng-template>
+</p>
+<div class="search">
+	<input [formControl]="query" autocomplete="off" type="text"/>
+</div>
+<!--<p class="headLine">-->
+<!--    כרטיסים ששוייכו בעבר:-->
+<!--</p>-->
+<div>
+	<ng-container *ngIf="companyCustomerDetailsForFilter; else loader">
+		<ng-container
+				*ngIf="companyCustomerDetailsForFilter.length; else notExistCard">
+			<ng-scrollbar
+					[ngStyle]="{'height':'308px'}"
+					class="custom-scrollbar"
+					thumbClass="scrollbar-thumb"
+					trackClass="scrollbar">
+				
+				<cdk-virtual-scroll-viewport #virtualScroll itemSize="34" scrollViewport>
+					<mat-list>
+						<ng-container *cdkVirtualFor="let row of companyCustomerDetailsForFilter; let i = index; trackBy: trackCust">
+							<mat-list-item
+									*ngIf="i === 0 && row.isHistory"
+									[class.active]="row === selectedCust"
+									class="firstHistory"
+							>
+								<div
+										matLine
+										style="
+                position: relative;
+                display: flex;
+                justify-content: space-between;
+              "
+								>
+									כרטיסים ששוייכו בעבר:
+								</div>
+							</mat-list-item>
+							<mat-list-item
+									*ngIf="!(i === 0 && row.isHistory)"
+									(click)="row.disabled ? null : (selectedCust = row)"
+									[class.active]="row === selectedCust"
+									[class.bottom9]="row.isHistory && row.isLastHistory"
+									[class.disabled]="row.disabled"
+							>
+								<div
+										matLine
+										style="
+                position: relative;
+                display: flex;
+                justify-content: space-between;
+              "
+								>
+									<div style="display: flex; flex-direction: column">
+										<p [innerHTML]="row.lName || '-' | highlight: query.value">
+											{{ row.lName }}
+										</p>
+										<p
+												*ngIf="row.disabled"
+												style="position: relative; font-size: 13px; line-height: 13px"
+										>
+											הכרטיס כבר נבחר בכרטיס
+											
+											{{ fileStatus === 'account' ? 'בנק' : 'אשראי' }}
+										</p>
+									</div>
+									
+									<p
+											*ngIf="row.custId"
+											[innerHTML]="row.custId | highlight: query.value"
+									>
+										{{ row.custId }}
+									</p>
+								</div>
+								<div
+										*ngIf="row.isLastHistory"
+										style="
+                height: 1px;
+                background: #cacaca;
+                padding: 0;
+                position: absolute;
+                bottom: -6px;
+                right: 0;
+                left: 0;
+                z-index: 999;
+              "
+								></div>
+							</mat-list-item>
+						</ng-container>
+						<mat-list-item
+								*ngIf="query.value.length && isShowAddItemTemp()"
+								class="firstHistory"
+						>
+							<div style="margin: 20px 12px 0px 12px">
+								<div>לא מצאתם את הכרטיס שחיפשתם?</div>
+								<div>צרו כרטיס חדש בחשבשבת.</div>
+								<div>
+									בינתיים ניתן לעדכן ידנית את
+									<strong style="font-weight: 700"> מפתח הכרטיס במדויק </strong>
+									<br/>
+									עד שנמשוך את פרטי הכרטיס.
+								</div>
+								<button
+										(click)="setValCartis()"
+										class="button-link"
+										style="padding: 0; font-size: inherit; text-decoration: underline"
+								>
+									לעדכון ידני לחצו פה
+								</button>
+							</div>
+						</mat-list-item>
+					</mat-list>
+				</cdk-virtual-scroll-viewport>
+			</ng-scrollbar>
+		</ng-container>
+		<ng-template #notExistCard>
+			<div *ngIf="query.value.length" style="margin: 20px 12px 0px 12px">
+				<div>לא מצאתם את הכרטיס שחיפשתם?</div>
+				<div>צרו כרטיס חדש בחשבשבת.</div>
+				<div>
+					בינתיים ניתן לעדכן ידנית את
+					<strong style="font-weight: 700"> מפתח הכרטיס במדויק </strong>
+					<br/>
+					עד שנמשוך את פרטי הכרטיס.
+				</div>
+				<button
+						(click)="setValCartis()"
+						class="button-link"
+						style="padding: 0; font-size: inherit; text-decoration: underline"
+				>
+					לעדכון ידני לחצו פה
+				</button>
+			</div>
+		</ng-template>
+	</ng-container>
+	<ng-template #loader>
+		<div class="loaderPercent">
+			<div class="circle"></div>
+		</div>
+	</ng-template>
+</div>

@@ -1,0 +1,2347 @@
+<div
+		[class.isAccountants]="!router.url.includes('cfl')"
+		[class.isCustomer]="router.url.includes('cfl')"
+		class="containerPage"
+>
+	<!--<div *ngIf="userService?.appData?.userData?.activatedType === 'dialogUpdate'-->
+	<!--&& !userService?.appData?.userData?.exampleCompany-->
+	<!--&& !(router.url.includes('cfl/accountancy/') && userService.appData.userData?.companySelect?.example)-->
+	<!--&& !userService.appData.userData.companySelectedBillingStatus" class="activated warn">-->
+	<!--<span>{{'expressions.activationMessagePattern'| translate:userService?.appData?.userData}}</span>-->
+	<!--<button type="button" class="button-dark" (click)="sendActivationMails()">-->
+	<!--שליחת מייל-->
+	<!--</button>-->
+	<!--</div>-->
+	
+	<div *ngIf="userService?.appData?.isActivated" class="isActivated success">
+		<strong>{{ 'תודה רבה!' }}</strong>
+		<span>
+				כתובת המייל אומתה בהצלחה. אנחנו מאחלים לכם שימוש מהנה
+					בbizibox
+		</span>
+	</div>
+	
+	<app-top-notification-area
+			#topNotificationArea
+			*ngIf="router.url.includes('cfl') || !isCustomer"
+			[runTopNot]="router.url.includes('cfl') || (!isCustomer && selectedValue)"
+	></app-top-notification-area>
+	
+	<!--<div *ngIf="userService?.appData?.userData?.exampleCompany && !router.url.includes('cfl/settings')-->
+	<!--&& !(router.url.includes('cfl/accountancy/') && userService.appData.userData?.companySelect?.example)-->
+	<!--&& !userService.appData?.userData?.companySelectedBillingStatus"-->
+	<!--class="example-company-token-tracker"-->
+	<!--[class.example-company-token-tracker-inline]="!(tokenTracker.tokenStatusLoad$| async)?.length">-->
+	<!--<app-token-tracker #tokenTracker-->
+	<!--[companyId]="this.userService.appData.userData.companySelect.companyId"></app-token-tracker>-->
+	<!--</div>-->
+	
+	<!--<div *ngIf="router.url.includes('cfl/accountancy/') && userService.appData.userData?.companySelect?.example-->
+	<!--&& !userService.appData?.userData?.companySelectedBillingStatus"-->
+	<!--class="cfl-accountancy-example-disclaimer">-->
+	<!--{{'הנתונים המוצגים הם להדגמה בלבד. לצפייה בנתוני הנה"ח של עסקכם, צרו קשר עם מוקד התמיכה והשירות בטלפון 2365*'}}-->
+	<!--<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/headphone.png"/>-->
+	<!--</div>-->
+	
+	<!--<div *ngIf="userService.appData?.userData?.companySelectedBillingStatus === 'WARN'"-->
+	<!--class="company-billing-status-warn" [class.failed-payment]="userService.appData.userData.companySelect.billingAccountId !== '00000000-0000-0000-0000-000000000000'">-->
+	<!--<ng-container *ngIf="userService.appData.userData.companySelect.billingAccountId === '00000000-0000-0000-0000-000000000000'; else failedPaymentBanner">-->
+	<!--<span [innerHTML]="'expressions.trialPeriodDaysLeftPatternHTML'| translate:userService.appData.userData.companySelect"></span>-->
+	<!--<button class="button-dark" type="button"-->
+	<!--[routerLink]="['/cfl/billing', userService.appData.userData.companySelect.billingAccountId]" queryParamsHandling="preserve"-->
+	<!--(click)="companyBillingStatusWarn.close($event)">{{'הסדרת תשלום'}}</button>-->
+	<!--</ng-container>-->
+	<!--<ng-template #failedPaymentBanner>-->
+	<!--<span>{{'החיוב החודשי נכשל. יש להסדיר את התשלום דרך'}}</span>-->
+	<!--<button class="button-link" type="button"-->
+	<!--[routerLink]="['/cfl/billing', userService.appData.userData.companySelect.billingAccountId]" queryParamsHandling="preserve">{{'מסך התשלומים'}}</button>-->
+	<!--<span>{{'או צרו קשר עם מוקד השירות בטלפון 2365* '}}</span>-->
+	<!--</ng-template>-->
+	<!--</div>-->
+	
+	<header
+			#appHeader
+			[class.station_id]="userService.appData && userService.appData.station_id"
+			[ngStyle]="{
+      display: userService?.appData?.inFullScreenMode ? 'none' : 'block',
+      'background-color': userService.appData.isAdmin ? '#EFF7FF' : null
+    }"
+			class="toolbar"
+			id="header"
+	>
+		<ng-container *ngIf="!userService.appData?.station_id">
+			<mat-grid-list [cols]="36" rowHeight="75px">
+				<mat-grid-tile [colspan]="scrWidth > 1670 ? 4 : 5" [rowspan]="1">
+					<div class="logo">
+						<figure>
+							<img
+									alt="Logo"
+									height="37"
+									ngSrc="/assets/images/logo.png"
+									width="122"
+							/>
+							<figcaption
+									[translate]="
+                  userService.appData.isAdmin
+                    ? 'Admin'
+                    : router.url.includes('cfl')
+                    ? 'toolbar.textCus'
+                    : 'toolbar.textRoh'
+                "
+							></figcaption>
+						</figure>
+					</div>
+				</mat-grid-tile>
+				<mat-grid-tile
+						[colspan]="scrWidth > 1670 ? 32 : 31"
+						[rowspan]="1"
+						class="mainHeader"
+				>
+					<div style="display: flex">
+						<div
+								*ngIf="
+                userService?.appData?.userData?.companies &&
+                userService.appData.userData.pathMainApp === 'cfl'
+              "
+								[ngSwitch]="typeOfCompany"
+								class="select-companies"
+						>
+							<div *ngSwitchCase="1" class="typeOfCompany1">
+								{{ userService?.appData?.userData?.companies[0].companyName }}
+							</div>
+							<div *ngSwitchCase="2">
+								<p-dropdown
+										(onChange)="selectCompany(true)"
+										[(ngModel)]="selectedValue"
+										[disabled]="router.url.includes('/settings')"
+										[dropdownIcon]="'p-dropdown-icon'"
+										[options]="userService?.appData?.userData?.companies"
+										appendTo="body"
+										optionLabel="companyName"
+										placeholder="{{ 'actions.company' | translate }}"
+										styleClass="companiesDDStyle"
+								>
+									<ng-template let-item pTemplate="selectedItem">
+										<div class="p-helper-clearfix companyNameSelected">
+											<div>
+												<p>{{ item.companyName }}</p>
+												<small> {{ item.companyHp }} </small>
+											</div>
+										</div>
+									</ng-template>
+									<ng-template let-company pTemplate="item">
+										<div class="p-helper-clearfix companyNameSelected">
+											<div>
+												<p>{{ company.companyName }}</p>
+												<small> {{ company.companyHp }} </small>
+											</div>
+										</div>
+									</ng-template>
+								</p-dropdown>
+							</div>
+							<div *ngSwitchCase="3">
+								<p-dropdown
+										#dd
+										(onChange)="selectCompany(true)"
+										(onFocus)="clearFilter(dd)"
+										[(ngModel)]="selectedValue"
+										[disabled]="router.url.includes('/settings')"
+										[dropdownIcon]="'p-dropdown-icon'"
+										[filter]="true"
+										[options]="userService.appData.userData.companies"
+										[scrollHeight]="'135px'"
+										optionLabel="companyName"
+										placeholder="{{ 'actions.company' | translate }}"
+										styleClass="companiesDDStyle"
+								>
+									<ng-template pTemplate="empty">
+										<div class="p-helper-clearfix p-dropdown-item companyNameSelected">
+											<div>
+												<p>{{ 'expressions.noCompanyFound' | translate }}</p>
+											</div>
+										</div>
+									</ng-template>
+									<ng-template pTemplate="emptyfilter">
+										<div class="p-helper-clearfix p-dropdown-item companyNameSelected">
+											<div>
+												<p>{{ 'expressions.noCompanyFound' | translate }}</p>
+											</div>
+										</div>
+									</ng-template>
+									<ng-template let-item pTemplate="selectedItem">
+										<div class="p-helper-clearfix companyNameSelected">
+											<div>
+												<p>{{ item.companyName }}</p>
+												<small> {{ item.companyHp }} </small>
+											</div>
+										</div>
+									</ng-template>
+									<ng-template let-company pTemplate="item">
+										<div class="p-helper-clearfix companyNameSelected">
+											<div>
+												<p>{{ company.companyName }}</p>
+												<small> {{ company.companyHp }} </small>
+											</div>
+										</div>
+									</ng-template>
+								</p-dropdown>
+							</div>
+							<div *ngSwitchDefault class="typeOfCompany1">
+								{{ userService?.appData?.userData?.companies[0].companyName }}
+							</div>
+						</div>
+						<div
+								*ngIf="
+                userService?.appData?.userData?.companies &&
+                userService.appData.userData.pathMainApp === 'accountants' &&
+                !router.url.includes('ocr')
+              "
+								class="select-companies"
+						>
+							<p-dropdown
+									#dd
+									(onChange)="selectCompany(true)"
+									(onFocus)="clearFilter(dd)"
+									[(ngModel)]="selectedValue"
+									[dropdownIcon]="'p-dropdown-icon'"
+									[filter]="true"
+									[options]="userService?.appData?.userData?.companies"
+									[scrollHeight]="'135px'"
+									optionLabel="companyName"
+									placeholder="{{ 'actions.company' | translate }}"
+									styleClass="companiesDDStyle"
+							>
+								<ng-template pTemplate="empty">
+									<div class="p-helper-clearfix p-dropdown-item companyNameSelected">
+										<div>
+											<p>{{ 'expressions.noCompanyFound' | translate }}</p>
+										</div>
+									</div>
+								</ng-template>
+								<ng-template pTemplate="emptyfilter">
+									<div class="p-helper-clearfix p-dropdown-item companyNameSelected">
+										<div>
+											<p>{{ 'expressions.noCompanyFound' | translate }}</p>
+										</div>
+									</div>
+								</ng-template>
+								<ng-template let-item pTemplate="selectedItem">
+									<div class="p-helper-clearfix companyNameSelected">
+										<div>
+											<p>{{ item.companyName }}</p>
+											<small> {{ item.companyHp }} </small>
+										</div>
+									</div>
+								</ng-template>
+								<ng-template let-company pTemplate="item">
+									<div class="p-helper-clearfix companyNameSelected">
+										<div>
+											<p>{{ company.companyName }}</p>
+											<small> {{ company.companyHp }} </small>
+										</div>
+									</div>
+								</ng-template>
+							</p-dropdown>
+						</div>
+						<!--<div class="search"-->
+						<!--[class.not-active]="userService?.appData?.userData?.pathMainApp === 'accountants' && !selectedValue">-->
+						<!--<input type="text"-->
+						<!--placeholder="{{(userService?.appData?.userData?.pathMainApp === 'cfl' || selectedValue) ? ('actions.search' | translate) : ('actions.searchNotActive' | translate)}}">-->
+						<!--</div>-->
+						<!--                <div class="divider" *ngIf="userService?.appData?.userData?.pathMainApp === 'accountants' && !router.url.includes('ocr')"></div>-->
+						<!--                <div class="p-g progressBarContent"-->
+						<!--                     *ngIf="userService?.appData?.userData?.pathMainApp === 'accountants' && userService.appData.userData.counterLoads && !router.url.includes('ocr')">-->
+						<!--                    <div class="p-g-8 p-g-nopad titleText"-->
+						<!--                         [class.loadActiveText]="userService.appData.userData.counterLoads.load">-->
+						<!--                        {{(userService.appData.userData.counterLoads.load) ? ('actions.counterLoads.load' | translate) :-->
+						<!--                        ('actions.counterLoads.def' | translate)}}-->
+						<!--                    </div>-->
+						<!--                    <div class="p-g-4 p-g-nopad count">-->
+						<!--                        <i>-->
+						<!--                            {{userService.appData.userData.counterLoads.all}}-->
+						<!--                        </i>/<span>{{userService.appData.userData.counterLoads.valid}}</span></div>-->
+						<!--                    <div class="p-g-12 p-g-nopad">-->
+						<!--                        <div class="progressBarBase" [class.isLoad]="userService.appData.userData.counterLoads.load">-->
+						<!--                            <div class="progressBar"-->
+						<!--                                 *ngIf="userService.appData.userData.counterLoads.valid/(userService.appData.userData.counterLoads.all/100) > 0 || userService.appData.userData.counterLoads.load"-->
+						<!--                                 [style.width.%]="userService.appData.userData.counterLoads.valid/(userService.appData.userData.counterLoads.all/100)"></div>-->
+						<!--                        </div>-->
+						<!--                    </div>-->
+						<!--                </div>-->
+						<!--                <button class="button-dark" *ngIf="!router.url.includes('cfl') && !router.url.includes('ocr')">-->
+						<!--                    ייצוא-->
+						<!--                    <i class="fas fa-caret-down"></i>-->
+						<!--                </button>-->
+						
+						<div
+								*ngIf="userService.appData.isAdmin"
+								class="select-user-to-admin"
+						>
+							<div *ngIf="userService.appData.userOnBehalf">
+								{{ userService.appData.userOnBehalf.name }}
+							</div>
+							<button
+									(click)="userService.appData.userOnBehalfPrompt.visible = true"
+									class="button-link"
+							>
+								{{ 'החלף' }}
+							</button>
+						</div>
+					</div>
+					<div
+							*ngIf="
+              userService?.appData?.userData?.companySelect?.lite ||
+              (userService?.appData?.userData?.companySelect
+                ?.METZALEM_deskTrialExpired &&
+                selectedValue &&
+                selectedValue?.example &&
+                !router.url.includes('archives') &&
+                !router.url.includes('tazrimExample'))
+            "
+							class="liteUpgradeBtnSection"
+							style="margin-right: auto"
+					>
+						<button
+								(click)="
+                userService?.appData?.userData?.companySelect?.trialBlocked &&
+                userService?.appData?.userData?.companySelect?.trialBlocked ===
+                  true
+                  ? clickCashFlow()
+                  : router.url.includes(
+                      isCustomer
+                        ? '/cfl/packages'
+                        : '/accountants/companies/packages'
+                    )
+                  ? startBusinessTrialOpen()
+                  : null
+              "
+								*ngIf="
+                isCustomer ||
+                (userService?.appData?.userData?.companySelect
+                  ?.METZALEM_deskTrialExpired &&
+                  userService.appData?.userData?.companySelect
+                    ?.METZALEM_TYPE !== 'KSAFIM' &&
+                  userService.appData?.userData?.companySelect
+                    ?.METZALEM_TYPE !== 'KSAFIM_ANHALATHESHBONOT' &&
+                  selectedValue &&
+                  selectedValue?.example &&
+                  !router.url.includes('archives') &&
+                  !router.url.includes('tazrimExample'))
+              "
+								[routerLink]="
+                router.url.includes(
+                  isCustomer
+                    ? '/cfl/packages'
+                    : '/accountants/companies/packages'
+                ) ||
+                (userService?.appData?.userData?.companySelect?.trialBlocked &&
+                  userService?.appData?.userData?.companySelect
+                    ?.trialBlocked === true)
+                  ? null
+                  : isCustomer
+                  ? '/cfl/packages'
+                  : '/accountants/companies/packages'
+              "
+								class="liteUpgradeBtn"
+								queryParamsHandling="preserve"
+								role="button"
+						>
+							<strong>שדרגו את bizibox</strong>
+							<p>וקבלו חודש ניסיון חינם</p>
+						</button>
+					</div>
+					
+					<div class="side-menu">
+						<div class="mat-grid-title-centered">
+							<button
+									(click)="onReload()"
+									class="button-link"
+									style="width: 58px"
+							>
+								<mat-icon
+										style="color: #022258; width: 17px; vertical-align: middle"
+										svgIcon="refresh"
+								></mat-icon>
+							</button>
+						</div>
+						<div
+								*ngIf="
+                (router.url.includes('cfl') ||
+                  (!isCustomer && selectedValue)) &&
+                userService.appData?.userData?.companySelect?.METZALEM_TYPE !==
+                  'METZALEM'
+              "
+								class="mat-grid-title-centered"
+						>
+							<button
+									(click)="
+                  !messagesSideHide
+                    ? (messagesSideShow = !messagesSideShow)
+                    : (messagesSideShow = true);
+                  messagesSideHide = false
+                "
+									class="alert-count"
+									role="button"
+									style="width: 58px"
+							>
+								<!--[disabled]="!((messagesService.messagesCount$| async)  > 0)">-->
+								<!--<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/alerts.png" alt="Alerts" width="15" height="17">-->
+								<ng-container
+										*ngIf="
+                    (messagesService.messagesCount$ | async) > 0;
+                    else noMessages
+                  "
+								>
+									<i class="fa-lg far fa-bell"></i>
+									<i>
+										{{
+										(messagesService.messagesCount$ | async) > 99
+												? '99+'
+												: (messagesService.messagesCount$ | async)
+										}}</i
+									>
+								</ng-container>
+								
+								<ng-template #noMessages>
+									<img fill ngSrc="/assets/images/alerts-all-caught.png"
+									     style="height: 21px; width: auto; position: relative;"/>
+								</ng-template>
+							</button>
+						</div>
+						<div
+								*ngIf="
+                userService.appData?.userData?.companySelect?.METZALEM_TYPE !==
+                'METZALEM'
+              "
+								class="mat-grid-title-centered"
+						>
+							<button
+									[routerLink]="
+                  isCustomer ? 'help-center' : './companies/help-center'
+                "
+									class="button-link"
+									queryParamsHandling="preserve"
+									style="width: 58px"
+							>
+								<img
+										alt="Help"
+										class="help"
+										height="17"
+										ngSrc="/assets/images/help.png"
+										width="17"
+								/>
+							</button>
+							<!--                <button class="button-link" (click)="knowledgeBaseVisible = !knowledgeBaseVisible">-->
+							<!--                    <img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/help.png" alt="Help" width="17" height="17" class="help">-->
+							<!--                </button>-->
+						</div>
+						
+						<div>
+							<div [class.isCustomer]="isCustomer" class="ddMenu">
+								<div [style.width]="'100%'">
+									<p-splitButton
+											#splitBtn
+											(onClick)="splitBtn.onDropdownButtonClick($event)"
+											[dir]="userService?.appData?.dir"
+											[label]="
+                      userService?.appData?.userData?.companySelect
+                        ?.METZALEM_deskTrialExpired &&
+                      selectedValue &&
+                      selectedValue?.example &&
+                      !router.url.includes('archives') &&
+                      !router.url.includes('tazrimExample')
+                        ? isCustomer
+                          ? 'אזור אישי - ביזיבוקס לדוגמא'
+                          : 'ביזיבוקס לדוגמא'
+                        : (isCustomer ? 'אזור אישי - ' : '') +
+                          userService?.appData?.userData?.userName
+                    "
+											[model]="itemsDD"
+									>
+									</p-splitButton>
+								</div>
+							</div>
+						</div>
+					</div>
+				</mat-grid-tile>
+			</mat-grid-list>
+		</ng-container>
+		<ng-container *ngIf="userService.appData?.station_id">
+			<div
+					style="
+          display: flex;
+          align-content: center;
+          justify-content: space-between;
+          align-items: center;
+          height: 100%;
+        "
+			>
+				<div>
+					<img alt="LogoERP" fill ngSrc="/assets/images/erp.png"
+					     style="height: auto; width: auto; position: relative;"/>
+				</div>
+				
+				<div>
+					<img alt="Logo_bizibox" fill ngSrc="/assets/images/bizibox-erp.png"
+					     style="height: auto; width: auto; position: relative;"/>
+				</div>
+			</div>
+		</ng-container>
+		
+		<!--<div *ngIf="userService?.appData?.userData?.activatedType === 'dialogUpdate'-->
+		<!--&& (!userService?.appData?.userData?.exampleCompany || router.url.includes('cfl/settings'))-->
+		<!--&& !(router.url.includes('cfl/accountancy/') && userService.appData.userData?.companySelect?.example)-->
+		<!--&& !userService.appData.userData.companySelectedBillingStatus" class="activated">-->
+		<!--<div>-->
+		<!--<div>-->
+		<!--<p>-->
+		<!--היי-->
+		<!--{{userService?.appData?.userData?.userName}},-->
+		<!--יש לאמת את כתובת המייל אליה נשלח מידע מהמערכת-->
+		<!--</p>-->
+		<!--<div>-->
+		<!--<button id="buttonActive" style="line-height: 26px !important;" (click)="sendActivationMails()">-->
+		<!--שליחת מייל-->
+		<!--</button>-->
+		<!--</div>-->
+		<!--</div>-->
+		
+		<!--</div>-->
+		<!--</div>-->
+		<!--<div *ngIf="userService.appData.isActivated" class="isActivated">-->
+		<!--<div>-->
+		<!--<p>-->
+		<!--<strong>-->
+		<!--תודה רבה!-->
+		<!--</strong>-->
+		<!--כתובת המייל אומתה בהצלחה. אנחנו מאחלים לכם שימוש מהנה בbizibox-->
+		<!--</p>-->
+		<!--</div>-->
+		<!--</div>-->
+	</header>
+	
+	<ng-container *ngIf="!userService.appData?.station_id">
+		<button
+				(click)="
+        userService.appData.inFullScreenMode =
+          !userService.appData.inFullScreenMode
+      "
+				*ngIf="!router.url.includes('addProducts')"
+				[class.paddingLayer]="router.url.includes('packages')"
+				[matTooltip]="
+        'appWalk.customers.fullscreen-' +
+          (userService.appData.inFullScreenMode ? 'off' : 'on') | translate
+      "
+				[style.top.px]="
+        mainSection.getBoundingClientRect().top +
+        (router.url.includes('suppliersAndCustomers') ? 12 : 24)
+      "
+				id="fullScreenToggle"
+				matTooltipPosition="after"
+		>
+			<img
+					[src]="
+          '/assets/images/fullscreen-' +
+          (userService.appData.inFullScreenMode ? 'off' : 'on') +
+          '.svg'
+        " style="height: auto; width: 24px; position: relative;"
+			
+			/>
+		</button>
+	</ng-container>
+	
+	<main
+			#mainSection
+			[class.isClose]="
+      !isOpen || (userService.appData && userService.appData.station_id)
+    "
+			[class.isInFullScreenMode]="
+      userService?.appData && userService.appData.inFullScreenMode
+    "
+			[class.station_id]="userService.appData && userService.appData.station_id"
+			id="main"
+	>
+		<ng-container *ngIf="!userService.appData?.station_id">
+			<aside [class.isHover]="isHover" id="side-nav">
+				<div
+						[appScrollHeight]="appHeader.getBoundingClientRect().bottom + navSettingsBottom.getBoundingClientRect().height"
+						class="scrollbar-dynamic"
+				>
+					<mat-accordion
+							(mouseenter)="openNavWithDelay($event)"
+							(mouseleave)="mouseleaveSideNav($event)"
+							[displayMode]="'flat'"
+							class="headers-align"
+							id="nav"
+							style="width: 100px"
+					>
+						<ng-container *ngFor="let item of menuArray; index as i">
+							
+							
+							<mat-expansion-panel
+									(opened)="setStateGroup(i)"
+									*ngIf="!(selectedValue && (item.main === 'supplierCustomersJournal' || item.main === 'bankCreditJournal'))"
+									[class.panelClose]="!item.children.length"
+									[class.panelForceOpen]="
+                  (item.isForceLink ||
+                    (router.url.includes('accountancy') &&
+                      item.main === 'accountancy' &&
+                      selectedValue?.example === true)) &&
+                  selectedValue &&
+                  isOpen
+                "
+									[class.panelMETZALEM]="
+                  item.main === 'tazrimExample' &&
+                  userService?.appData?.userData?.companySelect
+                    ?.METZALEM_deskTrialExpired &&
+                  selectedValue
+                "
+									[class.supplierCustomersJournal]="item.main === 'supplierCustomersJournal' || item.main === 'bankCreditJournal'"
+									[disabled]="
+                  item.isForceLink ||
+                  (item.main === 'accountancy' &&
+                    !selectedValue?.privs.includes('ANHALATHESHBONOT') &&
+                    !selectedValue?.example) ||
+                  (item.main === 'tazrimExample' &&
+                    userService?.appData?.userData?.companySelect
+                      ?.METZALEM_deskTrialExpired &&
+                    selectedValue &&
+                    !selectedValue?.example)
+                "
+									[expanded]="
+                  (!isCustomer ||
+                    (isCustomer &&
+                      userService?.appData?.userData?.companySelect
+                        ?.METZALEM_deskTrialExpired)) &&
+                  selectedValue &&
+                  item.children.length > 0 &&
+                  (step === i ||
+                    (router.url.includes(item.main) &&
+                      !item.isForceLink &&
+                      step !== 99 &&
+                      !isParent) ||
+                    (router.url.includes(item.main) &&
+                      (isHover || isOpen) &&
+                      step === 99))
+                "
+									[hideToggle]="
+                  !item.children.length ||
+                  item.isForceLink ||
+                  (item.main === 'accountancy' &&
+                    !selectedValue?.privs.includes('ANHALATHESHBONOT') &&
+                    !selectedValue?.example) ||
+                  (item.main === 'tazrimExample' &&
+                    userService?.appData?.userData?.companySelect
+                      ?.METZALEM_deskTrialExpired &&
+                    selectedValue &&
+                    !selectedValue?.example)
+                "
+							>
+								<mat-expansion-panel-header
+										(click)="
+                    isHover = true;
+                    (userService?.appData?.userData?.companySelect?.lite &&
+                      item?.notActive &&
+                      userService?.appData?.userData?.companySelect
+                        ?.trialBlocked &&
+                      userService?.appData?.userData?.companySelect
+                        ?.trialBlocked === true) ||
+                    (item?.main === 'budget' &&
+                      (userService?.appData?.userData?.companySelect
+                        ?.budgetPopUpType === 2 ||
+                        userService?.appData?.userData?.companySelect
+                          ?.budgetPopUpType === 3))
+                      ? item?.main === 'budget' &&
+                        (userService?.appData?.userData?.companySelect
+                          ?.budgetPopUpType === 2 ||
+                          userService?.appData?.userData?.companySelect
+                            ?.budgetPopUpType === 3)
+                        ? clickBudget()
+                        : clickCashFlow()
+                      : item.isForceUnSelectedCompany
+                      ? forceUnSelectedCompany()
+                      : null
+                  "
+										*ngIf="
+                    (item.main === 'tazrimExample' &&
+                      userService?.appData?.userData?.companySelect
+                        ?.METZALEM_deskTrialExpired &&
+                      selectedValue &&
+                      !selectedValue?.example) ||
+                    !item.children.length ||
+                    item.isForceLink ||
+                    (item.main === 'accountancy' &&
+                      !selectedValue?.privs.includes('ANHALATHESHBONOT') &&
+                      !selectedValue?.example)
+                  "
+										[class.lite]="
+                    (userService?.appData?.userData?.companySelect?.lite &&
+                      item?.notActive) ||
+                    (item?.main === 'budget' &&
+                      (userService?.appData?.userData?.companySelect
+                        ?.budgetPopUpType === 2 ||
+                        userService?.appData?.userData?.companySelect
+                          ?.budgetPopUpType === 3))
+                  "
+										[collapsedHeight]="'50px'"
+										[expandedHeight]="'50px'"
+										[routerLinkActiveOptions]="{
+                    exact:
+                      item.main === 'companies' &&
+                      selectedValue &&
+                      !router.url.includes('companies/settings')
+                        ? true
+                        : item.main === 'companies'
+                  }"
+										[routerLink]="
+                    (userService?.appData?.userData?.companySelect?.lite &&
+                      item?.notActive &&
+                      userService?.appData?.userData?.companySelect
+                        ?.trialBlocked &&
+                      userService?.appData?.userData?.companySelect
+                        ?.trialBlocked === true) ||
+                    (item?.main === 'budget' &&
+                      (userService?.appData?.userData?.companySelect
+                        ?.budgetPopUpType === 2 ||
+                        userService?.appData?.userData?.companySelect
+                          ?.budgetPopUpType === 3))
+                      ? null
+                      : item.routerLink
+                  "
+										class="parentHeader"
+										queryParamsHandling="merge"
+										routerLinkActive="active"
+								>
+									<mat-panel-title>
+										<ng-container *ngIf="item.img.svg; else img">
+											<mat-icon [svgIcon]="item.img.src"></mat-icon>
+										</ng-container>
+										<ng-template #img>
+											<ng-container *ngIf="item.img.src">
+												<img
+														alt="{{ item.img.alt }}"
+														src="/assets/images/{{ item.img.src }}.png"
+														style="height: auto;  position: relative;"
+												/>
+											</ng-container>
+											<ng-container *ngIf="item.img.liteDiamondIcon">
+												<div class="liteDiamondIcon">
+													<img  src="/assets/images/lightDiamondIcon.png"
+													     style="height: auto; width: auto; position: relative;"/>
+												</div>
+											</ng-container>
+										</ng-template>
+										<span>{{ item.text | translate }}</span>
+										
+										<div
+												*ngIf="
+                        (userService?.appData?.userData?.companySelect?.lite &&
+                          item?.notActive) ||
+                        (item?.main === 'budget' &&
+                          (userService?.appData?.userData?.companySelect
+                            ?.budgetPopUpType === 2 ||
+                            userService?.appData?.userData?.companySelect
+                              ?.budgetPopUpType === 3))
+                      "
+												class="liteDiamondIcon"
+										>
+											<img
+													*ngIf="
+                          userService?.appData?.userData?.companySelect?.lite &&
+                          item?.notActive
+                        "
+													alt="גרסת לייט"
+													src="/assets/images/lightDiamondIcon.png"
+													style="height: auto; width: auto; position: relative;"
+											/>
+											<img
+													(click)="$event.stopPropagation(); clickBudget(true)"
+													*ngIf="
+                          item?.main === 'budget' &&
+                          (userService?.appData?.userData?.companySelect
+                            ?.budgetPopUpType === 2 ||
+                            userService?.appData?.userData?.companySelect
+                              ?.budgetPopUpType === 3)
+                        "
+													src="/assets/images/lightDiamondIcon.png"
+													style="height: auto; width: auto; position: relative;"
+											/>
+										</div>
+									</mat-panel-title>
+								</mat-expansion-panel-header>
+								
+								<mat-expansion-panel-header
+										(click)="isParent = true; isHover = true"
+										*ngIf="
+                    (item.main === 'tazrimExample' &&
+                      userService?.appData?.userData?.companySelect
+                        ?.METZALEM_deskTrialExpired &&
+                      selectedValue &&
+                      selectedValue?.example) ||
+                    (((item.text === 'companies' && selectedValue) ||
+                      (item.text !== 'companies' &&
+                        item.main !== 'tazrimExample')) &&
+                      item.children.length &&
+                      !item.isForceLink &&
+                      (item.main !== 'accountancy' ||
+                        (item.main === 'accountancy' &&
+                          (selectedValue?.privs.includes('ANHALATHESHBONOT') ||
+                            selectedValue?.example))))
+                  "
+										[class.active]="router.url.includes(item.main)"
+										[collapsedHeight]="'50px'"
+										[expandedHeight]="'50px'"
+										class="parentHeader"
+								>
+									<mat-panel-title>
+										<ng-container *ngIf="item.img.svg; else img">
+											<mat-icon [svgIcon]="item.img.src"></mat-icon>
+										</ng-container>
+										<ng-template #img>
+											<ng-container *ngIf="item.img.src">
+												<img
+														alt="{{ item.img.alt }}"
+														fill ngSrc="/assets/images/{{ item.img.src }}.png"
+														style="height: auto;  position: relative;"
+												/>
+											</ng-container>
+											<ng-container *ngIf="item.img.liteDiamondIcon">
+												<div class="liteDiamondIcon">
+													<img fill ngSrc="/assets/images/lightDiamondIcon.png"
+													     style="height: auto; width: auto; position: relative;"/>
+												</div>
+											</ng-container>
+										</ng-template>
+										<span>{{
+											item.text === 'companies' && selectedValue
+													? selectedValue?.companyName
+													: (item.text | translate)
+											}}</span>
+									</mat-panel-title>
+								</mat-expansion-panel-header>
+								
+								<ng-container
+										*ngIf="
+                    ((item.main === 'tazrimExample' &&
+                      userService?.appData?.userData?.companySelect
+                        ?.METZALEM_deskTrialExpired &&
+                      selectedValue &&
+                      selectedValue?.example) ||
+                      (item.text === 'companies' && selectedValue) ||
+                      (item.text !== 'companies' &&
+                        item.main !== 'tazrimExample')) &&
+                    item.children.length &&
+                    (item.main === 'accountancy'
+                      ? selectedValue?.privs.includes('ANHALATHESHBONOT') ||
+                        selectedValue?.example
+                      : true)
+                  "
+										[class.isForceLink]="item.isForceLink"
+								>
+									<!--                                <mat-list-item *ngIf="item.isForceLink && selectedValue">-->
+									<!--                                    <div class="companyNameBold">-->
+									<!--                                        {{selectedValue.companyName}}-->
+									<!--                                    </div>-->
+									<!--                                </mat-list-item>-->
+									<mat-list-item
+											*ngFor="let child of item.children; index as i1"
+									>
+										<mat-expansion-panel
+												(opened)="setStateGroupChild(i1, i)"
+												*ngIf="
+                        child.children &&
+                        ((item.text === 'companies' && selectedValue) ||
+                          item.text !== 'companies') &&
+                        !(
+                          child.main === 'cash-flow' &&
+                          userService?.appData?.userData?.companySelect
+                            ?.selfManaged === 2 &&
+                          !(
+                            item.main === 'tazrimExample' &&
+                            userService?.appData?.userData?.companySelect
+                              ?.METZALEM_deskTrialExpired &&
+                            selectedValue &&
+                            selectedValue?.example
+                          )
+                        )
+                      "
+												[class.panelClose]="!child.children.length"
+												[expanded]="
+                        child.children.length > 0 &&
+                        (stepChild === i1 ||
+                          (router.url.includes(child.main) &&
+                            !child.isForceLink &&
+                            stepChild !== 99 &&
+                            !isParentChild) ||
+                          (router.url.includes(child.main) &&
+                            (isHoverChild || isOpen) &&
+                            stepChild === 99))
+                      "
+												[hideToggle]="!child.children.length"
+										>
+											<mat-expansion-panel-header
+													(click)="
+                          isHoverChild = true;
+                          (userService?.appData?.userData?.companySelect
+                            ?.lite &&
+                            child?.notActive &&
+                            userService?.appData?.userData?.companySelect
+                              ?.trialBlocked &&
+                            userService?.appData?.userData?.companySelect
+                              ?.trialBlocked === true) ||
+                          (child?.main === 'budget' &&
+                            (userService?.appData?.userData?.companySelect
+                              ?.budgetPopUpType === 2 ||
+                              userService?.appData?.userData?.companySelect
+                                ?.budgetPopUpType === 3))
+                            ? child?.main === 'budget' &&
+                              (userService?.appData?.userData?.companySelect
+                                ?.budgetPopUpType === 2 ||
+                                userService?.appData?.userData?.companySelect
+                                  ?.budgetPopUpType === 3)
+                              ? clickBudget()
+                              : clickCashFlow()
+                            : child.isForceUnSelectedCompany
+                            ? forceUnSelectedCompany()
+                            : !userService?.appData?.userData?.companySelect
+                                ?.supplierJournalItem && child?.isJournalTrans
+                            ? goToCompanyProducts()
+                            : null
+                        "
+													*ngIf="!child.children.length"
+													[class.lite]="
+                          (!userService?.appData?.userData?.companySelect
+                            ?.supplierJournalItem &&
+                            child?.isJournalTrans) ||
+                            
+                            (!userService?.appData?.userData?.companySelect
+                                ?.bankJournalItem &&!userService?.appData?.userData?.companySelect
+                                ?.creditJournalItem &&
+                                child?.isBankTrans)
+                            
+                            ||
+                          (userService?.appData?.userData?.companySelect
+                            ?.lite &&
+                            child?.notActive) ||
+                          (child?.main === 'budget' &&
+                            (userService?.appData?.userData?.companySelect
+                              ?.budgetPopUpType === 2 ||
+                              userService?.appData?.userData?.companySelect
+                                ?.budgetPopUpType === 3))
+                        "
+													[collapsedHeight]="'50px'"
+													[expandedHeight]="'50px'"
+													[routerLinkActiveOptions]="{ exact: false }"
+													[routerLinkActive]="'active' "
+													[routerLink]="
+                 
+                          (userService?.appData?.userData?.companySelect
+                            ?.lite &&
+                            child?.notActive &&
+                            userService?.appData?.userData?.companySelect
+                              ?.trialBlocked &&
+                            userService?.appData?.userData?.companySelect
+                              ?.trialBlocked === true) ||
+                          (child?.main === 'budget' &&
+                            (userService?.appData?.userData?.companySelect
+                              ?.budgetPopUpType === 2 ||
+                              userService?.appData?.userData?.companySelect
+                                ?.budgetPopUpType === 3))
+                            ? null
+                            : child.routerLink
+                        "
+													
+													queryParamsHandling="merge"
+											>
+												<mat-panel-title style="padding-right: 32px">
+													<span 							                 #text
+													                                                  tooltipPosition="top"
+													                                                  [pTooltip]="(child.text | translate)"
+													                                                  [tooltipDisabled]="
+                  text.clientWidth >= text.scrollWidth
+                ">{{ child.text | translate }}</span>
+													
+													<div
+															*ngIf="
+                              (!userService?.appData?.userData?.companySelect
+                                ?.supplierJournalItem &&
+                                child?.isJournalTrans) ||   (!userService?.appData?.userData?.companySelect
+                                ?.bankJournalItem &&!userService?.appData?.userData?.companySelect
+                                ?.creditJournalItem &&
+                                child?.isBankTrans)
+                                ||
+                              (userService?.appData?.userData?.companySelect
+                                ?.lite &&
+                                child?.notActive) ||
+                              (child?.main === 'budget' &&
+                                (userService?.appData?.userData?.companySelect
+                                  ?.budgetPopUpType === 2 ||
+                                  userService?.appData?.userData?.companySelect
+                                    ?.budgetPopUpType === 3))
+                            "
+															class="liteDiamondIcon"
+													>
+														<img
+																*ngIf="
+                            (    !userService?.appData?.userData?.companySelect
+                                  ?.supplierJournalItem && child?.isJournalTrans)
+                                  ||
+                                   (!userService?.appData?.userData?.companySelect
+                                ?.bankJournalItem &&!userService?.appData?.userData?.companySelect
+                                ?.creditJournalItem &&
+                                child?.isBankTrans)
+                              "
+																
+																src="/assets/images/lightDiamondIcon.png" style="height: auto; width: auto; position: relative;"
+														/>
+														<img
+																*ngIf="
+                                userService?.appData?.userData?.companySelect
+                                  ?.lite && child?.notActive
+                              "
+																alt="גרסת לייט"
+																
+																src="/assets/images/lightDiamondIcon.png" style="height: auto; width: auto; position: relative;"
+														/>
+														<img
+																(click)="
+                                $event.stopPropagation(); clickBudget(true)
+                              "
+																*ngIf="
+                                child?.main === 'budget' &&
+                                (userService?.appData?.userData?.companySelect
+                                  ?.budgetPopUpType === 2 ||
+                                  userService?.appData?.userData?.companySelect
+                                    ?.budgetPopUpType === 3)
+                              "
+																
+																src="/assets/images/lightDiamondIcon.png" style="height: auto; width: auto; position: relative;"
+														/>
+													</div>
+												</mat-panel-title>
+											</mat-expansion-panel-header>
+											
+											<mat-expansion-panel-header
+													(click)="isParentChild = true; isHoverChild = true"
+													*ngIf="child.children.length"
+													[class.active]="router.url.includes(child.main)"
+													[collapsedHeight]="'50px'"
+													[expandedHeight]="'50px'"
+											>
+												<mat-panel-title style="padding-right: 32px">
+													<span>{{ child.text | translate }}</span>
+												</mat-panel-title>
+											</mat-expansion-panel-header>
+											
+											<mat-list-item *ngFor="let grandson of child.children">
+												<a
+														(click)="isHoverChild = true"
+														[routerLinkActiveOptions]="{ exact: false }"
+														matLine
+														queryParamsHandling="merge"
+														routerLink="{{ grandson.routerLink }}"
+														routerLinkActive="active"
+												>
+													{{ grandson.text | translate }}
+												</a>
+											</mat-list-item>
+										</mat-expansion-panel>
+										<ng-container
+												*ngIf="child.main === 'cash-flow' && isCustomer"
+										>
+											<!--                        <ng-container-->
+											<!--                                *ngIf="userService?.appData?.userData?.companySelect?.lite ? item.main === 'cash-flow' : item.main === 'budget'">-->
+											<mat-expansion-panel
+													(click)="clickRecommendation()"
+													[disabled]="true"
+													[hideToggle]="true"
+											>
+												<mat-expansion-panel-header
+														[class.lite]="
+                            userService?.appData?.userData?.companySelect?.lite
+                          "
+												>
+													<mat-panel-title style="padding-right: 32px">
+                            <span>{{
+	                            'recommendationCalendar.title' | translate
+	                            }}</span>
+														<div
+																*ngIf="
+                                userService?.appData?.userData?.companySelect
+                                  ?.lite
+                              "
+																class="liteDiamondIcon"
+														>
+															<img
+																	alt="גרסת לייט"
+																	fill
+																	ngSrc="/assets/images/lightDiamondIcon.png" style="height: auto; width: auto; position: relative;"
+															/>
+														</div>
+													</mat-panel-title>
+												</mat-expansion-panel-header>
+											</mat-expansion-panel>
+										</ng-container>
+										<a
+												(click)="isHover = true"
+												*ngIf="!child.children"
+												[routerLinkActiveOptions]="{ exact: false }"
+												matLine
+												queryParamsHandling="merge"
+												routerLink="{{ child.routerLink }}"
+												routerLinkActive="active"
+										>
+											{{ child.text | translate }}
+											
+											<i
+													*ngIf="
+                          item.main === 'accountancy' &&
+                          ((selectedValue?.example &&
+                            !userService?.appData?.userData?.companySelect
+                              ?.METZALEM) ||
+                            !selectedValue?.privs.includes('ANHALATHESHBONOT'))
+                        "
+													class="newMark"
+											>
+												{{ 'menu.new' | translate }}
+											</i>
+										</a>
+									</mat-list-item>
+								</ng-container>
+							</mat-expansion-panel>
+							
+							<ng-container *ngIf="item.main === 'cash-flow'">
+								<!--                        <ng-container-->
+								<!--                                *ngIf="userService?.appData?.userData?.companySelect?.lite ? item.main === 'cash-flow' : item.main === 'budget'">-->
+								<mat-expansion-panel
+										(click)="clickRecommendation()"
+										[disabled]="true"
+										[hideToggle]="true"
+								>
+									<mat-expansion-panel-header
+											[class.lite]="
+                      userService?.appData?.userData?.companySelect?.lite
+                    "
+									>
+										<mat-panel-title>
+											<img
+													src="/assets/images/recommendation-calc-action.png"
+											/>
+											<span>{{
+												'recommendationCalendar.title' | translate
+												}}</span>
+											<div
+													*ngIf="
+                          userService?.appData?.userData?.companySelect?.lite
+                        "
+													class="liteDiamondIcon"
+											>
+												<img
+														alt="גרסת לייט"
+														src="/assets/images/lightDiamondIcon.png"
+												/>
+											</div>
+										</mat-panel-title>
+									</mat-expansion-panel-header>
+								</mat-expansion-panel>
+							</ng-container>
+						</ng-container>
+						
+						<!--<mat-expansion-panel [hideToggle]="true" [disabled]="true">-->
+						<!--<mat-expansion-panel-header>-->
+						<!--<mat-panel-title (click)="recommendationCalculatorShow = !recommendationCalculatorShow; rcmndtnCalendar && rcmndtnCalendar.reset();">-->
+						<!--<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/recommendation-calc-action.png"/>-->
+						<!--<span>{{'recommendationCalendar.title'| translate}}</span>-->
+						<!--</mat-panel-title>-->
+						<!--</mat-expansion-panel-header>-->
+						<!--</mat-expansion-panel>-->
+					</mat-accordion>
+				</div>
+				<div #navSettingsBottom>
+					<div *ngIf="!isCustomer && menuArray && menuArray.length && menuArray[0].main === 'main'" style="height: 50px">
+						<mat-list-item class="settingsAcc">
+							<a
+									(click)="isHoverChild = true"
+									[routerLinkActiveOptions]="{ exact: false }"
+									matLine
+									queryParamsHandling="merge"
+									routerLink="./companies/settings"
+									routerLinkActive="active"
+							>
+								<mat-icon [svgIcon]="'settingsNav'"></mat-icon>
+								
+								<span>
+									{{ 'actions.settings' | translate }}
+								</span>
+							</a>
+						</mat-list-item>
+					</div>
+				</div>
+				<i
+						(click)="setStateGroup(99); isOpen = !isOpen; isHover = isOpen"
+						[class.sidenav-opened]="isOpen"
+						class="icon-toggle-nav"
+						id="sideNavToggle"
+				></i>
+			</aside>
+		</ng-container>
+		
+		<div
+				[ngStyle]="
+        router.url.includes('cfl/packages') ||
+        router.url.includes('cfl/landingPage') ||
+        router.url.includes('cfl/tazrimExample')
+          ? { padding: '0' }
+          : null
+      "
+				class="scroll-chrome"
+				id="content"
+		>
+			<!--<div class="forceLTR" style="text-align: left;">-->
+			<!--step: {{step}} isHover: {{isHover}}  isOpen: {{isOpen}}-->
+			<!--</div>-->
+			<router-outlet></router-outlet>
+		</div>
+	</main>
+	
+	<!--    <button type="button" class="userCommentHandler" (click)="userCommentPrompt.visible = !userCommentPrompt.visible;"-->
+	<!--            *ngIf="!userService?.appData?.inFullScreenMode && userService?.appData?.userData?.companySelect?.lite">-->
+	<!--        משוב-->
+	<!--        <img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/user-survey-bubble.png" height="27" width="23"/>-->
+	<!--    </button>-->
+</div>
+
+<p-dialog (visibleChange)=" userCommentPromptVisible($event)"
+          [modal]="true"
+          [style]="{width: 500 + 'px'}"
+          [visible]="(userCommentPrompt['visible'])"
+          appendTo="body"
+          styleClass="userCommentPromptDialog"
+>
+	<p-header>
+		<div
+				*ngIf="
+        userCommentPrompt.processing === null ||
+        userCommentPrompt.processing === true
+      "
+				style="
+        display: flex;
+        display: -ms-flexbox;
+        align-content: baseline;
+        align-items: baseline;
+      "
+		>
+			<img
+					height="24"
+					src="/assets/images/fb-logo-bizibox-32-32.png"
+					width="24"
+			/>
+			<span>דעתכם חשובה לנו!</span>
+		</div>
+	</p-header>
+	<form
+			(ngSubmit)="sendUserComment()"
+			*ngIf="
+      userCommentPrompt.processing === null ||
+      userCommentPrompt.processing === true
+    "
+			[formGroup]="userCommentPrompt.form"
+	>
+    <textarea
+		    [placeholder]="
+        'ספרו לנו מה אתם חושבים ואנחנו מבטיחים להתייחס במלוא תשומת הלב לכל הערה והארה'
+      "
+		    autocomplete="off"
+		    formControlName="userMessage"
+		    id="userMessage"
+		    name="userMessage"
+    ></textarea>
+		
+		<div
+				style="
+        display: flex;
+        display: -ms-flexbox;
+        justify-content: flex-end;
+        margin-top: 1.5em;
+      "
+		>
+			<button
+					[disabled]="
+          !userCommentPrompt.form.valid || userCommentPrompt.processing
+        "
+					class="button-dark"
+					type="submit"
+			>
+				<i
+						*ngIf="userCommentPrompt.processing"
+						class="fas fa-circle-notch fa-spin"
+				></i>
+				<img
+						*ngIf="!userCommentPrompt.processing"
+						height="14"
+						src="/assets/images/user-survey-send.png"
+						width="15"
+				/>&nbsp; שליחה
+			</button>
+		</div>
+	</form>
+	<p
+			*ngIf="userCommentPrompt.processing === false"
+			style="
+      text-align: center;
+      font-size: 3em;
+      padding: 1em 0;
+      margin-top: -0.8em;
+    "
+	>
+		<i class="fas fa-check"></i>
+		תודה
+	</p>
+</p-dialog>
+
+<!--<p-dialog (visibleChange)="aaa = false" *ngIf="popUpReplaceMailShow"-->
+<!--[visible]="popUpReplaceMailShow"-->
+<!--appendTo="body"-->
+<!--[modal]="true"-->
+<!--[styleClass]="popUpReplaceMailShow.styleClass"-->
+<!--[style]="{width: popUpReplaceMailShow.width + 'px',height: ((popUpReplaceMailShow.step !== 0) ? popUpReplaceMailShow.height : 305) + 'px'}"-->
+<!--(onHide)="popUpReplaceMailShow=false;">-->
+<!--<p-header>-->
+<!--<div *ngIf="popUpReplaceMailShow.step === 0">-->
+<!--אימות כתובת מייל-->
+<!--</div>-->
+<!--<div *ngIf="popUpReplaceMailShow.step !== 0">-->
+<!--החלפת מייל-->
+<!--</div>-->
+<!--</p-header>-->
+
+<!--<div class="bodyPopUp">-->
+<!--<div *ngIf="popUpReplaceMailShow.step === 0" class="step1">-->
+<!--<div>-->
+<!--<div style="margin-bottom: 13px;">-->
+<!--<p>-->
+
+<!--מייל אימות נשלח לכתובת {{(popUpReplaceMailShow.currentMailAddress || selectedValue?.contactMail)}},-->
+<!--</p>-->
+<!--<p>-->
+<!--לחצו על הלינק המצורף על מנת לסיים את תהליך האימות.-->
+<!--</p>-->
+<!--</div>-->
+<!--<div>-->
+<!--<p>-->
+<!--במידה ונפלה טעות בכתובת המייל אנא עדכנו את-->
+<!--</p>-->
+<!--<p>-->
+<!--כתובתכם ולחצו על שליחה-->
+<!--</p>-->
+<!--</div>-->
+<!--</div>-->
+
+<!--<form [formGroup]="formMail" novalidate class="Form" autocomplete="nope" style="margin-top: 25px;margin-bottom: 25px;">-->
+<!--<div class="Login__control" formGroupName="form">-->
+<!--<div [ngClass]="{'Form__group': true, 'Form__group&#45;&#45;err': formMail.get('form')['controls'].mail?.invalid && formMail.get('form')['controls'].mail.touched}">-->
+<!--<input type="text" class="forceLTR"-->
+<!--formControlName="mail"-->
+<!--placeholder="כתובת מייל"-->
+<!--(focus)="handleFocusUsername()"-->
+<!--(blur)="checkMailExists()">-->
+<!--<div class="Form__feedback">{{'validation.emailError' | translate}}</div>-->
+<!--</div>-->
+<!--</div>-->
+<!--</form>-->
+<!--</div>-->
+<!--<div *ngIf="popUpReplaceMailShow.step === 1" class="step1">-->
+<!--<div>-->
+<!--<div style="margin-bottom: 13px;">-->
+<!--<p>-->
+<!--<strong>-->
+<!--שימו לב,-->
+<!--</strong>-->
+<!--</p>-->
+<!--<p>-->
+<!--עדכון כתובת המייל תשנה את פרטי הכניסה למערכת bizibox-->
+<!--</p>-->
+<!--<p>-->
+<!--והכניסה תתבצע בעזרת המייל החדש והסיסמה.-->
+<!--</p>-->
+<!--</div>-->
+<!--<div>-->
+<!--<p>-->
+<!--לאישור החלפת כתובת המייל אנא הזינו את הסיסמה למערכת-->
+<!--</p>-->
+<!--<p>-->
+<!--ואת המייל החדש-->
+<!--</p>-->
+<!--</div>-->
+<!--</div>-->
+
+<!--<form [formGroup]="formMail" novalidate class="Form" autocomplete="nope">-->
+<!--<div class="Login__control" formGroupName="form">-->
+<!--<label>-->
+<!--מייל-->
+<!--</label>-->
+<!--<div [ngClass]="{'Form__group': true, 'Form__group&#45;&#45;err': formMail.get('form')['controls'].mail?.invalid && formMail.get('form')['controls'].mail.touched}">-->
+<!--<input type="text" class="forceLTR"-->
+<!--formControlName="mail"-->
+<!--(focus)="handleFocusUsername()"-->
+<!--(blur)="checkMailExists()">-->
+<!--<div class="Form__feedback">{{'validation.emailError' | translate}}</div>-->
+<!--</div>-->
+<!--</div>-->
+
+<!--<div class="Login__control" formGroupName="form">-->
+<!--<label>-->
+<!--סיסמת כניסה ל bizibox-->
+<!--</label>-->
+<!--<div [ngClass]="{'Form__group Form__group&#45;&#45;icon Form__group&#45;&#45;password': true, 'Form__group&#45;&#45;err': (formMail.get('form.password').invalid && formMail.get('form.password').touched) || formMail.get('form').errors?.incorrectPass}">-->
+<!--<i (click)="hideMail = !hideMail"-->
+<!--[ngClass]="{'fa': true, 'fa-eye': hideMail, 'fa-eye-slash': !hideMail}"></i>-->
+<!--<input [type]="hideMail ? 'password' : 'text'"-->
+<!--class="forceLTR"-->
+<!--formControlName="password">-->
+<!--<div class="Form__feedback" *ngIf="(formMail.get('form.password').invalid && formMail.get('form.password').touched)">-->
+<!--{{'formLogin.password' | translate}} <strong>{{'validation.required' | translate}}</strong>-->
+<!--</div>-->
+<!--</div>-->
+<!--</div>-->
+
+<!--<div class="Login__submit">-->
+<!--<div class="Form__feedback Form__feedback&#45;&#45;err" *ngIf="formMail.get('form').errors?.incorrect">-->
+<!--<div>-->
+<!--<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/alertIc.png"-->
+<!--width="15"-->
+<!--height="13">-->
+<!--</div>-->
+<!--<div>-->
+<!--<p>-->
+<!--כתובת מייל זו כבר משויכת למשתמש במערכת bizibox-->
+<!--</p>-->
+<!--<div>-->
+<!--זה המייל שלי! פתיחת קריאת שירות-->
+<!--</div>-->
+<!--</div>-->
+<!--</div>-->
+<!--<div class="Form__feedback Form__feedback&#45;&#45;err" *ngIf="formMail.get('form').errors?.incorrectPass">-->
+<!--<div>-->
+<!--<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/alertIc.png"-->
+<!--width="15"-->
+<!--height="13">-->
+<!--</div>-->
+<!--<div>-->
+<!--<p>-->
+<!--סיסמא לא תואמת, אנא נסו שוב-->
+<!--</p>-->
+<!--</div>-->
+<!--</div>-->
+<!--</div>-->
+<!--</form>-->
+<!--</div>-->
+<!--<div *ngIf="popUpReplaceMailShow.step === 2" class="step2">-->
+<!--<h2>-->
+<!--<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/vSign.png"-->
+<!--width="29"-->
+<!--height="22">-->
+
+<!--מצויין!-->
+<!--</h2>-->
+<!--<div>-->
+<!--המייל הוחלף בהצלחה.-->
+<!--<br>-->
+<!--מייל אימות נשלח לכתובת-->
+<!--{{formMail.get('form')['controls'].mail.value}}-->
+<!--</div>-->
+<!--<p>-->
+<!--להזכירך יש לאמת את כתובת המייל תוך 24 שעות-->
+<!--<br>-->
+<!--על מנת שהמערכת לא תיחסם.-->
+<!--</p>-->
+<!--<button (click)="popUpReplaceMailShow = false;" class="button-dark">-->
+<!--סגירה-->
+<!--</button>-->
+<!--</div>-->
+<!--</div>-->
+
+<!--<p-footer *ngIf="popUpReplaceMailShow.footer && (popUpReplaceMailShow.step === 1 || popUpReplaceMailShow.step === 0)">-->
+<!--<a href="javascript:void(0)" role="button" class="button-white button-link" style="color: #337dba !important"-->
+<!--(click)="popUpReplaceMailShow = false;">-->
+<!--ביטול-->
+<!--</a>-->
+<!--<button class="button-dark" type="submit" [disabled]="(popUpReplaceMailShow.step === 0) ? (formMail.get('form')['controls'].mail?.invalid) : (!formMail.valid)" (click)="nextStepMail(formMail.value)">-->
+<!--<span *ngIf="popUpReplaceMailShow.step === 0 && formMail.get('form')['controls'].mail?.invalid">-->
+<!--שליחה-->
+<!--</span>-->
+<!--<span *ngIf="popUpReplaceMailShow.step === 0 && formMail.get('form')['controls'].mail?.valid">-->
+<!--שנה כתובת מייל-->
+<!--</span>-->
+<!--<span *ngIf="popUpReplaceMailShow.step === 1">-->
+<!--עדכון כתובת המייל-->
+<!--</span>-->
+<!--</button>-->
+<!--</p-footer>-->
+<!--</p-dialog>-->
+
+<p-dialog (visibleChange)="popUpactivatedTypeBlockShow = false"
+          *ngIf="popUpactivatedTypeBlockShow"
+          [closable]="false"
+          [modal]="true"
+          [styleClass]="'activatedTypeBlock'"
+          [style]="{width: 350 + 'px',height: 307 + 'px'}"
+          [visible]="(popUpactivatedTypeBlockShow)"
+
+          appendTo="body"
+>
+	<p-header>
+		<div>חשבון חסום</div>
+	</p-header>
+	
+	<div class="bodyPopUp">
+		חשבונכם נחסם לכניסה.
+		<br/>
+		מייל אימות נשלח לכתובת xxx@xxx.com,
+		<br/>
+		לחצו על הלינק המצורף על מנת לסיים את תהליך האימות.
+		<br/>
+		<br/>
+		במידה ונפלה טעות בכתובת המייל אנא עדכנו את כתובתכם ולחצו על שליחה
+		
+		<div>
+			<div style="margin-top: 10px">
+				<input
+						[(ngModel)]="mailUserBlock"
+						placeholder="{{ 'formLogin.username' | translate }}"
+						type="text"
+				/>
+			</div>
+		</div>
+	</div>
+	
+	<p-footer>
+		<button
+				(click)="
+        popUpactivatedTypeBlockShow = false; openPopReplaceMail(mailUserBlock)
+      "
+				class="button-dark"
+				type="button"
+		>
+			שנה כתובת מייל
+		</button>
+	</p-footer>
+</p-dialog>
+
+<p-dialog (visibleChange)="recommendationCalculatorShow = false"
+          *ngIf="
+    userService?.appData?.userData &&
+    ((!userService.appData.userData.accountant && router.url.includes('cfl')) ||
+      (userService.appData.userData.accountant &&
+        router.url.includes('companies')))
+  "
+          [header]="'recommendationCalendar.title' | translate"
+          [modal]="true"
+          [styleClass]="'recommendationCalculator-dialog'"
+          [visible]="(recommendationCalculatorShow)"
+          appendTo="body"
+>
+	<app-recommendation-calendar-prompt
+			#rcmndtnCalendar
+			(closed)="recommendationCalculatorShow = false"
+	></app-recommendation-calendar-prompt>
+</p-dialog>
+
+<ng-container *ngIf="userService?.appData?.isAdmin">
+	<p-dialog (visibleChange)="userService.appData.userOnBehalfPrompt.visible = false"
+	          [draggable]="true"
+	          [header]="'בחירת משתמש'"
+	          [minX]="0"
+	          [minY]="0"
+	          [modal]="true"
+	          [resizable]="false"
+	          [styleClass]="'user-on-behalf-select-dialog'"
+	          [style]="{width: 602 + 'px'}"
+	          [visible]="(userService.appData.userOnBehalfPrompt.visible)"
+	          appendTo="body"
+	>
+		<ng-container *ngIf="userService.appData.userOnBehalfPrompt.visible">
+			<app-user-to-admin-selector #userSelector></app-user-to-admin-selector>
+			
+			<div class="p-dialog-footer">
+				<!--                <pre>{{userSelector.form.value| json}}</pre>-->
+				<!--            <div class="p-dialog-footer" *ngIf="adminService.usersToAdmin| async">-->
+				<button
+						(click)="
+            userService.appData.userOnBehalfPrompt.onApprove(
+              userSelector.form.get('user').value,
+              userSelector.adminService.usersToAdminCriteria.type ||
+                userSelector.searchTypesDD[0].value
+            )
+          "
+						[disabled]="
+            userService.appData.userOnBehalfPrompt.processing ||
+            userSelector.form.get('user').invalid ||
+            userSelector.form.get('user').value ===
+              userService.appData.userOnBehalf?.id
+          "
+						class="button-dark"
+				>
+					<i
+							*ngIf="userService.appData.userOnBehalfPrompt.processing"
+							class="fas fa-fw fa-circle-notch fa-spin"
+					></i>
+					{{ 'actions.approve' | translate }}
+				</button>
+				<button
+						(click)="userService.appData.userOnBehalfPrompt.visible = false"
+						class="button-white button-link"
+				>
+					{{ 'actions.cancellation' | translate }}
+				</button>
+			</div>
+		</ng-container>
+	</p-dialog>
+</ng-container>
+
+<ng-container *ngIf="appHeader">
+	<p-sidebar
+			[modal]="false"
+			[ngClass]="{ hasTopBar: userService.appData?.userData?.topSideMesagges }"
+			[style]="{ top: appHeader.getBoundingClientRect().bottom + 'px' }"
+			[visible]="(messagesSideShow)"
+			appendTo="body"
+			position="right"
+			styleClass="messages-side"
+	>
+		<div class="header">
+			<p><i class="far fa-xs fa-bell"></i>&nbsp;&nbsp;{{ 'עדכונים והתראות' }}</p>
+			<button (click)="messagesSideShow = false" class="button-link">
+				<i class="fas fa-angle-right"></i>
+			</button>
+		</div>
+		<ng-container *ngIf="messagesSideShow">
+			<app-messages-list
+					(messagesSideShow)="messagesSideHide = true"
+					[class.has-top-bar]="
+        userService.appData?.userData?.topSideMesagges ||
+        (reportService.reportIsProcessing$ | async) ||
+        (reportService.reportIsProcessingPrint$ | async) ||
+        (reportService.postponed &&
+          !reportService.postponed.fired &&
+          !!reportService.postponed.message) ||
+        (reportService.forLogic &&
+          !reportService.forLogic.fired &&
+          !!reportService.forLogic.message)
+      "
+					[messages$]="selectedCompanyPopupMessages$"
+			></app-messages-list>
+		</ng-container>
+		<div class="footer">
+			<button
+					(click)="messagesSideShow = false"
+					[routerLink]="
+        isCustomer ? '/cfl/messages' : '/accountants/companies/messages'
+      "
+					class="button-link"
+					queryParamsHandling="preserve"
+			>
+				{{ 'לכל ההתראות' }}
+			</button>
+			<!--        <button *ngIf="((messagesService.messagesCount$| async)  > 0)"-->
+			<!--                class="button-link" routerLink="/cfl/messages" queryParamsHandling="preserve" (click)="messagesSideShow = false">{{'לכל ההתראות'}}</button>-->
+			<button
+					[routerLink]="
+        isCustomer
+          ? '/cfl/settings/alerts'
+          : '/accountants/companies/settings/alerts'
+      "
+					class="button-link"
+					queryParamsHandling="preserve"
+			>
+				<i class="fas fa-lg fa-cog"></i>
+			</button>
+		</div>
+	</p-sidebar>
+</ng-container>
+
+<!--<ng-container *ngIf="knowledgeBaseVisible">-->
+<!--    <p-dialog (visibleChange)="aaa = false" [visible]="knowledgeBaseVisible"-->
+<!--                appendTo="body"-->
+<!--                [modal]="true"-->
+<!--                [styleClass]="'knowledge-base-dialog'">-->
+<!--        <p-header>-->
+<!--            <img class="logo" style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/logo-big.png"/>-->
+<!--        </p-header>-->
+<!--        <app-knowledge-base></app-knowledge-base>-->
+<!--    </p-dialog>-->
+<!--</ng-container>-->
+<p-dialog (visibleChange)="knowledgeBaseVisible = false"
+          [modal]="true"
+          [visible]="(knowledgeBaseVisible)"
+          appendTo="body"
+          styleClass="service-call-dialog"
+>
+	<p-header>קריאת שירות</p-header>
+	<ng-container *ngIf="knowledgeBaseVisible">
+		<app-service-call-dialog
+				[accountNickname]="nickname"
+				[companyId]="companyId"
+				[data]="knowledgeBaseVisible"
+				[isBank]="isBank"
+		></app-service-call-dialog>
+	</ng-container>
+</p-dialog>
+<ng-container
+		*ngIf="knowledgeBaseIntroduction && knowledgeBaseIntroduction.visible"
+>
+	<p-dialog (onHide)="onKnowledgeBaseIntroductionHide()"
+	          (visibleChange)="knowledgeBaseIntroduction.visible = false; onKnowledgeBaseIntroductionHide()"
+	          [modal]="true"
+	          [style]="{'margin-top':'100px'}"
+	          [visible]="(knowledgeBaseIntroduction.visible &&
+      !userService.appData?.userData?.companySelectedBillingStatus)"
+	          appendTo="body"
+	          position="top"
+	          styleClass="knowledgeBaseIntroductionDialog"
+	>
+		<p-header>
+			<img class="logo" src="/assets/images/logo-big.png"/>
+		</p-header>
+		<h2>{{ 'לקוחות יקרים,' }}</h2>
+		<p *ngIf="userService?.appData?.userData?.companySelect?.lite">
+			{{ 'השתמשו במרכז העזרה החדש שלנו המופיע תחת הסימן '
+			}}<img fill ngSrc="/assets/images/help.png" style="height: auto; width: auto; position: relative;"/>
+			{{ ' למעלה. סרטונים, שאלות נפוצות ומילון מונחים -' }}<br/>
+			{{ 'הכל כאן במערכת! נגיש וידידותי.' }}
+		</p>
+		<p *ngIf="!userService?.appData?.userData?.companySelect?.lite">
+			{{ 'השתמשו במרכז העזרה החדש שלנו המופיע תחת הסימן '
+			}}<img fill ngSrc="/assets/images/help.png" style="height: auto; width: auto; position: relative;"/>
+			{{ ' למעלה. סרטונים, שאלות נפוצות ופתיחת קריאת שירות -' }}<br/>
+			{{ 'הכל כאן במערכת! נגיש וידידותי.' }}
+		</p>
+		<button
+				(click)="knowledgeBaseIntroduction.visible = false"
+				class="button-dark"
+				type="button"
+		>
+			{{ 'הבנתי, תודה' }}
+		</button>
+	</p-dialog>
+</ng-container>
+
+<p-dialog (onHide)="onbiziboxTrialExpiredHide()"
+          (visibleChange)="biziboxTrialExpired.visible = 0; onbiziboxTrialExpiredHide()"
+          [modal]="true"
+          [styleClass]="
+    biziboxTrialExpired.visible === 2
+      ? 'biziboxTrialExpired step2'
+      : 'biziboxTrialExpired'
+  "
+          [style]="{'margin-top':'100px'}"
+          [visible]="(biziboxTrialExpired.visible !== 0)"
+          appendTo="body"
+          position="top"
+>
+	<div *ngIf="biziboxTrialExpired.visible === 2">
+		<img
+				class="logobiziboxTrialExpired"
+				height="43"
+				src="/assets/images/logobiziboxTrialExpired.png"
+		/>
+		<h1>אנחנו שמחים שבחרת להצטרף ל- bizibox לעסקים</h1>
+		<p>אנו תמיד כאן לשרותך</p>
+	</div>
+	<div *ngIf="biziboxTrialExpired.visible === 1">
+		<h2>
+			נותרו עוד
+			{{ userService.appData.userData.companySelect?.biziboxTrialExpired }} ימים
+			לתום תקופת הניסיון ב- bizibox לעסקים
+		</h2>
+		<p>לידיעתך בסיום חודש הניסיון תועבר חזרה ל- bizibox</p>
+		<div style="justify-content: center; display: flex; margin-bottom: 5px">
+			<small (click)="customerDenyUpgrade()">אני רוצה לחזור עכשיו</small>
+		</div>
+		<div style="justify-content: center; display: flex">
+			<button
+					(click)="customerApproveUpgrade()"
+					class="button-dark btnUpg"
+					type="button"
+			>
+				לאישור תשלום
+			</button>
+		</div>
+	</div>
+</p-dialog>
+
+<p-dialog (onHide)="ontrialBlockedHide()"
+          (visibleChange)="trialBlocked.visible = 0; ontrialBlockedHide()"
+          [modal]="true"
+          [styleClass]="
+    trialBlocked.visible === 2 ? 'trialBlocked step2' : 'trialBlocked'
+  "
+          [style]="{'margin-top':'100px'}"
+          [visible]="(trialBlocked.visible !== 0)"
+          appendTo="body"
+          position="top"
+>
+	<div *ngIf="trialBlocked.visible === 2">
+		<img
+				class="logobiziboxTrialExpired"
+				height="43"
+				src="/assets/images/logobiziboxTrialExpired.png"
+		/>
+		<h1>אנחנו שמחים שבחרת להצטרף ל- bizibox לעסקים</h1>
+		<p>אנו תמיד כאן לשרותך</p>
+	</div>
+	<div *ngIf="trialBlocked.visible === 1">
+		<h2>למעבר ל- bizibox לעסקים - נא לאשר את התשלום</h2>
+		<div style="justify-content: center; display: flex; margin-top: 15px">
+			<button
+					(click)="customerApproveUpgrade(true)"
+					class="button-dark btnUpg"
+					type="button"
+			>
+				אישור תשלום
+			</button>
+		</div>
+	</div>
+</p-dialog>
+<ng-container
+		*ngIf="
+    userService.appData.userData &&
+    userService.appData.userData.companySelect &&
+    !userService.appData?.userData?.companySelectedBillingStatus &&
+    userService.appData.userData.companySelect?.popupAlert
+  "
+>
+	<p-dialog (visibleChange)="userService.appData.userData.companySelect.companySelectPopupAlertShow = false"
+	          [modal]="true"
+	          [visible]="(userService.appData.userData.companySelect.companySelectPopupAlertShow)"
+	          appendTo="body"
+	          position="top"
+	          [style]="{'margin-top':'100px'}"
+	          styleClass="knowledgeBaseIntroductionDialog"
+	>
+		<p-header>
+			<img class="logo" src="/assets/images/logo-big.png"/>
+		</p-header>
+		<h2>{{ 'שימו לב,' }}</h2>
+		<p>{{ userService.appData.userData.companySelect.popupAlert }}</p>
+	</p-dialog>
+</ng-container>
+
+<ng-container *ngIf="userService.appData?.userData?.showAppPopup && isCustomer">
+	<app-mobile-invite-prompt></app-mobile-invite-prompt>
+</ng-container>
+
+<ng-container *ngIf="userService.appData?.userData?.taryaPopupPrompt">
+	<app-tarya-prompt
+			[settings]="userService.appData?.userData?.taryaPopupPrompt"
+	></app-tarya-prompt>
+</ng-container>
+
+<!--<ng-container *ngIf="!userService.appData?.userData?.companySelectedBillingStatus-->
+<!--&& userService.appData?.userData?.beneficiariesAdvertisePrompt?.show">-->
+<!--<p-dialog (visibleChange)="aaa = false" [visible]="userService.appData.userData.beneficiariesAdvertisePrompt.show"-->
+<!--styleClass="beneficiariesAdvertisePrompt"-->
+<!--appendTo="body" [modal]="true" [showHeader]="false" #beneficiariesAdvertisePrompt>-->
+<!--<a id="beneficiariesAdvertisePromptClose" type="button"-->
+<!--(click)="beneficiariesAdvertisePrompt.close($event)"></a>-->
+<!--<a id="beneficiariesAdvertisePromptGo" type="button"-->
+<!--(click)="router.navigate(['/cfl/financialManagement/beneficiary'], {queryParamsHandling: 'preserve'}); beneficiariesAdvertisePrompt.close($event)"></a>-->
+<!--</p-dialog>-->
+<!--</ng-container>-->
+<ng-container *ngIf="biziboxDowngradeDate.visible !== 0">
+	<p-dialog (onHide)="customerApproveDowngrade()"
+	          (visibleChange)="biziboxDowngradeDate.visible = false; customerApproveDowngrade()"
+	          [modal]="true"
+	          [styleClass]="'biziboxDowngradeDate'"
+	          [style]="{'margin-top':'100px'}"
+	          [visible]="(biziboxDowngradeDate.visible !== 0)"
+	          appendTo="body"
+	          position="top"
+	>
+		<div id="borderWrap"></div>
+		<div style="margin-top: -13px; z-index: 9; position: relative">
+			<h1>
+				{{ userService?.appData?.userData?.userName }},
+				<br/>
+				בהמשך לבקשתכם הנכם מועברים למוצר bizibox
+			</h1>
+			<div style="justify-content: center; display: flex; margin-top: 15px">
+				<button
+						(click)="customerApproveDowngrade()"
+						class="button-dark btnUpg"
+						type="button"
+				>
+					אישור
+				</button>
+			</div>
+		</div>
+	</p-dialog>
+</ng-container>
+
+<!--<p-dialog (visibleChange)="aaa = false" [visible]="userService.appData?.userData?.companySelectedBillingStatus-->
+<!--&& !router.url.includes('/cfl/billing')-->
+<!--&& (userService.appData.userData.companySelectedBillingStatus === 'RESTRICT'-->
+<!--|| !userService.appData.userData.companySelectedBillingStatusWarningAccepted)"-->
+<!--(onHide)="userService.appData.userData.companySelectedBillingStatusWarningAccepted = true"-->
+<!--styleClass="companyBillingStatusWarnDialog"-->
+<!--[modal]="true" [closeOnEscape]="false" [blockScroll]="true" [draggable]="false" [resizable]="false"-->
+<!--[closable]="userService.appData?.userData?.companySelectedBillingStatus !== 'RESTRICT'"-->
+<!--appendTo="body" #companyBillingStatusWarn [unmaskAppHeader]="true">-->
+<!--<p-header>-->
+<!--<img class="logo" style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/fb-logo-bizibox-32-32.png"/>-->
+<!--&lt;!&ndash;<img class="logo" style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/logo-big.png"/>&ndash;&gt;-->
+<!--</p-header>-->
+<!--<ng-container [ngSwitch]="userService.appData?.userData?.companySelectedBillingStatus">-->
+<!--<ng-container *ngSwitchCase="'WARN'">-->
+<!--<h2 [translate]="'expressions.trialPeriodDaysLeftPattern'" [translateParams]="userService.appData.userData.companySelect"></h2>-->
+<!--<button class="button-dark" type="button"-->
+<!--[routerLink]="['/cfl/billing', userService.appData.userData.companySelect.billingAccountId]" queryParamsHandling="preserve"-->
+<!--(click)="companyBillingStatusWarn.close($event)">{{'הסדרת תשלום'}}</button>-->
+<!--</ng-container>-->
+<!--<ng-container *ngSwitchCase="'RESTRICT'">-->
+<!--<ng-container *ngIf="(userService.appData.userData.companySelect.billingAccountId === '00000000-0000-0000-0000-000000000000'); else failedPayment">-->
+<!--<h2>{{'לצערנו עדיין לא השלמת את תהליך הרכישה של bizibox'}}</h2>-->
+<!--<p>{{'ניתן לפנות למוקד השירות שלנו:'}}<br>{{'03-5610382 או 2365*'}}</p>-->
+<!--<button class="button-link" type="button"-->
+<!--[routerLink]="['/cfl/billing', userService.appData.userData.companySelect.billingAccountId]" queryParamsHandling="preserve"-->
+<!--(click)="companyBillingStatusWarn.close($event)">{{'למעבר לתהליך הרכישה'}}</button>-->
+<!--</ng-container>-->
+<!--<ng-template #failedPayment>-->
+<!--<h2>{{'המערכת נחסמה לשימוש. אנא הסדירו את התשלום'}}</h2>-->
+<!--<p>{{'ניתן לפנות למוקד השירות שלנו:'}}<br>{{'03-5610382 או 2365*'}}</p>-->
+<!--<button class="button-link" type="button"-->
+<!--[routerLink]="['/cfl/billing', userService.appData.userData.companySelect.billingAccountId]" queryParamsHandling="preserve"-->
+<!--(click)="companyBillingStatusWarn.close($event)">{{'הסדרת תשלום'}}</button>-->
+<!--</ng-template>-->
+<!--</ng-container>-->
+<!--</ng-container>-->
+<!--</p-dialog>-->
+
+<p-dialog (onHide)="budgetPopUpTypeHide()"
+          (visibleChange)="budgetPopUpType.visible = 0; budgetPopUpTypeHide()"
+          [draggable]="true"
+          [minX]="0"
+          [minY]="0"
+          [modal]="true"
+          [styleClass]="
+    budgetPopUpType.visible === 1 ||
+    budgetPopUpType.visible === 2 ||
+    budgetPopUpType.visible === 5
+      ? 'budgetPopUpType step2'
+      : budgetPopUpType.visible === 4
+      ? 'budgetPopUpType thanks'
+      : 'budgetPopUpType step3'
+  "
+          [style]="{width: (budgetPopUpType.visible === 4
+      ? 469
+      : budgetPopUpType.visible === 3
+      ? 657
+      : budgetPopUpType.visible === 1 || budgetPopUpType.visible === 2
+      ? 840
+      : 577) + 'px'}"
+          [visible]="(budgetPopUpType.visible !== 0)"
+          appendTo="body"
+>
+	<ng-container
+			*ngIf="
+      budgetPopUpType.visible === 1 ||
+      budgetPopUpType.visible === 2 ||
+      budgetPopUpType.visible === 5
+    "
+	>
+		<h1>
+			<ng-container
+					*ngIf="
+          budgetPopUpType.visible === 1 || budgetPopUpType.visible === 2;
+          else img
+        "
+			>
+				<i>•</i>
+				<span>התחדשנו</span>
+				<i>•</i>
+			</ng-container>
+			
+			<ng-template #img>
+				<img fill ngSrc="/assets/images/diamondTitle.png"
+				     style="height: auto; width: auto; position: relative;"/>
+			</ng-template>
+		</h1>
+		<ng-container
+				*ngIf="budgetPopUpType.visible === 1 || budgetPopUpType.visible === 2"
+		>
+			<ng-container *ngIf="budgetPromoVideo$ | async as budgetPromoVideo">
+				<img
+						(click)="budgetPromoMovie.toggle($event)"
+						src="/assets/images/budget_promo_video.png"
+						style="position: absolute; right: 30px; cursor: pointer"
+				/>
+				<!--                <img style="height: auto; width: auto; position: relative;" fill ngSrc="https://i.vimeocdn.com/filter/overlay?src0=https%3A%2F%2Fi.vimeocdn.com%2Fvideo%2F854376720_300x280.jpg&src1=http%3A%2F%2Ff.vimeocdn.com%2Fp%2Fimages%2Fcrawler_play.png"-->
+				<!--                     style="position: absolute; right: 30px; cursor: pointer;" (click)="budgetPromoMovie.toggle($event)">-->
+			</ng-container>
+			<!--            <div id="budget-promo-video" #budgetPromoVideoFrame style="position: absolute; width: 600px; right: 30px; top: 60px;"></div>-->
+		</ng-container>
+		<div
+				[ngStyle]="
+        budgetPopUpType.visible === 1 || budgetPopUpType.visible === 2
+          ? { right: '300px' }
+          : null
+      "
+				class="contentPopUp"
+		>
+			<div class="title">
+				<img fill height="32" ngSrc="/assets/images/logoUpgradePopup.png"
+				     style="height: 32px; width: auto; position: relative;"/>
+				<h2>בונה עבורכם תקציב אוטומטי</h2>
+			</div>
+			
+			<ul
+					[style.width.%]="
+          budgetPopUpType.visible === 1 || budgetPopUpType.visible === 2
+            ? 100
+            : null
+        "
+			>
+				<li>
+					<img fill ngSrc="/assets/images/vPopUp.png" style="height: auto; width: auto; position: relative;"/>
+					<p>מוצר מתקדם לניהול תקציב שנבנה במיוחד עבורכם</p>
+				</li>
+				<li>
+					<img fill ngSrc="/assets/images/vPopUp.png" style="height: auto; width: auto; position: relative;"/>
+					<p>התראות בזמן אמת על חריגות מהתקציב שהוגדר</p>
+				</li>
+				<li>
+					<img fill ngSrc="/assets/images/vPopUp.png" style="height: auto; width: auto; position: relative;"/>
+					<p>קטלוג אוטומטי על פי ההיסטוריה שלכם</p>
+				</li>
+				<li>
+					<img fill ngSrc="/assets/images/vPopUp.png" style="height: auto; width: auto; position: relative;"/>
+					<p>ניתוח קטגוריות, זיהוי מגמות והשוואתם לשנה הקודמת</p>
+				</li>
+			</ul>
+			<ng-container *ngIf="budgetPopUpType.visible === 1">
+				<h3>ואתם נהנים ללא עלות נוספת!</h3>
+			</ng-container>
+			<ng-container *ngIf="budgetPopUpType.visible === 2">
+				<h4>אנו מזמינים אתכם להתנסות של חודש חינם</h4>
+				<small> ולאחר מכן בתוספת של 34 ש”ח בלבד לחודש כולל מע"מ </small>
+			</ng-container>
+			<ng-container
+					*ngIf="budgetPopUpType.visible === 1 || budgetPopUpType.visible === 2"
+			>
+				<button (click)="budgetPopUp(undefined, $event)">
+					למסך ניהול תקציב
+					<img fill ngSrc="/assets/images/budgetButtonIcon.png"
+					     style="height: auto; width: auto; position: relative;"/>
+				</button>
+			</ng-container>
+			<ng-container *ngIf="budgetPopUpType.visible === 5">
+				<button (click)="budgetPopUp(false, $event)" style="margin-top: 50px">
+					לרכישה
+				</button>
+				<small style="font-size: 15px">
+					בתוספת של 34 ש”ח כולל מע"מ בלבד לחודש
+				</small>
+			</ng-container>
+		</div>
+	</ng-container>
+	<ng-container *ngIf="budgetPopUpType.visible === 3">
+		<h2>
+			בעוד
+			{{ userService?.appData?.userData?.companySelect?.budgetExpiredDays }}
+			ימים יסתיים חודש ההתנסות שלכם בכלי לניהול תקציב
+		</h2>
+		<p>על מנת שנוכל להמשיך ולבנות תקציב שיסייע לכם להצליח בניהול פיננסי נכון</p>
+		<button (click)="budgetPopUp()">לחצו לרכישה</button>
+		<small>
+			בתוספת 34 ש"ח כולל מע"מ החל ממועד החיוב הקרוב. מומלץ לרכוש את הכלי לפני
+			<br/>
+			תום תקופת הניסיון על מנת לשמור את הנתונים שעבדתם עליהם עד כה
+		</small>
+	</ng-container>
+	<ng-container *ngIf="budgetPopUpType.visible === 4">
+		<img
+				class="logobiziboxTrialExpired"
+				height="43"
+				src="/assets/images/logobiziboxTrialExpired.png"
+		/>
+		<h1>תודה על הצטרפותכם</h1>
+		<p>עשיתם עוד צעד לניהול פיננסי נכון ומוצלח</p>
+	</ng-container>
+</p-dialog>
+
+<ng-container *ngIf="userService?.appData?.userData?.companySelect">
+	<p-dialog (onHide)="onHideOneAccountPopUp()"
+	          (visibleChange)="userService.appData.userData.companySelect.oneAccount = null; onHideOneAccountPopUp()"
+	          [draggable]="false"
+	          [modal]="true"
+	          [styleClass]="'biziboxTrialExpired step2 oneAccount'"
+	          [visible]="(userService?.appData?.userData?.companySelect?.oneAccount !== null)"
+	          appendTo="body"
+	>
+		<div>
+			<img
+					class="logobiziboxTrialExpired"
+					height="43"
+					src="/assets/images/logobiziboxTrialExpired.png"
+			/>
+			<h1>
+				{{
+				userService?.appData?.userData?.companySelect?.oneAccount === false
+						? 'אנו שמחים שבחרתם לצרף את חשבונותיכם ל- bizibox'
+						: 'אחד או יותר מחשבונות הבנק שלך הוסרו בהצלחה'
+				}}
+			</h1>
+			<p>
+				{{
+				userService?.appData?.userData?.companySelect?.oneAccount === false
+						? 'התשלום עבור יותר מחשבון בנק אחד הוא 49 ש״ח'
+						: 'התשלום עבור חשבון בנק אחד הוא 19 ש״ח'
+				}}
+			</p>
+		</div>
+	</p-dialog>
+</ng-container>
+
+<p-overlayPanel #budgetPromoMovie appendTo="body" styleClass="budgetPromoMovie">
+	<ng-container *ngIf="budgetPromoMovie.overlayVisible">
+		<div #budgetPromoVideoFrame id="budget-promo-video" style=""></div>
+	</ng-container>
+</p-overlayPanel>
+
+<ng-container
+		*ngIf="
+    userService.appData &&
+    userService.appData.exporterState &&
+    userService.appData.exporterState === 'NOT_EXIST' &&
+    !isCustomer
+  "
+>
+	<!-- 	[unmaskAppHeader]="true" -->
+	
+	<p-dialog (visibleChange)="userService.appData.exporterState = false"
+	          [closable]="false"
+	          [draggable]="false"
+	          [modal]="true"
+	          [resizable]="false"
+	          [styleClass]="'exporterState_NOT_EXIST'"
+	          [visible]="true"
+	          appendTo="body"
+	>
+		<p-header>
+			<h1>לא בוצעה טעינת נתונים ראשונית מתוכנת הנה”ח</h1>
+		</p-header>
+		
+		<p>
+			<span> אנא בדקו שהמחשב שמקושר ל- </span>
+			<span> bizibox </span>
+			<span> דולק ומחובר לאינטרנט </span>
+		</p>
+		<div class="link-text">
+			בדקתם ועדיין לא עובד, פתחו לנו
+			<a (click)="showOpenTicket()" class="link"> קריאת שירות</a>
+		</div>
+	</p-dialog>
+</ng-container>
+
+<ng-container
+		*ngIf="
+    userService.appData &&
+    userService.appData.sendWizardMail &&
+    userService.appData.sendWizardMail !== null
+  "
+>
+	<p-dialog (onHide)="sendWizardMailHide()"
+	          (visibleChange)="userService.appData.sendWizardMail = null; sendWizardMailHide()"
+	          [draggable]="false"
+	          [modal]="true"
+	          [resizable]="false"
+	          [styleClass]="'sendWizardMail'"
+	          [visible]="true"
+	          appendTo="body"
+	>
+		<p-header>
+			<div>מייל לשליחת מסמכים</div>
+		</p-header>
+		
+		<p
+				style="
+        margin-top: 25px;
+        margin-left: 15px;
+        margin-right: 15px;
+        font-size: 16px;
+      "
+		>
+			לתשומת ליבך, לחברת
+			{{ userService.appData?.sendWizardMailInfo?.name }} נפתחה תיבת מייל
+			ייעודית
+			<br/>
+			לשליחת חשבוניות ומסמכים ב bizibox.
+			<br/>
+			המסמכים שיגיעו למייל יועברו לפענוח במערכת.
+		</p>
+		<p
+				class="semiBold"
+				style="
+        margin-top: 15px;
+        margin-bottom: 15px;
+        margin-left: 15px;
+        margin-right: 15px;
+        font-size: 16px;
+      "
+		>
+			כתובת המייל:
+			<a
+					[href]="'mailto:' + userService.appData?.sendWizardMailInfo?.mail"
+					style="
+          display: inline-block;
+          direction: ltr;
+          text-align: left;
+          margin-right: 5px;
+        "
+					target="_blank"
+			>{{ userService.appData?.sendWizardMailInfo?.mail }}</a
+			>
+		</p>
+		<p-checkbox (onChange)="
+        userService.appData.sendWizardMailCheck =
+          !userService.appData.sendWizardMailCheck
+      "
+		            *ngIf="userService.appData.sendWizardMail.length"
+		            [binary]="true"
+		            [label]="
+        'תנו לנו לעבוד בשבילכם. bizibox תעדכן את אנשי הקשר בחברה' +
+        '\n' +
+        'בכתובת המייל הייעודית שנפתחה'
+      "
+		            [ngModel]="userService.appData.sendWizardMailCheck"
+		            checkboxIcon="fa fa-check"
+		            class="checkboxSendWizardMail"
+		>
+		</p-checkbox>
+		
+		<p-footer>
+			<button
+					(click)="sendWizardMail()"
+					class="button-dark"
+					style="margin: auto"
+			>
+				הבנתי
+			</button>
+		</p-footer>
+	</p-dialog>
+</ng-container>
+
+<ng-container *ngIf="showModalUpdateSystem">
+	<p-dialog (onHide)="showModalUpdateSystem = false"
+	          (visibleChange)="showModalUpdateSystem = false"
+	          [draggable]="false"
+	          [modal]="true"
+	          [resizable]="false"
+	          [styleClass]="'modalUpdateSystem'"
+	          [visible]="true"
+	          appendTo="body"
+	>
+		<p-header>
+			<img
+					src="/assets/images/logoUpdateSystem.png"
+					style="margin-left: -38px"
+			/>
+		</p-header>
+		
+		<div
+				class="text"
+				style="margin-top: 20px; margin-left: 15px; margin-right: 15px"
+		>
+			<p>
+				<strong> לקוחות יקרים, </strong>
+			</p>
+			<p>
+				עקב עבודות תשתית ושיפור המוצר, המערכת לא תהיה זמינה
+				<br/>
+				מ- 24.6 יום ה’ מהשעה 20:00 עד 27.6 יום א’ בשעה 08:00
+			</p>
+		</div>
+		
+		<p-footer style="margin-top: 10px">
+			<button
+					(click)="modalUpdateSystemHide()"
+					class="button-dark"
+					style="margin: auto"
+			>
+				<strong> הבנתי, </strong>
+				אל תציגו שוב
+			</button>
+		</p-footer>
+	</p-dialog>
+</ng-container>
+
+<ng-container *ngIf="userService.appData && userService.appData.updatesList">
+	<p-dialog (onHide)="userService.appData.updatesList = false"
+	          (visibleChange)="userService.appData.updatesList = false"
+	          [draggable]="false"
+	          [modal]="true"
+	          [resizable]="false"
+	          [styleClass]="'updatesList'"
+	          [visible]="(userService.appData && userService.appData.updatesList)"
+	          appendTo="body"
+	>
+		<img id="newTag" src="/assets/images/newTag.png"/>
+		<h2>כל מה שחדש במערכת -</h2>
+		<ul class="scroll-chrome">
+			<li
+					*ngFor="
+          let item of userService.appData.updatesList.data;
+          index as i;
+          trackBy: trackSystemUpdateId
+        "
+					[class.opened]="userService.appData.updatesList.indexOpen === i"
+			>
+				<div
+						(click)="
+            userService.appData.updatesList.indexOpen =
+              userService.appData.updatesList.indexOpen === i ? false : i
+          "
+						class="subject"
+				>
+					<i
+							[ngClass]="
+              userService.appData.updatesList.indexOpen === i
+                ? 'fa-angle-up'
+                : 'fa-angle-down'
+            "
+							class="fas fa-lg"
+							style="padding: 0 6px 0 15px; font-size: 20px"
+					></i>
+					<h4>{{ item.subject }}</h4>
+				</div>
+				<div
+						*ngIf="userService.appData.updatesList.indexOpen === i"
+						class="text"
+				>
+					<p>
+						{{ item.text }}
+						
+						<ng-container *ngIf="item.link_text">
+							<a [href]="item.link" class="link" target="_blank">
+								{{ item.link_text }}
+							</a>
+						</ng-container>
+					</p>
+				</div>
+			</li>
+		</ul>
+		
+		<p-footer style="justify-content: center; margin-top: 10px">
+			<button
+					(click)="userService.appData.updatesList = false"
+					class="button-link"
+			>
+				{{ 'actions.cancellation' | translate }}
+			</button>
+			<button (click)="modalUpdatesListHide()" class="button-dark">
+				הבנתי
+			</button>
+		</p-footer>
+	</p-dialog>
+</ng-container>
+

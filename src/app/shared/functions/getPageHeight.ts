@@ -1,0 +1,1 @@
+export function getPageHeight(value: any): any {    if (value === null || typeof value === 'undefined') {        return 0;    }    const innerHeightPage = (window.innerHeight ||        document.documentElement.clientHeight ||        document.body.clientHeight);    return innerHeightPage - value;}

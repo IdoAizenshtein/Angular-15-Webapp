@@ -1,0 +1,232 @@
+<form
+		id="serviceCall"
+		*ngIf="!serviceCallForm.disabled; else ticketAlreadyIssued"
+		[formGroup]="serviceCallForm"
+		(ngSubmit)="submitServiceCall()"
+>
+	<div class="body">
+		<div>
+			<label
+					*ngIf="
+          !isHashavshevet &&
+          userService.appData?.userData &&
+          userService.appData?.userData?.accountant
+        "
+					[class.error]="
+          !serviceCallForm.get('companyId').value &&
+          serviceCallForm.get('companyId').dirty
+        "
+			>
+				<i>{{ companyId ? 'שם חברה' : 'חברה' }}</i>
+				<p-dropdown
+						[options]="userService?.appData?.userData?.companies"
+						[formControl]="serviceCallForm.get('companyId')"
+						optionLabel="companyName"
+						dataKey="companyId"
+						[style]="{ width: '100%' }"
+						appendTo="body"
+						[placeholder]="'בחרו את החברה הרצויה'"
+				></p-dropdown>
+			</label>
+			<label *ngIf="companyId">
+				<i>{{ isBank ? 'חשבון' : 'כ.אשראי' }}</i>
+				<input
+						type="text"
+						[formControl]="serviceCallForm.get('accountNickname')"
+						name="accountNickname"
+						autocomplete="accountNickname"
+						[disabled]="true"
+						style="background: transparent"
+				/>
+			</label>
+			<ng-container *ngIf="isHashavshevet">
+				<label
+						*ngIf="userService.appData && userService.appData?.companiesFromBank"
+						[class.error]="
+            !serviceCallForm.get('companyName').value &&
+            serviceCallForm.get('companyName').dirty
+          "
+				>
+					<i>{{ 'שם חברה' }}</i>
+					<p-dropdown
+							[options]="userService?.appData?.companiesFromBank"
+							[formControl]="serviceCallForm.get('companyName')"
+							optionLabel="companyName"
+							dataKey="companyName"
+							[style]="{ width: '100%' }"
+							appendTo="body"
+							[placeholder]="'בחרו את החברה הרצויה'"
+					></p-dropdown>
+				</label>
+				<label
+						*ngIf="userService.appData && userService.appData?.accFromBank"
+						[class.error]="
+            !serviceCallForm.get('accountNickname').value &&
+            serviceCallForm.get('accountNickname').dirty
+          "
+				>
+					<i>{{ 'חשבון/ כ.אשראי' }}</i>
+					<p-dropdown
+							[options]="userService?.appData?.accFromBank"
+							[formControl]="serviceCallForm.get('accountNickname')"
+							optionLabel="accountNickname"
+							dataKey="accountNickname"
+							[style]="{ width: '100%' }"
+							appendTo="body"
+							[placeholder]="'בחרו את החשבון/ כ.אשראי הרצוי'"
+					></p-dropdown>
+				</label>
+			</ng-container>
+			<label
+					[class.error]="
+          serviceCallForm.get('taskTitle').invalid &&
+          serviceCallForm.get('taskTitle').dirty
+        "
+					style="margin-bottom: -1em"
+			>
+				<i>{{ 'נושא' }}</i>
+				<!--        <input type="text" [formControl]="serviceCallForm.get('taskTitle')">-->
+				<p-dropdown
+						[options]="subjects"
+						[formControl]="serviceCallForm.get('taskTitle')"
+						optionLabel="subject"
+						dataKey="subject"
+						[style]="{ width: '100%' }"
+						appendTo="body"
+						[placeholder]="'בחרו את הנושא המתאים'"
+				></p-dropdown>
+				<button
+						class="button-link"
+						style="
+            min-height: 2.2em;
+            padding: 0;
+            text-align: start;
+            font-size: 0.95em;
+          "
+						[ngStyle]="{
+            visibility: serviceCallForm.get('taskTitle').value?.hint
+              ? 'visible'
+              : 'collapsed',
+            cursor: serviceCallForm.get('taskTitle').value?.hintClick
+              ? 'pointer'
+              : 'default'
+          }"
+						[disabled]="!serviceCallForm.get('taskTitle').value?.hintClick"
+						(click)="
+            serviceCallForm.get('taskTitle').value.hintClick();
+            dialog.close($event)
+          "
+				>
+					{{ serviceCallForm.get('taskTitle').value?.hint }}
+				</button>
+			</label>
+			<label
+					[class.error]="
+          serviceCallForm.get('taskOpenerName').invalid &&
+          serviceCallForm.get('taskOpenerName').dirty
+        "
+			>
+				<i>{{ 'שם פותח הקריאה' }}</i>
+				<input
+						type="text"
+						[formControl]="serviceCallForm.get('taskOpenerName')"
+						name="name"
+						autocomplete="name"
+				/>
+			</label>
+			<label
+					[class.error]="
+          serviceCallForm.get('closeMailToSend').invalid &&
+          serviceCallForm.get('closeMailToSend').dirty
+        "
+			>
+				<i>{{ 'מייל לחזרה' }}</i>
+				<input
+						type="email"
+						[formControl]="serviceCallForm.get('closeMailToSend')"
+						name="email"
+						autocomplete="email"
+				/>
+			</label>
+			<label
+					[class.error]="
+          serviceCallForm.get('userCellPhone').invalid &&
+          serviceCallForm.get('userCellPhone').dirty
+        "
+			>
+				<i>{{ 'טלפון לחזרה' }}</i>
+				<input
+						type="text"
+						[formControl]="serviceCallForm.get('userCellPhone')"
+						name="phone"
+						autocomplete="tel"
+				/>
+			</label>
+		</div>
+		<div>
+			<label
+					[class.error]="
+          serviceCallForm.get('taskDesc').invalid &&
+          serviceCallForm.get('taskDesc').dirty
+        "
+			>
+				<i>{{ 'תיאור' }}</i>
+				<textarea
+						class="scroll-chrome"
+						[formControl]="serviceCallForm.get('taskDesc')"
+						[placeholder]="
+            'אנא ציינו את נושא הפנייה בצורה מפורטת.\n(בחלק מהמקרים באפשרותנו לטפל בבעיה מרחוק)'
+          "
+				></textarea>
+			</label>
+		</div>
+	</div>
+	<div class="footer">
+		<a
+				*ngIf="!companyId"
+				class="button-link"
+				href="http://898.tv/bizibox"
+				target="_blank"
+		>
+			<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/teamviewer-logo.png" alt="TeamViewer"/>{{
+			'הורד TeamViewer'
+			}}
+		</a>
+		<ng-container *ngIf="companyId">
+			<p-checkbox checkboxIcon="fa fa-check"
+			            [binary]="true"
+			            [formControl]="saveData"
+			            label="שמירת פרטים לקריאות הבאות"
+			>
+			</p-checkbox>
+		</ng-container>
+		<button
+				class="button-link"
+				type="button"
+				*ngIf="dialog"
+				(click)="dialog.close($event)"
+		>
+			{{ 'actions.cancellation' | translate }}
+		</button>
+		<button class="button-dark" type="submit">
+			{{ 'expressions.sending' | translate }}
+		</button>
+	</div>
+</form>
+<ng-template #ticketAlreadyIssued>
+	<div id="serviceCallIssued">
+		<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/done-balloon.png"/>
+		<h3>{{ 'תודה על פנייתכם,' }}</h3>
+		<p>{{ 'קריאתכם נקלטה במערכת ותטופל בהקדם האפשרי.' }}</p>
+		<p>{{ 'קריאת שירות היא הדרך המהירה ביותר ליצור עמנו קשר.' }}</p>
+		<p style="margin-top: 1em">
+			<button
+					class="button-dark"
+					style="font-size: 1.1em"
+					(click)="dialog.close($event)"
+			>
+				{{ 'actions.closing' | translate }}
+			</button>
+		</p>
+	</div>
+</ng-template>

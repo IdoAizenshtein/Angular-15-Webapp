@@ -1,0 +1,117 @@
+@import 'lang';
+@import 'base';
+@mixin dirPaginator($lang) {
+  $left: get-side($lang, left);
+  $right: get-side($lang, right);
+
+  .p-paginator {
+    padding-top: 0.5em !important;
+    margin: 0;
+    text-align: center;
+    padding: 0.125em;
+  }
+  .p-paginator a.p-disabled {
+    outline: 0;
+    opacity: 1 !important;
+  }
+  .p-paginator .p-paginator-pages, .p-paginator .p-paginator-prev , .p-paginator .p-paginator-next {
+    display: inline-block;
+    padding: 0.125em 0.375em;
+    zoom: 1;
+    margin-left: 0.063em;
+    margin-right: 0.063em;
+    text-decoration: none;
+    vertical-align: middle;
+  }
+  .p-paginator-page.p-state-active {
+    color: #fff;
+    border-radius: 50%;
+    background: #022258;
+  }
+  .p-paginator .p-dropdown {
+    float: $right;
+    border-bottom: none;
+  }
+
+  .p-paginator-page {
+    color: $color-base-font-titles;
+    font-size: 16px;
+    width: 2.05em;
+    line-height: 1.5em;
+    padding: 0.25em;
+    display: inline-block;
+    zoom: 1;
+    margin-left: 0.063em;
+    margin-right: 0.063em;
+    text-decoration: none;
+    vertical-align: middle;
+  }
+
+  .p-paginator-page.p-highlight {
+    color: $white;
+    @include border-radius(50%);
+    background: #022258;
+  }
+
+  .p-paginator-first,
+  .p-paginator-last {
+    visibility: collapse;
+  }
+  .p-paginator-prev,
+  .p-paginator-next,
+  .p-paginator-first,
+  .p-paginator-last {
+    color: #022258;
+    @include border-radius(50%);
+    border: 1px solid #022258;
+    width: 2.05em;
+    padding: 0.25em;
+    text-align: center;
+    line-height: 25.5px;
+    @include if-rtl($lang) {
+      -moz-transform: scaleX(-1);
+      -o-transform: scaleX(-1);
+      -webkit-transform: scaleX(-1);
+      transform: scaleX(-1);
+      filter: FlipH;
+      -ms-filter: 'FlipH';
+    }
+  }
+
+  .p-paginator-prev span::before,
+  .p-paginator-next span::before,
+  .p-paginator-first span::before,
+  .p-paginator-last span::before {
+    content: '';
+  }
+
+  .p-paginator-prev span::after {
+    content: '\F104';
+  }
+
+  .p-paginator-next span::after {
+    content: '\F105';
+  }
+
+  .p-paginator-first span::after {
+    content: '\F100';
+  }
+
+  .p-paginator-last span::after {
+    content: '\F101';
+  }
+}
+
+body {
+  &.isRTL,
+  .isRTL {
+    $lang: rtl;
+    @include dirPaginator($lang);
+  }
+
+  &.isLTR,
+  .isLTR {
+    $lang: ltr;
+    @include dirPaginator($lang);
+  }
+}

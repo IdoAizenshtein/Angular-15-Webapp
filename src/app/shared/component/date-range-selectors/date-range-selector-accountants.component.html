@@ -1,0 +1,115 @@
+<div class="menu-dd menu-with-panel">
+	<button
+			id="account-dates-selector"
+			class="buttonDD"
+			(click)="togglePanel()"
+			[class.opened]="showPanelDD"
+			#selector
+			[matTooltip]="'appWalk.customers.dateRangeSelect' | translate"
+			matTooltipPosition="above"
+	>
+		<ng-container *ngIf="selectedPreset && !pristine; else noPreset">
+			<ng-container
+					*ngIf="
+          !selectedPreset.name.includes('custom');
+          else customRangeSelected
+        "
+			>
+				{{
+				selectedPreset.useRawName
+						? selectedPreset.name
+						: ('billingCycles.' + selectedPreset.name | translate)
+				}}
+			</ng-container>
+			<ng-template #customRangeSelected>
+				<ng-container *ngIf="selectedPreset === customMonthsPreset">
+					{{
+					('langCalendar.monthNamesShort' | translate)[
+							selectedPreset.from.month
+							]
+					}}{{' '}}
+					{{ selectedPreset.from.year }} -
+					{{
+					('langCalendar.monthNamesShort' | translate)[
+							selectedPreset.till.month
+							]
+					}}{{' '}}
+					{{ selectedPreset.till.year }}
+				</ng-container>
+				<ng-container *ngIf="selectedPreset === customDatesPreset">
+					{{ selectedPreset.from.toDate() | date: 'dd/MM/yy' }}
+					- {{ selectedPreset.till.toDate() | date: 'dd/MM/yy' }}
+				</ng-container>
+			</ng-template>
+		</ng-container>
+		<ng-template #noPreset>
+			{{ 'בחרו טווח תאריכים' }}
+		</ng-template>
+	</button>
+	<div
+			id="account-dates-panel"
+			class="panelDD datesPanel"
+			*ngIf="showPanelDD"
+			[@slideInOutDD]
+			appClickDocument
+			(closed)="showPanelDD = false"
+	>
+		<div
+				class="presets-list"
+				style="justify-content: space-around; padding: 0px 15px"
+		>
+			<div
+					*ngFor="let prst of presets"
+					[class.selected]="prst.name === selectedInDDPreset.name"
+					(click)="selectedPreset = prst; showPanelDD = false"
+			>
+				{{
+				prst.useRawName
+						? prst.name
+						: ('billingCycles.' + prst.name | translate)
+				}}
+			</div>
+			<div class="presets-list" style="flex: 100%; margin-right: 0">
+				<div
+						[class.selected]="'customMonths' === selectedInDDPreset.name"
+						*ngIf="customMonthsPreset"
+						(click)="selectedInDDPreset = customMonthsPreset"
+				>
+					{{ 'billingCycles.customMonths' | translate }}
+				</div>
+				<div
+						[class.selected]="'customDates' === selectedInDDPreset.name"
+						*ngIf="customDatesPreset"
+						(click)="selectedInDDPreset = customDatesPreset"
+				>
+					{{ 'billingCycles.customDates' | translate }}
+				</div>
+			</div>
+		</div>
+		
+		<div
+				*ngIf="
+        [customMonthsPreset, customDatesPreset].includes(selectedInDDPreset)
+      "
+				class="range-calendar-container"
+		>
+			<app-range-calendar
+					[min]="minSelectable"
+					[max]="maxSelectable"
+					[selectionType]="
+          selectedInDDPreset === customMonthsPreset
+            ? RangeSelectionType.MONTHS
+            : RangeSelectionType.DAYS
+        "
+					[selection]="selectedInDDPreset"
+			></app-range-calendar>
+			
+			<button
+					class="button-dark"
+					(click)="selectedPreset = selectedInDDPreset; showPanelDD = false"
+			>
+				{{ 'actions.approve' | translate }}
+			</button>
+		</div>
+	</div>
+</div>

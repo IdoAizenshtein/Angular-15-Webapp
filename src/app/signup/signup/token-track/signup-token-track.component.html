@@ -1,0 +1,159 @@
+<div
+		*ngIf="parent.tokenStatus | async as tokenStatus; else loading"
+		class="polling-section"
+>
+	<!--{{tokenStatus| json}}-->
+	<form
+			novalidate
+			[formGroup]="tokenTrack"
+			(ngSubmit)="onSubmit(tokenStatus.uiStatus === 'FAILURE')"
+	>
+		<ng-container [ngSwitch]="tokenStatus.uiStatus">
+			<ng-container *ngSwitchCase="'SUCCESS'">
+				<h1>
+					<i class="fas fa-check-circle"></i>&nbsp;{{
+					'signup.tokenTrackStep.tokenSuccess.title' | translate
+					}}
+				</h1>
+				<p
+						[innerHTML]="
+            'signup.tokenTrackStep.tokenSuccess.subtitle' | translate
+          "
+				></p>
+				<button
+						mat-raised-button
+						style="width: 100%; padding: 0 0.5em; min-height: 2.35em"
+						color="primary"
+						type="submit"
+						[id]="'submitStep'"
+						[disabled]="parent.formInProgress$ | async"
+				>
+					<mat-spinner
+							diameter="20"
+							color="accent"
+							*ngIf="parent.formInProgress$ | async"
+					></mat-spinner>
+					<span *ngIf="!(parent.formInProgress$ | async)">{{
+						'formLogin.login' | translate
+						}}</span>
+				</button>
+			</ng-container>
+			<ng-container *ngSwitchCase="'FAILURE'">
+				<h1>
+					<i class="fas fa-ban"></i>&nbsp;{{
+					'signup.tokenTrackStep.tokenFailed.title' | translate
+					}}
+				</h1>
+				<p
+						[innerHTML]="'signup.tokenTrackStep.tokenFailed.subtitle' | translate"
+				></p>
+				<button
+						mat-raised-button
+						style="width: 100%; padding: 0 0.5em; min-height: 2.35em"
+						color="primary"
+						type="submit"
+						[id]="'submitStep'"
+						[disabled]="parent.formInProgress$ | async"
+				>
+					<mat-spinner
+							diameter="20"
+							color="accent"
+							*ngIf="parent.formInProgress$ | async"
+					></mat-spinner>
+					<span *ngIf="!(parent.formInProgress$ | async)">{{
+						'signup.accountLinkStep.skipToDemoBusiness' | translate
+						}}</span>
+				</button>
+			</ng-container>
+			<ng-container *ngSwitchCase="'UPDATE_AND_RETRY'">
+				<h2>
+					<i class="fas fa-exclamation-triangle"></i>&nbsp;{{
+					'signup.tokenTrackStep.tokenUpdateAndRetry.title' | translate
+					}}
+				</h2>
+				<p
+						[innerHTML]="
+            'signup.tokenTrackStep.tokenUpdateAndRetry.subtitle' | translate
+          "
+				></p>
+				<button
+						mat-raised-button
+						style="width: 100%; padding: 0 0.5em; min-height: 2.35em"
+						color="primary"
+						type="button"
+						routerLink="../account-data"
+						queryParamsHandling="preserve"
+						[id]="'submitStep'"
+						[disabled]="parent.formInProgress$ | async"
+				>
+					<mat-spinner
+							diameter="20"
+							color="accent"
+							*ngIf="parent.formInProgress$ | async"
+					></mat-spinner>
+					<span *ngIf="!(parent.formInProgress$ | async)">{{
+						'formLogin.tryAgain' | translate
+						}}</span>
+				</button>
+			</ng-container>
+			<ng-container *ngSwitchCase="'TIMED_OUT'">
+				<h2>
+					<i class="fas fa-exclamation-triangle"></i>&nbsp;{{
+					'signup.tokenTrackStep.tokenTimedOut.title' | translate
+					}}
+				</h2>
+				<p
+						[innerHTML]="
+            'signup.tokenTrackStep.tokenTimedOut.subtitle' | translate
+          "
+				></p>
+				<button
+						mat-raised-button
+						style="width: 100%; padding: 0 0.5em; min-height: 2.35em"
+						color="primary"
+						type="button"
+						(click)="parent.startTokenStatusPolling()"
+						[id]="'retryStep'"
+						[disabled]="parent.formInProgress$ | async"
+				>
+					<mat-spinner
+							diameter="20"
+							color="accent"
+							*ngIf="parent.formInProgress$ | async"
+					></mat-spinner>
+					<span *ngIf="!(parent.formInProgress$ | async)">{{
+						'signup.tokenTrackStep.tokenTimedOut.keepWaiting' | translate
+						}}</span>
+				</button>
+				<button
+						mat-raised-button
+						style="width: 100%; padding: 0 0.5em; min-height: 2.35em"
+						color="primary"
+						type="submit"
+						[id]="'submitStep'"
+						[disabled]="parent.formInProgress$ | async"
+				>
+					<mat-spinner
+							diameter="20"
+							color="accent"
+							*ngIf="parent.formInProgress$ | async"
+					></mat-spinner>
+					<span *ngIf="!(parent.formInProgress$ | async)">{{
+						'signup.tokenTrackStep.tokenTimedOut.stopWaiting' | translate
+						}}</span>
+				</button>
+			</ng-container>
+			<ng-container *ngSwitchDefault>
+				<img ngSrc="/assets/images/bizb-loading.gif" height="74" width="107"/>
+				<h2>{{ 'signup.tokenTrackStep.waitingMessage' | translate }}</h2>
+				<!--{{tokenStatus.extractdate| date: 'HH:mm:ss'}}-->
+			</ng-container>
+		</ng-container>
+	</form>
+</div>
+<ng-template #loading>
+	<div class="polling-section">
+		<img  ngSrc="/assets/images/bizb-loading.gif" height="74" width="107"/>
+		<h2>{{ 'signup.tokenTrackStep.waitingMessage' | translate }}</h2>
+	</div>
+</ng-template>

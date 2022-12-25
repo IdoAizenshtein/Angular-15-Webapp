@@ -1,0 +1,557 @@
+<p-dialog (onHide)="creationSuccess.emit(true); display = false"
+          (visibleChange)="display = false"
+          [modal]="true"
+          [resizable]="false"
+          [styleClass]="'bank-credentials-update'"
+          [visible]="(display)"
+          appendTo="body"
+>
+	<p-header>
+		<ng-template #titleForNotBlocked>
+			<div>
+				{{
+				(tokenData?.tokenStatus === 'OTP_WAS_NOT_PROVIDED'
+								? 'foreignCredentialsUpdate.expressions.updatePassword_otp'
+								: 'foreignCredentialsUpdate.expressions.updatePassword'
+				) | translate
+				}}
+			</div>
+			<!--<span style="font-weight: bold;">{{'foreignCredentialsUpdate.expressions.updatePasswordForAccount'| translate}}</span>&nbsp;<span style="font-weight: normal;">{{tokenData?.accountNickname || tokenData.tokenNickname}}</span>-->
+		</ng-template>
+		<ng-container
+				*ngIf="
+        tokenData?.tokenStatus === TokenStatus.Blocked;
+        else titleForNotBlocked
+      "
+		>
+			<div>
+				{{
+				'foreignCredentialsUpdate.expressions.updateCredentialsForAccount'
+						| translate
+				}}
+			</div>
+			<!--<span style="font-weight: bold;">{{'foreignCredentialsUpdate.expressions.updateCredentialsForAccount'| translate}}</span>&nbsp;<span style="font-weight: normal;">{{tokenData?.accountNickname || tokenData.tokenNickname}}</span>-->
+		</ng-container>
+		<!--&nbsp;<span style="font-weight: bold;">{{'foreignCredentialsUpdate.expressions.attemptPtrn'| translate:({screenPasswordUpdateCount: (tokenData && tokenData.screenPasswordUpdateCount) ? tokenData.screenPasswordUpdateCount : 1})}}</span>-->
+		<div>{{ tokenData?.tokenNickname }}</div>
+		<!--<div class="attempts-counter">-->
+		<!--{{'foreignCredentialsUpdate.expressions.attemptPtrn'| translate:({screenPasswordUpdateCount:-->
+		<!--(((tokenData && tokenData.screenPasswordUpdateCount) ? tokenData.screenPasswordUpdateCount : 0)-->
+		<!--+ (state !== null ? 0 : 1))})}}-->
+		<!--</div>-->
+		
+		<ng-container *ngIf="!is_station">
+			<ng-container
+					*ngIf="tokenStatus$ | async as tokenStatus; else attemptsStub"
+			>
+				<ng-container
+						*ngIf="tokenStatus.uiStatus === 'WAITING'; else attemptsStub"
+				>
+					<div class="attempts-counter">
+						{{
+						'foreignCredentialsUpdate.expressions.attemptPtrn'
+								| translate
+								: {
+									screenPasswordUpdateCount:
+											tokenStatus.screenPasswordUpdateCount
+													? tokenStatus.screenPasswordUpdateCount
+													: 1
+								}
+						}}
+					</div>
+				</ng-container>
+			</ng-container>
+			<ng-template #attemptsStub>
+				<div class="attempts-counter">
+					{{
+					'foreignCredentialsUpdate.expressions.attemptPtrn'
+							| translate
+							: {
+								screenPasswordUpdateCount:
+										(tokenData.screenPasswordUpdateCount === null
+												? 0
+												: tokenData.screenPasswordUpdateCount) + 1
+							}
+					}}
+				</div>
+			</ng-template>
+		</ng-container>
+	</p-header>
+	
+	<div *ngIf="state === null && targetTypeDesc" class="header">
+		<ng-template #subheaderForNotBlocked>
+			<div
+					[innerHTML]="
+          'foreignCredentialsUpdate.' +
+            targetTypeDesc +
+            '.subheaderUpdatePasswordPtrn'
+            | translate
+              : {
+                  foreignLink:
+                    ('foreignCredentials.urls.passwordRecovery.' +
+                      tokenData?.websiteTargetTypeId | translate)
+                }
+        "
+					style="font-size: 1em"
+			></div>
+		</ng-template>
+		<div
+				*ngIf="
+        (tokenData?.tokenStatus | toTokenStatusEnumValue) ===
+          TokenStatus.Blocked;
+        else subheaderForNotBlocked
+      "
+				[innerHTML]="
+        'foreignCredentialsUpdate.' +
+          targetTypeDesc +
+          '.subheaderUpdateCredentialsPtrn'
+          | translate
+            : {
+                foreignLink:
+                  ('foreignCredentials.urls.passwordRecovery.' +
+                    tokenData?.websiteTargetTypeId | translate)
+              }
+      "
+				style="font-size: 1em"
+		></div>
+	</div>
+	
+	<div
+			class="Form"
+			style="
+      width: 100%;
+      display: flex;
+      display: -ms-flexbox;
+      justify-content: center;
+    "
+	>
+		<form
+				*ngIf="state === null || state === DialogState.UPDATING"
+				[formGroup]="account"
+				novalidate
+		>
+			<div>
+				<div
+						*ngIf="['cards', 'clearingAgencies'].includes(targetTypeDesc)"
+						class="Signup__control"
+				>
+					<label [for]="'linkedAccount'">{{
+						'expressions.linkedToAccount' | translate
+						}}</label>
+					<div
+							[ngClass]="{
+              Form__group: true,
+              'Form__group--err':
+                account.get('linkedAccount').invalid && account.dirty
+            }"
+					>
+						<p-dropdown
+								[autoDisplayFirst]="false"
+								[formControl]="account.get('linkedAccount')"
+								[inputId]="'linkedAccount'"
+								[options]="accounts$ | async"
+								[placeholder]="('actions.select' | translate) + '...'"
+								[style]="{ width: '268px' }"
+								dataKey="companyAccountId"
+								
+								optionLabel="accountNickname"
+						>
+							<ng-template let-item pTemplate="selectedItem">
+								<div
+										style="
+                    display: flex;
+                    display: -ms-flexbox;
+                    align-items: center;
+                  "
+								>
+									<img
+											[src]="
+                      !item.bankId
+                        ? ''
+                        : (item.bankId | toIconSrc: 'bank')
+                    " style="height: auto; width: 24px; position: relative;"
+									/>&nbsp;
+									<div class="text-ellipsis">{{ item?.accountNickname }}</div>
+								</div>
+							</ng-template>
+							<ng-template let-option pTemplate="item">
+								<div
+										style="
+                    position: relative;
+                    display: flex;
+                    display: -ms-flexbox;
+                    align-items: center;
+                  "
+								>
+									<img
+											[ngSrc]="
+                      (!option.bankId ? '' : option.bankId)
+                        | toIconSrc: 'bank'
+                    " fill style="height: auto; width: 24px; position: relative;"
+									/>&nbsp;
+									<div class="text-ellipsis">{{ option.accountNickname }}</div>
+								</div>
+							</ng-template>
+						</p-dropdown>
+					</div>
+				</div>
+				
+				<app-token-update-foreign-credentials
+						*ngIf="tokenData && targetTypeDesc"
+						[form]="account"
+						[tokenData]="tokenData"
+				>
+				</app-token-update-foreign-credentials>
+			</div>
+		</form>
+		<div
+				*ngIf="state === null && duplicateFound"
+				class="Form__feedback Form__feedback--err"
+		>
+			<i class="fa fa-fw fa-exclamation-triangle"></i>
+			{{ 'expressions.tokenCredentialsAlreadyExist' | translate }}
+		</div>
+	</div>
+	
+	<div *ngIf="state === DialogState.UPDATING" class="polling-section">
+		<img height="74" ngSrc="/assets/images/bizb-loading.gif" width="107"/>
+		<p>
+			{{
+			'foreignCredentialsCreate.' +
+			targetTypeDesc +
+			'.tokenTrackStep.waitingMessage' | translate
+			}}
+		</p>
+	</div>
+	
+	<ng-container *ngIf="state === DialogState.UPDATE_SUCCEEDED">
+		<ng-container *ngIf="tokenStatus$ | async as tokenStatus; else loading">
+			<!--{{tokenStatus| json}}-->
+			<ng-container *ngIf="tokenStatus; else loading">
+				<div [ngSwitch]="tokenStatus?.uiStatus" class="polling-section">
+					<ng-container *ngSwitchCase="'SUCCESS'">
+						<h2>
+							<i class="fas fa-check-circle"></i>&nbsp;{{
+							'foreignCredentialsCreate.' +
+							targetTypeDesc +
+							'.tokenTrackStep.tokenSuccess.title' | translate
+							}}
+						</h2>
+						<p
+								[innerHTML]="
+                'foreignCredentialsCreate.' +
+                  targetTypeDesc +
+                  '.tokenTrackStep.tokenSuccess.subtitle' | translate
+              "
+						></p>
+						<button
+								(click)="display = false"
+								[id]="'okBtn'"
+								class="button-dark"
+								type="button"
+						>
+              <span>{{
+	              'foreignCredentialsUpdate.expressions.closing' | translate
+	              }}</span>
+						</button>
+					</ng-container>
+					<ng-container *ngSwitchCase="'LOAD_DATA'">
+						<img
+								height="74"
+								ngSrc="/assets/images/bizb-loading.gif"
+								width="107"
+						/>
+						<p>
+							{{
+							'foreignCredentials.statusHumanized.' + tokenStatus?.tokenStatus
+									| translate
+							}}
+						</p>
+					</ng-container>
+					<ng-container *ngSwitchCase="'FAILURE'">
+						<h2>
+							<i class="fas fa-ban"></i>&nbsp;{{
+							'foreignCredentialsCreate.' +
+							targetTypeDesc +
+							'.tokenTrackStep.tokenFailed.title' | translate
+							}}
+						</h2>
+						<p
+								[innerHTML]="
+                'foreignCredentialsCreate.' +
+                  targetTypeDesc +
+                  '.tokenTrackStep.tokenFailed.subtitle' | translate
+              "
+						></p>
+						<button
+								(click)="display = false"
+								[id]="'failBtn'"
+								class="button-dark"
+								type="button"
+						>
+              <span>{{
+	              'foreignCredentialsUpdate.expressions.closing' | translate
+	              }}</span>
+						</button>
+					</ng-container>
+					<ng-container *ngSwitchCase="'UPDATE_AND_RETRY'">
+						<ng-container
+								*ngIf="
+                (tokenStatus.tokenStatus | toTokenStatusEnumValue) !==
+                  TokenStatus.Blocked &&
+                  (tokenStatus.screenPasswordUpdateCount === null ||
+                    tokenStatus.screenPasswordUpdateCount < 3);
+                else blockedToken
+              "
+						>
+							<i class="fas fa-exclamation-triangle"></i>
+							<h2>
+								{{
+								'foreignCredentialsCreate.' +
+								targetTypeDesc +
+								'.tokenTrackStep.tokenUpdateAndRetry.title' | translate
+								}}
+							</h2>
+							<!--<p [innerHTML]="'signup.tokenTrackStep.tokenUpdateAndRetry.subtitle'| translate"></p>-->
+							<p
+									[innerHTML]="
+                  'foreignCredentialsCreate.' +
+                    targetTypeDesc +
+                    '.tokenTrackStep.tokenUpdateAndRetry.subtitleWithRetryNumPtrn'
+                    | translate
+                      : {
+                          retries:
+                            3 -
+                            (tokenStatus.screenPasswordUpdateCount === null
+                              ? 0
+                              : tokenStatus.screenPasswordUpdateCount)
+                        }
+                "
+							></p>
+							<button
+									(click)="account.reset(); state = null"
+									[id]="'updateBtn'"
+									class="button-dark"
+									type="button"
+							>
+								<span>{{ 'formLogin.tryAgain' | translate }}</span>
+							</button>
+						</ng-container>
+						<ng-template #blockedToken>
+							<img src="/assets/images/padlock.png"
+							   />
+							<h2 class="blocked-token">
+								{{
+								'foreignCredentialsCreate.' +
+								targetTypeDesc +
+								'.tokenTrackStep.tokenBlocked.title' | translate
+								}}
+							</h2>
+							<p
+									[innerHTML]="
+                  'foreignCredentialsCreate.' +
+                    targetTypeDesc +
+                    '.blockedAccount.message' | translate
+                "
+									class="blocked-token"
+							></p>
+							<a
+									[href]="
+                  'foreignCredentials.urls.passwordRecovery.' +
+                    tokenStatus.websiteTargetTypeId | translate
+                "
+									class="button-dark"
+									target="_blank"
+							>
+								{{
+								'foreignCredentialsCreate.' +
+								targetTypeDesc +
+								'.blockedAccount.navigateToTarget' | translate
+								}}
+							</a>
+						</ng-template>
+						
+						<!--<h2><i class="fas fa-exclamation-triangle"></i>&nbsp;{{'signup.tokenTrackStep.tokenUpdateAndRetry.title'|-->
+						<!--translate}}</h2>-->
+						<!--<p [innerHTML]="'signup.tokenTrackStep.tokenUpdateAndRetry.subtitle'| translate"></p>-->
+						<!--<button class="button-dark" type="button" [id]="'updateBtn'" (click)="state = null">-->
+						<!--<span>{{'formLogin.tryAgain'| translate}}</span>-->
+						<!--</button>-->
+					</ng-container>
+					<ng-container *ngSwitchCase="'TIMED_OUT'">
+						<i class="fas fa-exclamation-triangle"></i>
+						<h2>
+							{{
+							'foreignCredentialsCreate.' +
+							targetTypeDesc +
+							'.tokenTrackStep.tokenTimedOut.title' | translate
+							}}
+						</h2>
+						<p
+								[innerHTML]="
+                'foreignCredentialsCreate.' +
+                  targetTypeDesc +
+                  '.tokenTrackStep.tokenTimedOut.subtitle' | translate
+              "
+						></p>
+						<button (click)="display = false" class="button-dark">
+							{{ 'actions.closing' | translate }}
+						</button>
+					</ng-container>
+					<ng-container *ngSwitchDefault>
+						<img
+								height="74"
+								ngSrc="/assets/images/bizb-loading.gif"
+								width="107"
+						/>
+						<p>
+							{{
+							'foreignCredentialsCreate.' +
+							targetTypeDesc +
+							'.tokenTrackStep.waitingMessage' | translate
+							}}
+						</p>
+					</ng-container>
+				</div>
+			</ng-container>
+		</ng-container>
+		<ng-template #loading>
+			<div class="polling-section">
+				<img height="74" ngSrc="/assets/images/bizb-loading.gif" width="107"/>
+				<p>
+					{{
+					'foreignCredentialsCreate.' +
+					targetTypeDesc +
+					'.tokenTrackStep.waitingMessage' | translate
+					}}
+				</p>
+			</div>
+		</ng-template>
+	</ng-container>
+	
+	<div *ngIf="state === DialogState.UPDATE_FAILED" style="text-align: center">
+		<h2
+				[innerHTML]="
+        'foreignCredentialsUpdate.expressions.technicalProblemDisclamer'
+          | translate
+      "
+		></h2>
+	</div>
+	
+	<!--<div *ngIf="state === null || state === DialogState.UPDATING"-->
+	<!--class="Form__feedback Form__feedback&#45;&#45;warning Form__feedback&#45;&#45;warning&#45;&#45;block">-->
+	<!--<i class="fa fa-fw fa-exclamation-triangle"></i>  {{'foreignCredentialsUpdate.expressions.disconnectBankSiteWarn'| translate}}-->
+	<!--</div>-->
+	<p-footer *ngIf="state === null">
+		<div
+				style="
+        width: 100%;
+        display: flex;
+        display: -ms-flexbox;
+        justify-content: center;
+      "
+		>
+			<a
+					(click)="display = false"
+					class="button-white button-link"
+					href="#"
+					role="button"
+			>
+				{{ 'actions.cancellation' | translate }}
+			</a>
+			<button
+					(click)="submitTokenUpdate()"
+					[disabled]="!account.valid || state === DialogState.UPDATING"
+					class="button-dark"
+			>
+				{{ 'actions.updating' | translate }}
+				<!--{{'foreignCredentialsUpdate.expressions.'-->
+				<!--+ (((tokenData?.tokenStatus| toTokenStatusEnumValue) !== TokenStatus.Blocked)-->
+				<!--? 'updatePassword' : 'updateCredentials')| translate}}-->
+			</button>
+		</div>
+	</p-footer>
+</p-dialog>
+
+<ng-container *ngIf="hashAppTokenOtpModal">
+	<p-dialog (onHide)="hashAppTokenOtpModal = false"
+	          (visibleChange)="hashAppTokenOtpModal = false"
+	          [closable]="false"
+	          [closeOnEscape]="false"
+	          [draggable]="false"
+	          [modal]="true"
+	          [resizable]="false"
+	          [visible]="(hashAppTokenOtpModal)"
+	          appendTo="body"
+	          styleClass="hashAppTokenOtpModal"
+	>
+		<h1>טעינת פועלים בעסקים</h1>
+		
+		<p>יש להזין את הקוד שקיבלתם מאתר הבנק</p>
+		<ng-container *ngIf="bankCredentialsOTP">
+			<div
+					[formGroup]="bankCredentialsOTP"
+					class="Signup__control"
+					style="padding-right: 40px; padding-left: 0"
+			>
+				<mat-form-field hideRequiredMarker="true">
+					<mat-label>מספר הקוד</mat-label>
+					<input
+							[autocomplete]="'nope'"
+							[formControlName]="'otpPassword'"
+							[id]="'otpPassword'"
+							[name]="'otpPassword'"
+							[type]="'text'"
+							matInput
+					/>
+					<mat-error
+							*ngIf="
+              bankCredentialsOTP.get('otpPassword').invalid &&
+              bankCredentialsOTP.get('otpPassword').dirty
+            "
+					>
+						<i class="fa fa-fw fa-exclamation-triangle"></i> יש להקליד ספרות
+						בלבד
+					</mat-error>
+					<mat-error *ngIf="bankCredentialsOTPError">
+						<i class="fa fa-fw fa-exclamation-triangle"></i>
+						חלה שגיאה בשליחת הנתונים, אנא נסו שנית
+					</mat-error>
+					<mat-error *ngIf="hashAppTokenOtpModalError">
+						<i class="fa fa-fw fa-exclamation-triangle"></i>
+						הקוד לא תואם לקוד שנשלח, אנא בדקו אותו ונסו שוב
+					</mat-error>
+				</mat-form-field>
+			</div>
+		</ng-container>
+		
+		<div class="p-dialog-footer">
+			<div
+					*ngIf="bankCredentialsOTP"
+					style="justify-content: center; align-items: center; display: flex"
+			>
+				<button
+						(click)="hashAppTokenOtp()"
+						[disabled]="
+            bankCredentialsOTP.get('otpPassword').invalid || progressCode
+          "
+						class="button-dark bankCredentialsOTP"
+						style="
+            width: 121px;
+            height: 33px !important;
+            padding: 0;
+            text-align: center;
+          "
+				>
+					<mat-spinner
+							*ngIf="progressCode"
+							color="#ffffff"
+							diameter="20"
+							style="margin: 0 auto"
+					></mat-spinner>
+					<span *ngIf="!progressCode">{{ 'actions.approve' | translate }}</span>
+				</button>
+			</div>
+		</div>
+	</p-dialog>
+</ng-container>

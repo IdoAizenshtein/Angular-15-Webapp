@@ -1,0 +1,458 @@
+<div [appScrollHeight]="330" class="scrollPage scrollbar-dynamic">
+	<div class="infoCompanyForm detailsForm">
+		<form [formGroup]="info" novalidate>
+			<div class="columns" style="flex-wrap: wrap">
+				<div class="sett-table">
+					<div
+							[matTooltip]="
+              exist['originalCompanyName']
+                ? exist['originalCompanyName']
+                : originalData
+                ? originalData['originalCompanyName']
+                : ''
+            "
+							matTooltipClass="allow-cr"
+							matTooltipPosition="above"
+					>
+						<div>שם חברה</div>
+						<div>
+							<input
+									(blur)="updateCompany()"
+									[class.err]="
+                  info.get('companyName').dirty &&
+                  info.get('companyName').invalid
+                "
+									formControlName="companyName"
+									type="text"
+							/>
+						</div>
+					</div>
+				</div>
+				
+				<div class="sett-table">
+					<div>
+						<div>שם חברה באנגלית</div>
+						<div>
+							<input
+									(blur)="updateCompany()"
+									[class.err]="
+                  info.get('englishCompanyName').dirty &&
+                  info.get('englishCompanyName').invalid
+                "
+									formControlName="englishCompanyName"
+									type="text"
+							/>
+						</div>
+					</div>
+				</div>
+				<div class="sett-table">
+					<div>
+						<div>כתובת</div>
+						<div>
+							<input
+									(blur)="updateCompany()"
+									[class.err]="
+                  info.get('street').dirty && info.get('street').invalid
+                "
+									formControlName="street"
+									type="text"
+							/>
+						</div>
+					</div>
+				</div>
+				
+				<div class="sett-table">
+					<div>
+						<div>עיר</div>
+						<div>
+							<p-dropdown
+									#dd
+									(onChange)="updateCompany()"
+									(onFocus)="clearFilter(dd)"
+									[dropdownIcon]="'p-dropdown-icon'"
+									[filter]="true"
+									[options]="sharedService.cities$ | async"
+									[scrollHeight]="'135px'"
+									[style]="{ width: '275px' }"
+									appendTo="body"
+									dataKey="cityId"
+									formControlName="cityId"
+									
+									optionLabel="cityName"
+									placeholder="בחירה"
+									styleClass="ddInfoCompanyForm"
+							>
+							</p-dropdown>
+						</div>
+					</div>
+				</div>
+				
+				<div class="sett-table">
+					<div>
+						<div>ח.פ</div>
+						<div>
+							<input
+									(blur)="
+                  info.get('companyHp').value && !info.get('companyHp').invalid
+                    ? updateCompany()
+                    : getDetails()
+                "
+									[class.err]="
+                  info.get('companyHp').dirty &&
+                  (info.get('companyHp').invalid || exist['exists'])
+                "
+									appNumbersOnly="positiveInt"
+									formControlName="companyHp"
+									type="text"
+							/>
+						</div>
+					</div>
+					<div
+							*ngIf="info.get('companyHp').value && info.get('companyHp').invalid"
+							class="invalidAlert"
+					>
+						המספר שהוקלד לא תקין
+					</div>
+					<div
+							*ngIf="
+              !info.get('companyHp').value && info.get('companyHp').invalid
+            "
+							class="invalidAlert"
+					>
+						שדה חובה
+					</div>
+					<div
+							*ngIf="
+              info.get('companyHp').value &&
+              exist['exists'] &&
+              !info.get('companyHp').invalid
+            "
+							class="invalidAlert"
+							style="
+              display: flex;
+              justify-content: space-between;
+              width: 275px;
+              padding-left: 0;
+            "
+					>
+						ח.פ קיים כבר ב-bizibox
+						
+						<div
+								(click)="sharedComponent.showOpenTicket()"
+								class="link"
+								style="color: #038ed6; font-size: 14px"
+						>
+							פתחו קריאת שירות
+						</div>
+					</div>
+				</div>
+				<div class="sett-table">
+					<div>
+						<div>מספר תיק ניכויים</div>
+						<div>
+							<input
+									(blur)="updateCompany()"
+									[class.err]="
+                  info.get('tikNikuim').dirty && info.get('tikNikuim').invalid
+                "
+									appNumbersOnly="positiveInt"
+									formControlName="tikNikuim"
+									type="text"
+							/>
+						</div>
+					</div>
+				</div>
+				
+				<div class="sett-table">
+					<div>
+						<div>מספר עוסק/איחוד עוסקים</div>
+						<div>
+							<input
+									(blur)="updateCompany()"
+									[class.err]="
+                  info.get('osekNum').dirty && info.get('osekNum').invalid
+                "
+									appNumbersOnly="positiveInt"
+									formControlName="osekNum"
+									type="text"
+							/>
+						</div>
+					</div>
+					<div
+							*ngIf="info.get('osekNum').value && info.get('osekNum').invalid"
+							class="invalidAlert"
+					>
+						המספר שהוקלד לא תקין
+					</div>
+				</div>
+				<div class="sett-table">
+					<div>
+						<div>מספר עוסק אילת</div>
+						<div>
+							<input
+									(blur)="updateCompany()"
+									[class.err]="
+                  info.get('eilatOsekNum').dirty &&
+                  info.get('eilatOsekNum').invalid
+                "
+									appNumbersOnly="positiveInt"
+									formControlName="eilatOsekNum"
+									type="text"
+							/>
+						</div>
+					</div>
+					<div
+							*ngIf="
+              info.get('eilatOsekNum').value && info.get('eilatOsekNum').invalid
+            "
+							class="invalidAlert"
+					>
+						המספר שהוקלד לא תקין
+					</div>
+				</div>
+				
+				<ng-container
+						*ngFor="let item of arr.controls; index as i"
+						formArrayName="otherOseknumArray"
+				>
+					<div class="sett-table">
+						<div>
+							<div
+									[matTooltip]="
+                  'לזיהוי תקין נדרש-\nמספר עוסק (ת.ז.) של בעל עסק שהפך לחברה\nאו ת.ז. של בעל/ת כרטיס/י האשראי שבשימוש העסק\nאו כל מספר ח.פ., עוסק, ת.ז. שיכול להופיע במסמכי הספקים\nבמידה ואין יש לרשום את אותו מספר עוסק'
+                "
+									matTooltipClass="allow-cr"
+									matTooltipPosition="below"
+							>
+								עוסקים קשורים/ ת.ז שיכולים להופיע במסמכים
+								{{ i > 0 ? i + 1 : '' }}
+							</div>
+							<!--                            [tooltipDisabled]="i > 0"-->
+							<!--                            appendTo="body"-->
+							<!--                            [tooltipStyleClass]="'p-tooltip-one-line'"-->
+							<!--                            [pTooltip]="'מס\' עוסק/ת.ז ישן/נוסף שלנו שמופיע בחשבוניות מספקים'"-->
+							<!--                            tooltipPosition="top"-->
+							<div>
+								<input
+										(blur)="
+                    item.invalid ||
+                    (item.value &&
+                      (item.value + '' === info.get('companyHp').value + '' ||
+                        item.value + '' === info.get('osekNum').value + '' ||
+                          (((i + '') === '0') &&
+                          ((arr.controls.length === 3 &&
+                            (item.value + '' === arr.controls[1].value + '' ||
+                              item.value + '' ===
+                                arr.controls[2].value + '')) ||
+                            (arr.controls.length === 2 &&
+                              item.value + '' ===
+                                arr.controls[1].value + ''))) ||
+                          (((i + '') === '1') &&
+                          ((arr.controls.length === 3 &&
+                            (item.value + '' === arr.controls[0].value + '' ||
+                              item.value + '' ===
+                                arr.controls[2].value + '')) ||
+                            (arr.controls.length === 2 &&
+                              item.value + '' ===
+                                arr.controls[0].value + ''))) ||
+                          (((i + '') === '2') &&
+                          (item.value + '' === arr.controls[0].value + '' ||
+                            item.value + '' === arr.controls[1].value + ''))))
+                      ? null
+                      : updateCompany()
+                  "
+										[class.err]="
+                    item.dirty &&
+                    (item.invalid ||
+                      (item.value &&
+                        (item.value + '' === info.get('companyHp').value + '' ||
+                          item.value + '' === info.get('osekNum').value + '' ||
+                          (((i + '') === '0') &&
+                            ((arr.controls.length === 3 &&
+                              (item.value + '' === arr.controls[1].value + '' ||
+                                item.value + '' ===
+                                  arr.controls[2].value + '')) ||
+                              (arr.controls.length === 2 &&
+                                item.value + '' ===
+                                  arr.controls[1].value + ''))) ||
+                          (((i + '') === '1') &&
+                            ((arr.controls.length === 3 &&
+                              (item.value + '' === arr.controls[0].value + '' ||
+                                item.value + '' ===
+                                  arr.controls[2].value + '')) ||
+                              (arr.controls.length === 2 &&
+                                item.value + '' ===
+                                  arr.controls[0].value + ''))) ||
+                          (((i + '') === '2') &&
+                            (item.value + '' === arr.controls[0].value + '' ||
+                              item.value + '' ===
+                                arr.controls[1].value + '')))))
+                  "
+										[formControlName]="i"
+										appNumbersOnly="positiveInt"
+										type="text"
+								/>
+							</div>
+						</div>
+						<div *ngIf="item.value && item.invalid" class="invalidAlert">
+							המספר שהוקלד לא תקין
+						</div>
+						<div
+								*ngIf="
+                item.value &&
+                (item.value + '' === info.get('companyHp').value + '' ||
+                  item.value + '' === info.get('osekNum').value + '' ||
+                          (((i + '') === '0') &&
+                    ((arr.controls.length === 3 &&
+                      (item.value + '' === arr.controls[1].value + '' ||
+                        item.value + '' === arr.controls[2].value + '')) ||
+                      (arr.controls.length === 2 &&
+                        item.value + '' === arr.controls[1].value + ''))) ||
+                          (((i + '') === '1') &&
+                    ((arr.controls.length === 3 &&
+                      (item.value + '' === arr.controls[0].value + '' ||
+                        item.value + '' === arr.controls[2].value + '')) ||
+                      (arr.controls.length === 2 &&
+                        item.value + '' === arr.controls[0].value + ''))) ||
+                          (((i + '') === '2') &&
+                    (item.value + '' === arr.controls[0].value + '' ||
+                      item.value + '' === arr.controls[1].value + '')))
+              "
+								class="invalidAlert"
+						>
+							המספר שהוקלד קיים כבר בשדה אחר
+						</div>
+						
+						<div
+								*ngIf="i ===0"
+								[class.withAlert]="
+                (item.value && item.invalid) ||
+                (item.value &&
+                  (item.value + '' === info.get('companyHp').value + '' ||
+                    item.value + '' === info.get('osekNum').value + '' ||
+                          (((i + '') === '0') &&
+                      ((arr.controls.length === 3 &&
+                        (item.value + '' === arr.controls[1].value + '' ||
+                          item.value + '' === arr.controls[2].value + '')) ||
+                        (arr.controls.length === 2 &&
+                          item.value + '' === arr.controls[1].value + ''))) ||
+                          (((i + '') === '1') &&
+                      ((arr.controls.length === 3 &&
+                        (item.value + '' === arr.controls[0].value + '' ||
+                          item.value + '' === arr.controls[2].value + '')) ||
+                        (arr.controls.length === 2 &&
+                          item.value + '' === arr.controls[0].value + ''))) ||
+                          (((i + '') === '2') &&
+                      (item.value + '' === arr.controls[0].value + '' ||
+                        item.value + '' === arr.controls[1].value + ''))))
+              "
+								class="comments"
+						>
+							<div
+									(click)="arr.controls.length === 3 ? null : addOtherOsekNum()"
+									[ngStyle]="{ opacity: arr.controls.length === 3 ? 0.6 : 1 }"
+									class="link"
+									style="
+                  display: flex;
+                  color: #038ed6;
+                  font-size: 15px !important;
+                  font-weight: 400;
+                "
+							>
+								<img
+										src="/assets/images/addFolder.png"
+										style="align-self: center; margin-left: 4px"
+								/>
+								הוספת עוסקים קשורים/ת.ז
+							</div>
+						</div>
+						<div
+								*ngIf="i > 0"
+								[class.withAlert]="
+                (item.value && item.invalid) ||
+                (item.value &&
+                  (item.value + '' === info.get('companyHp').value + '' ||
+                    item.value + '' === info.get('osekNum').value + '' ||
+                          (((i + '') === '0') &&
+                      ((arr.controls.length === 3 &&
+                        (item.value + '' === arr.controls[1].value + '' ||
+                          item.value + '' === arr.controls[2].value + '')) ||
+                        (arr.controls.length === 2 &&
+                          item.value + '' === arr.controls[1].value + ''))) ||
+                          (((i + '') === '1') &&
+                      ((arr.controls.length === 3 &&
+                        (item.value + '' === arr.controls[0].value + '' ||
+                          item.value + '' === arr.controls[2].value + '')) ||
+                        (arr.controls.length === 2 &&
+                          item.value + '' === arr.controls[0].value + ''))) ||
+                          (((i + '') === '2') &&
+                      (item.value + '' === arr.controls[0].value + '' ||
+                        item.value + '' === arr.controls[1].value + ''))))
+              "
+								class="comments"
+						>
+							<div
+									(click)="deleteItem(i)"
+									class="link"
+									style="
+                  display: flex;
+                  color: #038ed6;
+                  font-size: 15px !important;
+                  font-weight: 400;
+                "
+							>
+								<img
+										src="/assets/images/trashCurr.png"
+										style="align-self: center; margin-left: 4px"
+								/>
+								מחיקת עוסקים קשורים/ת.ז
+							</div>
+						</div>
+					</div>
+				</ng-container>
+				
+				<div class="sett-table">
+					<div>
+						<div>תחום עיסוק/ענף</div>
+						<div>
+							<p-dropdown
+									#dd1
+									(onChange)="updateCompany()"
+									[dropdownIcon]="'p-dropdown-icon'"
+									[filter]="true"
+									[options]="businessCategoryArr"
+									[scrollHeight]="'135px'"
+									[style]="{ width: '275px' }"
+									appendTo="body"
+									dataKey="businessCategoryId"
+									formControlName="primaryBusinessCategoryId"
+									
+									optionLabel="businessCategoryName"
+									placeholder="בחירה"
+									styleClass="ddInfoCompanyForm"
+							>
+							</p-dropdown>
+						</div>
+					</div>
+				</div>
+			</div>
+			
+			<div class="sett-table">
+				<div>
+					<div>הערות</div>
+					<div>
+						<input
+								(blur)="updateCompany()"
+								[class.err]="
+                info.get('companyDesc').dirty && info.get('companyDesc').invalid
+              "
+								formControlName="companyDesc"
+								style="width: 1007px"
+								type="text"
+						/>
+					</div>
+				</div>
+			</div>
+		</form>
+	</div>
+</div>

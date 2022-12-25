@@ -1,0 +1,85 @@
+<div [appScrollHeight]="70" class="scrollPage scrollbar-dynamic">
+  <div class="mainText">
+    <h1>למה לעבוד קשה כשאפשר לעבוד חכם?</h1>
+    <p>
+      <b style="font-weight: 600">bizibox</b>
+      מתממשקת לתוכנות הנהלת החשבונות המובילות בשוק ומייצאת בלחיצת כפתור אחת את
+      נתוני חשבונות הבנק וכרטיסי האשראי לתוך התוכנה, במקום להקליד או להוריד אותם
+      לממשק חיצוני. המערכת מנתחת את נתוני הנהלת החשבונות, מציגה מגמות לאורך זמן
+      ובהשוואה לתקופות מקבילות. כך תוכלו לבצע בקרה בזמן אמת ולדעת בדיוק מה קורה
+      בעסק שלכם.
+    </p>
+    <button (click)="userService.appData.userData.companySelect.example = true">
+      צפייה בנתוני הנהלת חשבונות לדוגמה
+    </button>
+  </div>
+  <div class="slider">
+    <div class="wrapMainSlider">
+      <div class="navSlider">
+        <img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/rightSlider.png" (click)="navSlider(-1)" />
+      </div>
+      <div class="mainSlider">
+        <div [ngSwitch]="step">
+          <ng-template ngSwitchCase="1">
+            <div class="step{{ step }}">
+              <h2>דוחות הנהלת חשבונות</h2>
+              <p>
+                <b style="font-weight: 600">bizibox</b>
+                לא רק אוספת ומציגה נתונים, אלא גם מנתחת ומכינה לכם דוחות
+                מקצועיים המוצגים בלחיצת כפתור!
+              </p>
+              <ul>
+                <li>דוחות חשבונאיים וניתוחים פנימיים לרמת כרטיס בודד</li>
+                <li>השוואה לשנים קודמות, גרפים וניתוח מגמות</li>
+                <li>מאזן בוחן ודוחות רווח והפסד</li>
+              </ul>
+              <p>
+                קחו שליטה על הניהול הפיננסי של העסק מבלי להיות תלויים באף אחד!
+              </p>
+            </div>
+          </ng-template>
+          <ng-template ngSwitchCase="2">
+            <div class="step{{ step }}">
+              <h2>משיכת צ'קים אוטומטית</h2>
+              <p>
+                <b style="font-weight: 600">bizibox</b>
+                מושכת באופן אוטומטי את הצ'קים המוקלדים בתוכנת הנהלת החשבונות
+                שלכם, כולל תאריך עתידי, תיאור התשלום והסכום, ומכניסה אותם ישירות
+                לתזרים המזומנים!
+              </p>
+              <ul>
+                <li>אין צורך להקליד צ'קים פעמיים</li>
+                <li>תזרים המזומנים מעודכן תמיד</li>
+                <li>מעקב מדויק והתאמה אוטומטית לפעולות הבנק</li>
+              </ul>
+            </div>
+          </ng-template>
+          <ng-template ngSwitchCase="3">
+            <div class="step{{ step }}">
+              <h2>ייצוא נתוני בנקים וכ"א לתוכנת הנה"ח פנימית</h2>
+              <p>
+                עם
+                <b style="font-weight: 600">bizibox</b>
+                הנתונים מיוצאים בצורה אוטומטית לתוכנת הנהלת החשבונות הפנימית של
+                העסק, ללא צורך בהקלדה ידנית או שימוש בממשקים חיצוניים!
+              </p>
+              <ul>
+                <li>חיסכון בזמן עבודה של הנהלת החשבונות!</li>
+                <li>מניעת טעויות הקלדה וכפילויות</li>
+                <li>נתונים ודוחות מעודכנים בכל זמן</li>
+              </ul>
+            </div>
+          </ng-template>
+        </div>
+      </div>
+      <div class="navSlider">
+        <img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/leftSlider.png" (click)="navSlider(+1)" />
+      </div>
+    </div>
+    <ul class="points">
+      <li [class.active]="step === 1" (click)="step = 1">&nbsp;</li>
+      <li [class.active]="step === 2" (click)="step = 2">&nbsp;</li>
+      <li [class.active]="step === 3" (click)="step = 3">&nbsp;</li>
+    </ul>
+  </div>
+</div>

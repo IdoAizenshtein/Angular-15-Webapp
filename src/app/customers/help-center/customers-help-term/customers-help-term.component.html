@@ -1,0 +1,25 @@
+<ul id="faq-list">
+  <li
+    *ngFor="
+      let term of customersHelpCenterComponent.termsList$
+        | async
+        | filterSearchables
+          : customersHelpCenterComponent.searchFC.value as faqList
+    "
+    (click)="term.expanded = !term.expanded"
+    [class.expanded]="term.expanded"
+  >
+    <header>
+      <i
+        class="fas fa-lg"
+        [ngClass]="term.expanded ? 'fa-angle-up' : 'fa-angle-down'"
+      ></i
+      >&nbsp;{{ term.subject }}
+    </header>
+    <div *ngIf="term.expanded">{{ term.details }}</div>
+    <!--<ul class="keywords-list" *ngIf="faq.expanded">-->
+    <!--<li *ngFor="let kw of faq.keywords">{{kw.keyword}}</li>-->
+    <!--</ul>-->
+    <!--<pre>{{faq| json}}</pre>-->
+  </li>
+</ul>

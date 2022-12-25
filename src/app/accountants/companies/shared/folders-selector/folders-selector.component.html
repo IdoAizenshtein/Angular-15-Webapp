@@ -1,0 +1,185 @@
+<ng-container *ngIf="!isDD; else dd">
+	<p id="title">
+		בחרו את התיקייה אליה תרצו להעביר<br/>
+		את המסמכים
+	</p>
+	<div #header class="search">
+		<input [formControl]="query" autocomplete="off" type="text"/>
+	</div>
+	
+	<div class="scroll-chrome">
+		<mat-list *ngIf="foldersFitlered$ | async as folders; else loader">
+			<ng-container *ngFor="let folder of folders; trackBy: trackFolder">
+				<mat-list-item
+						(click)="selectedFolder = folder"
+						[class.active]="folder === selectedFolder"
+				>
+					<div matLine style="position: relative">
+						<mat-icon
+								[class.showLogoInside]="!folder.editable"
+								style="
+                width: 20px;
+                height: 20px;
+                vertical-align: middle;
+                position: relative;
+                margin-left: 6px;
+              "
+								svgIcon="folderLine"
+						>
+						</mat-icon>
+						<img
+								*ngIf="!folder.editable"
+								src="/assets/images/indDefaultBudget.png"
+								style="
+                width: 8px;
+                height: 8px;
+                vertical-align: middle;
+                position: absolute;
+                right: 3px;
+                bottom: 4px;
+              "
+						/>
+						<p>
+							{{ folder.folderName }}
+						</p>
+					</div>
+				</mat-list-item>
+			</ng-container>
+		</mat-list>
+		<ng-template #loader>
+			<div class="loaderPercent">
+				<div class="circle"></div>
+			</div>
+		</ng-template>
+	</div>
+	<div class="createFolder">
+		<button (click)="createFolder()" class="button-link">
+			<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/addFolder.png"/>
+			תיקיה חדשה
+		</button>
+	</div>
+</ng-container>
+
+<ng-template #dd>
+	<div class="menu-dd menu-with-panel">
+		<button
+				#selector
+				(click)="togglePanel()"
+				[class.opened]="showPanelDD"
+				[disabled]="disabled"
+				class="buttonDD"
+		>
+			העברה לארכיון
+			
+			<mat-icon
+					style="
+          width: 16px;
+          height: 16px;
+          transform: rotate(270deg);
+          margin-right: 10px;
+        "
+					svgIcon="arrowBack"
+			></mat-icon>
+		</button>
+		<div
+				(closed)="discardChanges()"
+				*ngIf="showPanelDD"
+				[@slideInOutDD]
+				appClickDocument
+				class="panelDD folder-selector-dd"
+		>
+			<div #header class="search">
+				<input [formControl]="query" autocomplete="off" type="text"/>
+			</div>
+			<div class="scroll-chrome">
+				<mat-list *ngIf="foldersFitlered$ | async as folders; else loader">
+					<ng-container *ngFor="let folder of folders; trackBy: trackFolder">
+						<mat-list-item
+								(click)="selectedFolder = folder"
+								[class.active]="folder === selectedFolder"
+						>
+							<div matLine style="position: relative">
+								<mat-icon
+										style="
+                    width: 20px;
+                    height: 20px;
+                    vertical-align: middle;
+                    position: relative;
+                    margin-left: 6px;
+                  "
+										svgIcon="folderLine"
+								>
+								</mat-icon>
+								<img
+										*ngIf="!folder.editable"
+										src="/assets/images/indDefaultBudget.png"
+										style="
+                    width: 8px;
+                    height: 8px;
+                    vertical-align: middle;
+                    position: absolute;
+                    right: 3px;
+                    bottom: 4px;
+                  "
+								/>
+								<p>
+									{{ folder.folderName }}
+								</p>
+							</div>
+						</mat-list-item>
+					</ng-container>
+				</mat-list>
+				<ng-template #loader>
+					<div class="loaderPercent">
+						<div class="circle"></div>
+					</div>
+				</ng-template>
+			</div>
+			<div class="createFolder">
+				<button (click)="createFolder()" class="button-link">
+					<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/addFolder.png"/>
+					תיקיה חדשה
+				</button>
+			</div>
+		</div>
+	</div>
+</ng-template>
+
+<ng-container *ngIf="createFolderModal">
+	<p-dialog (visibleChange)="createFolderModal.visible = false"
+			[visible]="(createFolderModal.visible)"
+			
+			[modal]="true"
+			[resizable]="false"
+			appendTo="body"
+			styleClass="createFolderModal"
+	>
+		<p-header>{{ 'יצירת תיקייה חדשה' }}</p-header>
+		
+		<input
+				[class.validation-error]="
+        createFolderModal.folderName.dirty &&
+        createFolderModal.folderName.invalid
+      "
+				[formControl]="createFolderModal.folderName"
+				autocomplete="off"
+				name="folderName"
+				placeholder="בחרו שם לתיקיה החדשה"
+				required
+				type="text"
+		/>
+		
+		<p-footer>
+			<button (click)="createFolderModal.visible = false" class="button-link">
+				{{ 'actions.cancellation' | translate }}
+			</button>
+			<button
+					(click)="createFolderModal.approve()"
+					[disabled]="createFolderModal.folderName.invalid"
+					class="button-dark"
+			>
+				{{ 'actions.approve' | translate }}
+			</button>
+		</p-footer>
+	</p-dialog>
+</ng-container>

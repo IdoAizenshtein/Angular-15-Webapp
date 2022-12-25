@@ -1,0 +1,174 @@
+<!--<div class="rowOfCompanies" *ngIf="(settingsComponent.arrCompanies$)| async as arrCompanies">-->
+<!--&lt;!&ndash;<ng-container *ngIf="(settingsComponent.selectedCompany$)| async as selectedCompany">&ndash;&gt;-->
+<!--<p-dropdown *ngIf="arrCompanies.length > 5"-->
+<!--[options]="arrCompanies"-->
+<!--[(ngModel)]="(settingsComponent.selectedCompany$)| async"-->
+<!--(change)="settingsComponent.selectedCompany$.next($event)"-->
+<!--[dropdownIcon]="'p-dropdown-icon'"-->
+<!--placeholder="{{'actions.company' | translate}}"-->
+<!--optionLabel="companyName">-->
+<!--<ng-template let-company pTemplate="item">-->
+<!--<div class="p-helper-clearfix">-->
+<!--<div>{{company.value.companyName}}</div>-->
+<!--</div>-->
+<!--</ng-template>-->
+<!--</p-dropdown>-->
+
+<!--<ul *ngIf="arrCompanies.length <= 5">-->
+<!--<li *ngFor="let item of arrCompanies" (click)="settingsComponent.selectedCompany$.next(item)"-->
+<!--[class.active]="item === ((settingsComponent.selectedCompany$)| async)">-->
+<!--{{item.companyName}}-->
+<!--</li>-->
+<!--</ul>-->
+<!--&lt;!&ndash;</ng-container>&ndash;&gt;-->
+<!--</div>-->
+
+<div [appScrollHeight]="250" class="scrollPage scrollbar-dynamic">
+  <!--<div>{{personalInfo.valid}}</div>-->
+  <div class="myaccSett">
+    <div style="width: 400px; flex: none">
+      <form
+        novalidate
+        [formGroup]="personalInfo"
+        (ngSubmit)="updateCompany()"
+        #personalInfoFrm
+      >
+        <button type="submit" style="display: none" #submitBtn></button>
+        <div class="sett-table">
+          <div>
+            <div>שם העסק /אחר</div>
+            <div>
+              <input
+                type="text"
+                [ngClass]="{
+                  err:
+                    personalInfo.get('companyName').invalid &&
+                    personalInfo.dirty
+                }"
+                formControlName="companyName"
+                (blur)="submitBtn.click()"
+              />
+            </div>
+          </div>
+          <div>
+            <div>ת.ז./ ח.פ.</div>
+            <div>
+              <p>
+                <ng-container
+                  *ngIf="
+                    settingsComponent.selectedCompany$
+                      | async as selectedCompany
+                  "
+                >
+                  {{ selectedCompany.companyHp }}
+                </ng-container>
+              </p>
+            </div>
+          </div>
+          <div>
+            <div>תחום עיסוק</div>
+            <div>
+              <input
+                type="text"
+                placeholder="לדוגמה: משק בית, בית קפה"
+                [ngClass]="{
+                  err:
+                    personalInfo.get('businessCategory').invalid &&
+                    personalInfo.dirty
+                }"
+                formControlName="businessCategory"
+                (blur)="submitBtn.click()"
+              />
+            </div>
+          </div>
+          <div>
+            <div>עיר</div>
+            <div>
+              <p-dropdown
+                #dd
+                styleClass="listCities"
+                placeholder="בחר עיר"
+                [options]="sharedService.cities$ | async"
+                formControlName="city"
+                [scrollHeight]="'135px'"
+                (onFocus)="clearFilter(dd)"
+                [dropdownIcon]="'p-dropdown-icon'"
+                optionLabel="cityName"
+                dataKey="cityId"
+                appendTo="body"
+
+                [style]="{ width: '100%' }"
+                [filter]="true"
+                (onChange)="submitBtn.click()"
+              >
+              </p-dropdown>
+            </div>
+          </div>
+          <div>
+            <div>כתובת</div>
+            <div>
+              <input
+                type="text"
+                [ngClass]="{
+                  err: personalInfo.get('street').invalid && personalInfo.dirty
+                }"
+                formControlName="street"
+                (blur)="submitBtn.click()"
+              />
+            </div>
+          </div>
+          <div>
+            <div>שם איש קשר</div>
+            <div>
+              <input
+                type="text"
+                [ngClass]="{
+                  err:
+                    personalInfo.get('mainContactName').invalid &&
+                    personalInfo.dirty
+                }"
+                formControlName="mainContactName"
+                (blur)="submitBtn.click()"
+              />
+            </div>
+          </div>
+          <div>
+            <div>מייל</div>
+            <div>
+              <input
+                type="text"
+                [ngClass]="{
+                  err:
+                    personalInfo.get('contactMail').invalid &&
+                    personalInfo.dirty
+                }"
+                formControlName="contactMail"
+                (keypress)="handleKeyPress($event)"
+                autocomplete="mail"
+                (blur)="submitBtn.click()"
+              />
+            </div>
+          </div>
+
+          <div>
+            <div>טלפון</div>
+            <div>
+              <input
+                type="text"
+                [ngClass]="{
+                  err:
+                    personalInfo.get('contactPhone').invalid &&
+                    personalInfo.dirty
+                }"
+                formControlName="contactPhone"
+                (keypress)="handleKeyPress($event)"
+                autocomplete="tel-national"
+                (blur)="submitBtn.click()"
+              />
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

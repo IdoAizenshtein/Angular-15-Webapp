@@ -1,0 +1,500 @@
+<div class="menu-dd menu-with-panel">
+	<button
+			id="account-dates-selector"
+			class="buttonDD"
+			(click)="togglePanel()"
+			[class.opened]="showPanelDD"
+			#selector
+	>
+		<div [ngSwitch]="currentSettings?.selectedValue">
+			<p *ngSwitchDefault>
+				{{ currentSettings?.dates.selectedValueLast }}
+				{{
+				currentSettings?.dates.selectedValueLast > 1
+						? ('filters.lastMonths' | translate)
+						: ('filters.lastMonth' | translate)
+				}}
+			</p>
+			<p *ngSwitchCase="0">
+        <span
+		        *ngIf="
+            optionA !== 'monthChecks' &&
+            optionA !== 'bookKeepingAnalyze' &&
+            optionA !== 'DaysTazrim' &&
+            optionA !== 'aggregateGeneral' &&
+            optionA !== 'trialBalance' &&
+            optionA !== 'profitAndLoss'
+          "
+        >
+          {{ currentSettings.dates.selectedValueLast }}
+	        {{
+	        optionA === 'months' ||
+	        optionA === 'monthsWithoutCalendar' ||
+	        optionA === 'monthCredit' ||
+	        optionA === 'monthCreditWithoutCalendar'
+			        ? currentSettings.dates.selectedValueLast > 1
+					        ? ('filters.lastMonths' | translate)
+					        : ('filters.lastMonth' | translate)
+			        : currentSettings.dates.selectedValueLast > 1
+					        ? ('filters.lastDays' | translate)
+					        : ('filters.lastDay' | translate)
+	        }}
+        </span>
+				<span *ngIf="optionA === 'monthChecks'">
+          {{ 'filters.checksPayable' | translate }}
+        </span>
+				<span *ngIf="optionA === 'trialBalance'"> לפי יתרה נוכחית </span>
+				<span *ngIf="optionA === 'profitAndLoss'"> לפי שנה נוכחית </span>
+				<span *ngIf="optionA === 'DaysTazrim'">
+          {{ currentSettings.dates.selectedValueLast }}
+					{{
+					currentSettings.dates.selectedValueLast > 1
+							? ('filters.nextDays' | translate)
+							: ('filters.nextDay' | translate)
+					}}
+        </span>
+				<span *ngIf="optionA === 'aggregateGeneral'">
+          {{ currentSettings.dates.selectedValueLast }}
+        </span>
+				<span *ngIf="optionA === 'bookKeepingAnalyze'">
+          לפי חודש {{ months[currentSettings.dates.selectedValueLast].label }}
+					{{ currentSettings.dates.selectedValueOfYear }}
+        </span>
+			</p>
+			<p *ngSwitchCase="1">
+				<ng-container
+						[ngSwitch]="currentSettings.dates.untilValue"
+						*ngIf="optionA !== 'DaysTazrim'"
+				>
+					<ng-container *ngSwitchCase="0">
+						{{
+						translate.translations[translate.currentLang].months[
+								currentSettings.dates.selectedValueFromMonth
+								]
+						}}
+						{{ currentSettings.dates.selectedValueFromYear }}
+						{{ untilDate[0].label }}
+					</ng-container>
+					<ng-container *ngSwitchCase="1">
+						{{
+						translate.translations[translate.currentLang].langCalendar
+								.monthNamesShort[currentSettings.dates.selectedValueFromMonth]
+						}}
+						{{ currentSettings.dates.selectedValueFromYear - 2000 }} -
+						{{
+						translate.translations[translate.currentLang].langCalendar
+								.monthNamesShort[currentSettings.dates.selectedValueUntilMonth]
+						}}
+						{{ currentSettings.dates.selectedValueUntilYear - 2000 }}
+					</ng-container>
+				</ng-container>
+				
+				<ng-container
+						[ngSwitch]="currentSettings.dates.fromValue"
+						*ngIf="optionA === 'DaysTazrim'"
+				>
+					<ng-container *ngSwitchCase="0">
+						{{
+						translate.translations[translate.currentLang].filters.from.today
+						}}
+						-
+						{{
+						translate.translations[translate.currentLang].langCalendar
+								.monthNamesShort[currentSettings.dates.selectedValueUntilMonth]
+						}}
+						{{ currentSettings.dates.selectedValueUntilYear - 2000 }}
+					</ng-container>
+					<ng-container *ngSwitchCase="1">
+						{{
+						translate.translations[translate.currentLang].langCalendar
+								.monthNamesShort[currentSettings.dates.selectedValueFromMonth]
+						}}
+						{{ currentSettings.dates.selectedValueFromYear - 2000 }} -
+						{{
+						translate.translations[translate.currentLang].langCalendar
+								.monthNamesShort[currentSettings.dates.selectedValueUntilMonth]
+						}}
+						{{ currentSettings.dates.selectedValueUntilYear - 2000 }}
+					</ng-container>
+				</ng-container>
+			</p>
+			<!--<p *ngSwitchCase="1">-->
+			<!--{{translate.translations[translate.currentLang].months[selectedValueFromMonth]}} {{selectedValueFromYear}}-->
+			<!--{{(untilValue === 0) ? (untilDate[0].label) : (untilDate[1].label)}}-->
+			<!--<span *ngIf="untilValue === 1">-->
+			<!--{{translate.translations[translate.currentLang].months[selectedValueUntilMonth]}} {{selectedValueUntilYear}}-->
+			<!--</span>-->
+			<!--</p>-->
+			<p *ngSwitchCase="2" class="ltrNum">
+        <span
+		        *ngIf="
+            optionA === 'profitAndLoss' || optionA === 'bookKeepingAnalyze'
+          "
+        >
+          {{ currentSettings.dates.selectedValueLast }}
+        </span>
+				<span
+						*ngIf="
+            optionA !== 'profitAndLoss' && optionA !== 'bookKeepingAnalyze'
+          "
+				>
+          {{
+					currentSettings.dates.calendarFrom | date: 'dd/MM/yy'
+					}}&nbsp;-&nbsp;{{
+					currentSettings.dates.calendarUntil | date: 'dd/MM/yy'
+					}}
+        </span>
+			</p>
+			<!--<p *ngSwitchCase="2">-->
+			<!--{{'filters.fromUntilDate.from'|translate}}-->
+			<!--{{calendarFrom|date:'dd/MM/yy'}}-->
+			<!--{{'filters.fromUntilDate.until'|translate}}-->
+			<!--{{calendarUntil|date:'dd/MM/yy'}}-->
+			<!--</p>-->
+		</div>
+	</button>
+	<div
+			id="account-dates-panel"
+			class="panelDD datesPanel"
+			*ngIf="showPanelDD"
+			[@slideInOutDD]
+			appClickDocument
+			(closed)="discardChanges()"
+	>
+		<ul>
+			<li *ngIf="optionA !== 'aggregateGeneral'">
+				<p-radioButton
+						id="p-lastMonthsOrDays"
+						[inputId]="lastMonthsOrDays"
+						name="groupname"
+						value="0"
+						[(ngModel)]="selectedValue"
+				></p-radioButton>
+				
+				<label *ngIf="optionA === 'bookKeepingAnalyze'"> לפי חודש </label>
+				<p-dropdown
+						id="p-lastMonthsOrDaysSelection"
+						[inputId]="'lastMonthsOrDaysSelection'"
+						[options]="optionAArr"
+						*ngIf="
+            optionA !== 'monthChecks' &&
+            optionA !== 'bookKeepingAnalyze' &&
+            optionA !== 'aggregateGeneral' &&
+            optionA !== 'trialBalance' &&
+            optionA !== 'profitAndLoss'
+          "
+						[(ngModel)]="selectedValueLastMonth"
+						(onChange)="selectedValue = 0"
+						optionLabel="name"
+						[dropdownIcon]="'p-dropdown-icon'"
+						placeholder="{{ 'filters.month' | translate }}"
+				>
+				</p-dropdown>
+				
+				<p-dropdown
+						id="p-lastMonthsOrDaysSelection"
+						[inputId]="'lastMonthsOrDaysSelection'"
+						[options]="months"
+						*ngIf="optionA === 'bookKeepingAnalyze'"
+						[(ngModel)]="selectedValueLastMonth"
+						(onChange)="selectedValue = 0"
+						[dropdownIcon]="'p-dropdown-icon'"
+						placeholder="{{ 'filters.month' | translate }}"
+				>
+				</p-dropdown>
+				
+				<label
+						for="lastMonthsOrDaysSelection"
+						*ngIf="
+            optionA !== 'monthChecks' &&
+            optionA !== 'DaysTazrim' &&
+            optionA !== 'aggregateGeneral' &&
+            optionA !== 'trialBalance' &&
+            optionA !== 'profitAndLoss' &&
+            optionA !== 'bookKeepingAnalyze'
+          "
+						[translate]="
+            optionA === 'months' ||
+            optionA === 'monthsWithoutCalendar' ||
+            optionA === 'monthCredit' ||
+            optionA === 'monthCreditWithoutCalendar'
+              ? selectedValueLastMonth?.name > 1
+                ? 'filters.lastMonths'
+                : 'filters.lastMonth'
+              : selectedValueLastMonth?.name > 1
+              ? 'filters.lastDays'
+              : 'filters.lastDay'
+          "
+				></label>
+				<label *ngIf="optionA === 'DaysTazrim'">
+					{{ 'filters.nextDays' | translate }}
+				</label>
+				<label *ngIf="optionA === 'monthChecks'">
+					{{ 'filters.checksPayable' | translate }}
+				</label>
+				<label *ngIf="optionA === 'trialBalance'"> לפי יתרה נוכחית </label>
+				<label *ngIf="optionA === 'profitAndLoss'"> לפי שנה נוכחית </label>
+				<label *ngIf="optionA === 'aggregateGeneral'"> שנת </label>
+				<p-dropdown
+						id="p-yearSelection"
+						[inputId]="'yearSelection'"
+						*ngIf="
+            optionA === 'aggregateGeneral' || optionA === 'bookKeepingAnalyze'
+          "
+						[options]="years"
+						[(ngModel)]="selectedValueOfYear"
+						(onChange)="selectedValue = 0"
+						[dropdownIcon]="'p-dropdown-icon'"
+						placeholder="{{ 'filters.year' | translate }}"
+				>
+				</p-dropdown>
+			</li>
+			<li
+					*ngIf="optionA === 'profitAndLoss' || optionA === 'bookKeepingAnalyze'"
+			>
+				<p-radioButton
+						id="p-lastMonthsOrDays"
+						[inputId]="'yearSelectionRadioBtn'"
+						name="groupname"
+						value="2"
+						[(ngModel)]="selectedValue"
+				></p-radioButton>
+				<label> שנת </label>
+				<p-dropdown
+						id="p-yearSelection"
+						[inputId]="'yearSelection'"
+						[options]="years"
+						[(ngModel)]="selectedValueOfYear"
+						(onChange)="selectedValue = 2"
+						[dropdownIcon]="'p-dropdown-icon'"
+						placeholder="{{ 'filters.year' | translate }}"
+				>
+				</p-dropdown>
+			</li>
+			<li style="border: 1px solid #fff; border-radius: 3px">
+				<p-radioButton
+						id="p-betweenMonthYear"
+						[inputId]="'betweenMonthYear'"
+						name="groupname"
+						value="1"
+						[(ngModel)]="selectedValue"
+				>
+				</p-radioButton>
+				<p-dropdown
+						id="p-betweenMonthYearFromOptionSelection"
+						[inputId]="'betweenMonthYearFromOptionSelection'"
+						[options]="fromDate"
+						*ngIf="optionA === 'DaysTazrim'"
+						[(ngModel)]="fromValue"
+						(onChange)="selectedValue = 1; validateRange()"
+						[dropdownIcon]="'p-dropdown-icon'"
+						placeholder="{{ 'filters.from.from' | translate }}"
+						[style]="{ width: '100px' }"
+						
+						[styleClass]="
+            selectedValue === 1 && !hasValidRange && 'validation-error'
+          "
+				>
+				</p-dropdown>
+				<p-dropdown
+						id="p-betweenMonthYearFromMonthSelection"
+						*ngIf="fromValue === 1 || optionA !== 'DaysTazrim'"
+						[inputId]="'betweenMonthYearFromMonthSelection'"
+						[options]="months"
+						[(ngModel)]="selectedValueFromMonth"
+						(onChange)="selectedValue = 1; validateRange()"
+						[dropdownIcon]="'p-dropdown-icon'"
+						placeholder="{{ 'filters.month' | translate }}"
+						[style]="{ width: '100px' }"
+						
+						[styleClass]="
+            selectedValue === 1 && !hasValidRange && 'validation-error'
+          "
+				>
+				</p-dropdown>
+				<p-dropdown
+						id="p-betweenMonthYearFromYearSelection"
+						[inputId]="'betweenMonthYearFromYearSelection'"
+						*ngIf="fromValue === 1 || optionA !== 'DaysTazrim'"
+						[options]="years"
+						[(ngModel)]="selectedValueFromYear"
+						(onChange)="selectedValue = 1; validateRange()"
+						[dropdownIcon]="'p-dropdown-icon'"
+						placeholder="{{ 'filters.year' | translate }}"
+						[style]="{ width: '84px' }"
+						
+						[styleClass]="
+            selectedValue === 1 && !hasValidRange && 'validation-error'
+          "
+				>
+				</p-dropdown>
+				<label
+						for="betweenMonthYearTillOptionSelection"
+						*ngIf="optionA === 'DaysTazrim'"
+				>
+					{{ 'filters.from.until' | translate }}
+				</label>
+				<p-dropdown
+						id="p-betweenMonthYearTillOptionSelection"
+						[inputId]="'betweenMonthYearTillOptionSelection'"
+						[options]="untilDate"
+						*ngIf="optionA !== 'DaysTazrim'"
+						[(ngModel)]="untilValue"
+						(onChange)="selectedValue = 1; validateRange()"
+						[dropdownIcon]="'p-dropdown-icon'"
+						placeholder="{{ 'filters.until.until' | translate }}"
+						[style]="{ width: '100px' }"
+						
+						[styleClass]="
+            selectedValue === 1 && !hasValidRange && 'validation-error'
+          "
+				>
+				</p-dropdown>
+				<p-dropdown
+						*ngIf="untilValue === 1 || optionA === 'DaysTazrim'"
+						id="p-betweenMonthYearTillMonthSelection"
+						[inputId]="'betweenMonthYearTillMonthSelection'"
+						[options]="months"
+						[(ngModel)]="selectedValueUntilMonth"
+						(onChange)="selectedValue = 1; validateRange()"
+						[dropdownIcon]="'p-dropdown-icon'"
+						placeholder="{{ 'filters.month' | translate }}"
+						[style]="{ width: '100px' }"
+						
+						[styleClass]="
+            selectedValue === 1 && !hasValidRange && 'validation-error'
+          "
+				>
+				</p-dropdown>
+				<p-dropdown
+						*ngIf="untilValue === 1 || optionA === 'DaysTazrim'"
+						id="p-betweenMonthYearTillYearSelection"
+						[inputId]="'betweenMonthYearTillYearSelection'"
+						[options]="years"
+						[(ngModel)]="selectedValueUntilYear"
+						(onChange)="selectedValue = 1; validateRange()"
+						[dropdownIcon]="'p-dropdown-icon'"
+						placeholder="{{ 'filters.year' | translate }}"
+						[style]="{ width: '84px' }"
+						
+						[styleClass]="
+            selectedValue === 1 && !hasValidRange && 'validation-error'
+          "
+				>
+				</p-dropdown>
+			</li>
+			<li *ngIf="optionA === 'aggregateGeneral'">
+				<p-radioButton
+						id="p-lastMonthsOrDays"
+						[inputId]="lastMonthsOrDays"
+						name="groupname"
+						value="0"
+						[(ngModel)]="selectedValue"
+				></p-radioButton>
+				<label> שנת </label>
+				<p-dropdown
+						id="p-yearSelection"
+						[inputId]="'yearSelection'"
+						[options]="years"
+						[(ngModel)]="selectedValueOfYear"
+						(onChange)="selectedValue = 0"
+						[dropdownIcon]="'p-dropdown-icon'"
+						placeholder="{{ 'filters.year' | translate }}"
+				>
+				</p-dropdown>
+			</li>
+			<li
+					*ngIf="
+          optionA !== 'aggregateGeneral' &&
+          optionA !== 'bookKeepingAnalyze' &&
+          optionA !== 'monthsWithoutCalendar' &&
+          optionA !== 'monthCreditWithoutCalendar' &&
+          optionA !== 'profitAndLoss' &&
+          !(optionA == 'DaysTazrim' && router.url.includes('graph'))
+        "
+			>
+				<p-radioButton
+						id="p-betweenDays"
+						[inputId]="'betweenDays'"
+						name="groupname"
+						value="2"
+						[(ngModel)]="selectedValue"
+				></p-radioButton>
+				<label for="betweenDaysFromSelection">
+					{{ 'filters.fromUntilDate.from' | translate }}
+				</label>
+				
+				<p-calendar
+						dateFormat="dd/mm/yy"
+						[monthNavigator]="true"
+						[yearNavigator]="true"
+						[yearRange]="yearRange"
+						[minDate]="minDateInAccounts"
+						[maxDate]="calendarUntil"
+						[readonlyInput]="true"
+						(onSelect)="selectedValue = 2"
+						[(ngModel)]="calendarFrom"
+						[locale]="langCalendar"
+						id="p-betweenDaysFromSelection"
+						[inputId]="'betweenDaysFromSelection'"
+				>
+				</p-calendar>
+				
+				<label for="betweenDaysTillSelection">
+					{{ 'filters.fromUntilDate.until' | translate }}
+				</label>
+				<p-calendar
+						dateFormat="dd/mm/yy"
+						[monthNavigator]="true"
+						[yearNavigator]="true"
+						[yearRange]="yearRange"
+						[minDate]="calendarFrom"
+						[maxDate]="calendarToday"
+						[readonlyInput]="true"
+						(onSelect)="selectedValue = 2"
+						[(ngModel)]="calendarUntil"
+						[locale]="langCalendar"
+						id="p-betweenDaysTillSelection"
+						[inputId]="'betweenDaysTillSelection'"
+				>
+				</p-calendar>
+			</li>
+		</ul>
+		
+		<div
+				class="validation-error"
+				id="validationError"
+				[ngStyle]="{
+        visibility: selectedValue != 1 || hasValidRange ? 'hidden' : 'visible'
+      }"
+				style="
+        font-size: 14px;
+        font-weight: normal;
+        padding: 0 calc(20px + 1.25em);
+        height: 20px;
+      "
+		>
+			{{ validationError }}
+		</div>
+		
+		<hr/>
+		<div
+				style="
+        display: flex;
+        display: -ms-flexbox;
+        flex-flow: row nowrap;
+        margin-left: 1px;
+        justify-content: flex-end;
+      "
+		>
+			<button
+					(click)="commitChanges()"
+					class="filterBtn"
+					[disabled]="selectedValue === 1 && !hasValidRange"
+					id="applySelectionBtn"
+			>
+				{{ 'filters.filter' | translate }}
+			</button>
+		</div>
+	</div>
+</div>
