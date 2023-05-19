@@ -2,11 +2,9 @@ import {NgModule} from '@angular/core';
 import {RouterModule, Routes} from '@angular/router';
 import {PageNotFoundComponent} from './not-found.component';
 import {NavigatePageComponent} from './navigate-page.component';
-
 import {CanDeactivateGuard} from './login/can-deactivate-guard.service';
 import {AuthGuard} from './login/auth-guard.service';
 import {NetworkAwarePreloadingStrategyService} from './network-aware-preloading-strategy-service';
-
 const appRoutes: Routes = [
     {
         path: '',
@@ -26,7 +24,6 @@ const appRoutes: Routes = [
     },
     {path: '**', component: PageNotFoundComponent}
 ];
-
 @NgModule({
     imports: [
         RouterModule.forRoot(appRoutes, {

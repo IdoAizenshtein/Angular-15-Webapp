@@ -28,9 +28,11 @@ export function closestFutureDateNoWeekends(from: Date | number) {
     const run = new Date(
         from instanceof Date ? (from as Date).getTime() : (from as number)
     );
-    do {
-        run.setDate(run.getDate() + 1);
-    } while (run.getDay() > 6);
+    if(run.getDay() > 6){
+        do {
+            run.setDate(run.getDate() + 1);
+        } while (run.getDay() > 6);
+    }
 
     return run;
 }

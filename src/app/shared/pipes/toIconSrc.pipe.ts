@@ -15,7 +15,8 @@ export class ToIconSrcPipe implements PipeTransform {
         value: number | string | any,
         prefix: string = '',
         size: string = '',
-        isSmallSize: boolean = false
+        isSmallSize: boolean = false,
+        isNewIcons: boolean = false
     ): string | null {
         let _val: number;
         if (!value || !((_val = +value) > 0)) {
@@ -58,6 +59,11 @@ export class ToIconSrcPipe implements PipeTransform {
             } else if (_val === 55) {
                 _val = 31;
             }
+        }
+        if(isNewIcons){
+            return `/assets/images/bankAndCardsIconsExport/${prefix}${_val}${
+                size ? '-' + size : ''
+            }.png`;
         }
         if (isSmallSize) {
             return `/assets/images/bankAndCardsIcons/${prefix}${_val}${

@@ -20,8 +20,14 @@ export class ClickDocumentDirective {
         const elementRefInPath = BrowserService.pathFrom(event).includes(
             this.el.nativeElement.parentNode
         );
-        if (!elementRefInPath && !this.isInside) {
-            this.closed.emit(true);
+        try {
+            if (!elementRefInPath && !this.isInside && !event.target.className.includes('p-dropdown-item')) {
+                this.closed.emit(true);
+            }
+        } catch (e) {
+            if (!elementRefInPath && !this.isInside) {
+                this.closed.emit(true);
+            }
         }
         this.isInside = false;
     }

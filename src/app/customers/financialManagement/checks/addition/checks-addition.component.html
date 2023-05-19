@@ -5,14 +5,15 @@
 				style="display: flex; display: -ms-flexbox; align-items: center"
 		>
 			<label [for]="'account'">{{ 'titles.account' | translate }}</label>
-			
+
 			<p-dropdown
 					[inputId]="'account'"
 					[options]="accounts"
 					[placeholder]="'actions.account' | translate"
 					[scrollHeight]="'10em'"
 					[style]="{ 'min-width': '30ch' }"
-					
+					name="account"
+
 					dataKey="companyAccountId"
 					formControlName="account"
 					optionLabel="accountNickname"
@@ -34,7 +35,7 @@
 						>
 							{{ slctdItem.accountNickname }}
 						</div>
-						
+
 						<div style="flex: 0 0 auto; padding-left: 0">
 							&nbsp;&#40;{{ slctdItem.currency | currencySymbol }}&#41;
 						</div>
@@ -64,7 +65,7 @@
 				</ng-template>
 			</p-dropdown>
 		</div>
-		
+
 		<div
 				*ngIf="allowPaymentTypeChange"
 				[class.validation-error]="form.dirty && form.get('paymentType').invalid"
@@ -84,13 +85,14 @@
 					[inputId]="'paymentType'"
 					[options]="paymentTypes"
 					[placeholder]="'actions.select' | translate"
-					
+					name="paymentType"
+
 					[style]="{ 'min-width': '10ch' }"
 					formControlName="paymentType"
 			>
 			</p-dropdown>
 		</div>
-		
+
 		<div
 				style="
         display: flex;
@@ -108,7 +110,7 @@
             : userService?.appData?.userData?.accounts[0].companyAccountId,
           paymentDesc: form.get('paymentType').value
         }"
-					
+
 					[ngModelVal]="form.get('ddMutav').value"
 					[placeholder]="'actions.select' | translate"
 					[showBtnAddBeneficiary]="false"
@@ -119,7 +121,7 @@
 		</div>
 		<!--{{selectedValue?.companyAccountId}}-->
 	</div>
-	
+
 	<ul>
 		<li class="titleTable extra">
 			<div>
@@ -149,7 +151,7 @@
 				<div>
 					{{ 'titles.category' | translate }}
 				</div>
-				
+
 				<div>
 					{{ 'titles.description' | translate }}
 				</div>
@@ -224,6 +226,8 @@
 										appendTo="body"
 										dateFormat="dd/mm/y"
 										formControlName="dueDate"
+										name="dueDate"
+
 										required
 								>
 								</p-calendar>
@@ -239,7 +243,7 @@
 						<div style="overflow: visible; min-width: 0">
 							<app-category-select
 									[disabled]="cheques.at(i).get('transType').disabled"
-									
+
 									(changed)="cheques.at(i).get('transType').setValue($event.value)"
 									[autoDisplayFirst]="false"
 									[categories]="companyTransTypes"
@@ -302,13 +306,13 @@
 						>
 							<ng-container *ngSwitchDefault>
 								מס׳ צ׳ק זה מופיע בתאריך
-								
+
 								{{
 								asmachtaVsExistingChecksMap[
 										cheques.controls[i].get('asmachta').value
 										][0].dueDate | todayRelativeHumanize: 'dd/MM/yy'
 								}}
-								
+
 								בסכום של &nbsp;
 								<span style="direction: ltr">{{
 									asmachtaVsExistingChecksMap[
@@ -319,13 +323,13 @@
 							</ng-container>
 							<ng-container *ngSwitchCase="'original'">
 								מס׳ צ׳ק זה מופיע בתאריך
-								
+
 								{{
 								asmachtaVsExistingChecksMap[
 										cheques.controls[i].get('asmachta').value
 										][0].dueDate | todayRelativeHumanize: 'dd/MM/yy'
 								}}
-								
+
 								בסכום של &nbsp;
 								<span style="direction: ltr">{{
 									asmachtaVsExistingChecksMap[
@@ -336,21 +340,21 @@
 							</ng-container>
 							<ng-container *ngSwitchCase="'originalWithBank'">
 								מס׳ צ׳ק זה מופיע בחשבון
-								
+
 								{{
 								asmachtaVsExistingChecksMap[
 										cheques.controls[i].get('asmachta').value
 										][0].accountNickname
 								}}
-								
+
 								בתאריך
-								
+
 								{{
 								asmachtaVsExistingChecksMap[
 										cheques.controls[i].get('asmachta').value
 										][0].dueDate | todayRelativeHumanize: 'dd/MM/yy'
 								}}
-								
+
 								בסכום של &nbsp;
 								<span style="direction: ltr">{{
 									asmachtaVsExistingChecksMap[
@@ -373,21 +377,21 @@
 											cheques.controls[i].get('asmachta').value
 											][0].accountMutavName
 									}}
-									
+
 									מופיע ב{{
 									asmachtaVsExistingChecksMap[
 											cheques.controls[i].get('asmachta').value
 											][0].accountNickname
 									}}
-									
+
 									בתאריך
-									
+
 									{{
 									asmachtaVsExistingChecksMap[
 											cheques.controls[i].get('asmachta').value
 											][0].dueDate | todayRelativeHumanize: 'dd/MM/yy'
 									}}
-									
+
 									בסכום של &nbsp;
 									<span style="direction: ltr">{{
 										asmachtaVsExistingChecksMap[
@@ -402,21 +406,21 @@
 											cheques.controls[i].get('asmachta').value
 											][0].paymentDesc
 									}}
-									
+
 									מופיע ב{{
 									asmachtaVsExistingChecksMap[
 											cheques.controls[i].get('asmachta').value
 											][0].accountNickname
 									}}
-									
+
 									בתאריך
-									
+
 									{{
 									asmachtaVsExistingChecksMap[
 											cheques.controls[i].get('asmachta').value
 											][0].dueDate | todayRelativeHumanize: 'dd/MM/yy'
 									}}
-									
+
 									בסכום של &nbsp;
 									<span style="direction: ltr">{{
 										asmachtaVsExistingChecksMap[
@@ -440,21 +444,21 @@
 											cheques.controls[i].get('asmachta').value
 											][0].accountMutavName
 									}}
-									
+
 									מופיע ב{{
 									asmachtaVsExistingChecksMap[
 											cheques.controls[i].get('asmachta').value
 											][0].accountNickname
 									}}
-									
+
 									בתאריך
-									
+
 									{{
 									asmachtaVsExistingChecksMap[
 											cheques.controls[i].get('asmachta').value
 											][0].dueDate | todayRelativeHumanize: 'dd/MM/yy'
 									}}
-									
+
 									בסכום של &nbsp;
 									<span style="direction: ltr">{{
 										asmachtaVsExistingChecksMap[
@@ -469,21 +473,21 @@
 											cheques.controls[i].get('asmachta').value
 											][0].paymentDesc
 									}}
-									
+
 									מופיע ב{{
 									asmachtaVsExistingChecksMap[
 											cheques.controls[i].get('asmachta').value
 											][0].accountNickname
 									}}
-									
+
 									בתאריך
-									
+
 									{{
 									asmachtaVsExistingChecksMap[
 											cheques.controls[i].get('asmachta').value
 											][0].dueDate | todayRelativeHumanize: 'dd/MM/yy'
 									}}
-									
+
 									בסכום של &nbsp;
 									<span style="direction: ltr">{{
 										asmachtaVsExistingChecksMap[
@@ -507,21 +511,21 @@
 											cheques.controls[i].get('asmachta').value
 											][0].accountMutavName
 									}}
-									
+
 									מופיע ב{{
 									asmachtaVsExistingChecksMap[
 											cheques.controls[i].get('asmachta').value
 											][0].accountNickname
 									}}
-									
+
 									בתאריך
-									
+
 									{{
 									asmachtaVsExistingChecksMap[
 											cheques.controls[i].get('asmachta').value
 											][0].dueDate | todayRelativeHumanize: 'dd/MM/yy'
 									}}
-									
+
 									בסכום של &nbsp;
 									<span style="direction: ltr">{{
 										asmachtaVsExistingChecksMap[
@@ -536,21 +540,21 @@
 											cheques.controls[i].get('asmachta').value
 											][0].paymentDesc
 									}}
-									
+
 									מופיע ב{{
 									asmachtaVsExistingChecksMap[
 											cheques.controls[i].get('asmachta').value
 											][0].accountNickname
 									}}
-									
+
 									בתאריך
-									
+
 									{{
 									asmachtaVsExistingChecksMap[
 											cheques.controls[i].get('asmachta').value
 											][0].dueDate | todayRelativeHumanize: 'dd/MM/yy'
 									}}
-									
+
 									בסכום של &nbsp;
 									<span style="direction: ltr">{{
 										asmachtaVsExistingChecksMap[
@@ -566,7 +570,7 @@
 			</ul>
 		</li>
 	</ul>
-	
+
 	<div id="addPayments">
 		<p>
 			<img

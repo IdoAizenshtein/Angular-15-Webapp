@@ -22,7 +22,7 @@
 			</h2>
 			<div></div>
 		</div>
-		
+
 		<!--<div class="no-rows-found no-rows-found-lg"-->
 		<!--*ngIf="userService.appData.userData?.accounts && !userService.appData.userData?.accountSelect?.length">-->
 		<!--<ng-container *ngIf="!userService.appData.userData.accountSelect?.length">-->
@@ -43,7 +43,7 @@
 					<div>
 						<div>
 							<i class="fas fa-fw fa-exclamation-triangle"></i>
-							
+
 							{{ 'sumsTitles.notUpdates' | translate }}
 							{{ 'sumsTitles.forAccount' | translate }}
 							{{ 'banks.' + accountsNotUpdates[0]['bankId'] | translate }}
@@ -57,7 +57,7 @@
 						</div>
 					</div>
 				</div>
-				
+
 				<div
 						*ngIf="accountsNotUpdates && accountsNotUpdates.length > 1"
 						class="outdated-view"
@@ -66,11 +66,11 @@
 						<div>
 							<div class="accountSelectOneHariga hoverUnderline">
 								<i class="fas fa-fw fa-exclamation-triangle"></i>
-								
+
 								{{ 'sumsTitles.notUpdates' | translate }} עבור
 								{{ accountsNotUpdates.length }}
 								{{ 'sumsTitles.accounts' | translate }} |
-								
+
 								<span
 										(click)="tooltipAccDeviation.toggle($event)"
 										[class.active]="tooltipAccDeviation.overlayVisible"
@@ -79,7 +79,7 @@
                   {{ 'sumsTitles.forDetails' | translate }}
                 </span>
 							</div>
-					
+
 							<p-overlayPanel
 									#tooltipAccDeviation
 									[style]="{     'margin-left': '180px',  'margin-top': '9px !important', 'width': 'auto' }"
@@ -118,7 +118,7 @@
 			<button (click)="budgetCreate()">הוספת תקציב</button>
 		</div>
 	</div>
-	
+
 	<div>
 		<div *ngIf="privScreenEmpty" class="content alerts">
 			<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/budgetAlertIcon.png"/>
@@ -133,14 +133,14 @@
 			<div class="threePointsLoader">
 				<p>אנחנו מכינים עבורך את התקציב. התהליך יכול לקחת מספר שניות.</p>
 			</div>
-			
+
 			<div id="circleG">
 				<div class="circleG" id="circleG_1"></div>
 				<div class="circleG" id="circleG_2"></div>
 				<div class="circleG" id="circleG_3"></div>
 			</div>
 		</div>
-		
+
 		<div
 				#contentToPrint
 				*ngIf="dataBudgets && dataBudgets.length && dataBudgets[0].budgetId"
@@ -170,9 +170,9 @@
 							src="/assets/images/navPoints.png"
 							width="4"
 					/>
-					
+
 					<h3>{{ budget.budgetName }}</h3>
-					
+
 					<img
 							*ngIf="budget.indDefault === 1 && budget.indDefaultVar === 1"
 							[matTooltip]="
@@ -215,7 +215,7 @@
 									<div class="top">
 										<p>
 											נותרו
-											
+
 											<span
 													*ngIf="
                           budget.totalIncome !== 0 &&
@@ -234,7 +234,7 @@
 														)
 												}}
                       </span>
-											
+
 											{{ budget.currency }}
 										</p>
 										<p class="ltrNum">
@@ -405,7 +405,7 @@
 									<div class="top">
 										<p>
 											נותרו
-											
+
 											<span
 													*ngIf="
                           budget.totalOutcome !== 0 &&
@@ -424,7 +424,7 @@
 														)
 												}}
                       </span>
-											
+
 											{{ budget.currency }}
 										</p>
 										<p class="ltrNum">
@@ -589,7 +589,7 @@
 										src="/assets/images/view-bankAccount.png"
 										width="20"
 								/>
-								
+
 								<ng-container *ngIf="budget.budgetAccounts.length > 1">
 									<p
 											(click)="
@@ -599,7 +599,7 @@
 										{{ budget.budgetAccounts.length }}
 										{{ 'sumsTitles.accounts' | translate }}
 									</p>
-									
+
 									<p-overlayPanel
 											#tooltipAcc
 											[style]="{
@@ -636,7 +636,7 @@
 										src="/assets/images/clockSmall.png"
 										width="16"
 								/>
-								
+
 								<strong>
 									{{
 									budget.frequencyDesc === 'MONTH'
@@ -646,7 +646,7 @@
 													: 'שנתי'
 									}}
 								</strong>
-								
+
 								<div
 										*ngIf="budget.frequencyDesc !== 'ONE_TIME'"
 										class="dateFilter"
@@ -679,7 +679,7 @@
 									<!--                                <i class="fa fa-angle-left" (click)="nextDate()"-->
 									<!--                                   [class.disabled]="disabledNavDate('next')"></i>-->
 								</div>
-								
+
 								<span
 										*ngIf="budget.frequencyDesc === 'ONE_TIME'"
 										class="ltrNum"
@@ -687,7 +687,7 @@
                   ({{ budget.dateFrom | date: 'dd/MM/yy' }} -
 									{{ budget.dateTill | date: 'dd/MM/yy' }})
                 </span>
-								
+
 								<!--                                <span *ngIf="budget.frequencyDesc === 'YEAR'">-->
 								<!--                                    ({{budget.dateFrom | date:'yyyy'}})-->
 								<!--                                </span>-->
@@ -731,7 +731,7 @@
 						<div class="circle"></div>
 					</div>
 				</div>
-				
+
 				<div
 						*ngIf="
             isShowBudgetsDetails() &&
@@ -759,7 +759,7 @@
 							>
 								סה”כ קטגוריות הכנסה {{ formatWithoutPointsSum(totals[1]) }}
 								{{ getBudgetsDetails().currency }}
-								
+
 								<div
 										*ngIf="getBudgetsDetails().totalIncome - totals[1] !== 0"
 										class="rowBottom"
@@ -770,7 +770,7 @@
 									<span *ngIf="getBudgetsDetails().totalIncome - totals[1] < 0">
                     גבוה
                   </span>
-									
+
 									ב
 									{{
 									formatWithoutPointsSum(
@@ -789,7 +789,7 @@
 							>
 								סה”כ קטגוריות הוצאה {{ formatWithoutPointsSum(totals[0]) }}
 								{{ getBudgetsDetails().currency }}
-								
+
 								<div
 										*ngIf="getBudgetsDetails().totalOutcome - totals[0] !== 0"
 										class="rowBottom"
@@ -804,7 +804,7 @@
 									>
                     גבוה
                   </span>
-									
+
 									ב
 									{{
 									formatWithoutPointsSum(
@@ -859,7 +859,7 @@
                     height: '27px',
                     'border-bottom-width': '1px'
                   }"
-								
+
 								>
 								</p-dropdown>
 							</div>
@@ -1121,7 +1121,7 @@
 											<div class="top">
 												<p>
 													נותרו
-													
+
 													<span
 															*ngIf="
                               detailsRow.total !== 0 &&
@@ -1137,7 +1137,7 @@
 																)
 														}}
                           </span>
-													
+
 													<span
 															*ngIf="
                               detailsRow.total === 0 ||
@@ -1360,7 +1360,7 @@
 										/>
 									</div>
 								</ng-container>
-								
+
 								<ng-container *ngIf="detailsRow.deleted">
 									<div></div>
 									<div>{{ detailsRow.keyName }}</div>
@@ -1368,7 +1368,7 @@
 									<div></div>
 									<div>
 										הקטגוריה נמחקה.
-										
+
 										<span (click)="removeKey(detailsRow, idxs)">
                       להסרה מהתקציב
 
@@ -1383,7 +1383,7 @@
 					</div>
 				</div>
 			</div>
-			
+
 			<p-overlayPanel
 					#tooltipNav
 					[style]="{     'margin-left': '82px',
@@ -1431,7 +1431,7 @@
 							</p>
 						</div>
 					</li>
-					
+
 					<li
 							(click)="budgetActive(budgetNav, false, true); tooltipNav.hide()"
 							(mouseout)="budgetNav.src2 = false"
@@ -1474,7 +1474,7 @@
 							</p>
 						</div>
 					</li>
-					
+
 					<li
 							(click)="printBudget(contentToPrint); tooltipNav.hide()"
 							style="padding: 0 6px"
@@ -1511,7 +1511,7 @@
 							</p>
 						</div>
 					</li>
-					
+
 					<li
 							(click)="onRemoveClick(budgetNav); tooltipNav.hide()"
 							(mouseout)="budgetNav.src3 = false"
@@ -1569,9 +1569,9 @@
           styleClass="deleteBudgetDialog"
 >
 	<p-header>{{ 'מחיקת תקציב' }}</p-header>
-	
+
 	<div [innerHTML]="deleteConfirmationPrompt?.message" class="mat-h3"></div>
-	
+
 	<p-footer>
 		<div
 				style="
@@ -1621,7 +1621,7 @@
 			{{ popupBudgetCreate.type === 'edit' ? 'עריכת תקציב' : 'הוספת תקציב' }}
 		</div>
 	</p-header>
-	
+
 	<form [formGroup]="popupBudgetCreate.data">
 		<div *ngIf="popupBudgetCreate.body" class="bodyPopUp">
 			<div class="flexRow">
@@ -1668,6 +1668,8 @@
 						[autoDisplayFirst]="false"
 						[options]="popupBudgetCreate.ddBudgetTotalType"
 						appendTo="body"
+						name="budgetTotalType"
+
 						formControlName="budgetTotalType"
 						id="budgetTotalType"
 						[dropdownIcon]="'p-dropdown-icon'"
@@ -1681,13 +1683,15 @@
 						[autoDisplayFirst]="false"
 						[options]="popupBudgetCreate.ddBudgetType"
 						appendTo="body"
+						name="budgetType"
+
 						formControlName="budgetType"
 						[dropdownIcon]="'p-dropdown-icon'"
 						inputId="budgetType"
 				>
 				</p-dropdown>
 			</div>
-			
+
 			<ng-container
 					*ngIf="popupBudgetCreate.data.get('budgetType').value === 'CATEGORY'"
 			>
@@ -1703,7 +1707,7 @@
 				>
 					יש לבחור לפחות קטגוריה אחת
 				</div>
-				
+
 				<div
 						*ngIf="
             !popupBudgetCreate ||
@@ -1747,7 +1751,7 @@
                   "
 							>
 								<!--                                    getPrecentOfFlex(popupBudgetCreate.ddCategories, category.transTypeName.length, i) +-->
-								
+
 								<ng-container
 										*ngIf="
                       !isFirst &&
@@ -1769,7 +1773,7 @@
                       "
 									></div>
 								</ng-container>
-								
+
 								<div
 										(click)="
                       !category.disabled ? pressCategory(category) : null
@@ -1812,7 +1816,7 @@
 												[companyId]="
                           userService.appData.userData.companySelect.companyId
                         "
-												
+
 												[eventItem]="categorySelector"
 												[labelText]="category"
 												[showMoreOption]="true"
@@ -1828,7 +1832,7 @@
 										</app-category-select>
 									</ng-container>
 								</div>
-								
+
 								<ng-template #templateSpace>
 									<div
 											*ngIf="!isFirst"
@@ -1841,7 +1845,7 @@
                       "
 									></div>
 								</ng-template>
-								
+
 								<!--                                                                        <div style="flex-basis: 100%;height: 0;-->
 								<!--                                                                        margin: 0;-->
 								<!--                                    border:none;-->
@@ -1849,13 +1853,13 @@
 								<!--idx === round((12 - (((i*12) + 12) - popupBudgetCreate.ddCategories.length)) / (-->
 								<!--(((i*12) + 12) - popupBudgetCreate.ddCategories.length) < 10 ? 1.8 : 3-->
 								<!--))"></div>-->
-								
+
 								<!--                                    <div style="flex-basis: 100%;height: 0;-->
 								<!--                                    margin: 0;-->
 								<!--border:none;-->
 								<!--" *ngIf="((((i*12) + 12) - popupBudgetCreate.ddCategories.length) < 0) ? idx === 6 :-->
 								<!--idx === 3"></div>-->
-								
+
 								<!--                                    <div style="flex-basis: 100%;height: 0; margin: 0;border:none; "-->
 								<!--                                   *ngIf="((((i*12) + 12) - popupBudgetCreate.ddCategories.length) < 0) ? idx === 9 :-->
 								<!--                                    (idx === round((((i*12) + 12) - popupBudgetCreate.ddCategories.length) / 2))">-->
@@ -1865,11 +1869,11 @@
 					</ng-template>
 				</ngb-carousel>
 			</ng-container>
-			
+
 			<div>
 				<div class="labelFlex" style="display: flex; align-items: center">
 					כאשר מתבצעת עסקה בתשלומים, איך תרצו שנחשב אותה?
-					
+
 					<img
 							[matTooltip]="
               '
@@ -1899,7 +1903,7 @@
 					></p-radioButton>
 				</div>
 			</div>
-			
+
 			<div class="flexRow">
 				<label class="labelFlex" for="frequencyDesc"> תקופת התקציב </label>
 				<p-dropdown
@@ -1908,12 +1912,14 @@
 						appendTo="body"
 						formControlName="frequencyDesc"
 						id="frequencyDesc"
+						name="frequencyDesc"
+
 						[dropdownIcon]="'p-dropdown-icon'"
 						inputId="frequencyDesc"
 				>
 				</p-dropdown>
 			</div>
-			
+
 			<ng-container
 					*ngIf="
           popupBudgetCreate.data.get('frequencyDesc').value === 'ONE_TIME';
@@ -1932,12 +1938,14 @@
 							appendTo="body"
 							dateFormat="dd/mm/y"
 							formControlName="dateFrom"
+							name="dateFrom"
+
 							id="dateFrom"
 							inputId="dateFrom"
 					>
 					</p-calendar>
 				</div>
-				
+
 				<div class="flexRow">
 					<label class="labelFlex" for="dateTill"> תאריך סיום </label>
 					<p-calendar
@@ -1948,6 +1956,8 @@
 							appendTo="body"
 							dateFormat="dd/mm/y"
 							formControlName="dateTill"
+							name="dateTill"
+
 							id="dateTill"
 							inputId="dateTill"
 					>
@@ -1994,7 +2004,7 @@
 					/>
 				</div>
 			</ng-container>
-			
+
 			<ng-container
 					*ngIf="
           popupBudgetCreate.data.get('budgetTotalType').value === 'both' ||
@@ -2030,7 +2040,7 @@
 		<button (click)="budgetCreateWs(true)" class="button-dark" type="submit">
 			שמירה
 		</button>
-		
+
 		<div
 				*ngIf="popupBudgetCreate?.isKeyDetailsNotEqual"
 				class="isKeyDetailsNotEqual"
@@ -2039,7 +2049,7 @@
 			     width="16"
 			     height="16"
 			     ngSrc="/assets/images/infoBudgetCreate.png"/>
-			
+
 			<p>
 				הקטגוריות שהוסרו לא יוצגו בהיסטורית התקציב. באפשרותך
 				<span
@@ -2100,7 +2110,7 @@
 				            id="p-showHideValuesInside"
 				            inputId="showHideValuesInside"
 				></p-checkbox>
-				
+
 				<div class="exports" style="flex-flow: column">
 					<button
 							(click)="
@@ -2320,7 +2330,7 @@
             הוספת תנועה ידנית
           </span>
 				</div>
-				
+
 				<ng-container
 						*ngIf="budgetHistory.transes.length; else noRowsInHistory"
 				>
@@ -2335,7 +2345,7 @@
 								class="custom-scrollbar"
 								thumbClass="scrollbar-thumb"
 								trackClass="scrollbar">
-							
+
 							<cdk-virtual-scroll-viewport #virtualScroll itemSize="47" scrollViewport>
 								<div *cdkVirtualFor="let bnfTr of budgetHistory.transes; let i = index; trackBy: trackById">
 									<div
@@ -2412,7 +2422,7 @@
 													class="text-item text-ellipsis"
 													tooltipPosition="top"
 											></div>
-											
+
 											<input
 													#inputBox
 													(blur)="updateBudgetTrans(bnfTr)"
@@ -2445,8 +2455,8 @@
 											<app-category-select
 													#categorySelector
 													(changed)="bnfTr.selectedTransType = $event.value; submitChangesHistory(bnfTr)"
-													
-													
+
+
 													[categories]="companyTransTypes"
 													[companyId]="
                       userService.appData.userData.companySelect.companyId
@@ -2456,7 +2466,7 @@
 											>
 											</app-category-select>
 										</div>
-										
+
 										<div
 												[ngClass]="{
                     'sum-credit':
@@ -2477,7 +2487,7 @@
 													class="text-item text-ellipsis"
 											>
 											</app-sum-view>
-											
+
 											<input
 													#inputBoxTotal
 													(blur)="updateBudgetTrans(bnfTr)"
@@ -2567,7 +2577,7 @@
 				: 'רענון
 				נתונים'
 		}}</p-header>
-	
+
 	<div class="mat-h3">
 		<p style="margin-bottom: 5px">
 			הסכומים של כל הקטגוריות יתעדכנו לפי הממוצע ב-11 החודשים האחרונים.
@@ -2576,7 +2586,7 @@
 			אם נוספו או הוסרו קטגוריות או חשבונות בנק מהמערכת התקציב יתעדכן בהתאם.
 		</p>
 	</div>
-	
+
 	<p-footer>
 		<div
 				style="

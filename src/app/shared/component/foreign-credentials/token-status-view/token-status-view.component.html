@@ -48,7 +48,7 @@
 <!-- 					                   tokenStatus :{{status.tokenStatus}} {{(status.tokenStatus|toTokenStatusEnumValue)}} -->
 					<ng-container
 							*ngSwitchCase="tokenService.shouldTokenUpdatePassword(status.tokenStatus)? status.tokenStatus : ''">
-						
+
 						<ng-container
 								[ngSwitch]="status.tokenStatus | toTokenStatusEnumValue"
 						>
@@ -100,7 +100,7 @@
 							</ng-container>
 						</ng-container>
 					</ng-container>
-					
+
 					<a
 							*ngSwitchCase="
               !(status.hasPrivs === false) &&
@@ -147,12 +147,12 @@
 							}}
 						</button>
 					</ng-container>
-					
+
 					<div *ngSwitchDefault></div>
 				</div>
 			</ng-container>
 		</ng-template>
-		
+
 		<div
 				class="text"
 				*ngIf="
@@ -178,7 +178,7 @@
           : ''
       "
 		></div>
-		
+
 		<ng-template #station_special>
 			<ng-container *ngIf="is_station && hasStationSpecialTokenStatusPoalim()">
 				<ng-container
@@ -198,7 +198,7 @@
 					</div>
 					<div class="text error">נדרשת טעינה ידנית</div>
 				</ng-container>
-				
+
 				<ng-template #station_special_UP_TO_DATE>
 					<div class="action linkOnly">
 						<button
@@ -213,7 +213,7 @@
 				</ng-template>
 			</ng-container>
 		</ng-template>
-		
+
 		<ng-container *ngIf="!is_station">
 			<div
 					class="icon"

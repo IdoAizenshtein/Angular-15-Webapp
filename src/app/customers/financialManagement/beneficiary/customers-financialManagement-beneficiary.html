@@ -1,363 +1,368 @@
 <h2 class="titlePage">
-	<i
-			[matTooltip]="
+    <i
+            [matTooltip]="
       'appWalk.customers.financialManagement.beneficiary.pageTitle' | translate
     "
-			matTooltipPosition="after"
-	>
-		{{ 'menu.customers.financialManagement.beneficiary.main' | translate }}</i
-	>
+            matTooltipPosition="after"
+    >
+        {{ 'menu.customers.financialManagement.beneficiary.main' | translate }}</i
+    >
 </h2>
 
 <div class="filterRow">
-	<ul class="tabs" id="paymentTypesFilter">
-		<li
-				(click)="filter.patchValue({ type: 'credit' })"
-				[class.active]="filter.value.type === 'credit'"
-				id="paymentTypesCredit"
-		>
-			{{ 'filters.credit' | translate }}
-		</li>
-		<li
-				(click)="filter.patchValue({ type: 'debit' })"
-				[class.active]="filter.value.type === 'debit'"
-				id="paymentTypeDebit"
-		>
-			{{ 'filters.debit' | translate }}
-		</li>
-		<li
-				(click)="filter.patchValue({ type: '' })"
-				[class.active]="filter.value.type === ''"
-				id="paymentTypeBoth"
-		>
-			{{ 'filters.all' | translate }}
-		</li>
-	</ul>
-	<app-acc-select
-			#accountSelector
-			(changedTrigger)="forceReload$.next()"
-			[accounts]="userService.appData.userData.accounts"
-	></app-acc-select>
-	<div class="search">
-		<input
-				[formControl]="filter.get('query')"
-				autocomplete="off"
-				id="containTextFilter"
-				placeholder="{{ 'filters.search' | translate }}"
-				type="text"
-		/>
-	</div>
+    <ul class="tabs" id="paymentTypesFilter">
+        <li
+                (click)="sharedComponent.mixPanelEvent('fillter zhut'); filter.patchValue({ type: 'credit' })"
+                [class.active]="filter.value.type === 'credit'"
+                id="paymentTypesCredit"
+        >
+            {{ 'filters.credit' | translate }}
+        </li>
+        <li
+                (click)="sharedComponent.mixPanelEvent('filter hova'); filter.patchValue({ type: 'debit' })"
+                [class.active]="filter.value.type === 'debit'"
+                id="paymentTypeDebit"
+        >
+            {{ 'filters.debit' | translate }}
+        </li>
+        <li
+                (click)="sharedComponent.mixPanelEvent('filter all'); filter.patchValue({ type: '' })"
+                [class.active]="filter.value.type === ''"
+                id="paymentTypeBoth"
+        >
+            {{ 'filters.all' | translate }}
+        </li>
+    </ul>
+    <app-acc-select
+        #accountSelector
+        (changedTrigger)="forceReload$.next()"
+        [accounts]="userService.appData.userData.accounts"
+    ></app-acc-select>
+    <div class="search">
+        <input
+                (keydown)="sharedComponent.mixPanelEvent('search', {
+				   value: filter.get('query')?.value
+				})"
+                [formControl]="filter.get('query')"
+                autocomplete="off"
+                id="containTextFilter"
+                placeholder="{{ 'filters.search' | translate }}"
+                type="text"
+        />
+    </div>
 </div>
 
 <div class="bank-acc-details-table-container" id="companyBeneficiaries">
-	<ng-container *ngIf="beneficiariesPresented$ | async as beneficiariesPresented; else loading">
-		<ng-container *ngIf="!(loading$ | async); else loading"></ng-container>
-		<div #header class="bank-acc-details-table-header">
-			<div (click)="toggleSortOrderTo('accountMutavName')">
-				{{ 'titles.beneficiary' | translate }}
-				<ng-container
-						*ngIf="
+    <ng-container *ngIf="beneficiariesPresented$ | async as beneficiariesPresented; else loading">
+        <ng-container *ngIf="!(loading$ | async); else loading"></ng-container>
+        <div #header class="bank-acc-details-table-header">
+            <div (click)="sharedComponent.mixPanelEvent('mutav name order'); toggleSortOrderTo('accountMutavName')">
+                {{ 'titles.beneficiary' | translate }}
+                <ng-container
+                        *ngIf="
             filter.value.sort.column === 'accountMutavName';
             else sortAvailableForColumn
           "
-				>
-					<img
-							[ngSrc]="'/assets/images/sort-' + filter.value.sort.order + '.png'" fill
-							style="height: auto; width: auto; position: relative;margin: 0 3px -3px 0"
-					/>
-				</ng-container>
-			</div>
-			<div (click)="toggleSortOrderTo('absAverageThreeMonths')">
-				{{ 'titles.averageLast3Month' | translate }}
-				<ng-container
-						*ngIf="
+                >
+                    <img
+                            [src]="'/assets/images/sort-' + filter.value.sort.order + '.png'"
+                            style="height: auto; width: auto; position: relative;margin: 0 3px -3px 0"
+                    />
+                </ng-container>
+            </div>
+            <div (click)="sharedComponent.mixPanelEvent('aggregate 3 month order'); toggleSortOrderTo('absAverageThreeMonths')">
+                {{ 'titles.averageLast3Month' | translate }}
+                <ng-container
+                        *ngIf="
             filter.value.sort.column === 'absAverageThreeMonths';
             else sortAvailableForColumn
           "
-				>
-					<img
-							[ngSrc]="'/assets/images/sort-' + filter.value.sort.order + '.png'" fill
-							style="height: auto; width: auto; position: relative;margin: 0 3px -3px 0"
-					
-					/>
-				</ng-container>
-			</div>
-			<div>
-				<app-tooltip-category
-						(changed)="filter.patchValue({ category: $event.checked })"
-						[data]="transTypesArr"
-						[title]="'titles.category' | translate"
-						[type]="'transType'"
-				></app-tooltip-category>
-			</div>
-			<div>{{ 'titles.accountMutavHp' | translate }}</div>
-			<div>{{ 'titles.comments' | translate }}</div>
-			<div>
-				<svg
-						class=""
-						height="22px"
-						id="Capa_1"
-						style="enable-background: new 0 0 45.532 45.532"
-						version="1.1"
-						viewBox="0 0 45.532 45.532"
-						width="22px"
-						x="0px"
-						xml:space="preserve"
-						xmlns="http://www.w3.org/2000/svg"
-						y="0px"
-				>
+                >
+                    <img
+                            [src]="'/assets/images/sort-' + filter.value.sort.order + '.png'"
+                            style="height: auto; width: auto; position: relative;margin: 0 3px -3px 0"
+
+                    />
+                </ng-container>
+            </div>
+            <div>
+                <app-tooltip-category
+                        (changed)="sharedComponent.mixPanelEvent('filter category', { value: $event.checked }); filter.patchValue({ category: $event.checked })"
+                        [data]="transTypesArr"
+                        [title]="'titles.category' | translate"
+                        [type]="'transType'"
+                ></app-tooltip-category>
+            </div>
+            <div>{{ 'titles.accountMutavHp' | translate }}</div>
+            <div>{{ 'titles.comments' | translate }}</div>
+            <div>
+                <svg
+                        class=""
+                        height="22px"
+                        id="Capa_1"
+                        style="enable-background: new 0 0 45.532 45.532"
+                        version="1.1"
+                        viewBox="0 0 45.532 45.532"
+                        width="22px"
+                        x="0px"
+                        xml:space="preserve"
+                        xmlns="http://www.w3.org/2000/svg"
+                        y="0px"
+                >
           <g>
             <g>
               <path
-		              class=""
-		              d="M22.766,0.001C10.194,0.001,0,10.193,0,22.766s10.193,22.765,22.766,22.765c12.574,0,22.766-10.192,22.766-22.765   S35.34,0.001,22.766,0.001z M22.766,6.808c4.16,0,7.531,3.372,7.531,7.53c0,4.159-3.371,7.53-7.531,7.53   c-4.158,0-7.529-3.371-7.529-7.53C15.237,10.18,18.608,6.808,22.766,6.808z M22.761,39.579c-4.149,0-7.949-1.511-10.88-4.012   c-0.714-0.609-1.126-1.502-1.126-2.439c0-4.217,3.413-7.592,7.631-7.592h8.762c4.219,0,7.619,3.375,7.619,7.592   c0,0.938-0.41,1.829-1.125,2.438C30.712,38.068,26.911,39.579,22.761,39.579z"
-		              data-old_color="#000000"
-		              data-original="#000000"
-		              fill="#022258"
+                      class=""
+                      d="M22.766,0.001C10.194,0.001,0,10.193,0,22.766s10.193,22.765,22.766,22.765c12.574,0,22.766-10.192,22.766-22.765   S35.34,0.001,22.766,0.001z M22.766,6.808c4.16,0,7.531,3.372,7.531,7.53c0,4.159-3.371,7.53-7.531,7.53   c-4.158,0-7.529-3.371-7.529-7.53C15.237,10.18,18.608,6.808,22.766,6.808z M22.761,39.579c-4.149,0-7.949-1.511-10.88-4.012   c-0.714-0.609-1.126-1.502-1.126-2.439c0-4.217,3.413-7.592,7.631-7.592h8.762c4.219,0,7.619,3.375,7.619,7.592   c0,0.938-0.41,1.829-1.125,2.438C30.712,38.068,26.911,39.579,22.761,39.579z"
+                      data-old_color="#000000"
+                      data-original="#000000"
+                      fill="#022258"
               />
             </g>
           </g>
         </svg>
-			</div>
-			<div></div>
-		</div>
-		<ng-container *ngIf="beneficiariesPresented.length; else noRows">
-			<div
-					#scrollContainer
-					[appScrollHeight]="header.getBoundingClientRect().bottom + 10"
-					class="bank-acc-details-table-body scroll-chrome">
-				<div
-						(click)="selectedBeneficiary = bnf"
-						*ngFor="let bnf of beneficiariesPresented| slice:(currentPage*entryLimit):((currentPage*entryLimit) + entryLimit);"
-						[class.bank-acc-details-row-selected]="selectedBeneficiary === bnf"
-						class="bank-acc-details-row"
-				>
-					<!--          {{bnf| json}}-->
-					<div>
-						<div>
+            </div>
+            <div></div>
+        </div>
+        <ng-container *ngIf="!(loading$ | async)">
+            <ng-container *ngIf="beneficiariesPresented.length; else noRows">
+                <div
+                    #scrollContainer
+                    [appScrollHeight]="header.getBoundingClientRect().bottom + 10"
+                    class="bank-acc-details-table-body scroll-chrome">
+                    <div
+                            (click)="selectedBeneficiary = bnf"
+                            *ngFor="let bnf of beneficiariesPresented| slice:(currentPage*entryLimit):((currentPage*entryLimit) + entryLimit);"
+                            [class.bank-acc-details-row-selected]="selectedBeneficiary === bnf"
+                            class="bank-acc-details-row"
+                    >
+                        <!--          {{bnf| json}}-->
+                        <div>
+                            <div>
               <span
-		              [innerHTML]="
+                      [innerHTML]="
                   bnf.accountMutavName | highlight: filter.value.query
                 "
-		              [pTooltip]="bnf.accountMutavName"
-		              class="text-ellipsis primary"
-		              tooltipPosition="top"
+                      [pTooltip]="bnf.accountMutavName"
+                      class="text-ellipsis primary"
+                      tooltipPosition="top"
               ></span>
-						</div>
-						<div>
-							<ng-container *ngIf="bnf.bankId">
+                            </div>
+                            <div>
+                                <ng-container *ngIf="bnf.bankId">
                 <span
-		                [innerHTML]="
+                        [innerHTML]="
                     ('banks.' + bnf.bankId | translate) + ' ' + bnf.accountId
                       | highlight: filter.value.query
                   "
-		                [pTooltip]="
+                        [pTooltip]="
                     ('banks.' + bnf.bankId | translate) + ' ' + bnf.accountId
                   "
-		                class="text-ellipsis secondary"
-		                tooltipPosition="top"
+                        class="text-ellipsis secondary"
+                        tooltipPosition="top"
                 ></span>
-							</ng-container>
-						</div>
-					</div>
-					<div>
-						<div
-								[ngClass]="{
+                                </ng-container>
+                            </div>
+                        </div>
+                        <div>
+                            <div
+                                    [ngClass]="{
                 'sum-credit': bnf.averageThreeMonths > 0,
                 'sum-debit': bnf.averageThreeMonths < 0
               }"
-						>
-							<app-sum-view
-									[highlight]="filter.value.query"
-									[sum]="bnf.averageThreeMonths"
-							></app-sum-view
-							>&nbsp;{{ 'ILS' | currencySymbol }}
-						</div>
-						<div
-								[pTooltip]="'תנועה קבועה'"
-								[style.visibility]="bnf.isCyclic ? 'visible' : 'hidden'"
-								class="periodic-trans-indication"
-						>
-							<img fill ngSrc="/assets/images/periodic-trans.png"
-							     style="height: auto; width: auto; position: relative;"/>
-						</div>
-					</div>
-					<div>
-						<div class="edit-in-place">
+                            >
+                                <app-sum-view
+                                        [highlight]="filter.value.query"
+                                        [sum]="bnf.averageThreeMonths"
+                                ></app-sum-view
+                                >&nbsp;{{ 'ILS' | currencySymbol }}
+                            </div>
+                            <div
+                                    [pTooltip]="'תנועה קבועה'"
+                                    [style.visibility]="bnf.isCyclic ? 'visible' : 'hidden'"
+                                    class="periodic-trans-indication"
+                            >
+                                <img fill ngSrc="/assets/images/periodic-trans.png"
+                                     style="height: auto; width: auto; position: relative;"/>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="edit-in-place">
               <span
-		              [innerHTML]="
+                      [innerHTML]="
                   bnf.transType?.transTypeName | highlight: filter.value.query
                 "
-		              class="view"
+                      class="view"
               ></span>
-							<app-category-select
-									(changed)="bnf.form.get('transType').patchValue($event.value); beneficiaryCategoryChangePrompt.show(bnf)"
-									[disabled]="bnf.form.get('transType').disabled"
-									
-									[categories]="companyTransTypes$ | async"
-									[companyId]="
+                                <app-category-select
+                                        (changed)="sharedComponent.mixPanelEvent('change category'); bnf.form.get('transType').patchValue($event.value); beneficiaryCategoryChangePrompt.show(bnf)"
+                                        [categories]="companyTransTypes$ | async"
+
+                                        [companyId]="
                   userService.appData.userData.companySelect.companyId
                 "
-									[ngModelVal]="bnf.form.get('transType').value"
-							>
-							</app-category-select>
-						</div>
-						<div>
-							<ng-container *ngIf="bnf.hashCustId">
+                                        [disabled]="bnf.form.get('transType').disabled"
+                                        [ngModelVal]="bnf.form.get('transType').value"
+                                >
+                                </app-category-select>
+                            </div>
+                            <div>
+                                <ng-container *ngIf="bnf.hashCustId">
                 <span
-		                [pTooltip]="bnf.sourceProgramId + 'אינדקס ב'"
-		                class="text-ellipsis secondary"
+                        [pTooltip]="bnf.sourceProgramId + 'אינדקס ב'"
+                        class="text-ellipsis secondary"
                 >
                   <i class="fas fa-fw fa-info-circle"></i>
-	                {{ bnf.hashCustId }}</span
+                    {{ bnf.hashCustId }}</span
                 >
-							</ng-container>
-						</div>
-					</div>
-					<div>
-						<div class="edit-in-place">
+                                </ng-container>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="edit-in-place">
               <span
-		              [innerHTML]="
+                      [innerHTML]="
                   (bnf.accountMutavHp ? bnf.accountMutavHp + '' : '')
                     | highlight: filter.value.query
                 "
-		              class="view"
+                      class="view"
               ></span>
-							<input
-									(blur)="submitChanges($event)"
-									(keyup.enter)="submitChanges($event)"
-									(keyup.esc)="cancelChanges($event)"
-									[formControl]="bnf.form.get('accountMutavHp')"
-									appNumbersOnly
-									class="primary"
-									type="text"
-							/>
-						</div>
-					</div>
-					<div>
-						<div class="edit-in-place">
+                                <input
+                                        (blur)="sharedComponent.mixPanelEvent('add osekNum');submitChanges($event)"
+                                        (keyup.enter)="sharedComponent.mixPanelEvent('add osekNum');submitChanges($event)"
+                                        (keyup.esc)="cancelChanges($event)"
+                                        [formControl]="bnf.form.get('accountMutavHp')"
+                                        appNumbersOnly
+                                        class="primary"
+                                        type="text"
+                                />
+                            </div>
+                        </div>
+                        <div>
+                            <div class="edit-in-place">
               <span
-		              [innerHTML]="
+                      [innerHTML]="
                   bnf.accountMutavDetails | highlight: filter.value.query
                 "
-		              class="view"
+                      class="view"
               ></span>
-							<input
-									(blur)="submitChanges($event)"
-									(keyup.enter)="submitChanges($event)"
-									(keyup.esc)="cancelChanges($event)"
-									[formControl]="bnf.form.get('accountMutavDetails')"
-									class="primary"
-									type="text"
-							/>
-						</div>
-					</div>
-					<div>
-						<div class="edit-in-place" style="justify-content: center">
+                                <input
+                                        (blur)="sharedComponent.mixPanelEvent('add remarkes');submitChanges($event)"
+                                        (keyup.enter)="sharedComponent.mixPanelEvent('add remarkes');submitChanges($event)"
+                                        (keyup.esc)="cancelChanges($event)"
+                                        [formControl]="bnf.form.get('accountMutavDetails')"
+                                        class="primary"
+                                        type="text"
+                                />
+                            </div>
+                        </div>
+                        <div>
+                            <div class="edit-in-place" style="justify-content: center">
               <span
-		              [innerHTML]="bnf.contactName | highlight: filter.value.query"
-		              class="view text-ellipsis primary"
+                      [innerHTML]="bnf.contactName | highlight: filter.value.query"
+                      class="view text-ellipsis primary"
               ></span>
-							<input
-									(blur)="submitChanges($event)"
-									(keyup.enter)="submitChanges($event)"
-									(keyup.esc)="cancelChanges($event)"
-									[formControl]="bnf.form.get('contactName')"
-									[pTooltip]="bnf.form.get('contactName').value"
-									[placeholder]="'איש קשר'"
-									class="primary"
-									tooltipPosition="top"
-									type="text"
-							/>
-						</div>
-						<div class="edit-in-place" style="justify-content: flex-end">
+                                <input
+                                        (blur)="sharedComponent.mixPanelEvent('add contact - name');submitChanges($event)"
+                                        (keyup.enter)="sharedComponent.mixPanelEvent('add contact - name');submitChanges($event)"
+                                        (keyup.esc)="cancelChanges($event)"
+                                        [formControl]="bnf.form.get('contactName')"
+                                        [pTooltip]="bnf.form.get('contactName').value"
+                                        [placeholder]="'איש קשר'"
+                                        class="primary"
+                                        tooltipPosition="top"
+                                        type="text"
+                                />
+                            </div>
+                            <div class="edit-in-place" style="justify-content: flex-end">
               <span
-		              [innerHTML]="bnf.contactMail | highlight: filter.value.query"
-		              class="view text-ellipsis secondary"
+                      [innerHTML]="bnf.contactMail | highlight: filter.value.query"
+                      class="view text-ellipsis secondary"
               ></span>
-							<input
-									(blur)="submitChanges($event)"
-									(keyup.enter)="submitChanges($event)"
-									(keyup.esc)="cancelChanges($event)"
-									[formControl]="bnf.form.get('contactMail')"
-									[pTooltip]="bnf.form.get('contactMail').value"
-									[placeholder]="'כתובת מייל'"
-									class="secondary"
-									tooltipPosition="top"
-									type="text"
-							/>
-						</div>
-						<div
-								[style.min-height.em]="bnf.contactMail ? 1 : 0"
-								class="edit-in-place"
-								style="justify-content: flex-start"
-						>
+                                <input
+                                        (blur)="sharedComponent.mixPanelEvent('add contact - mail address');submitChanges($event)"
+                                        (keyup.enter)="sharedComponent.mixPanelEvent('add contact - mail address');submitChanges($event)"
+                                        (keyup.esc)="cancelChanges($event)"
+                                        [formControl]="bnf.form.get('contactMail')"
+                                        [pTooltip]="bnf.form.get('contactMail').value"
+                                        [placeholder]="'כתובת מייל'"
+                                        class="secondary"
+                                        tooltipPosition="top"
+                                        type="text"
+                                />
+                            </div>
+                            <div
+                                    [style.min-height.em]="bnf.contactMail ? 1 : 0"
+                                    class="edit-in-place"
+                                    style="justify-content: flex-start"
+                            >
               <span
-		              [innerHTML]="bnf.contactPhone | highlight: filter.value.query"
-		              class="view text-ellipsis secondary"
+                      [innerHTML]="bnf.contactPhone | highlight: filter.value.query"
+                      class="view text-ellipsis secondary"
               ></span>
-							<input
-									(blur)="submitChanges($event)"
-									(keyup.enter)="submitChanges($event)"
-									(keyup.esc)="cancelChanges($event)"
-									[formControl]="bnf.form.get('contactPhone')"
-									[pTooltip]="bnf.form.get('contactPhone').value"
-									[placeholder]="'מספר טלפון'"
-									appNumbersOnly
-									class="secondary"
-									tooltipPosition="top"
-									type="text"
-							/>
-						</div>
-						<!--            <div style="justify-content: center;">-->
-						<!--              <span class="text-ellipsis primary" [innerHTML]="bnf.contactName| highlight: filter.value.query"></span>-->
-						<!--            </div>-->
-						<!--            <div><span class="text-ellipsis secondary" [innerHTML]="bnf.contactMail| highlight: filter.value.query"></span></div>-->
-						<!--            <div><span class="text-ellipsis secondary" [innerHTML]="bnf.contactPhone| highlight: filter.value.query"></span></div>-->
-					</div>
-					<div>
-						<button
-								(click)="beneficiaryHistoryPrompt.show(bnf)"
-								class="button-link"
-						>
-							<img fill ngSrc="/assets/images/bar-chart.png"
-							     style="height: auto; width: auto; position: relative;"/>
-						</button>
-					</div>
-				</div>
-				
-				<app-paginator
-						(onPageChange)="paginate($event)"
-						[alwaysShow]="false"
-						[rowsPerPageOptions]="[50, 100, 200]"
-						[rows]="entryLimit"
-						[totalRecords]="beneficiariesPresented.length"
-				>
-				</app-paginator>
-			</div>
-		</ng-container>
-	</ng-container>
+                                <input
+                                        (blur)="sharedComponent.mixPanelEvent('add contact - phone');submitChanges($event)"
+                                        (keyup.enter)="sharedComponent.mixPanelEvent('add contact - phone');submitChanges($event)"
+                                        (keyup.esc)="cancelChanges($event)"
+                                        [formControl]="bnf.form.get('contactPhone')"
+                                        [pTooltip]="bnf.form.get('contactPhone').value"
+                                        [placeholder]="'מספר טלפון'"
+                                        appNumbersOnly
+                                        class="secondary"
+                                        tooltipPosition="top"
+                                        type="text"
+                                />
+                            </div>
+                            <!--            <div style="justify-content: center;">-->
+                            <!--              <span class="text-ellipsis primary" [innerHTML]="bnf.contactName| highlight: filter.value.query"></span>-->
+                            <!--            </div>-->
+                            <!--            <div><span class="text-ellipsis secondary" [innerHTML]="bnf.contactMail| highlight: filter.value.query"></span></div>-->
+                            <!--            <div><span class="text-ellipsis secondary" [innerHTML]="bnf.contactPhone| highlight: filter.value.query"></span></div>-->
+                        </div>
+                        <div>
+                            <button
+                                    (click)="sharedComponent.mixPanelEvent('history'); beneficiaryHistoryPrompt.show(bnf)"
+                                    class="button-link"
+                            >
+                                <img fill ngSrc="/assets/images/bar-chart.png"
+                                     style="height: auto; width: auto; position: relative;"/>
+                            </button>
+                        </div>
+                    </div>
+
+                    <app-paginator
+                            (onPageChange)="paginate($event)"
+                            [alwaysShow]="false"
+                            [rowsPerPageOptions]="[25, 50, 100, 200]"
+                            [rows]="entryLimit"
+                            [totalRecords]="beneficiariesPresented.length"
+                    >
+                    </app-paginator>
+                </div>
+            </ng-container>
+        </ng-container>
+    </ng-container>
 </div>
 <ng-template #sortAvailableForColumn>
-	<i class="fas fa-sm fa-rotate-270 fa-exchange-alt"></i>
+    <i class="fas fa-sm fa-rotate-270 fa-exchange-alt"></i>
 </ng-template>
 <ng-template #noRows>
-	<div class="no-rows-found">
-		{{ 'expressions.noDataFound' | translate }},
-		{{ 'expressions.changeCriteria' | translate }}
-	</div>
+    <div class="no-rows-found">
+        {{ 'expressions.noDataFound' | translate }},
+        {{ 'expressions.changeCriteria' | translate }}
+    </div>
 </ng-template>
 <ng-template #noRowsInHistory>
-	<div class="no-rows-found">
-		{{ 'expressions.noTransactionsFound' | translate }}
-	</div>
+    <div class="no-rows-found">
+        {{ 'expressions.noTransactionsFound' | translate }}
+    </div>
 </ng-template>
 <ng-template #loading>
-	<!--  <ng-container *ngIf="userService.appData?.userData?.accountSelect && userService.appData.userData.accountSelect.length; else noRows">-->
-	<div class="loader">
-		<div class="circle"></div>
-	</div>
-	<!--  </ng-container>-->
+    <!--  <ng-container *ngIf="userService.appData?.userData?.accountSelect && userService.appData.userData.accountSelect.length; else noRows">-->
+    <div class="loader">
+        <div class="circle"></div>
+    </div>
+    <!--  </ng-container>-->
 </ng-template>
 
 <p-dialog (onHide)="beneficiaryCategoryChangePrompt.hide()"
@@ -368,10 +373,10 @@
           appendTo="body"
           styleClass="beneficiaryCategoryChangePrompt"
 >
-	<p-header>{{ 'beneficiaryCategoryChangePrompt.title' | translate }}</p-header>
-	<ng-container *ngIf="beneficiaryCategoryChangePrompt.beneficiary">
-		<div
-				[innerHTML]="
+    <p-header>{{ 'beneficiaryCategoryChangePrompt.title' | translate }}</p-header>
+    <ng-container *ngIf="beneficiaryCategoryChangePrompt.beneficiary">
+        <div
+                [innerHTML]="
         'beneficiaryCategoryChangePrompt.contentPtrn1'
           | translate
             : {
@@ -382,38 +387,38 @@
                     .transType.transTypeName
               }
       "
-				class="mat-h3"
-		></div>
-		
-		<p-checkbox [binary]="true"
-		            [formControl]="beneficiaryCategoryChangePrompt.doRetroactively"
-		            [label]="'beneficiaryCategoryChangePrompt.options1' | translate"
-		            checkboxIcon="fa fa-check"
-		>
-		</p-checkbox>
-	</ng-container>
-	
-	<p-footer>
-		<div style="width: 100%; display: flex; justify-content: center">
-			<button
-					(click)="beneficiaryCategoryChangePrompt.visible = false"
-					class="button-white button-link"
-			>
-				{{ 'actions.cancellation' | translate }}
-			</button>
-			<button
-					(click)="beneficiaryCategoryChangePrompt.apply()"
-					[disabled]="beneficiaryCategoryChangePrompt.processing"
-					class="button-dark"
-			>
-				<i
-						*ngIf="beneficiaryCategoryChangePrompt.processing"
-						class="fas fa-fw fa-circle-notch fa-spin"
-				></i>
-				{{ 'actions.approve' | translate }}
-			</button>
-		</div>
-	</p-footer>
+                class="mat-h3"
+        ></div>
+
+        <p-checkbox [binary]="true"
+                    [formControl]="beneficiaryCategoryChangePrompt.doRetroactively"
+                    [label]="'beneficiaryCategoryChangePrompt.options1' | translate"
+                    checkboxIcon="fa fa-check"
+        >
+        </p-checkbox>
+    </ng-container>
+
+    <p-footer>
+        <div style="width: 100%; display: flex; justify-content: center">
+            <button
+                    (click)="beneficiaryCategoryChangePrompt.visible = false"
+                    class="button-white button-link"
+            >
+                {{ 'actions.cancellation' | translate }}
+            </button>
+            <button
+                    (click)="beneficiaryCategoryChangePrompt.apply()"
+                    [disabled]="beneficiaryCategoryChangePrompt.processing"
+                    class="button-dark"
+            >
+                <i
+                        *ngIf="beneficiaryCategoryChangePrompt.processing"
+                        class="fas fa-fw fa-circle-notch fa-spin"
+                ></i>
+                {{ 'actions.approve' | translate }}
+            </button>
+        </div>
+    </p-footer>
 </p-dialog>
 
 <p-dialog #beneficiaryHistoryPromptDlg
@@ -425,155 +430,155 @@
           appendTo="body"
           styleClass="beneficiaryHistoryPrompt"
 >
-	<p-header>{{
-		beneficiaryHistoryPrompt.beneficiary?.accountMutavName
-		}}</p-header>
-	
-	<ng-container *ngIf="beneficiaryHistoryPrompt.beneficiary">
-		<ng-container
-				*ngIf="
+    <p-header>{{
+        beneficiaryHistoryPrompt.beneficiary?.accountMutavName
+        }}</p-header>
+
+    <ng-container *ngIf="beneficiaryHistoryPrompt.beneficiary">
+        <ng-container
+                *ngIf="
         beneficiaryHistoryPrompt.beneficiaryHistory$
           | async as beneficiaryHistory;
         else loading
       "
-		>
-			<div class="transData-section sums">
-				<div class="sum-data">
-					<h3>{{ 'titles.average' | translate }}</h3>
-					<p>
+        >
+            <div class="transData-section sums">
+                <div class="sum-data">
+                    <h3>{{ 'titles.average' | translate }}</h3>
+                    <p>
             <span class="sum">{{
-	            beneficiaryHistory.average | sum: true
-	            }}</span>
-						<span class="currency">{{ 'ILS' | currencySymbol }}</span>
-					</p>
-				</div>
-				
-				<div class="sum-data">
-					<h3>{{ 'titles.category' | translate }}</h3>
-					<p>{{ beneficiaryHistoryPrompt.beneficiary.transTypeName }}</p>
-				</div>
-				
-				<div class="exports">
-					<button
-							(click)="
+                beneficiaryHistory.average | sum: true
+                }}</span>
+                        <span class="currency">{{ 'ILS' | currencySymbol }}</span>
+                    </p>
+                </div>
+
+                <div class="sum-data">
+                    <h3>{{ 'titles.category' | translate }}</h3>
+                    <p>{{ beneficiaryHistoryPrompt.beneficiary.transTypeName }}</p>
+                </div>
+
+                <div class="exports">
+                    <button
+                            (click)="
               beneficiaryHistoryPrompt.printContent(
                 beneficiaryHistoryPromptDlg.contentViewChild.nativeElement
               )
             "
-							[matTooltip]="'appWalk.customers.report.printBtn' | translate"
-							matTooltipPosition="above"
-					>
-						<img height="21" ngSrc="/assets/images/to-printer.png" width="24"/>
-					</button>
-				</div>
-			</div>
-			
-			<div *ngIf="beneficiaryHistory.chartData" class="chart-section">
-				<app-charts
-						[chartData]="beneficiaryHistory.chartData"
-						[scrollHeight]="{ height: 220 }"
-				></app-charts>
-			</div>
-			
-			<div
-					class="bank-acc-details-table-container"
-					id="beneficiaryHistoryTable"
-			>
-				<div class="bank-acc-details-table-header">
-					<div>{{ 'titles.date' | translate }}</div>
-					<div>{{ 'titles.description' | translate }}</div>
-					<div>{{ 'titles.category' | translate }}</div>
-					<div>{{ 'titles.typeOfPayment' | translate }}</div>
-					<div>{{ 'titles.reference' | translate }}</div>
-					<div>{{ 'titles.sum' | translate }}</div>
-				</div>
-				<ng-container
-						*ngIf="beneficiaryHistory.transes.length; else noRowsInHistory"
-				>
-					<div
-							[appScrollHeight]="220"
-							appendTo="parent"
-							class="bank-acc-details-table-body scroll-chrome"
-					>
-						<div
-								*ngFor="let bnfTr of beneficiaryHistory.transes"
-								class="bank-acc-details-row"
-						>
-							<div>
+                            [matTooltip]="'appWalk.customers.report.printBtn' | translate"
+                            matTooltipPosition="above"
+                    >
+                        <img height="21" ngSrc="/assets/images/to-printer.png" width="24"/>
+                    </button>
+                </div>
+            </div>
+
+            <div *ngIf="beneficiaryHistory.chartData" class="chart-section">
+                <app-charts
+                        [chartData]="beneficiaryHistory.chartData"
+                        [scrollHeight]="{ height: 220 }"
+                ></app-charts>
+            </div>
+
+            <div
+                    class="bank-acc-details-table-container"
+                    id="beneficiaryHistoryTable"
+            >
+                <div class="bank-acc-details-table-header">
+                    <div>{{ 'titles.date' | translate }}</div>
+                    <div>{{ 'titles.description' | translate }}</div>
+                    <div>{{ 'titles.category' | translate }}</div>
+                    <div>{{ 'titles.typeOfPayment' | translate }}</div>
+                    <div>{{ 'titles.reference' | translate }}</div>
+                    <div>{{ 'titles.sum' | translate }}</div>
+                </div>
+                <ng-container
+                        *ngIf="beneficiaryHistory.transes.length; else noRowsInHistory"
+                >
+                    <div
+                            [appScrollHeight]="220"
+                            appendTo="parent"
+                            class="bank-acc-details-table-body scroll-chrome"
+                    >
+                        <div
+                                *ngFor="let bnfTr of beneficiaryHistory.transes"
+                                class="bank-acc-details-row"
+                        >
+                            <div>
                 <span
-		                [pTooltip]="bnfTr.transDate | todayRelativeHumanize"
-		                class="text-ellipsis"
-		                tooltipPosition="top"
+                        [pTooltip]="bnfTr.transDate | todayRelativeHumanize"
+                        class="text-ellipsis"
+                        tooltipPosition="top"
                 >
                   {{ bnfTr.transDate | todayRelativeHumanize }}</span
                 >
-							</div>
-							<div>
+                            </div>
+                            <div>
                 <span
-		                [pTooltip]="bnfTr.transName"
-		                class="text-ellipsis"
-		                tooltipPosition="top"
+                        [pTooltip]="bnfTr.transName"
+                        class="text-ellipsis"
+                        tooltipPosition="top"
                 >
                   {{ bnfTr.transName }}</span
                 >
-							</div>
-							<div>
+                            </div>
+                            <div>
                 <span
-		                [pTooltip]="bnfTr.transTypeName"
-		                class="text-ellipsis"
-		                tooltipPosition="top"
+                        [pTooltip]="bnfTr.transTypeName"
+                        class="text-ellipsis"
+                        tooltipPosition="top"
                 >
                   {{ bnfTr.transTypeName }}</span
                 >
-							</div>
-							<div>
-								<div>
+                            </div>
+                            <div>
+                                <div>
                   <span
-		                  [pTooltip]="bnfTr.paymentDesc"
-		                  class="text-ellipsis"
-		                  tooltipPosition="top"
+                          [pTooltip]="bnfTr.paymentDesc"
+                          class="text-ellipsis"
+                          tooltipPosition="top"
                   >
                     {{ bnfTr.paymentDesc }}</span
                   >
-								</div>
-							</div>
-							<div>
+                                </div>
+                            </div>
+                            <div>
                 <span
-		                [pTooltip]="bnfTr.asmachta"
-		                class="text-ellipsis"
-		                tooltipPosition="top"
+                        [pTooltip]="bnfTr.asmachta"
+                        class="text-ellipsis"
+                        tooltipPosition="top"
                 >
                   {{ bnfTr.asmachta }}</span
                 >
-							</div>
-							<div
-									[ngClass]="{
+                            </div>
+                            <div
+                                    [ngClass]="{
                   'sum-credit': bnfTr.total > 0,
                   'sum-debit': bnfTr.total < 0
                 }"
-							>
-								<app-sum-view [sum]="bnfTr.total"></app-sum-view>
-								<!--                <span class="sum">{{bnfTr.total| sum:true}}</span>-->
-							</div>
-							<!--              {{bnfTr| json}}-->
-						</div>
-					</div>
-					<div class="bank-acc-details-table-footer">
-						<div>
-							<span>{{ 'sumsTitles.total' | translate }}</span>
-						</div>
-						<div></div>
-						<div></div>
-						<div></div>
-						<div></div>
-						<div>
-							<app-sum-view
-									[sum]="beneficiaryHistory.transesTotal"
-							></app-sum-view>
-						</div>
-					</div>
-				</ng-container>
-			</div>
-		</ng-container>
-	</ng-container>
+                            >
+                                <app-sum-view [sum]="bnfTr.total"></app-sum-view>
+                                <!--                <span class="sum">{{bnfTr.total| sum:true}}</span>-->
+                            </div>
+                            <!--              {{bnfTr| json}}-->
+                        </div>
+                    </div>
+                    <div class="bank-acc-details-table-footer">
+                        <div>
+                            <span>{{ 'sumsTitles.total' | translate }}</span>
+                        </div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div>
+                            <app-sum-view
+                                    [sum]="beneficiaryHistory.transesTotal"
+                            ></app-sum-view>
+                        </div>
+                    </div>
+                </ng-container>
+            </div>
+        </ng-container>
+    </ng-container>
 </p-dialog>

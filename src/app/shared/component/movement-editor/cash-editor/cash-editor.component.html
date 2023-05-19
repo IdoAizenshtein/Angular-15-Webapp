@@ -11,6 +11,7 @@
 				'formFixedMovement.field.' + fld.name | translate
 				}}</label>
 			<p-dropdown
+					[name]="fld.name"
 					[options]="userService.appData.userData.accounts"
 					[formControlName]="fld.name"
 					dataKey="companyAccountId"
@@ -54,7 +55,7 @@
 			</p-dropdown>
 			<!--<pre>{{form.get(fld.name).value| json}}</pre>-->
 		</ng-container>
-		
+
 		<ng-container *ngSwitchCase="'transName'">
 			<label [for]="fld.name">{{
 				'formFixedMovement.field.' + fld.name | translate
@@ -68,7 +69,7 @@
 					autocomplete="off"
 			/>
 		</ng-container>
-		
+
 		<ng-container *ngSwitchCase="'transTypeId'">
 			<label [for]="fld.name">{{
 				'formFixedMovement.field.' + fld.name | translate
@@ -83,17 +84,18 @@
 					[autoDisplayFirst]="false"
 					[filter]="false"
 					[filterBy]="'transTypeName'"
-					
+
 					[placeholder]="('actions.select' | translate) + '...'"
 			>
 			</app-category-select>
 		</ng-container>
-		
+
 		<ng-container *ngSwitchCase="'paymentDesc'">
 			<label [for]="fld.name">{{
 				'formFixedMovement.field.' + fld.name | translate
 				}}</label>
 			<p-dropdown
+					[name]="fld.name"
 					[options]="fld.options"
 					[formControlName]="fld.name"
 					[inputId]="fld.name"
@@ -104,7 +106,7 @@
 			</p-dropdown>
 			<!--<pre>{{form.get(fld.name).value| json}}</pre>-->
 		</ng-container>
-		
+
 		<ng-container *ngSwitchCase="'transDate'">
 			<label [for]="fld.name">{{
 				(mode !== EditingType.Single
@@ -114,6 +116,7 @@
 				}}</label>
 			<p-calendar
 					[formControlName]="fld.name"
+					[name]="fld.name"
 					[inputId]="fld.name"
 					[inputStyle]="{ 'max-width': '121px' }"
 					[locale]="'langCalendar' | translate"
@@ -125,7 +128,7 @@
 			></p-calendar>
 			<!--<pre>{{form.get(fld.name).value}}</pre>-->
 		</ng-container>
-		
+
 		<ng-container *ngSwitchCase="'total'">
 			<label [for]="fld.name">{{
 				'formFixedMovement.field.' + fld.name | translate
@@ -141,7 +144,7 @@
 					autocomplete="off"
 			/>
 		</ng-container>
-		
+
 		<ng-container *ngSwitchCase="'asmachta'">
 			<label [for]="fld.name">{{
 				'formFixedMovement.field.' + fld.name | translate
@@ -156,7 +159,7 @@
 					autocomplete="off"
 			/>
 		</ng-container>
-		
+
 		<ng-container *ngSwitchCase="'autoUpdateTypeName'">
 			<label [for]="fld.name">{{
 				'formFixedMovement.field.' + fld.name | translate
@@ -209,12 +212,13 @@
 				</ul>
 			</div>
 		</ng-container>
-		
+
 		<ng-container *ngSwitchCase="'transFrequencyName'">
 			<label [for]="fld.name">{{
 				'formFixedMovement.field.' + fld.name | translate
 				}}</label>
 			<p-dropdown
+					[name]="fld.name"
 					[options]="fld.options"
 					[formControlName]="fld.name"
 					[inputId]="fld.name"

@@ -119,7 +119,8 @@ export class ResetPasswordComponent implements OnInit, OnDestroy {
                     confirmPassword: ['', Validators.required]
                 },
                 {validators: this.passwordMatchValidator}
-            )
+            ),
+            vms: new FormControl(false)
         });
 
         this.sucessfulyAuthenticatedWithUsernameProvided$ = merge(
@@ -311,11 +312,20 @@ export class ResetPasswordComponent implements OnInit, OnDestroy {
         });
     }
 
-    resendSms(): void {
+    async resendSms(): Promise<void> {
         if (!this.tokenInfo.smsRemained) {
             return;
         }
-        this.authService.resentOtpSms().subscribe((response: any) => {
+        const gRecaptcha = await this.userService.executeAction('resend-sms');
+        this.authService.resentOtpSms(false, gRecaptcha).subscribe((response: any) => {
+            this.tokenInfo = response.body;
+        });
+    }
+    resentOtpVms(): void {
+        if (!this.tokenInfo.smsRemained) {
+            return;
+        }
+        this.authService.resentOtpVms(false).subscribe((response: any) => {
             this.tokenInfo = response.body;
         });
     }

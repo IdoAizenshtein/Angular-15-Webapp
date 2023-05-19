@@ -51,7 +51,7 @@
 				</div>
 			</ng-template>
 		</app-autocomplete-empty-optioned>
-		
+
 		<button (click)="addTeamMembers()" class="button-link">
 			<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/add.png"/>
 			הוספת איש צוות
@@ -81,7 +81,7 @@
 			<div>מייל</div>
 			<div (click)="toggleCompanyFilesOrderTo('companiesCount')">
 				משוייך לחברות
-				
+
 				<mat-icon
 						*ngIf="officeUsers && officeUsers.length"
 						[class.active]="
@@ -108,7 +108,7 @@
 			</div>
 			<div (click)="toggleCompanyFilesOrderTo('lastLoginDate')">
 				כניסה אחרונה
-				
+
 				<mat-icon
 						*ngIf="officeUsers && officeUsers.length"
 						[class.active]="
@@ -187,7 +187,7 @@
 									tooltipPosition="top"
 									type="text"
 							/>
-							
+
 							<input
 									#inputElement
 									(focus)="row.activeRow = true"
@@ -313,7 +313,7 @@
 										tooltipPosition="top"
 										type="email"
 								/>
-								
+
 								<div
 										*ngIf="
                     row.mailInput.dirty &&
@@ -325,7 +325,7 @@
 								>
 									כתובת המייל לא תקינה
 								</div>
-								
+
 								<div
 										*ngIf="row.mailInput.hasError('exist')"
 										class="invalidAlert"
@@ -412,7 +412,7 @@
 									[options]="privTypeList"
 									appendTo="body"
 									placeholder="בחירה"
-									
+
 									styleClass="ddInfoCompanyForm"
 							>
 							</p-dropdown>
@@ -595,7 +595,7 @@
 								</ng-template>
 							</ul>
 						</p-overlayPanel>
-						
+
 						<p-overlayPanel
 								#op
 								[dismissable]="true"
@@ -627,7 +627,7 @@
 					<div class="line-sep"></div>
 				</ng-container>
 			</ng-container>
-			
+
 			<div *ngIf="officeUsersSave && !officeUsersSave.length" class="noData">
 				<mat-icon
 						style="
@@ -638,7 +638,7 @@
           "
 						svgIcon="export2"
 				></mat-icon>
-				
+
 				<h1>לא קיימות תנועות</h1>
 			</div>
 			<div
@@ -659,11 +659,11 @@
           "
 						svgIcon="interface"
 				></mat-icon>
-				
+
 				<h1>לא נמצאו תנועות לחיפוש המבוקש</h1>
 			</div>
 		</div>
-		
+
 		<app-paginator
 				#paginator
 				(onPageChange)="paginate($event)"
@@ -687,16 +687,16 @@
 </ng-template>
 <ng-container *ngIf="companiesListModal">
 	<p-dialog (visibleChange)="companiesListModal = false"
-			(onHide)="companiesListModal = false"
-			[visible]="(companiesListModal)"
-			
-			[closable]="true"
-			[closeOnEscape]="true"
-			[draggable]="false"
-			[modal]="true"
-			[resizable]="false"
-			appendTo="body"
-			styleClass="companiesListBelongModal"
+			  (onHide)="companiesListModal = false"
+			  [visible]="(companiesListModal)"
+
+			  [closable]="true"
+			  [closeOnEscape]="true"
+			  [draggable]="false"
+			  [modal]="true"
+			  [resizable]="false"
+			  appendTo="body"
+			  styleClass="companiesListBelongModal"
 	>
 		<p-header> החברות שמשוייכות ל{{ companiesListModal.lastName }} </p-header>
 		<div class="search">
@@ -749,15 +749,15 @@
 
 <ng-container *ngIf="companiesAddListModal">
 	<p-dialog (visibleChange)="companiesAddListModal = false"
-			(onHide)="companiesAddListModal = false"
-			[visible]="(companiesAddListModal)"
-			[closable]="true"
-			[closeOnEscape]="true"
-			[draggable]="false"
-			[modal]="true"
-			[resizable]="false"
-			appendTo="body"
-			styleClass="companiesListModal"
+			  (onHide)="companiesAddListModal = false"
+			  [visible]="(companiesAddListModal)"
+			  [closable]="true"
+			  [closeOnEscape]="true"
+			  [draggable]="false"
+			  [modal]="true"
+			  [resizable]="false"
+			  appendTo="body"
+			  styleClass="companiesListModal"
 	>
 		<p-header>
 			{{ companiesAddListModal.edit ? 'עריכת ' : '' }} שיוך חברות ל{{
@@ -794,7 +794,7 @@
 					type="text"
 			/>
 		</div>
-		
+
 		<div
 				[class.hasScroll]="
         scrollContainer.scrollHeight > scrollContainer.clientHeight
@@ -803,10 +803,10 @@
 		>
 			<div class="check">
 				<p-checkbox (onChange)="checkAll = !checkAll; changeAll()"
-				            [binary]="true"
-				            [inputId]="'all'"
-				            [ngModel]="checkAll"
-				            checkboxIcon="fa fa-check"
+							[binary]="true"
+							[inputId]="'all'"
+							[ngModel]="checkAll"
+							checkboxIcon="fa fa-check"
 				>
 				</p-checkbox>
 			</div>
@@ -814,14 +814,14 @@
 			<div class="hp">ח.פ</div>
 			<div class="contactIcon">
         <span
-		        class="icon-user-circle-o"
-		        style="
+				class="icon-user-circle-o"
+				style="
             color: #022258;
             vertical-align: middle;
             cursor: pointer;
             font-size: 16px;
           "
-        ></span>
+		></span>
 			</div>
 		</div>
 		<div
@@ -844,10 +844,10 @@
 					>
 						<div class="check">
 							<p-checkbox (onChange)="item.selcetCompany = !item.selcetCompany; checkSelected(item)"
-							            [ngModel]="item.selcetCompany"
-							            [binary]="true"
-							            [disabled]="item.hasPrivs === false"
-							            checkboxIcon="fa fa-check"
+										[ngModel]="item.selcetCompany"
+										[binary]="true"
+										[disabled]="item.hasPrivs === false"
+										checkboxIcon="fa fa-check"
 							>
 							</p-checkbox>
 						</div>
@@ -864,20 +864,20 @@
 						<p class="hp">{{ item.companyHp }}</p>
 						<div class="contactIcon">
               <span
-		              [touchendHideDelay]="9999999999999"
-		              [hideDelay]="999999999999999999"
-		              #tooltip="matTooltip"
-		              [matTooltip]="item.contactsListTootip"
-		              matTooltipClass="multiline-tooltip"
-		              matTooltipPosition="below"
-		              class="icon-user-circle"
-		              style="
+					  [touchendHideDelay]="9999999999999"
+					  [hideDelay]="999999999999999999"
+					  #tooltip="matTooltip"
+					  [matTooltip]="item.contactsListTootip"
+					  matTooltipClass="multiline-tooltip"
+					  matTooltipPosition="below"
+					  class="icon-user-circle"
+					  style="
                   color: #abaaaa;
                   vertical-align: middle;
                   cursor: pointer;
                   font-size: 16px;
                 "
-              ></span>
+			  ></span>
 						</div>
 					</div>
 				</mat-list-item>
@@ -903,15 +903,15 @@
 
 <ng-container *ngIf="companiesReplaceListModal">
 	<p-dialog (visibleChange)="companiesReplaceListModal = false"
-			(onHide)="companiesReplaceListModal = false"
-			[visible]="(companiesReplaceListModal)"
-			[closable]="true"
-			[closeOnEscape]="true"
-			[draggable]="false"
-			[modal]="true"
-			[resizable]="false"
-			appendTo="body"
-			styleClass="companiesListModal notBorder"
+			  (onHide)="companiesReplaceListModal = false"
+			  [visible]="(companiesReplaceListModal)"
+			  [closable]="true"
+			  [closeOnEscape]="true"
+			  [draggable]="false"
+			  [modal]="true"
+			  [resizable]="false"
+			  appendTo="body"
+			  styleClass="companiesListModal notBorder"
 	>
 		<p-header> החלפת איש צוות</p-header>
 		<div *ngIf="loaderTableSwap" class="loaderPercent">
@@ -921,10 +921,10 @@
 			בחרו את איש הצוות אליו תרצו לשייך את החברות של
 			<strong>{{ companiesReplaceListModal.firstName }}</strong>
 		</div>
-		
+
 		<div class="title ddTeam">
 			שם איש הצוות:
-			
+
 			<p-dropdown
 					#dd22
 					(onChange)="companiesReplaceListModalChange($event)"
@@ -936,11 +936,11 @@
 					appendTo="body"
 					placeholder=" "
 					styleClass="ddInfoCompanyForm"
-			
+
 			>
 			</p-dropdown>
 		</div>
-		
+
 		<div *ngIf="companiesReplaceListModal.alreadyBelong" class="title">
 			{{
 			companiesReplaceListModal.alreadyBelong > 1
@@ -964,11 +964,11 @@
 		>
 			<div class="check">
 				<p-checkbox (onChange)="checkAll = !checkAll; changeAllReplace()"
-				            [binary]="true"
-				            [disabled]="!companiesReplaceListModal.newUserId"
-				            [inputId]="'all'"
-				            [ngModel]="checkAll"
-				            checkboxIcon="fa fa-check"
+							[binary]="true"
+							[disabled]="!companiesReplaceListModal.newUserId"
+							[inputId]="'all'"
+							[ngModel]="checkAll"
+							checkboxIcon="fa fa-check"
 				>
 				</p-checkbox>
 			</div>
@@ -1001,13 +1001,13 @@
                   item.selcetCompany = !item.selcetCompany;
                   checkSelectedReplace(item)
                 "
-							            [ngModel]="item.selcetCompany"
-							            [binary]="true"
-							            [disabled]="
+										[ngModel]="item.selcetCompany"
+										[binary]="true"
+										[disabled]="
                   item.hasPrivs === false ||
                   !companiesReplaceListModal.newUserId
                 "
-							            checkboxIcon="fa fa-check"
+										checkboxIcon="fa fa-check"
 							>
 							</p-checkbox>
 						</div>
@@ -1065,16 +1065,16 @@
 
 <ng-container *ngIf="userFreezeModal">
 	<p-dialog (visibleChange)="userFreezeModal = false"
-			(onHide)="userFreezeModal = false"
-			[visible]="(userFreezeModal)"
-			
-			[closable]="true"
-			[closeOnEscape]="true"
-			[draggable]="false"
-			[modal]="true"
-			[resizable]="false"
-			appendTo="body"
-			styleClass="userDeleteModal"
+			  (onHide)="userFreezeModal = false"
+			  [visible]="(userFreezeModal)"
+
+			  [closable]="true"
+			  [closeOnEscape]="true"
+			  [draggable]="false"
+			  [modal]="true"
+			  [resizable]="false"
+			  appendTo="body"
+			  styleClass="userDeleteModal"
 	>
 		<p-header> הקפאת איש צוות</p-header>
 		<div>
@@ -1110,16 +1110,16 @@
 
 <ng-container *ngIf="userFreezeAlertModal">
 	<p-dialog (visibleChange)="userFreezeAlertModal = false"
-			(onHide)="userFreezeAlertModal = false"
-			[visible]="(userFreezeAlertModal)"
-			
-			[closable]="true"
-			[closeOnEscape]="true"
-			[draggable]="false"
-			[modal]="true"
-			[resizable]="false"
-			appendTo="body"
-			styleClass="userDeleteModal"
+			  (onHide)="userFreezeAlertModal = false"
+			  [visible]="(userFreezeAlertModal)"
+
+			  [closable]="true"
+			  [closeOnEscape]="true"
+			  [draggable]="false"
+			  [modal]="true"
+			  [resizable]="false"
+			  appendTo="body"
+			  styleClass="userDeleteModal"
 	>
 		<p-header> לידיעה</p-header>
 		<div>
@@ -1135,16 +1135,16 @@
 
 <ng-container *ngIf="userRestoreModal">
 	<p-dialog (visibleChange)="userRestoreModal = false"
-			(onHide)="userRestoreModal = false"
-			[visible]="(userRestoreModal)"
-			
-			[closable]="true"
-			[closeOnEscape]="true"
-			[draggable]="false"
-			[modal]="true"
-			[resizable]="false"
-			appendTo="body"
-			styleClass="userDeleteModal"
+			  (onHide)="userRestoreModal = false"
+			  [visible]="(userRestoreModal)"
+
+			  [closable]="true"
+			  [closeOnEscape]="true"
+			  [draggable]="false"
+			  [modal]="true"
+			  [resizable]="false"
+			  appendTo="body"
+			  styleClass="userDeleteModal"
 	>
 		<p-header> שחזור איש צוות</p-header>
 		<div>
@@ -1166,16 +1166,16 @@
 
 <ng-container *ngIf="userDeleteModal">
 	<p-dialog (visibleChange)="userDeleteModal = false"
-			(onHide)="userDeleteModal = false"
-			[visible]="(userDeleteModal)"
-			
-			[closable]="true"
-			[closeOnEscape]="true"
-			[draggable]="false"
-			[modal]="true"
-			[resizable]="false"
-			appendTo="body"
-			styleClass="userDeleteModal"
+			  (onHide)="userDeleteModal = false"
+			  [visible]="(userDeleteModal)"
+
+			  [closable]="true"
+			  [closeOnEscape]="true"
+			  [draggable]="false"
+			  [modal]="true"
+			  [resizable]="false"
+			  appendTo="body"
+			  styleClass="userDeleteModal"
 	>
 		<p-header> מחיקת איש צוות</p-header>
 		<div>
@@ -1195,19 +1195,19 @@
 
 <ng-container *ngIf="addTeamMembersModal">
 	<p-dialog (visibleChange)="addTeamMembersModal = false"
-			(onHide)="addTeamMembersModal = false"
-			[visible]="(addTeamMembersModal)"
-			
-			[closable]="true"
-			[closeOnEscape]="true"
-			[draggable]="false"
-			[modal]="true"
-			[resizable]="false"
-			appendTo="body"
-			styleClass="addTeamModal"
+			  (onHide)="addTeamMembersModal = false"
+			  [visible]="(addTeamMembersModal)"
+
+			  [closable]="true"
+			  [closeOnEscape]="true"
+			  [draggable]="false"
+			  [modal]="true"
+			  [resizable]="false"
+			  appendTo="body"
+			  styleClass="addTeamModal"
 	>
 		<p-header> הוספת איש צוות</p-header>
-		
+
 		<div>
 			<div
 					[class.hasScroll]="
@@ -1357,7 +1357,7 @@
 										appendTo="body"
 										placeholder="בחירה"
 										styleClass="ddInfoCompanyForm"
-								
+
 								>
 								</p-dropdown>
 							</div>
@@ -1380,7 +1380,7 @@
 				</button>
 			</div>
 		</div>
-		
+
 		<p-footer>
 			<button (click)="addTeamMembersModal = false" class="button-link">
 				{{ 'actions.cancellation' | translate }}

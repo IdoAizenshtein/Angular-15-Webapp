@@ -1,0 +1,161 @@
+<div class="menu-dd menu-with-panel">
+	<button
+			class="buttonDD no-selection"
+			*ngIf="
+      creditCardsSrc.length === 1 &&
+        creditCardsSrc[0].children.length === 1;
+      else selectionAvailable
+    "
+			[id]="'cCards-selector'"
+	>
+		<!--<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/bank{{creditCards[0].children[0].creditCardTypeId}}.png" *ngIf="creditCards[0].children[0].creditCardTypeId">-->
+		<p>
+			{{
+			creditCardsSrc[0].children[0]
+					.creditCardNickname
+			}}
+			{{
+			isBankAndCreditScreen &&
+			creditCardsSrc[0].children[0].izuCustId
+					? creditCardsSrc[0].children[0].izuCustId
+					: ''
+			}}
+
+			<ng-container *ngIf="selectedCur">
+				({{(selectedCur.sign)}})
+			</ng-container>
+		</p>
+	</button>
+
+	<ng-template #selectionAvailable>
+		<button
+				class="buttonDD"
+				(click)="showPanelDD = !showPanelDD"
+				[class.opened]="showPanelDD"
+				[id]="'cCards-selector'"
+				[matTooltip]="'appWalk.customers.ccardSelect' | translate"
+				matTooltipPosition="above"
+		>
+			<p *ngIf="checkAll">{{ 'filters.allCreditCards' | translate }}
+				<ng-container *ngIf="selectedCur">
+					({{(selectedCur.sign)}})
+				</ng-container>
+			</p>
+			<p *ngIf="!checkAll">{{ textCards }}
+				<ng-container *ngIf="selectedCur">
+					({{(selectedCur.sign)}})
+				</ng-container>
+			</p>
+		</button>
+	</ng-template>
+	<div class="panelDD accountsPanel cardsPanelCurreny" *ngIf="showPanelDD" [@slideInOutDD]>
+		<div class="currenciesList" *ngIf="currenciesList.length > 1">
+			<button *ngFor="let cur of currenciesList" [class.active]="cur.selected" (click)="resetAllSelected(); cur.selected=true; filterByCurrency()">
+				<div>
+					{{cur.currency}}
+				</div>
+				-
+				<div>
+					{{cur.sign}}
+				</div>
+			</button>
+		</div>
+		<ul
+				class="scroll-chrome"
+				tabindex="-1"
+				(keydown.enter)="showPanelDD = false"
+		>
+			<li class="allCreditCards"
+					*ngIf="
+          creditCards.length > 1 ||
+          (creditCards.length === 1 &&
+            creditCards[0].children.length > 1)
+        "
+			>
+				<p-checkbox checkboxIcon="fa fa-check"
+				            [inputId]="'all'"
+				            [binary]="true"
+				            [ngModel]="checkAll"
+				            (onChange)="checkAll = !checkAll; changeAll()"
+				            [label]="('filters.allCreditCards' | translate) + ' ' + '(' + (selectedCur ? selectedCur.sign : '') + ')'"
+				>
+				</p-checkbox>
+			</li>
+			<li *ngFor="let card of creditCards">
+				<div class="accountNickname">
+<!--					<p-checkbox checkboxIcon="fa fa-check"-->
+<!--					            [inputId]="card?.companyAccountId"-->
+<!--					            [binary]="true"-->
+<!--					            [ngModel]="card.check"-->
+<!--					            (onChange)="card.check = !card.check; changeSelectionAt(card)"-->
+<!--					>-->
+<!--					</p-checkbox>-->
+					<label [for]="card?.companyAccountId">
+						<img [src]="!card?.bankId ? '' : (card.bankId | toIconSrc: 'bank'  : ''
+                                  : false
+                                  : true)"/>
+						<!--<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/bank{{card?.bankId}}.png" *ngIf="card?.bankId">-->
+						<p>{{ card.accountNickname }} ({{card.sign}})
+
+							{{
+							card.izuCustId
+									? ' - ' + card.izuCustId
+									: ''
+							}}</p>
+					</label>
+				</div>
+				<ul>
+					<li *ngFor="let item of card.children; index as i" class="card"
+					[class.active]="item.check">
+						<div style="white-space: nowrap; align-items: center">
+							<p-checkbox checkboxIcon="fa fa-check"
+							            [inputId]="item.creditCardId"
+							            [binary]="true"
+							            [ngModel]="item.check"
+							            (onChange)="item.check = !item.check; changeSelectionAt(item, card)">
+							</p-checkbox>
+
+							<label [for]="item?.creditCardId">
+								<img [src]="!item?.creditCardTypeId ? '' : (item.creditCardTypeId | toIconSrc: 'card'  : ''
+                                  : false
+                                  : true)"/>
+								<p>{{item.creditCardNickname}}
+
+									({{item.sign}})
+
+									{{
+									item.izuCustId
+											? ' - ' + item.izuCustId
+											: ''
+									}}
+								</p>
+
+<!--								<span *ngIf="!item.balanceIsUpToDate" class="outdated">-->
+<!--                &lt;!&ndash;              <span *ngIf="!item.alertStatus && !item.balanceIsUpToDate" class="outdated">&ndash;&gt;-->
+<!--                &nbsp;<span style="color: #0f3860">-</span>&nbsp;{{-->
+<!--									'filters.outdated' | translate-->
+<!--									}}-->
+<!--              </span>-->
+<!--								<span-->
+<!--										*ngIf="-->
+<!--                  item.alertStatus | alertStatusHumanize as alertStatusHumanized-->
+<!--                "-->
+<!--										class="outdated"-->
+<!--								>-->
+<!--                <span style="color: #0f3860">-</span>&nbsp;{{-->
+<!--									alertStatusHumanized-->
+<!--									}}-->
+<!--              </span>-->
+							</label>
+
+							<!--<label for="{{item?.creditCardId}}">-->
+							<!--<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/bank{{item?.creditCardTypeId}}.png" *ngIf="item?.creditCardTypeId">-->
+							<!--<p>{{item.creditCardNickname}}</p>-->
+							<!--</label>-->
+						</div>
+					</li>
+				</ul>
+			</li>
+		</ul>
+	</div>
+</div>

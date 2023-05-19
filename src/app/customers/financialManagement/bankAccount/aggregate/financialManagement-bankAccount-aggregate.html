@@ -4,13 +4,13 @@
 				(changedTrigger)="changeAcc($event)"
 				[accounts]="userService.appData.userData.accounts"
 		></app-acc-select>
-		<app-account-dates></app-account-dates>
+		<app-account-dates (sendEvent)="sendEvent($event)"></app-account-dates>
 		<!--<app-acc-dates [option]="'days'" (changedTrigger)="filterDates($event)"></app-acc-dates>-->
-		
+
 		<div class="exports">
 			<!--<button (click)="printTransactions()"><img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/to-printer.png" height="21" width="24"/></button>-->
 			<button
-					(click)="reportMailSubmitterToggle = true"
+					(click)="sharedComponent.mixPanelEvent('mail'); reportMailSubmitterToggle = true"
 					[matTooltip]="'appWalk.customers.report.mailBtn' | translate"
 					matTooltipPosition="above"
 			>
@@ -22,16 +22,17 @@
 			</button>
 			<!--<button (click)="exportTransactions('PDF')"><img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/to-pdf.png" height="21" width="24"/></button>-->
 			<button
-					(click)="exportTransactions('EXCEL')"
+					(click)="sharedComponent.mixPanelEvent('excel'); exportTransactions('EXCEL')"
 					[matTooltip]="'appWalk.customers.report.excelBtn' | translate"
 					matTooltipPosition="above"
 			>
 				<img height="21" ngSrc="/assets/images/to-excel.png" width="24"/>
 			</button>
 		</div>
-		
+
 		<ul class="tabs navTabs" style="margin: 0">
 			<li
+					(click)="sharedComponent.mixPanelEvent('aggregate screen')"
 					[matTooltip]="
           'appWalk.customers.financialManagement.bankAccount.viewSwitchAggregate'
             | translate
@@ -46,6 +47,7 @@
 				{{ 'filters.consolidated' | translate }}
 			</li>
 			<li
+					(click)="sharedComponent.mixPanelEvent('detailed screen')"
 					[matTooltip]="
           'appWalk.customers.financialManagement.bankAccount.viewSwitchDetails'
             | translate
@@ -60,6 +62,7 @@
 				{{ 'filters.detailed' | translate }}
 			</li>
 			<li
+					(click)="sharedComponent.mixPanelEvent('graph screen')"
 					[matTooltip]="
           'appWalk.customers.financialManagement.bankAccount.viewSwitchChart'
             | translate
@@ -75,7 +78,7 @@
 			</li>
 		</ul>
 	</div>
-	
+
 <!-- 	[ngStyle]=" -->
 <!-- 	!loader && -->
 <!-- 	dataTableAll?.length <= 2 && -->
@@ -121,6 +124,7 @@
 			/>
 		</div>
 		<cdk-virtual-scroll-viewport
+				#aaaaa
 				[ngStyle]="{'height': (window.innerHeight - filterRow.getBoundingClientRect().bottom) +'px'}"
 				itemSize="505"
 				orientation="horizontal">
@@ -198,7 +202,7 @@
 											/>
 											<p class="nameAcc">{{ itemAcc.accountNickname }}</p>
 										</div>
-										
+
 										<div
 												*ngIf="isForexAccount(item.accountUuid)"
 												class="exchange flexWrap"
@@ -221,7 +225,7 @@
 												}})
 											</ng-template>
 										</div>
-										
+
 										<div
 												*ngIf="
                       itemAcc.isUpToDate &&
@@ -235,7 +239,7 @@
 											<i class="fas fa-exclamation-triangle"></i>
 											<div>{{ 'sumsTitles.accountExceeded' | translate }}</div>
 										</div>
-										
+
 										<div
 												*ngIf="
                       !itemAcc.isUpToDate && !itemAcc.outdatedBecauseNotFound
@@ -304,7 +308,7 @@
 										<div class="operator">=</div>
 										<div class="sum-data">
 											<h3>{{ 'sumsTitles.balanceUse' | translate }}</h3>
-											
+
 											<p
 													*ngIf="balanceUse !== null; else balanceUseNan"
 													[class.red]="
@@ -389,7 +393,7 @@
 										<div class="operator">=</div>
 										<div class="sum-data">
 											<h3>{{ 'sumsTitles.balanceUse' | translate }}</h3>
-											
+
 											<p
 													*ngIf="
                         itemAcc.balanceUse !== null && itemAcc.isShowItrot;

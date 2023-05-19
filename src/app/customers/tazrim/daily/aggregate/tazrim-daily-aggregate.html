@@ -4,14 +4,14 @@
 				(changedTrigger)="changeAcc($event)"
 				[accounts]="userService.appData.userData.accounts"
 		></app-acc-select>
-		
+
 		<!--&lt;!&ndash;<app-acc-dates [option]="'DaysTazrim'" (changedTrigger)="filterDates($event)"></app-acc-dates>&ndash;&gt;-->
 		<!--<app-tazrim-dates [option]="'DaysTazrim'" (onChange)="filterDates($event)"></app-tazrim-dates>-->
-		<app-cashflow-dates></app-cashflow-dates>
-		
+		<app-cashflow-dates (sendEvent)="sendEvent($event)"></app-cashflow-dates>
+
 		<div id="groupBtnLeftAddChecks">
 			<button
-					(click)="paymentCreate(400)"
+					(click)="sharedComponent.mixPanelEvent('add income'); paymentCreate(400)"
 					[matTooltip]="'appWalk.customers.tazrim.daily.addIncomeBtn' | translate"
 					id="addIncomeCheck"
 					matTooltipPosition="above"
@@ -19,7 +19,7 @@
 				{{ 'titles.expectedIncome' | translate }}
 			</button>
 			<button
-					(click)="paymentCreate(44)"
+					(click)="sharedComponent.mixPanelEvent('add outcome'); paymentCreate(44)"
 					[matTooltip]="
           'appWalk.customers.tazrim.daily.addOutcomeBtn' | translate
         "
@@ -29,11 +29,11 @@
 				{{ 'titles.expectedExpense' | translate }}
 			</button>
 		</div>
-		
+
 		<div class="exports">
 			<!--<button (click)="printTransactions()"><img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/to-printer.png" height="21" width="24"/></button>-->
 			<button
-					(click)="reportMailSubmitterToggle = true"
+					(click)="sharedComponent.mixPanelEvent('mail'); reportMailSubmitterToggle = true"
 					[disabled]="!(dataTableAll?.length > 0)"
 					[matTooltip]="'appWalk.customers.report.mailBtn' | translate"
 					matTooltipPosition="above"
@@ -46,7 +46,7 @@
 			</button>
 			<!--<button (click)="exportTransactions('PDF')"><img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/to-pdf.png" height="21" width="24"/></button>-->
 			<button
-					(click)="exportTransactions('EXCEL')"
+					(click)="sharedComponent.mixPanelEvent('excel'); exportTransactions('EXCEL')"
 					[disabled]="!(dataTableAll?.length > 0)"
 					[matTooltip]="'appWalk.customers.report.excelBtn' | translate"
 					matTooltipPosition="above"
@@ -54,9 +54,11 @@
 				<img height="21"  ngSrc="/assets/images/to-excel.png" width="24"/>
 			</button>
 		</div>
-		
+
 		<ul class="tabs navTabs marginFix">
 			<li
+					(click)="sharedComponent.mixPanelEvent('aggregate screen')"
+
 					[matTooltip]="
           'appWalk.customers.tazrim.daily.viewSwitchAggregate' | translate
         "
@@ -64,13 +66,14 @@
 					id="navToAggregateView"
 					matTooltipPosition="above"
 					queryParamsHandling="preserve"
-					
+
 					routerLink="../aggregate"
 					routerLinkActive="active"
 			>
 				{{ 'filters.consolidated' | translate }}
 			</li>
 			<li
+					(click)="sharedComponent.mixPanelEvent('detailed screen')"
 					[matTooltip]="
           'appWalk.customers.tazrim.daily.viewSwitchDetails' | translate
         "
@@ -79,12 +82,13 @@
 					matTooltipPosition="above"
 					routerLink="../details"
 					queryParamsHandling="preserve"
-					
+
 					routerLinkActive="active"
 			>
 				{{ 'filters.detailed' | translate }}
 			</li>
 			<li
+					(click)="sharedComponent.mixPanelEvent('graph screen')"
 					[matTooltip]="
           'appWalk.customers.tazrim.daily.viewSwitchChart' | translate
         "
@@ -93,7 +97,7 @@
 					matTooltipPosition="above"
 					routerLink="../graph"
 					queryParamsHandling="preserve"
-					
+
 					routerLinkActive="active"
 			>
 				<img height="13"  ngSrc="/assets/images/chart.png" width="22"/>
@@ -181,7 +185,7 @@
                   then todayNig
                 "
 							></ng-container>
-							
+
 							<ng-template #todayNig>
 								<!--{{userService.appData.userData?.accountSelect[0]?.balanceLastUpdatedDate| todayRelativeHumanize:'dd/MM'}}-->
 								{{ 'expressions.todayNigrarot' | translate }}
@@ -197,7 +201,7 @@
 					</div>
 				</div>
 			</li>
-			
+
 			<ul
 					#aggregate
 					class="aggregate-columns sortMain"
@@ -281,7 +285,7 @@
 										<!--{{getInfoAcc(item.accountUuid, 'accountNickname')}}-->
 									</p>
 								</div>
-								
+
 								<div
 										*ngIf="item.balanceUse && item.isUpToDate"
 										class="alert-deviation"
@@ -289,7 +293,7 @@
 									<i class="fas fa-exclamation-triangle"></i>
 									<div>{{ 'sumsTitles.accountExceeded' | translate }}</div>
 								</div>
-								
+
 								<div
 										*ngIf="
                     item.harigaDate === null &&
@@ -319,7 +323,7 @@
 										</div>
 									</div>
 								</div>
-								
+
 								<div
 										*ngIf="
                     item.harigaDate !== null &&
@@ -350,7 +354,7 @@
 										</div>
 									</div>
 								</div>
-								
+
 								<div
 										*ngIf="!item.isUpToDate"
 										class="accountSelectOneNotUpdate flexWrap"
@@ -412,7 +416,7 @@
 									</div>
 									<div class="sum-data" style="flex: 42; -ms-flex: 42">
 										<h3>{{ 'sumsTitles.notYetRepaid' | translate }}</h3>
-										
+
 										<div
 												*ngIf="
                         item.hovaNigrarot !== null &&
@@ -466,7 +470,7 @@
 												}}</i>
 											</p>
 										</div>
-										
+
 										<ng-template #balanceUseNan>
 											<p class="sum-nan"></p>
 										</ng-template>
@@ -560,7 +564,7 @@
 									<!--</div>-->
 									<div class="sum-data careBtn" style="flex: 38; -ms-flex: 38">
 										<button
-												(click)="navigateToMovementMatchingAt(item.accountUuid)"
+												(click)="sharedComponent.mixPanelEvent('general match button'); navigateToMovementMatchingAt(item.accountUuid)"
 												*ngIf="showMatch(item.accountUuid)"
 												[matTooltip]="
                         'appWalk.customers.tazrim.daily.aggregate.navigateToMatchBtn'
@@ -730,12 +734,12 @@
 			}}
 		</div>
 	</p-header>
-	
+
 	<form [formGroup]="userService.appData.popUpShow.data">
 		<div *ngIf="userService.appData.popUpShow.body" class="bodyPopUp">
 			<div class="titlesSelects">
 				<p>{{ 'titles.account' | translate }}</p>
-				
+
 				<p-dropdown
 						#dd
 						(onFocus)="clearFilter(dd)"
@@ -751,7 +755,8 @@
           "
 						[style]="{ width: '25ch' }"
 						formControlName="ddAccountSelect"
-						
+						name="ddAccountSelect"
+
 						optionLabel="accountNickname"
 						placeholder="{{ 'actions.account' | translate }}"
 						required
@@ -788,7 +793,7 @@
 						</div>
 					</ng-template>
 				</p-dropdown>
-				
+
 				<p>{{ 'titles.methodsOfPayment' | translate }}</p>
 				<p-dropdown
 						(onChange)="
@@ -810,14 +815,16 @@
           "
 						[style]="{'width': '132px'}"
 						formControlName="ddTypePayments"
+						name="ddTypePayments"
+
 						placeholder="{{ 'actions.select' | translate }}"
-						
+
 						required
 				>
 				</p-dropdown>
 				<!--{{selectedValue?.companyAccountId}}-->
 				<!--{{selectedValuePayment}}-->
-				
+
 				<p>{{ 'מוטב' }}</p>
 				<app-beneficiary-select
 						#beneficiarySelectComponent
@@ -839,7 +846,7 @@
 				>
 				</app-beneficiary-select>
 			</div>
-			
+
 			<ul>
 				<li class="titleTable extra">
 					<div>
@@ -867,7 +874,7 @@
 							>
 						</div>
 						<div>{{ 'titles.category' | translate }}</div>
-						
+
 						<div>{{ 'titles.description' | translate }}</div>
 						<div>
 							{{ 'titles.sum' | translate }}
@@ -913,6 +920,8 @@
 											appendTo="body"
 											dateFormat="dd/mm/yy"
 											formControlName="dueDate"
+											name="dueDate"
+
 											required
 									>
 									</p-calendar>
@@ -929,7 +938,7 @@
 								<div style="overflow: visible; min-width: 0">
 									<app-category-select
 											[disabled]="arr.controls[i].get('transTypeId').disabled"
-											
+
 											(changed)="arr.controls[i].get('transTypeId').patchValue($event.value);"
 											[autoDisplayFirst]="false"
 											[categories]="companyTransTypes"
@@ -1154,7 +1163,7 @@
 					</ul>
 				</li>
 			</ul>
-			
+
 			<div id="addPayments">
 				<p>
 					<img

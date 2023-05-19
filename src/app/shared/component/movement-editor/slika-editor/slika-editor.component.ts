@@ -297,11 +297,11 @@ export class SlikaEditorComponent implements OnChanges, OnDestroy {
                             this.form.get('total').disable();
                         }
 
-                        if (val === 'USER_CURRENT_TOTAL') {
-                            this.form.get('transFrequencyName').disable();
-                        } else {
-                            this.form.get('transFrequencyName').enable();
-                        }
+                        // if (val === 'USER_CURRENT_TOTAL') {
+                        //     this.form.get('transFrequencyName').disable();
+                        // } else {
+                        //     this.form.get('transFrequencyName').enable();
+                        // }
                     }
                 }),
                 this.form
@@ -491,17 +491,18 @@ export class SlikaEditorComponent implements OnChanges, OnDestroy {
                             }
                             break;
                         case 'transFrequencyName':
-                            if (
-                                this.mode === EditingType.Single ||
-                                this.form.get('frequencyAutoUpdateTypeName').value !==
-                                'USER_DEFINED_TOTAL' ||
-                                this.form.get('autoUpdateTypeName').value ===
-                                'USER_CURRENT_TOTAL'
-                            ) {
-                                this.form.get(fldName).disable();
-                            } else {
-                                this.form.get(fldName).enable();
-                            }
+                            this.form.get(fldName).enable();
+                            // if (
+                            //     this.mode === EditingType.Single ||
+                            //     this.form.get('frequencyAutoUpdateTypeName').value !==
+                            //     'USER_DEFINED_TOTAL' ||
+                            //     this.form.get('autoUpdateTypeName').value ===
+                            //     'USER_CURRENT_TOTAL'
+                            // ) {
+                            //     this.form.get(fldName).disable();
+                            // } else {
+                            //     this.form.get(fldName).enable();
+                            // }
                             break;
                         default:
                             this.form.get(fldName).disable();
@@ -525,7 +526,9 @@ export class SlikaEditorComponent implements OnChanges, OnDestroy {
             // debugger;
         }
     }
-
+    setDateOpt(eve:any){
+        this.form.get('transFrequencyName').patchValue(eve.value);
+    }
     shouldDisplay(fld: any): boolean {
         return (
             this.mode === EditingType.Series

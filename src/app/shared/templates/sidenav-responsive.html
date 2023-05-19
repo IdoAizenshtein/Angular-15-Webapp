@@ -12,7 +12,7 @@
 	<!--שליחת מייל-->
 	<!--</button>-->
 	<!--</div>-->
-	
+
 	<div *ngIf="userService?.appData?.isActivated" class="isActivated success">
 		<strong>{{ 'תודה רבה!' }}</strong>
 		<span>
@@ -20,13 +20,13 @@
 					בbizibox
 		</span>
 	</div>
-	
+
 	<app-top-notification-area
 			#topNotificationArea
 			*ngIf="router.url.includes('cfl') || !isCustomer"
 			[runTopNot]="router.url.includes('cfl') || (!isCustomer && selectedValue)"
 	></app-top-notification-area>
-	
+
 	<!--<div *ngIf="userService?.appData?.userData?.exampleCompany && !router.url.includes('cfl/settings')-->
 	<!--&& !(router.url.includes('cfl/accountancy/') && userService.appData.userData?.companySelect?.example)-->
 	<!--&& !userService.appData?.userData?.companySelectedBillingStatus"-->
@@ -35,14 +35,14 @@
 	<!--<app-token-tracker #tokenTracker-->
 	<!--[companyId]="this.userService.appData.userData.companySelect.companyId"></app-token-tracker>-->
 	<!--</div>-->
-	
+
 	<!--<div *ngIf="router.url.includes('cfl/accountancy/') && userService.appData.userData?.companySelect?.example-->
 	<!--&& !userService.appData?.userData?.companySelectedBillingStatus"-->
 	<!--class="cfl-accountancy-example-disclaimer">-->
 	<!--{{'הנתונים המוצגים הם להדגמה בלבד. לצפייה בנתוני הנה"ח של עסקכם, צרו קשר עם מוקד התמיכה והשירות בטלפון 2365*'}}-->
 	<!--<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/headphone.png"/>-->
 	<!--</div>-->
-	
+
 	<!--<div *ngIf="userService.appData?.userData?.companySelectedBillingStatus === 'WARN'"-->
 	<!--class="company-billing-status-warn" [class.failed-payment]="userService.appData.userData.companySelect.billingAccountId !== '00000000-0000-0000-0000-000000000000'">-->
 	<!--<ng-container *ngIf="userService.appData.userData.companySelect.billingAccountId === '00000000-0000-0000-0000-000000000000'; else failedPaymentBanner">-->
@@ -58,7 +58,7 @@
 	<!--<span>{{'או צרו קשר עם מוקד השירות בטלפון 2365* '}}</span>-->
 	<!--</ng-template>-->
 	<!--</div>-->
-	
+
 	<header
 			#appHeader
 			[class.station_id]="userService.appData && userService.appData.station_id"
@@ -107,7 +107,7 @@
 								class="select-companies"
 						>
 							<div *ngSwitchCase="1" class="typeOfCompany1">
-								{{ userService?.appData?.userData?.companies[0].companyName }}
+								{{ !userService.appData?.hideCompanyName ? userService?.appData?.userData?.companies[0].companyName : userService?.appData?.userData?.companies[0].companyHp}}
 							</div>
 							<div *ngSwitchCase="2">
 								<p-dropdown
@@ -117,14 +117,15 @@
 										[dropdownIcon]="'p-dropdown-icon'"
 										[options]="userService?.appData?.userData?.companies"
 										appendTo="body"
-										optionLabel="companyName"
+										[optionLabel]="userService.appData?.hideCompanyName ? 'companyHp' : 'companyName'"
 										placeholder="{{ 'actions.company' | translate }}"
+										optionDisabled="notAuthorized"
 										styleClass="companiesDDStyle"
 								>
 									<ng-template let-item pTemplate="selectedItem">
 										<div class="p-helper-clearfix companyNameSelected">
 											<div>
-												<p>{{ item.companyName }}</p>
+												<p *ngIf="!userService.appData?.hideCompanyName">{{ item.companyName }}</p>
 												<small> {{ item.companyHp }} </small>
 											</div>
 										</div>
@@ -132,7 +133,7 @@
 									<ng-template let-company pTemplate="item">
 										<div class="p-helper-clearfix companyNameSelected">
 											<div>
-												<p>{{ company.companyName }}</p>
+												<p *ngIf="!userService.appData?.hideCompanyName">{{ company.companyName }}</p>
 												<small> {{ company.companyHp }} </small>
 											</div>
 										</div>
@@ -150,8 +151,9 @@
 										[filter]="true"
 										[options]="userService.appData.userData.companies"
 										[scrollHeight]="'135px'"
-										optionLabel="companyName"
+										[optionLabel]="userService.appData?.hideCompanyName ? 'companyHp' : 'companyName'"
 										placeholder="{{ 'actions.company' | translate }}"
+										optionDisabled="notAuthorized"
 										styleClass="companiesDDStyle"
 								>
 									<ng-template pTemplate="empty">
@@ -171,7 +173,7 @@
 									<ng-template let-item pTemplate="selectedItem">
 										<div class="p-helper-clearfix companyNameSelected">
 											<div>
-												<p>{{ item.companyName }}</p>
+												<p *ngIf="!userService.appData?.hideCompanyName">{{ item.companyName }}</p>
 												<small> {{ item.companyHp }} </small>
 											</div>
 										</div>
@@ -179,7 +181,7 @@
 									<ng-template let-company pTemplate="item">
 										<div class="p-helper-clearfix companyNameSelected">
 											<div>
-												<p>{{ company.companyName }}</p>
+												<p *ngIf="!userService.appData?.hideCompanyName">{{ company.companyName }}</p>
 												<small> {{ company.companyHp }} </small>
 											</div>
 										</div>
@@ -187,7 +189,7 @@
 								</p-dropdown>
 							</div>
 							<div *ngSwitchDefault class="typeOfCompany1">
-								{{ userService?.appData?.userData?.companies[0].companyName }}
+								{{ !userService.appData?.hideCompanyName ? userService?.appData?.userData?.companies[0].companyName : userService?.appData?.userData?.companies[0].companyHp}}
 							</div>
 						</div>
 						<div
@@ -207,7 +209,8 @@
 									[filter]="true"
 									[options]="userService?.appData?.userData?.companies"
 									[scrollHeight]="'135px'"
-									optionLabel="companyName"
+									[optionLabel]="userService.appData?.hideCompanyName ? 'companyHp' : 'companyName'"
+									optionDisabled="notAuthorized"
 									placeholder="{{ 'actions.company' | translate }}"
 									styleClass="companiesDDStyle"
 							>
@@ -228,7 +231,7 @@
 								<ng-template let-item pTemplate="selectedItem">
 									<div class="p-helper-clearfix companyNameSelected">
 										<div>
-											<p>{{ item.companyName }}</p>
+											<p *ngIf="!userService.appData?.hideCompanyName">{{ item.companyName }}</p>
 											<small> {{ item.companyHp }} </small>
 										</div>
 									</div>
@@ -236,9 +239,28 @@
 								<ng-template let-company pTemplate="item">
 									<div class="p-helper-clearfix companyNameSelected">
 										<div>
-											<p>{{ company.companyName }}</p>
+											<p *ngIf="!userService.appData?.hideCompanyName">{{ company.companyName }}</p>
 											<small> {{ company.companyHp }} </small>
 										</div>
+									</div>
+								</ng-template>
+								<ng-template pTemplate="footer">
+									<div  *ngIf="userService.appData.isAdmin"
+											(click)="showOpenCompaniesPopUp()"
+									            style="position: relative;
+												box-shadow: 0px -4px 4px rgba(2, 34, 92, 0.15);">
+										<button class="button-link"
+												style="
+    display: flex;
+    justify-content: center;
+    align-items: center;
+">
+											<img src="/assets/images/addCompanyPlus.png"
+											     style="display: inline-block;
+    													height: 100%;
+    													vertical-align: middle;">
+											<small style="font-size: 16px;margin: 0.5ch;font-family: 'Assistant';">הוספת חברה ידנית</small>
+										</button>
 									</div>
 								</ng-template>
 							</p-dropdown>
@@ -272,7 +294,7 @@
 						<!--                    ייצוא-->
 						<!--                    <i class="fas fa-caret-down"></i>-->
 						<!--                </button>-->
-						
+
 						<div
 								*ngIf="userService.appData.isAdmin"
 								class="select-user-to-admin"
@@ -350,7 +372,7 @@
 							<p>וקבלו חודש ניסיון חינם</p>
 						</button>
 					</div>
-					
+
 					<div class="side-menu">
 						<div class="mat-grid-title-centered">
 							<button
@@ -375,10 +397,11 @@
 						>
 							<button
 									(click)="
-                  !messagesSideHide
+                  (!messagesSideHide
                     ? (messagesSideShow = !messagesSideShow)
-                    : (messagesSideShow = true);
-                  messagesSideHide = false
+                    : (messagesSideShow = true));
+                  messagesSideHide = false;
+                  mixScreenName('notification center')
                 "
 									class="alert-count"
 									role="button"
@@ -401,7 +424,7 @@
 										}}</i
 									>
 								</ng-container>
-								
+
 								<ng-template #noMessages>
 									<img fill ngSrc="/assets/images/alerts-all-caught.png"
 									     style="height: 21px; width: auto; position: relative;"/>
@@ -416,6 +439,7 @@
 								class="mat-grid-title-centered"
 						>
 							<button
+									(click)="mixPanelEvent('help center')"
 									[routerLink]="
                   isCustomer ? 'help-center' : './companies/help-center'
                 "
@@ -435,7 +459,7 @@
 							<!--                    <img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/help.png" alt="Help" width="17" height="17" class="help">-->
 							<!--                </button>-->
 						</div>
-						
+
 						<div>
 							<div [class.isCustomer]="isCustomer" class="ddMenu">
 								<div [style.width]="'100%'">
@@ -480,14 +504,14 @@
 					<img alt="LogoERP" fill ngSrc="/assets/images/erp.png"
 					     style="height: auto; width: auto; position: relative;"/>
 				</div>
-				
+
 				<div>
 					<img alt="Logo_bizibox" fill ngSrc="/assets/images/bizibox-erp.png"
 					     style="height: auto; width: auto; position: relative;"/>
 				</div>
 			</div>
 		</ng-container>
-		
+
 		<!--<div *ngIf="userService?.appData?.userData?.activatedType === 'dialogUpdate'-->
 		<!--&& (!userService?.appData?.userData?.exampleCompany || router.url.includes('cfl/settings'))-->
 		<!--&& !(router.url.includes('cfl/accountancy/') && userService.appData.userData?.companySelect?.example)-->
@@ -505,7 +529,7 @@
 		<!--</button>-->
 		<!--</div>-->
 		<!--</div>-->
-		
+
 		<!--</div>-->
 		<!--</div>-->
 		<!--<div *ngIf="userService.appData.isActivated" class="isActivated">-->
@@ -519,7 +543,7 @@
 		<!--</div>-->
 		<!--</div>-->
 	</header>
-	
+
 	<ng-container *ngIf="!userService.appData?.station_id">
 		<button
 				(click)="
@@ -545,11 +569,11 @@
           (userService.appData.inFullScreenMode ? 'off' : 'on') +
           '.svg'
         " style="height: auto; width: 24px; position: relative;"
-			
+
 			/>
 		</button>
 	</ng-container>
-	
+
 	<main
 			#mainSection
 			[class.isClose]="
@@ -576,8 +600,8 @@
 							style="width: 100px"
 					>
 						<ng-container *ngFor="let item of menuArray; index as i">
-							
-							
+
+
 							<mat-expansion-panel
 									(opened)="setStateGroup(i)"
 									*ngIf="!(selectedValue && (item.main === 'supplierCustomersJournal' || item.main === 'bankCreditJournal'))"
@@ -638,7 +662,7 @@
                 "
 							>
 								<mat-expansion-panel-header
-										(click)="
+										(click)="mixPanelNavEvent(item?.routerLink);
                     isHover = true;
                     (userService?.appData?.userData?.companySelect?.lite &&
                       item?.notActive &&
@@ -662,13 +686,17 @@
                       ? forceUnSelectedCompany()
                       : null
                   "
+
+
 										*ngIf="
+										(userService.appData.isAdmin && item.main === 'accountingFirmEstablishment' && userService.appData.userData && userService.appData.userData.biziboxOfficeCreator)
+										||
                     (item.main === 'tazrimExample' &&
                       userService?.appData?.userData?.companySelect
                         ?.METZALEM_deskTrialExpired &&
                       selectedValue &&
                       !selectedValue?.example) ||
-                    !item.children.length ||
+                    (!item.children.length && item.main !== 'accountingFirmEstablishment')  ||
                     item.isForceLink ||
                     (item.main === 'accountancy' &&
                       !selectedValue?.privs.includes('ANHALATHESHBONOT') &&
@@ -731,8 +759,9 @@
 												</div>
 											</ng-container>
 										</ng-template>
-										<span>{{ item.text | translate }}</span>
-										
+
+										<span>{{ item.text | translate }}{{item.main === 'companies' && (this.userService.appData.isAdmin ? this.userService.appData.userDataAdmin.showNewCompaniesPage : this.userService.appData.userData.showNewCompaniesPage) ? ' - כללי' : ''}}</span>
+
 										<div
 												*ngIf="
                         (userService?.appData?.userData?.companySelect?.lite &&
@@ -769,7 +798,7 @@
 										</div>
 									</mat-panel-title>
 								</mat-expansion-panel-header>
-								
+
 								<mat-expansion-panel-header
 										(click)="isParent = true; isHover = true"
 										*ngIf="
@@ -814,12 +843,12 @@
 										</ng-template>
 										<span>{{
 											item.text === 'companies' && selectedValue
-													? selectedValue?.companyName
+													? (!userService?.appData?.hideCompanyName ? selectedValue?.companyName : selectedValue?.companyHp)
 													: (item.text | translate)
 											}}</span>
 									</mat-panel-title>
 								</mat-expansion-panel-header>
-								
+
 								<ng-container
 										*ngIf="
                     ((item.main === 'tazrimExample' &&
@@ -880,7 +909,7 @@
 												[hideToggle]="!child.children.length"
 										>
 											<mat-expansion-panel-header
-													(click)="
+													(click)="mixPanelNavEvent(child?.routerLink);
                           isHoverChild = true;
                           (userService?.appData?.userData?.companySelect
                             ?.lite &&
@@ -913,12 +942,12 @@
                           (!userService?.appData?.userData?.companySelect
                             ?.supplierJournalItem &&
                             child?.isJournalTrans) ||
-                            
+
                             (!userService?.appData?.userData?.companySelect
                                 ?.bankJournalItem &&!userService?.appData?.userData?.companySelect
                                 ?.creditJournalItem &&
                                 child?.isBankTrans)
-                            
+
                             ||
                           (userService?.appData?.userData?.companySelect
                             ?.lite &&
@@ -934,7 +963,7 @@
 													[routerLinkActiveOptions]="{ exact: false }"
 													[routerLinkActive]="'active' "
 													[routerLink]="
-                 
+
                           (userService?.appData?.userData?.companySelect
                             ?.lite &&
                             child?.notActive &&
@@ -950,7 +979,7 @@
                             ? null
                             : child.routerLink
                         "
-													
+
 													queryParamsHandling="merge"
 											>
 												<mat-panel-title style="padding-right: 32px">
@@ -960,7 +989,7 @@
 													                                                  [tooltipDisabled]="
                   text.clientWidth >= text.scrollWidth
                 ">{{ child.text | translate }}</span>
-													
+
 													<div
 															*ngIf="
                               (!userService?.appData?.userData?.companySelect
@@ -991,7 +1020,7 @@
                                 ?.creditJournalItem &&
                                 child?.isBankTrans)
                               "
-																
+
 																src="/assets/images/lightDiamondIcon.png" style="height: auto; width: auto; position: relative;"
 														/>
 														<img
@@ -1000,7 +1029,7 @@
                                   ?.lite && child?.notActive
                               "
 																alt="גרסת לייט"
-																
+
 																src="/assets/images/lightDiamondIcon.png" style="height: auto; width: auto; position: relative;"
 														/>
 														<img
@@ -1014,13 +1043,13 @@
                                   userService?.appData?.userData?.companySelect
                                     ?.budgetPopUpType === 3)
                               "
-																
+
 																src="/assets/images/lightDiamondIcon.png" style="height: auto; width: auto; position: relative;"
 														/>
 													</div>
 												</mat-panel-title>
 											</mat-expansion-panel-header>
-											
+
 											<mat-expansion-panel-header
 													(click)="isParentChild = true; isHoverChild = true"
 													*ngIf="child.children.length"
@@ -1032,10 +1061,10 @@
 													<span>{{ child.text | translate }}</span>
 												</mat-panel-title>
 											</mat-expansion-panel-header>
-											
+
 											<mat-list-item *ngFor="let grandson of child.children">
 												<a
-														(click)="isHoverChild = true"
+														(click)="mixPanelNavEvent(grandson?.routerLink); isHoverChild = true"
 														[routerLinkActiveOptions]="{ exact: false }"
 														matLine
 														queryParamsHandling="merge"
@@ -1083,7 +1112,7 @@
 											</mat-expansion-panel>
 										</ng-container>
 										<a
-												(click)="isHover = true"
+												(click)="mixPanelNavEvent(child?.routerLink); isHover = true"
 												*ngIf="!child.children"
 												[routerLinkActiveOptions]="{ exact: false }"
 												matLine
@@ -1092,7 +1121,7 @@
 												routerLinkActive="active"
 										>
 											{{ child.text | translate }}
-											
+
 											<i
 													*ngIf="
                           item.main === 'accountancy' &&
@@ -1109,7 +1138,7 @@
 									</mat-list-item>
 								</ng-container>
 							</mat-expansion-panel>
-							
+
 							<ng-container *ngIf="item.main === 'cash-flow'">
 								<!--                        <ng-container-->
 								<!--                                *ngIf="userService?.appData?.userData?.companySelect?.lite ? item.main === 'cash-flow' : item.main === 'budget'">-->
@@ -1146,7 +1175,7 @@
 								</mat-expansion-panel>
 							</ng-container>
 						</ng-container>
-						
+
 						<!--<mat-expansion-panel [hideToggle]="true" [disabled]="true">-->
 						<!--<mat-expansion-panel-header>-->
 						<!--<mat-panel-title (click)="recommendationCalculatorShow = !recommendationCalculatorShow; rcmndtnCalendar && rcmndtnCalendar.reset();">-->
@@ -1161,7 +1190,7 @@
 					<div *ngIf="!isCustomer && menuArray && menuArray.length && menuArray[0].main === 'main'" style="height: 50px">
 						<mat-list-item class="settingsAcc">
 							<a
-									(click)="isHoverChild = true"
+									(click)="forceUnSelectedCompany(); mixPanelNavEvent('companies/settings'); isHoverChild = true"
 									[routerLinkActiveOptions]="{ exact: false }"
 									matLine
 									queryParamsHandling="merge"
@@ -1169,7 +1198,7 @@
 									routerLinkActive="active"
 							>
 								<mat-icon [svgIcon]="'settingsNav'"></mat-icon>
-								
+
 								<span>
 									{{ 'actions.settings' | translate }}
 								</span>
@@ -1185,7 +1214,7 @@
 				></i>
 			</aside>
 		</ng-container>
-		
+
 		<div
 				[ngStyle]="
         router.url.includes('cfl/packages') ||
@@ -1203,7 +1232,7 @@
 			<router-outlet></router-outlet>
 		</div>
 	</main>
-	
+
 	<!--    <button type="button" class="userCommentHandler" (click)="userCommentPrompt.visible = !userCommentPrompt.visible;"-->
 	<!--            *ngIf="!userService?.appData?.inFullScreenMode && userService?.appData?.userData?.companySelect?.lite">-->
 	<!--        משוב-->
@@ -1256,7 +1285,7 @@
 		    id="userMessage"
 		    name="userMessage"
     ></textarea>
-		
+
 		<div
 				style="
         display: flex;
@@ -1493,7 +1522,7 @@
 	<p-header>
 		<div>חשבון חסום</div>
 	</p-header>
-	
+
 	<div class="bodyPopUp">
 		חשבונכם נחסם לכניסה.
 		<br/>
@@ -1503,7 +1532,7 @@
 		<br/>
 		<br/>
 		במידה ונפלה טעות בכתובת המייל אנא עדכנו את כתובתכם ולחצו על שליחה
-		
+
 		<div>
 			<div style="margin-top: 10px">
 				<input
@@ -1514,7 +1543,7 @@
 			</div>
 		</div>
 	</div>
-	
+
 	<p-footer>
 		<button
 				(click)="
@@ -1562,7 +1591,7 @@
 	>
 		<ng-container *ngIf="userService.appData.userOnBehalfPrompt.visible">
 			<app-user-to-admin-selector #userSelector></app-user-to-admin-selector>
-			
+
 			<div class="p-dialog-footer">
 				<!--                <pre>{{userSelector.form.value| json}}</pre>-->
 				<!--            <div class="p-dialog-footer" *ngIf="adminService.usersToAdmin| async">-->
@@ -1601,10 +1630,10 @@
 
 <ng-container *ngIf="appHeader">
 	<p-sidebar
-			[modal]="false"
+			[modal]="true"
 			[ngClass]="{ hasTopBar: userService.appData?.userData?.topSideMesagges }"
 			[style]="{ top: appHeader.getBoundingClientRect().bottom + 'px' }"
-			[visible]="(messagesSideShow)"
+			[(visible)]="messagesSideShow"
 			appendTo="body"
 			position="right"
 			styleClass="messages-side"
@@ -1671,15 +1700,18 @@
 <!--        <app-knowledge-base></app-knowledge-base>-->
 <!--    </p-dialog>-->
 <!--</ng-container>-->
-<p-dialog (visibleChange)="knowledgeBaseVisible = false"
+<p-dialog (visibleChange)="knowledgeBaseVisible = false; dataFromBankAndCreditScreen = false;"
           [modal]="true"
           [visible]="(knowledgeBaseVisible)"
+		  #dialogCall
           appendTo="body"
           styleClass="service-call-dialog"
 >
 	<p-header>קריאת שירות</p-header>
 	<ng-container *ngIf="knowledgeBaseVisible">
 		<app-service-call-dialog
+				[dialogCall]="dialogCall"
+				[dataFromBankAndCreditScreen]="dataFromBankAndCreditScreen"
 				[accountNickname]="nickname"
 				[companyId]="companyId"
 				[data]="knowledgeBaseVisible"
@@ -1960,7 +1992,7 @@
 				<span>התחדשנו</span>
 				<i>•</i>
 			</ng-container>
-			
+
 			<ng-template #img>
 				<img fill ngSrc="/assets/images/diamondTitle.png"
 				     style="height: auto; width: auto; position: relative;"/>
@@ -1993,7 +2025,7 @@
 				     style="height: 32px; width: auto; position: relative;"/>
 				<h2>בונה עבורכם תקציב אוטומטי</h2>
 			</div>
-			
+
 			<ul
 					[style.width.%]="
           budgetPopUpType.visible === 1 || budgetPopUpType.visible === 2
@@ -2117,20 +2149,21 @@
   "
 >
 	<!-- 	[unmaskAppHeader]="true" -->
-	
+
 	<p-dialog (visibleChange)="userService.appData.exporterState = false"
 	          [closable]="false"
 	          [draggable]="false"
 	          [modal]="true"
 	          [resizable]="false"
-	          [styleClass]="'exporterState_NOT_EXIST'"
+			  [maskStyleClass]="userService.appData.isAdmin ? 'companyBillingStatusWarnDialogMask' : ''"
+			  [styleClass]="'exporterState_NOT_EXIST'"
 	          [visible]="true"
 	          appendTo="body"
 	>
 		<p-header>
 			<h1>לא בוצעה טעינת נתונים ראשונית מתוכנת הנה”ח</h1>
 		</p-header>
-		
+
 		<p>
 			<span> אנא בדקו שהמחשב שמקושר ל- </span>
 			<span> bizibox </span>
@@ -2142,7 +2175,6 @@
 		</div>
 	</p-dialog>
 </ng-container>
-
 <ng-container
 		*ngIf="
     userService.appData &&
@@ -2162,7 +2194,7 @@
 		<p-header>
 			<div>מייל לשליחת מסמכים</div>
 		</p-header>
-		
+
 		<p
 				style="
         margin-top: 25px;
@@ -2218,7 +2250,7 @@
 		            class="checkboxSendWizardMail"
 		>
 		</p-checkbox>
-		
+
 		<p-footer>
 			<button
 					(click)="sendWizardMail()"
@@ -2247,7 +2279,7 @@
 					style="margin-left: -38px"
 			/>
 		</p-header>
-		
+
 		<div
 				class="text"
 				style="margin-top: 20px; margin-left: 15px; margin-right: 15px"
@@ -2261,7 +2293,7 @@
 				מ- 24.6 יום ה’ מהשעה 20:00 עד 27.6 יום א’ בשעה 08:00
 			</p>
 		</div>
-		
+
 		<p-footer style="margin-top: 10px">
 			<button
 					(click)="modalUpdateSystemHide()"
@@ -2320,7 +2352,7 @@
 				>
 					<p>
 						{{ item.text }}
-						
+
 						<ng-container *ngIf="item.link_text">
 							<a [href]="item.link" class="link" target="_blank">
 								{{ item.link_text }}
@@ -2330,7 +2362,7 @@
 				</div>
 			</li>
 		</ul>
-		
+
 		<p-footer style="justify-content: center; margin-top: 10px">
 			<button
 					(click)="userService.appData.updatesList = false"
@@ -2344,4 +2376,16 @@
 		</p-footer>
 	</p-dialog>
 </ng-container>
+
+<p-dialog (visibleChange)="onAddCompanyDialogVisibilityChange(addCompanyFormContainer)"
+		  [modal]="true"
+		  [visible]="(showAddCompaniesPopUp)"
+		  appendTo="body"
+>
+	<p-header>הוספת חברה</p-header>
+	<ng-container>
+		<add-company-dialog #addCompanyFormContainer>
+		</add-company-dialog>
+	</ng-container>
+</p-dialog>
 

@@ -24,8 +24,7 @@ export class UserToAdminSelectorComponent implements OnInit, OnDestroy {
     @ViewChild(PaginatorComponent) paginator: PaginatorComponent;
 
     searchableList = ['userName', 'companyHp', 'companyName'];
-    readonly searchTypesDD = [
-        {value: 'companyName', label: 'שם חברה'},
+    searchTypesDD = [
         {value: 'companyHp', label: 'ח.פ חברה'},
         {value: 'userName', label: 'שם משתמש'},
         {value: 'officeName', label: 'שם משרד'},
@@ -68,6 +67,13 @@ export class UserToAdminSelectorComponent implements OnInit, OnDestroy {
                 this.storageService.localStorageGetterItem('userOnBehalf')
             );
         } catch (e) {
+        }
+        try {
+            if (this.userService.appData.userData.biziboxRole === 'MANAGER') {
+                this.searchTypesDD.unshift({value: 'companyName', label: 'שם חברה'});
+            }
+        }catch (e){
+
         }
 
         const typeToSelect =

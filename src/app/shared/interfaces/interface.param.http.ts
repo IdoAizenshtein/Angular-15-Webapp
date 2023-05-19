@@ -10,6 +10,7 @@ export interface InterfaceParamHttp<T> {
     responseType?: string;
     isHeaderAuth?: any;
     isFormData?: boolean;
+    stopRedInError?: boolean;
 }
 
 export interface Params {
@@ -23,5 +24,6 @@ export interface UserAuth {
         username: string;
         password: string;
         rememberMe?: boolean;
+        gRecaptcha:any
     };
 }

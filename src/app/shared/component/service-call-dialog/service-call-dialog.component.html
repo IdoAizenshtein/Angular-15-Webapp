@@ -12,13 +12,13 @@
           userService.appData?.userData &&
           userService.appData?.userData?.accountant
         "
-					[class.error]="
-          !serviceCallForm.get('companyId').value &&
+					[class.error]=" (!sharedComponent || !sharedComponent.isNoCompaniesFound)
+          && !serviceCallForm.get('companyId').value &&
           serviceCallForm.get('companyId').dirty
         "
 			>
 				<i>{{ companyId ? 'שם חברה' : 'חברה' }}</i>
-				<p-dropdown
+				<p-dropdown *ngIf="!sharedComponent || !sharedComponent.isNoCompaniesFound"
 						[options]="userService?.appData?.userData?.companies"
 						[formControl]="serviceCallForm.get('companyId')"
 						optionLabel="companyName"
@@ -26,7 +26,24 @@
 						[style]="{ width: '100%' }"
 						appendTo="body"
 						[placeholder]="'בחרו את החברה הרצויה'"
-				></p-dropdown>
+				>
+				</p-dropdown>
+				<input *ngIf="!!sharedComponent && !!sharedComponent.isNoCompaniesFound"
+						type="text"
+						[formControl]="serviceCallForm.get('companyName')"
+						name="name"
+						autocomplete="name">
+			</label>
+			<label
+					*ngIf="sharedComponent.isNoCompaniesFound"
+					[class.error]="serviceCallForm.get('companyHp').invalid && serviceCallForm.get('companyHp').dirty"
+			>
+				<i>{{ 'ח.פ' }}</i>
+				<input
+						type="text"
+						[formControl]="serviceCallForm.get('companyHp')"
+						name="companyHp"
+				/>
 			</label>
 			<label *ngIf="companyId">
 				<i>{{ isBank ? 'חשבון' : 'כ.אשראי' }}</i>
@@ -174,16 +191,14 @@
 				<textarea
 						class="scroll-chrome"
 						[formControl]="serviceCallForm.get('taskDesc')"
-						[placeholder]="
-            'אנא ציינו את נושא הפנייה בצורה מפורטת.\n(בחלק מהמקרים באפשרותנו לטפל בבעיה מרחוק)'
-          "
+						[placeholder]="'הנתונים שבחרת במסך יעברו באופן אוטומטי כחלק מקריאת השירות. \n אנא ציינו כל פרט מידע נוסף על מנת שנוכל לטפל בבעיה במהירות ובמקצועיות.'"
 				></textarea>
 			</label>
 		</div>
 	</div>
 	<div class="footer">
 		<a
-				*ngIf="!companyId"
+				*ngIf="!companyId && !dataFromBankAndCreditScreen && !sharedComponent && !sharedComponent.isNoCompaniesFound"
 				class="button-link"
 				href="http://898.tv/bizibox"
 				target="_blank"
@@ -192,7 +207,7 @@
 			'הורד TeamViewer'
 			}}
 		</a>
-		<ng-container *ngIf="companyId">
+		<ng-container *ngIf="companyId || dataFromBankAndCreditScreen || (sharedComponent && sharedComponent.isNoCompaniesFound)">
 			<p-checkbox checkboxIcon="fa fa-check"
 			            [binary]="true"
 			            [formControl]="saveData"

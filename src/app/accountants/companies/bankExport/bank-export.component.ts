@@ -8,8 +8,10 @@ import {
     OnDestroy,
     OnInit,
     QueryList,
+    TemplateRef,
     ViewChild,
     ViewChildren,
+    ViewContainerRef,
     ViewEncapsulation
 } from '@angular/core';
 import {UserService} from '@app/core/user.service';
@@ -17,7 +19,7 @@ import {SharedComponent} from '@app/shared/component/shared.component';
 import {ActivatedRoute, Router} from '@angular/router';
 import {fromEvent, interval, lastValueFrom, Observable, Subject, Subscription, timer, zip} from 'rxjs';
 import {AbstractControl, FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators} from '@angular/forms';
-import {debounceTime, distinctUntilChanged, startWith, switchMap} from 'rxjs/operators';
+import {debounceTime, distinctUntilChanged, retry, startWith, switchMap} from 'rxjs/operators';
 import {SortPipe} from '@app/shared/pipes/sort.pipe';
 import {StorageService} from '@app/shared/services/storage.service';
 import {SharedService} from '@app/shared/services/shared.service';
@@ -56,6 +58,11 @@ export interface Element {
 })
 export class BankExportComponent extends ReloadServices
     implements AfterViewInit, OnDestroy, OnInit {
+    @ViewChild('itemsContainer', {read: ViewContainerRef}) container: ViewContainerRef;
+    @ViewChild('item', {read: TemplateRef}) template: TemplateRef<any>;
+
+    @ViewChildren('itemsContainerChild', {read: ViewContainerRef}) containerChild: ViewContainerRef;
+    @ViewChild('itemChild', {read: TemplateRef}) templateChild: TemplateRef<any>;
 
     @ViewChild('fileDropRef', {read: ElementRef}) fileDropRef: ElementRef;
     public filesForContainer: any = 0;
@@ -70,18 +77,35 @@ export class BankExportComponent extends ReloadServices
     public companiesWithoutAgreement: any = false;
     public izuFilter: any = false;
     public izuSrc: any = false;
+    public showModalNotAvailableExport: any = false;
+
     public currencyList: any = [];
+    public countStatusData: any = {};
     public typeFilterExport: string = 'all';
+    public typeOfFlow: string = 'all';
+
+
     public showItrotModal: any = false;
     public allIzuData = [];
+    public activeCompany = null;
+    public activeCompanyAnchor = null;
+
+    public activeCompanyLoader: boolean = false;
+    public activeCompanyDetails: any = null;
     public numFilterExport: any = false;
     public isTall: boolean = false;
     public currentPage: number = 0;
+    public activeIndexCompany: number = 0;
+
     public entryLimit: number = 50;
     @Input() counter: any = 10;
     // public subscription: Observable<any>;
     public sortPipeDir: any = null;
     scrollSubscription = Subscription.EMPTY;
+    virtualScrollSaved: any = null;
+
+    @ViewChildren('formDropdowns') formDropdownsRef: QueryList<any>;
+
     public queryParam: any = null;
     public queryString = '';
     public filterInput: FormControl = new FormControl();
@@ -101,7 +125,11 @@ export class BankExportComponent extends ReloadServices
     public filterTypesEsderMaam: any = null;
     public filterTypesYearlyProgram: any = null;
     public filterTypesAgreementConfirmedStatus: any = null;
-    public queryExportString = '';
+    public queryExportString: any = '';
+    public isSearch: boolean = false;
+    public allIsFolderPlus: any = null;
+    public paramsForExport: any = false;
+
     public filterExportInput: FormControl = new FormControl();
     @ViewChildren('tooltipEdit') tooltipEditRef: OverlayPanel;
     @ViewChildren('tooltipMoreData') tooltipMoreDataRef: OverlayPanel;
@@ -118,6 +146,9 @@ export class BankExportComponent extends ReloadServices
     public changeStateUploadFile: boolean = false;
     public finishedPrepareFiles = false;
     public files: any = [];
+    scrollSubscriptionFilter = Subscription.EMPTY;
+    setCompanyIndex: boolean = false;
+
     public filesBeforeOrder: any = [];
     public filesOriginal: any = [];
     public fileViewer: any = false;
@@ -153,6 +184,7 @@ export class BankExportComponent extends ReloadServices
     public eventRclickUpload: any;
     public subjectsForCompany: any;
     public subjectsForCompanyWhatsApp: any;
+    public showExportPage: any = false;
     readonly docToSend: {
         visible: boolean;
         form: any;
@@ -208,8 +240,19 @@ export class BankExportComponent extends ReloadServices
     public contactsWithoutAgreement: any = [];
     public contactsWithoutAgreementNames: any = '';
     public exportPopupType: any = false;
+
+    public showCreditExportPopup: any = false;
+    public resetParamDDCust: any = false;
+    public showPopupSpecialCharacters: any = false;
+
+
+    public showExchangeRatePopup: any = false;
+
     public contactsModal: any;
     public showContactModal: boolean = false;
+
+    public showContactModalaaa: boolean = true;
+
     current: {
         from: {
             month: number;
@@ -250,11 +293,15 @@ export class BankExportComponent extends ReloadServices
     public enabledDownloadLink: boolean = true;
     public docsfile: any = null;
     public exportFileFolderCreatePrompt: any = false;
+    public modalIzuInfo: any = false;
     public isHebrew1: any = false;
     public isHebrew2: any = false;
     public rightSideTooltip: any = 0;
     private _window = typeof window === 'object' && window ? window : null;
     private readonly dtPipe: DatePipe;
+    setHeightDialogPopUpTypePx: any = 'auto';
+    setWidthDialogPopUpTypePx: any = 'auto';
+    public loaderGetList = true;
 
     constructor(
         public userService: UserService,
@@ -319,14 +366,22 @@ export class BankExportComponent extends ReloadServices
             : false;
 
         this.dtPipe = new DatePipe('en-IL');
-
-
         this.filterExportInput.valueChanges
-            .pipe(debounceTime(300), distinctUntilChanged())
-            .subscribe((term) => {
+            .pipe(
+                debounceTime(300),
+                distinctUntilChanged()
+            )
+            .subscribe((term: any) => {
                 if (term !== null) {
-                    this.queryExportString = term;
-                    this.filtersIzuAll();
+                    if (term.trimStart().length >= 1) {
+                        this.queryExportString = term.trim();
+                        this.isSearch = true;
+                        this.filtersIzuAll(false, true);
+                    } else {
+                        this.queryExportString = '';
+                        this.isSearch = false;
+                        this.filtersIzuAll(false, true);
+                    }
                 }
             });
 
@@ -545,7 +600,7 @@ export class BankExportComponent extends ReloadServices
 
                 this.docToSend.visible = true;
             },
-            approve: () => {
+            approve: async () => {
                 if (this.docToSend.form.value.toMail) {
                     this.storageService.localStorageSetter(
                         'toMail_' + this.docToSend.fd,
@@ -567,10 +622,12 @@ export class BankExportComponent extends ReloadServices
                         this.userService.appData.userData.lastName);
                 // console.log(this.docToSend.form);
                 this.docToSend.visible = false;
+                const gRecaptcha = await this.userService.executeAction('send-client-message');
                 this.sharedService
                     .sendClientMessage(
                         this.docToSend.form.value.sendType === 'WHATSAPP'
                             ? {
+                                gRecaptcha: gRecaptcha,
                                 fileIds: [],
                                 details:
                                     !this.docToSend.form.value.subject ||
@@ -589,6 +646,7 @@ export class BankExportComponent extends ReloadServices
                                 targetUserId: this.docToSend.form.value.targetUserId
                             }
                             : {
+                                gRecaptcha: gRecaptcha,
                                 targetUserId: this.docToSend.form.value.targetUserId,
                                 fileIds: [],
                                 details:
@@ -802,9 +860,127 @@ export class BankExportComponent extends ReloadServices
         }
     }
 
-    isExistCustId(custId: any) {
-        if (this.allIzuData && this.allIzuData.length) {
-            const existId = this.allIzuData.find((item) => item.izuCustId === custId);
+    private async buildData(length: number) {
+        if (length) {
+            await this.awaitIntervalGetContainer();
+            if (this.container) {
+                for (let n = 0; n < length; n++) {
+                    if (this.allIzuData && this.allIzuData.length && this.allIzuData[n]) {
+                        const copyParent = JSON.parse(JSON.stringify(this.allIzuData[n]));
+                        copyParent.dataArray = [];
+                        const context = {
+                            companyParent: copyParent,
+                            iParent: n
+                        };
+                        this.container.createEmbeddedView(this.template, context, {
+                            index: n
+                        });
+                        // const parentConGet = this.container.get(n);
+                        await this.awaitIntervalTimeRes(n);
+                        const contChildGet: any = this.containerChild.get(n);
+                        const dataArray = this.allIzuData[n].dataArray;
+                        const len_dataArray = dataArray.length;
+                        for (let i = 0; i < len_dataArray; i++) {
+                            if (this.container.length) {
+                                const contextChild = {
+                                    company: dataArray[i],
+                                    i: i,
+                                    companyParent: copyParent,
+                                    iParent: n
+                                };
+                                contChildGet.createEmbeddedView(this.templateChild, contextChild, {
+                                    index: i
+                                });
+                            }
+                            if ((i % 5) === 0) {
+                                await this.awaitTime(10);
+                            }
+                        }
+                        // await this.awaitTime(10);
+                    }
+                }
+            }
+        } else {
+            if (this.container) {
+                if (this.container.length) {
+                    this.container.clear();
+                }
+            }
+        }
+    }
+
+    awaitTime(time: any) {
+        return new Promise((resolve, reject) => {
+            setTimeout(() => {
+                resolve(true);
+            }, time);
+        });
+    }
+
+    awaitIntervalTimeRes(index: any) {
+        return new Promise((resolve, reject) => {
+            const interChild = setInterval(() => {
+                const contChildGet: any = this.containerChild.get(index);
+                if (contChildGet) {
+                    clearInterval(interChild);
+                    resolve(true);
+                }
+            }, 10);
+        });
+    }
+
+    awaitIntervalGetContainer() {
+        return new Promise((resolve, reject) => {
+            const interChild = setInterval(() => {
+                if (this.container) {
+                    if (this.container.length) {
+                        this.container.clear();
+                    }
+                    clearInterval(interChild);
+                    resolve(true);
+                }
+            }, 10);
+        });
+    }
+
+    ngOnInit() {
+        this.showExportPage = this.userService.appData && (this.userService.appData.isAdmin ||
+            (this.userService.appData.userData && !!this.userService.appData.userData.showNewExportPage));
+
+        this.sharedComponent.getCompaniesEvent
+            .pipe(
+                startWith(true)
+            )
+            .subscribe((companiesExist: any) => {
+                if (companiesExist) {
+                    if (!!this.showExportPage) {
+                        this.exportIzu();
+                    }
+                }
+            });
+
+        Dynamsoft.WebTwainEnv.ResourcesPath = '/assets/files/resources';
+        // Dynamsoft.WebTwainEnv.ResourcesPath = 'assets/dwt-resources';
+        Dynamsoft.WebTwainEnv.ProductKey =
+            'f0068WQAAAMjD37MYQuF8gD5cX23zdlnKwTn6csMXDHsXWOK4CRS4lDE82sTzeW1ejTcOS7m7gOE9leRs0VSPDlpjDkIWENg=';
+        // Dynamsoft.WebTwainEnv.ProductKey = 't0115YQEAADLdsKeUCK4+tJktPdfzkeFCkXXNRfl+fAMlzbNS/nDM0sXKq9mW/WFrty8KF3g7lNtAYfUOiICxcac/R4b8dBDJIczVQygkgTcBywD7uHkqFV0+gY9CX58UiSYJd4uYkjBa/RBSgJwlY3AAym9Xsw==';
+        Dynamsoft.WebTwainEnv.AutoLoad = false;
+        if (this.isWindows) {
+            Dynamsoft.WebTwainEnv.RegisterEvent('OnWebTwainReady', () => {
+                this.Dynamsoft_OnReady();
+            });
+        }
+    }
+
+    isExistCustId(custId: any, companyId: any) {
+        if (this.izuSrc && this.izuSrc.length) {
+            let existId = false;
+            const isExist = this.izuSrc.find(it => it.companyId === companyId);
+            if (isExist) {
+                if (isExist.dataArray.find(it => it.izuCustId === custId)) {
+                    existId = true;
+                }
+            }
             if (existId) {
                 return true;
             }
@@ -832,6 +1008,72 @@ export class BankExportComponent extends ReloadServices
             });
     }
 
+    getIzuInfo(row: any) {
+        this.modalIzuInfo = row;
+        this.sharedService
+            .getIzuInfo({
+                accountId: row.accountId,
+                accountType: row.accountType
+            })
+            .subscribe((response: any) => {
+                this.modalIzuInfo.getIzuInfo = response ? response['body'] : response;
+
+                // this.modalIzuInfo.getIzuInfo = {
+                //     'newTransesToExport': 12, //תנועות חדשות לייצוא
+                //     'newTransesToExportLink': 'string', //בלחיצה על הקובייה להעביר ללינק
+                //     'exporterData': {
+                //         'codeKulet': true, //האם בוצעה משיכה של קוד קולט (וי או איקס)
+                //         'companyCustomerData': { //תאריך משיכת כרטיסי הנה"ח
+                //             'date': '2023-03-29T17:02:10.717Z', //התאריך ושעה
+                //             'hasDelta': true, //קיים דלתא או לא
+                //             'link': 'string', //בלחיצה על הקובייה להעביר ללינק
+                //             'status': 'string' //FAIL צבע הקובייה, יהיה אדום רק במצב של
+                //         },
+                //         'hashBankData': { //תאריך משיכת דפי בנק
+                //             'date': '2023-03-29T17:02:10.717Z',
+                //             'hasDelta': false,
+                //             'link': 'string',
+                //             'status': 'FAIL'
+                //         },
+                //         'lastHashChangeDate': '2023-03-29T17:02:10.717Z' //שינוי אחרון במסד הנתונים של חשבשבת
+                //     },
+                //     'accountDataLink': 'string', //פרטי חשבון, בלחיצה על הקובייה להעביר ללינק
+                //     'tokenResultLink': 'string', //פרטי טוקן, בלחיצה על הקובייה להעביר ללינק
+                //     'tokenSummeryLink': 'string', //סיכום טעינת טוקן, בלחיצה על הקובייה להעביר ללינק
+                //     'lastHbFromAccount': { //התנועה האחרונה בהנה"ח - מחשבון בנק/מכרטיס אשראי
+                //         'asmachta': 'string', //אסמכתא
+                //         'balance': 0, //יתרה
+                //         'date': '2023-03-29T17:02:10.717Z', //תאריך
+                //         'total': 0, //סכום
+                //         'transCount': 0, //כמות פעולות
+                //         'unique': 'string' //unique ערך
+                //     },
+                //     'lastHbFromHashBank': { //התנועה האחרונה בהנה"ח - מחשבנק
+                //         'asmachta': 'string',
+                //         'balance': 0,
+                //         'date': '2023-03-29T17:02:10.717Z',
+                //         'total': 0,
+                //         'transCount': 0,
+                //         'unique': 'string'
+                //     },
+                //     'feedbackDesc': 'string' //הערות
+                // };
+            });
+    }
+
+    feedbackDescChangeFn(val: any) {
+// console.log(val)
+        this.sharedService
+            .updateFeedbackDesc({
+                accountId: this.modalIzuInfo.accountId,
+                accountType: this.modalIzuInfo.accountType,
+                feedbackDesc: val
+            })
+            .subscribe((response: any) => {
+
+            });
+    }
+
     handleKeyPressHeb1(e: any) {
         this.isHebrew1 = false;
         const str = String.fromCharCode(e.which);
@@ -844,6 +1086,7 @@ export class BankExportComponent extends ReloadServices
             e.stopPropagation();
         }
     }
+
 
     handleKeyPressHeb2(e: any) {
         this.isHebrew2 = false;
@@ -858,6 +1101,28 @@ export class BankExportComponent extends ReloadServices
         }
     }
 
+    moveToBankCredit(company: any, companyParent: any) {
+        if (company.creditCardId || company.creditCardMatahId) {
+            this.storageService.sessionStorageSetter(
+                'creditsCard/*-filterCards',
+                JSON.stringify([company.creditCardId || company.creditCardMatahId])
+            );
+            this.sharedComponent.selectCompanyParam(
+                companyParent,
+                'financialManagement/creditsCard/details'
+            );
+        } else {
+            this.storageService.sessionStorageSetter(
+                'bankAccount/*-filterAcc',
+                JSON.stringify([company.companyAccountId])
+            );
+            this.sharedComponent.selectCompanyParam(
+                companyParent,
+                'financialManagement/bankAccount/details'
+            );
+        }
+    }
+
     hebMailExistValidator(): ValidatorFn {
         return (control: AbstractControl): ValidationErrors | null => {
             if (!control.value || control.value === '') {
@@ -868,14 +1133,13 @@ export class BankExportComponent extends ReloadServices
         };
     }
 
-    setVarTool(item: any, openModal?: any, changeIzuCustId?: any) {
-        const parent = this.izuFilter[item.idxParent];
+    setVarTool(item: any, parent: any, openModal?: any, changeIzuCustId?: any) {
         this.tooltipEditFile = JSON.parse(JSON.stringify(item));
         this.tooltipEditFile['izuCustIdSrc'] = this.tooltipEditFile['izuCustId'];
         // this.tooltipEditFile['izuCustId'] = {
         //     custId: this.tooltipEditFile['izuCustIdSrc']
         // }
-        this.tooltipEditFile['parent'] = this.izuFilter[item.idxParent];
+        this.tooltipEditFile['parent'] = parent;
         this.sharedService
             .companyGetCustomerExport({
                 companyId: parent.companyId,
@@ -888,6 +1152,7 @@ export class BankExportComponent extends ReloadServices
                             ? resp
                             : {
                                 all: [],
+                                banksCardsExport: [],
                                 cupa: [],
                                 cupa_new: [],
                                 banksCards: [],
@@ -900,10 +1165,13 @@ export class BankExportComponent extends ReloadServices
                             };
 
                         this.tooltipEditFile['izuCustId'] = this.tooltipEditFile['izuCustId'] && this.tooltipEditFile['izuCustId'] !== 'לא משוייך כרטיס'
-                            ? this.userService.appData.userData.companyCustomerDetailsExport.banksCards.find(
+                            ? (this.userService.appData.userData.companyCustomerDetailsExport.banksCardsExport.find(
                                 (custIdxRec) =>
                                     custIdxRec.custId === this.tooltipEditFile['izuCustId']
-                            ).custId
+                            ) ? this.userService.appData.userData.companyCustomerDetailsExport.banksCardsExport.find(
+                                (custIdxRec) =>
+                                    custIdxRec.custId === this.tooltipEditFile['izuCustId']
+                            ).custId : '')
                             : '';
                     },
                     error: (err: HttpErrorResponse) => {
@@ -922,10 +1190,66 @@ export class BankExportComponent extends ReloadServices
             this.openCardDDEdit = true;
         }
         if (changeIzuCustId) {
-            this.changeIzuCustId(this.tooltipEditFile);
+            this.changeIzuCustId(this.tooltipEditFile, parent, true);
         }
 
         // company.creditCardId ? company.creditCardId : company.creditCardMatahId ? company.creditCardMatahId : company.companyAccountId
+    }
+
+    companyGetCustomerExport(parent: any, company: any) {
+        if (company.companyCustomerDetailsExport && company.companyCustomerDetailsExport.banksCardsExport) {
+            company.companyCustomerDetailsExport.banksCardsExport = this.disabledData(company.companyCustomerDetailsExport.banksCardsExport, company, parent.companyId);
+        } else {
+            company['izuCustIdSrc'] = company['izuCustId'];
+            this.loaderGetList = true;
+            this.sharedService
+                .companyGetCustomerExport({
+                    companyId: parent.companyId,
+                    sourceProgramId: parent.sourceProgramId
+                })
+                .subscribe(
+                    {
+                        next: (resp: any) => {
+                            company.companyCustomerDetailsExport = resp
+                                ? resp
+                                : {
+                                    all: [],
+                                    cupa: [],
+                                    cupa_new: [],
+                                    banksCards: [],
+                                    banksCardsExport: [],
+                                    taxDeductionArr: [],
+                                    customerTaxDeductionCustIdArr: [],
+                                    taxDeductionCustIdHova: [],
+                                    taxDeductionCustIdZhut: [],
+                                    oppositeCustForChecks: [],
+                                    customerTaxDeductionCustIdExpenseArr: []
+                                };
+                            if (company['izuCustId'] && company['izuCustId'] !== 'לא משוייך כרטיס') {
+                                const foundCartis = company.companyCustomerDetailsExport.banksCardsExport.find(
+                                    (custIdxRec) =>
+                                        custIdxRec.custId === company['izuCustId']
+                                );
+                                if (foundCartis) {
+                                    company['izuCustId'] = foundCartis.custId;
+                                }
+                            }
+                            company.companyCustomerDetailsExport.banksCardsExport = this.disabledData(company.companyCustomerDetailsExport.banksCardsExport, company, parent.companyId);
+                            this.loaderGetList = false;
+                        },
+                        error: (err: HttpErrorResponse) => {
+                            if (err.error) {
+                                console.log('An error occurred:', err.error.message);
+                            } else {
+                                console.log(
+                                    `Backend returned code ${err.status}, body was: ${err.error}`
+                                );
+                            }
+                        }
+                    }
+                );
+        }
+
     }
 
     moveToContact(): void {
@@ -936,7 +1260,19 @@ export class BankExportComponent extends ReloadServices
     }
 
     aaa(jgkhjf: any) {
+        console.log(jgkhjf);
         debugger
+    }
+
+    setHeightDialogPopUpType(dialogRef) {
+        setTimeout(() => {
+            if (dialogRef && dialogRef.container && dialogRef.container.clientHeight) {
+                this.setHeightDialogPopUpTypePx = dialogRef.container.clientHeight + 'px';
+            }
+            if (dialogRef && dialogRef.container && dialogRef.container.clientWidth) {
+                this.setWidthDialogPopUpTypePx = dialogRef.container.clientWidth + 10 + 'px';
+            }
+        }, 10);
     }
 
     changeSendType() {
@@ -1081,10 +1417,7 @@ export class BankExportComponent extends ReloadServices
 
     override reload() {
         console.log('reload child');
-        if (
-            this.userService.appData &&
-            this.userService.appData.isAdmin
-        ) {
+        if (!!this.showExportPage) {
             this.exportIzu();
         }
     }
@@ -1093,103 +1426,285 @@ export class BankExportComponent extends ReloadServices
         return Math.round(num);
     }
 
-    onScroll(scrollbarRef: any) {
-        if (this.scrollSubscription) {
-            this.scrollSubscription.unsubscribe();
-        }
-        this.scrollSubscription = scrollbarRef.scrolled.subscribe(e => {
-            this.onScrollCubes();
-        });
+    onScroll(scrollbarRef: any, virtualScroll: any) {
+        this.virtualScrollSaved = virtualScroll;
+
+        // setTimeout(() => {
+        //     if (this.scrollSubscription) {
+        //         this.activeCompanyLoader = false;
+        //         this.scrollSubscription.unsubscribe();
+        //     }
+        //     this.scrollSubscription = this.virtualScrollSaved.elementScrolled()
+        //         .pipe(
+        //             map(() => this.virtualScrollSaved.measureScrollOffset('bottom')),
+        //             filter((y1) => y1 <= 0.5),
+        //             throttleTime(300),
+        //             debounceTime(300)
+        //         )
+        //         .subscribe(e => {
+        //             console.log('------------End - move to next Company');
+        //             const companyId = this.activeCompany.companyId;
+        //             const getIndexCur = this.allIzuData.findIndex(it => it.companyId === companyId);
+        //             if (getIndexCur !== -1 && (getIndexCur + 1) <= (this.allIzuData.length - 1)) {
+        //                 this.activeCompanyAnchor = this.allIzuData[getIndexCur + 1];
+        //                 anchor.click();
+        //             }
+        //
+        //
+        //             // this.virtualScrollSaved = null;
+        //             // if (this.scrollSubscription) {
+        //             //     this.scrollSubscription.unsubscribe();
+        //             // }
+        //
+        //             // this.activeCompany = null;
+        //             // // this.activeCompanyLoader = true;
+        //             // // this.setActiveCompany(this.allIzuData[getIndexCur + 1]);
+        //             // setTimeout(() => {
+        //             //     this.activeCompany = this.allIzuData[getIndexCur + 1];
+        //             //     this.activeCompanyLoader = false;
+        //             // }, 10000);
+        //             // console.log('scrolled', virtualScroll.measureScrollOffset('bottom'), e);
+        //
+        //             // const heightRows = (61 * this.activeCompany.dataArray.length) + 9;
+        //             // // console.log('heightRows:', heightRows)
+        //             // if (!this.activeCompanyLoader && (heightRows > e.target.clientHeight) &&
+        //             //     ((e.target.offsetHeight + e.target.scrollTop + 0.5) >= e.target.scrollHeight)) {
+        //             //     console.log('------------End - move to next Company');
+        //             //     const companyId = this.activeCompany.companyId;
+        //             //     this.activeCompany = null;
+        //             //     setTimeout(() => {
+        //             //         const getIndexCur = this.allIzuData.findIndex(it => it.companyId === companyId);
+        //             //         if (getIndexCur !== -1 && (getIndexCur + 1) <= (this.allIzuData.length - 1)) {
+        //             //             this.activeCompanyLoader = true;
+        //             //             debugger
+        //             //             this.setActiveCompany(this.allIzuData[getIndexCur + 1]);
+        //             //             setTimeout(() => {
+        //             //                 this.activeCompanyLoader = false;
+        //             //                 debugger
+        //             //             }, 200);
+        //             //         }
+        //             //     }, 10);
+        //             // }
+        //         });
+        // }, 100);
+
+
+        // let changed = false;
+        // this.scrollSubscription = scrollbarRef.scrolled.subscribe(e => {
+        //     // console.log("e.target: ", e.target.offsetHeight + e.target.scrollTop + 0.5)
+        //     // console.log('--------------------')
+        //     // // console.log("e.target.scrollHeight: ", e.target.scrollHeight)
+        //     // // console.log("e.offsetHeight: ", e.target.offsetHeight)
+        //     // // console.log("e.scrollTop: ", e.target.scrollTop)
+        //     // // console.log("e.scrollTop: ", e)
+        //     //
+        //     // const heightRows = (61 * this.activeCompany.dataArray.length) + 9;
+        //     // // console.log('heightRows:', heightRows)
+        //     // if ((heightRows > e.target.clientHeight) &&
+        //     //     ((e.target.offsetHeight + e.target.scrollTop + 0.5) >= e.target.scrollHeight)) {
+        //     //     changed = true;
+        //     //     console.log('------------End - move to next Company');
+        //     //     const companyId = this.activeCompany.companyId;
+        //     //     // this.activeCompany = null;
+        //     //     setTimeout(()=>{
+        //     //         const getIndexCur = this.allIzuData.findIndex(it => it.companyId === companyId);
+        //     //         if (getIndexCur !== -1 && (getIndexCur + 1) <= (this.allIzuData.length - 1)) {
+        //     //             this.setActiveCompany(this.allIzuData[getIndexCur + 1]);
+        //     //             // setTimeout(() => {
+        //     //             //     changed = true;
+        //     //             // }, 200);
+        //     //         }
+        //     //     }, 0);
+        //     // }
+        //     // console.log('--------------------')
+        //     // this.onScrollCubes();
+        // });
     }
 
-    ngOnInit() {
-        this.sharedComponent.getCompaniesEvent
-            .pipe(
-                startWith(true)
-            )
-            .subscribe((companiesExist: any) => {
-                if (companiesExist) {
-                    if (
-                        this.userService.appData &&
-                        this.userService.appData.isAdmin
-                    ) {
-                        this.exportIzu();
-                    }
-                }
-            });
+    onScrollFilter(scrollbarRef: any, virtualScroll: any) {
+        // if (this.scrollSubscriptionFilter) {
+        //     this.scrollSubscriptionFilter.unsubscribe();
+        // }
+        // this.scrollSubscriptionFilter = scrollbarRef.scrolled.subscribe(e => {
+        //     if (!this.setCompanyIndex) {
+        //         let size = 0;
+        //         let indexCompany = 0;
+        //         for (let index = 0, len = this.allIzuData.length; index < len; index++) {
+        //             const it = this.allIzuData[index];
+        //             size += (61 * it.dataArray.length) + 9;
+        //             if (size > e.target.scrollTop) {
+        //                 indexCompany = index;
+        //                 break;
+        //             }
+        //         }
+        //         // console.log(e.target.scrollTop)
+        //         console.log('indexCompany: ', indexCompany);
+        //         this.activeIndexCompany = indexCompany;
+        //     }
+        //     // console.log(e);
+        // });
+    }
 
-        Dynamsoft.DWT.ResourcesPath = '/assets/files/resources';
-        // Dynamsoft.DWT.ResourcesPath = 'assets/dwt-resources';
-        Dynamsoft.DWT.ProductKey =
-            'f0068WQAAAMjD37MYQuF8gD5cX23zdlnKwTn6csMXDHsXWOK4CRS4lDE82sTzeW1ejTcOS7m7gOE9leRs0VSPDlpjDkIWENg=';
-        // Dynamsoft.DWT.ProductKey = 't0115YQEAADLdsKeUCK4+tJktPdfzkeFCkXXNRfl+fAMlzbNS/nDM0sXKq9mW/WFrty8KF3g7lNtAYfUOiICxcac/R4b8dBDJIczVQygkgTcBywD7uHkqFV0+gY9CX58UiSYJd4uYkjBa/RBSgJwlY3AAym9Xsw==';
-        Dynamsoft.DWT.AutoLoad = false;
-        if (this.isWindows) {
-            Dynamsoft.DWT.RegisterEvent('OnWebTwainReady', () => {
-                this.Dynamsoft_OnReady();
-            });
+    setActiveIndexCompany(idx: any, scrollable: any) {
+        this.activeIndexCompany = idx;
+        if (scrollable) {
+            this.setCompanyIndex = true;
+            // let size = 0;
+            // this.allIzuData.forEach((it, index)=>{
+            //     if(index < idx){
+            //         size += (61 * it.dataArray.length) + 9;
+            //     }
+            // })
+            // requestAnimationFrame(() => {
+            //     // scrollable.scrollToIndex(idx);
+            //
+            //     // scrollable.scrollTo({top: size});
+            // });
+            scrollable.scrollToElement('#' + this.allIzuData[idx].idRowGroup);
+            setTimeout(() => {
+                this.setCompanyIndex = false;
+            }, 1000);
         }
     }
+
+    setActiveCompanyFromTable(companyId: any, idRowGroup: any, scrollable: any) {
+        const idx = this.allIzuData.findIndex(it => it.companyId === companyId);
+        this.activeIndexCompany = idx;
+        if (scrollable) {
+            this.setCompanyIndex = true;
+            scrollable.scrollToElement('#' + idRowGroup);
+            setTimeout(() => {
+                this.setCompanyIndex = false;
+            }, 1000);
+        }
+        this.activeCompanyDetails = this.userService.appData.userData.companies
+            .find(co => co.companyId === this.activeCompany.companyId);
+    }
+
+    setActiveCompany(company: any) {
+        this.activeCompany = company;
+        if (this.virtualScrollSaved) {
+            this.virtualScrollSaved.scrollTo({top: 0});
+        }
+        this.activeCompanyDetails = this.userService.appData.userData.companies
+            .find(co => co.companyId === this.activeCompany.companyId);
+    }
+
 
     exportIzu(): void {
         this.loader = true;
         this.numFilterExport = false;
         this.currencyList = [];
-        this.sharedService.getCurrencyList().subscribe((responseCurr) => {
-            this.currencyList = responseCurr ? responseCurr['body'] : responseCurr;
-            this.sharedService.izuExport().subscribe((response: any) => {
-                const izu = response ? response['body'] : response;
-                this.izuSrc = [];
-                try {
-                    if (!Array.isArray(izu)) {
-                        this.izuSrc = [];
+        this.sharedService.exporterFolderState().subscribe((response: any) => {
+            this.countStatusData = response ? response['body'] : response;
+            this.sharedService.getCurrencyList().subscribe((responseCurr) => {
+                this.currencyList = responseCurr ? responseCurr['body'] : responseCurr;
+                this.sharedService.izuExport().subscribe((response: any) => {
+                    const izu = response ? response['body'] : response;
+                    this.izuSrc = [];
+                    try {
+                        if (!Array.isArray(izu)) {
+                            this.izuSrc = [];
+                        } else {
+                            this.izuSrc = izu ? JSON.parse(JSON.stringify(izu)) : izu;
+                        }
+                    } catch (e) {
+                        console.log(e);
+                    }
+                    for (const fd of this.izuSrc) {
+                        // fd.dataReceiveDate = 1651467600000;
+                        // fd.uploadSource = fd.uploadSource ? fd.uploadSource.toLowerCase() : fd.uploadSource;
+                        // fd.noDataAvailable = typeof fd.invoiceDate !== 'number'
+                        //     && typeof fd.totalIncludeMaam !== 'number'
+                        //     && !fd.documentNum && !fd.documentType && !fd.name;
+                        // fd.documentNum = fd.documentNum ? Number(fd.documentNum) : fd.documentNum;
+                        // fd.asmachta = fd.asmachta !== null ? String(fd.asmachta) : fd.asmachta;
+                        fd.authorized =
+                            this.userService.appData.userData.companies.find(
+                                companyFromUserData =>
+                                    companyFromUserData.companyId === fd.companyId)?.['authorized'];
+                        let lastAccBank = null;
+                        for (const fdChild of fd.dataArray) {
+                            if (!fdChild.currencyId) {
+                                fdChild.currencyId = 1;
+                            }
+                            if (fdChild.currencyId) {
+                                const sign = this.currencyList.find(
+                                    (curr) => curr.id === fdChild.currencyId
+                                );
+                                fdChild.currencyString = sign ? sign.sign : null;
+                                fdChild.currencyName = sign ? sign.name : null;
+                            }
+                            if (!fdChild.izuCustId) {
+                                fdChild.izuCustId = 'לא משוייך כרטיס';
+                                fdChild.izuCustPlaceHolder = 'לא משוייך כרטיס';
+                            } else {
+                                fdChild.izuCustPlaceHolder =
+                                    fdChild.izuCustId
+                                    + (fdChild.izuCustDesc ?
+                                        (' - ' +
+                                            fdChild.izuCustDesc) : '');
+                            }
+                            if (
+                                fdChild.lastExportStatus === 'OK'
+                            ) {
+                                fdChild.lastExportStatusText = 'נתונים מעודכנים';
+                            }
+                            if (fdChild.lastExportStatus === 'WAIT_TO_EXPORT' || fdChild.lastExportStatus === 'READY_TO_IMPORT') {
+                                fdChild.lastExportStatusText = 'נתונים זמינים לייצוא';
+                            }
+
+                            if (fdChild.lastExportStatus === 'FAIL') {
+                                fdChild.lastExportStatusText = 'קיימת בעיה בקליטת הקובץ';
+                            }
+                            if (fdChild.lastExportStatus === 'IN_TEST') {
+                                fdChild.lastExportStatusText = 'נתונים בהכנה';
+                            }
+
+                            if (this.userService.appData.isAdmin) {
+                                if (fdChild.lastExportStatus === 'OTHER_SOURCE_DATA') {
+                                    fdChild.lastExportStatusText = 'הוזנו נתונים ממקור אחר';
+                                }
+                                if (fdChild.lastExportStatus === 'TECHNICAL_PROBLEM') {
+                                    fdChild.lastExportStatusText = 'יתרה לא תקינה';
+                                }
+                            } else {
+                                if (fdChild.lastExportStatus === 'OTHER_SOURCE_DATA' || fdChild.lastExportStatus === 'TECHNICAL_PROBLEM') {
+                                    fdChild.lastExportStatusText = 'יתרה לא תקינה';
+                                }
+                            }
+                            if (fdChild.accountType !== 'BANK') {
+                                const getAccData = fd.dataArray.find(it => it.accountType === 'BANK' && it.companyAccountId === fdChild.companyAccountId);
+                                if (getAccData) {
+                                    fdChild.accData = getAccData;
+                                } else {
+                                    const getAccDataAccId = fd.dataArray.find(it => it.accountType === 'BANK' && it.accountId === fdChild.accountId);
+                                    if (getAccDataAccId) {
+                                        fdChild.accData = getAccDataAccId;
+                                    } else {
+                                        fdChild.accData = lastAccBank;
+                                    }
+                                }
+                            } else {
+                                lastAccBank = fdChild;
+                            }
+                        }
+                        fd.dataReceiveDateRed = !fd.dataReceiveDate ||
+                            (fd.dataReceiveDate &&
+                                this.userService.appData.moment().isAfter(fd.dataReceiveDate, 'day'));
+                    }
+                    if (this.izuSrc && this.izuSrc.length) {
+                        this.allIsFolderPlus = this.izuSrc.every(it => it.folderPlus);
+                        this.filterExportInput.enable();
                     } else {
-                        this.izuSrc = izu ? JSON.parse(JSON.stringify(izu)) : izu;
+                        this.filterExportInput.disable();
                     }
-                } catch (e) {
-                    console.log(e);
-                }
-                for (const fd of this.izuSrc) {
-                    // fd.dataReceiveDate = 1651467600000;
-                    // fd.uploadSource = fd.uploadSource ? fd.uploadSource.toLowerCase() : fd.uploadSource;
-                    // fd.noDataAvailable = typeof fd.invoiceDate !== 'number'
-                    //     && typeof fd.totalIncludeMaam !== 'number'
-                    //     && !fd.documentNum && !fd.documentType && !fd.name;
-                    // fd.documentNum = fd.documentNum ? Number(fd.documentNum) : fd.documentNum;
-                    // fd.asmachta = fd.asmachta !== null ? String(fd.asmachta) : fd.asmachta;
-                    for (const fdChild of fd.dataArray) {
-                        if (fdChild.currencyId) {
-                            const sign = this.currencyList.find(
-                                (curr) => curr.id === fdChild.currencyId
-                            );
-                            fdChild.currencyString = sign ? sign.sign : null;
-                        }
-                        if (!fdChild.izuCustId) {
-                            fdChild.izuCustId = 'לא משוייך כרטיס';
-                        }
-                        if (
-                            fdChild.lastExportStatus === 'OK' ||
-                            fdChild.lastExportStatus === 'READY_TO_IMPORT'
-                        ) {
-                            fdChild.lastExportStatusText = 'תקין';
-                        }
-                        if (fdChild.lastExportStatus === 'WAIT_TO_EXPORT') {
-                            fdChild.lastExportStatusText = 'תקין ומוכן לייצוא';
-                        }
-                        if (fdChild.lastExportStatus === 'OTHER_SOURCE_DATA') {
-                            fdChild.lastExportStatusText = 'יתרות לא תואמות';
-                        }
+                    if (!this.activeCompany) {
+                        this.filtersIzuAll(true);
+                    } else {
+                        this.filtersIzuAll(false, true);
                     }
-                    fd.dataReceiveDateRed =
-                        fd.dataReceiveDate &&
-                        this.userService.appData.moment().isAfter(fd.dataReceiveDate);
-                }
-                if (this.izuSrc && this.izuSrc.length) {
-                    this.filterExportInput.enable();
-                } else {
-                    this.filterExportInput.disable();
-                }
-                this.filtersIzuAll(true);
+                });
             });
         });
     }
@@ -1202,52 +1717,92 @@ export class BankExportComponent extends ReloadServices
     }
 
     exportAllCompany() {
-        this.docsfile = null;
-        this.exportFileFolderCreatePrompt = false;
-
-        this.sharedService.getOshtnuFiles().subscribe((response: any) => {
-            this.docsfile = response ? Object.entries(response['body']) : response;
-            if (this.docsfile.length > 1) {
-                this.exportFileFolderCreatePrompt = true;
+        const isWait = this.izuSrc.some(it => it.dataArray.some(itChild => itChild.lastExportStatus === 'WAIT_TO_EXPORT'));
+        if (isWait) {
+            if (!this.isSearch || (this.isSearch && this.paramsForExport && this.paramsForExport.updateAll)) {
+                this.paramsForExport = false;
+                const createExportData = this.izuSrc.map(it => {
+                    return {
+                        companyId: it.companyId,
+                        accounts: it.dataArray
+                            .filter((fd) => fd.companyAccountId && !fd.creditCardId)
+                            .map((fc) => fc.companyAccountId),
+                        credits: it.dataArray
+                            .filter((fd) => fd.creditCardId)
+                            .map((fc) => fc.creditCardId),
+                        creditsMatah: it.dataArray
+                            .filter((fd) => fd.creditCardMatahId)
+                            .map((fc) => fc.creditCardMatahId)
+                    };
+                });
+                const params = {
+                    createExportData: createExportData
+                };
+                console.log('params', params);
+                this.sharedService.exportCreate(params).subscribe((response: any) => {
+                    this.reload();
+                });
             } else {
-                const a = document.createElement('a');
-                a.target = '_parent';
-                a.href = this.docsfile[0][1];
-                (document.body || document.documentElement).appendChild(a);
-                a.click();
-                a.parentNode.removeChild(a);
+                if (!this.paramsForExport) {
+                    this.paramsForExport = {
+                        updateAll: false
+                    };
+                } else {
+                    this.paramsForExport = false;
+                    const createExportData = this.allIzuData.map(it => {
+                        return {
+                            companyId: it.companyId,
+                            accounts: it.dataArray
+                                .filter((fd) => fd.companyAccountId && !fd.creditCardId)
+                                .map((fc) => fc.companyAccountId),
+                            credits: it.dataArray
+                                .filter((fd) => fd.creditCardId)
+                                .map((fc) => fc.creditCardId),
+                            creditsMatah: it.dataArray
+                                .filter((fd) => fd.creditCardMatahId)
+                                .map((fc) => fc.creditCardMatahId)
+                        };
+                    });
+                    const params = {
+                        createExportData: createExportData
+                    };
+                    console.log('params', params);
+                    this.sharedService.exportCreate(params).subscribe((response: any) => {
+                        this.reload();
+                    });
+                }
             }
-        });
+
+        } else {
+            this.showModalNotAvailableExport = true;
+        }
+
+
+        // this.docsfile = null;
+        // this.exportFileFolderCreatePrompt = false;
+        //
+        // this.sharedService.getOshtnuFiles().subscribe((response: any) => {
+        //     this.docsfile = response ? Object.entries(response['body']) : response;
+        //     if (this.docsfile.length > 1) {
+        //         this.exportFileFolderCreatePrompt = true;
+        //     } else {
+        //         const a = document.createElement('a');
+        //         a.target = '_parent';
+        //         a.href = this.docsfile[0][1];
+        //         (document.body || document.documentElement).appendChild(a);
+        //         a.click();
+        //         a.parentNode.removeChild(a);
+        //     }
+        // });
     }
 
-    exportCompany(companyId: any) {
-        const currentCompany = this.izuFilter.find(
-            (fd) => fd.companyId === companyId
-        );
-
-        // balanceLastUpdateDate: 1608815102000
-        // bankId: 158
-        // companyAccountId: "b73674ad-47fa-54ec-e053-0b6519acc564"
-        // companyId: null
-        // creditCardId: null
-        // creditCardMatahId: null
-        // currencyId: null
-        // izuCustId: null
-        // izuEmpty: true
-        // lastExportDate: 1622447857000
-        // lastExportStatus: null
-        // lastExportTransDesc: null
-        // lastExportUserDesc: null
-        // linkItra: false
-        // nickname: "דיסקונט+ 1013647"
-        // notUpdated: true
-        // tokenStatus: "INPROGRESS"
-
+    exportCompany(currentCompany: any) {
+        console.log(currentCompany);
         if (currentCompany) {
             const params = {
                 createExportData: [
                     {
-                        companyId: companyId,
+                        companyId: currentCompany.companyId,
                         accounts: currentCompany.dataArray
                             .filter((fd) => fd.companyAccountId && !fd.creditCardId)
                             .map((fc) => fc.companyAccountId),
@@ -1302,49 +1857,49 @@ export class BankExportComponent extends ReloadServices
 
     }
 
+    blurMainSection() {
+        if (this.formDropdownsRef && this.formDropdownsRef['_results'] && this.formDropdownsRef['_results'].length) {
+            this.formDropdownsRef['_results'].forEach((it, idx) => {
+                if (it && it.hide) {
+                    it.hide();
+                }
+            });
+        }
+        const className = document.getElementsByClassName('p-overlay');
+        for (let index = 0; index < className.length; index++) {
+            className[index].remove();
+        }
+    }
 
-    filtersIzuAll(isFirstLoad?: boolean): void {
-        this.numFilterExport = false;
+    filtersIzuAll(isFirstLoad?: boolean, setFirst?: boolean): void {
+        if (this.formDropdownsRef && this.formDropdownsRef['_results'] && this.formDropdownsRef['_results'].length) {
+            this.formDropdownsRef['_results'].forEach((it, idx) => {
+                if (it && it.hide) {
+                    it.hide();
+                }
+            });
+        }
+        const className = document.getElementsByClassName('p-overlay');
+        for (let index = 0; index < className.length; index++) {
+            className[index].remove();
+        }
+        const setCounterCompanies = setFirst || !this.numFilterExport;
+        if (setCounterCompanies) {
+            this.numFilterExport = false;
+        }
 
         if (this.izuSrc && Array.isArray(this.izuSrc) && this.izuSrc.length) {
-            this.numFilterExport = {
-                all: this.izuSrc.length,
-                notUpdated: 0,
-                izuEmpty: 0,
-                linkItra: 0
-            };
-            this.izuSrc.forEach((fd) => {
-                const numFilterExportCompany = {
+            if (setCounterCompanies) {
+                this.numFilterExport = {
+                    all: 0,
                     notUpdated: 0,
+                    izuEmpty: 0,
                     linkItra: 0,
-                    izuEmpty: 0
+                    folderPlusIssue: 0
                 };
-                fd.dataArray.forEach((fdChild) => {
-                    if (fdChild.notUpdated) {
-                        numFilterExportCompany.notUpdated += 1;
-                    }
-                    if (fdChild.linkItra) {
-                        numFilterExportCompany.linkItra += 1;
-                    }
-                    if (fdChild.izuEmpty) {
-                        numFilterExportCompany.izuEmpty += 1;
-                    }
-                });
-                if (numFilterExportCompany.notUpdated > 0) {
-                    this.numFilterExport.notUpdated += 1;
-                }
-                if (numFilterExportCompany.linkItra > 0) {
-                    this.numFilterExport.linkItra += 1;
-                }
-                if (numFilterExportCompany.izuEmpty > 0) {
-                    this.numFilterExport.izuEmpty += 1;
-                }
-                // izuEmpty: true
-                // linkItra: false
-                // notUpdated: true
-            });
+            }
 
-            this.izuFilter = !this.queryExportString
+            this.izuFilter = !this.isSearch
                 ? JSON.parse(JSON.stringify(this.izuSrc))
                 : JSON.parse(JSON.stringify(this.izuSrc)).filter((fd: any) => {
                     const dataArray = fd.dataArray.filter((fdChild: any) => {
@@ -1376,6 +1931,7 @@ export class BankExportComponent extends ReloadServices
                             fdChild.tokenStatus,
                             fdChild.izuCustId,
                             fdChild.lastExportUserDesc,
+                            fdChild.lastExportTransDesc,
                             fdChild.lastExportStatusText
                         ]
                             .filter(
@@ -1435,44 +1991,144 @@ export class BankExportComponent extends ReloadServices
                     });
 
                     if (dataArray.length) {
-                        if (dataArray.length) {
-                            fd.dataArray = dataArray;
-                        }
+                        fd.dataArray = dataArray;
                         return true;
                     }
                     return false;
                 });
             }
+            if (this.typeOfFlow !== 'all') {
+                this.izuFilter = this.izuFilter.filter((fd: any) => {
+                    const dataArray = fd.dataArray.filter((fdChild: any) => {
+                        if ((this.typeOfFlow === 'credit' && (fdChild.creditCardId || fdChild.creditCardMatahId)) || (this.typeOfFlow === 'bank' && (!fdChild.creditCardId && !fdChild.creditCardMatahId))) {
+                            return true;
+                        }
+
+                        return false;
+                    });
+                    fd.dataArray = dataArray;
+                    return dataArray.length;
+                });
+            }
+            if (setCounterCompanies) {
+                this.izuFilter.forEach((fd) => {
+                    const numFilterExportCompany = {
+                        notUpdated: 0,
+                        linkItra: 0,
+                        izuEmpty: 0,
+                        folderPlusIssue: 0
+                    };
+                    fd['idRow'] = crypto['randomUUID']();
+                    fd['idRowGroup'] = 'id_' + fd.companyId.replace(/-/g, '');
+                    fd['title'] = fd.companyName + ' ' + fd.companyHp;
+
+                    fd.dataArray.forEach((fdChild) => {
+                        fdChild['idRow'] = crypto['randomUUID']();
+                        if (fdChild.notUpdated) {
+                            numFilterExportCompany.notUpdated += 1;
+                        }
+                        if (fdChild.linkItra) {
+                            numFilterExportCompany.linkItra += 1;
+                        }
+                        if (fdChild.izuEmpty) {
+                            numFilterExportCompany.izuEmpty += 1;
+                        }
+                        if (fdChild.folderPlusIssue) {
+                            numFilterExportCompany.folderPlusIssue += 1;
+                        }
+                    });
+                    if (numFilterExportCompany.notUpdated > 0) {
+                        this.numFilterExport.notUpdated += 1;
+                    }
+                    if (numFilterExportCompany.linkItra > 0) {
+                        this.numFilterExport.linkItra += 1;
+                    }
+                    if (numFilterExportCompany.izuEmpty > 0) {
+                        this.numFilterExport.izuEmpty += 1;
+                    }
+                    if (numFilterExportCompany.folderPlusIssue > 0) {
+                        this.numFilterExport.folderPlusIssue += 1;
+                    }
+                    // izuEmpty: true
+                    // linkItra: false
+                    // notUpdated: true
+                });
+                this.numFilterExport.all = this.izuFilter.length;
+            }
         } else {
             this.izuFilter = [];
         }
 
-        let allIzuData = [];
-        this.izuFilter.forEach((it, idxs) => {
-            if (this.queryExportString || isFirstLoad) {
-                it.showChildren = true;
-            }
-            const parentObj = JSON.parse(JSON.stringify(it));
-            parentObj.idx = idxs;
-            allIzuData.push(
-                Object.assign(JSON.parse(JSON.stringify(parentObj)), {
-                    dataArray: null
-                })
-            );
-            if (!parentObj.showChildren) {
-                parentObj.dataArray = [];
+
+        // let allIzuData = [];
+        // this.izuFilter.forEach((it, idxs) => {
+        //     if (this.queryExportString || isFirstLoad) {
+        //         it.showChildren = true;
+        //     }
+        //     const parentObj = JSON.parse(JSON.stringify(it));
+        //     parentObj.idx = idxs;
+        //     allIzuData.push(
+        //         Object.assign(JSON.parse(JSON.stringify(parentObj)), {
+        //             dataArray: null
+        //         })
+        //     );
+        //     if (!parentObj.showChildren) {
+        //         parentObj.dataArray = [];
+        //     } else {
+        //         parentObj.dataArray.forEach((it1, idx1) => {
+        //             it1.idxParent = idxs;
+        //             it1.idx = idx1;
+        //         });
+        //     }
+        //     allIzuData = allIzuData.concat(parentObj.dataArray);
+        // });
+        // allIzuData.forEach(fdChild => {
+        //     fdChild['idRow'] = crypto['randomUUID']();
+        // });
+        this.allIzuData = this.izuFilter;
+        if (this.isSearch) {
+            this.buildData(this.allIzuData.length);
+        }
+        if (setFirst && this.activeCompany) {
+            const isExist = this.allIzuData.find(it => it.companyId === this.activeCompany.companyId);
+            if (isExist) {
+                this.activeCompany = isExist;
             } else {
-                parentObj.dataArray.forEach((it1, idx1) => {
-                    it1.idxParent = idxs;
-                    it1.idx = idx1;
-                });
+                this.activeCompany = this.allIzuData[0];
             }
-            allIzuData = allIzuData.concat(parentObj.dataArray);
-        });
-        this.allIzuData = allIzuData;
-        // console.log(allIzuData);
+            if (!this.isSearch && this.virtualScrollSaved) {
+                this.virtualScrollSaved.scrollTo({top: 0});
+            }
+        }
+        if (!this.activeCompany || isFirstLoad) {
+            if (this.allIzuData.length) {
+                this.activeCompany = this.allIzuData[0];
+            } else {
+                this.activeCompany = null;
+            }
+            if (!this.isSearch && this.virtualScrollSaved) {
+                this.virtualScrollSaved.scrollTo({top: 0});
+            }
+        }
+        if (this.activeCompany) {
+            this.activeCompanyDetails = this.userService.appData.userData.companies
+                .find(co => co.companyId === this.activeCompany.companyId);
+        }
+        console.log(this.allIzuData);
         this.loader = false;
     }
+
+    formatPhone(phone: string): string {
+        if (!phone) {
+            return '';
+        }
+        if (phone.length === 10) {
+            return phone.slice(0, 3) + '-' + phone.slice(3);
+        } else {
+            return phone.slice(0, 2) + '-' + phone.slice(2);
+        }
+    }
+
 
     toggleExpandedForAllTo(open: any) {
         let allIzuData = [];
@@ -1538,18 +2194,18 @@ export class BankExportComponent extends ReloadServices
     }
 
     trackById(index: number, val: any): any {
-        let ids: any;
-        if ((val.companyAccountId || val.creditCardId || val.creditCardMatahId)) {
-            ids = (val.companyAccountId || val.creditCardId || val.creditCardMatahId) + '_' + index;
-        } else {
-            if (val.companyId) {
-                ids = val.companyId + '_' + index;
-            } else {
-                ids = '_' + index;
-            }
-        }
-        // console.log(ids)
-        return ids;
+        // let ids: any;
+        // if ((val.companyAccountId || val.creditCardId || val.creditCardMatahId)) {
+        //     ids = (val.companyAccountId || val.creditCardId || val.creditCardMatahId) + '_' + index;
+        // } else {
+        //     if (val.companyId) {
+        //         ids = val.companyId + '_' + index;
+        //     } else {
+        //         ids = '_' + index;
+        //     }
+        // }
+        // // console.log(ids)
+        return val.idRow;
     }
 
     trackByUniqueId(index: number, val: any): any {
@@ -1648,7 +2304,9 @@ export class BankExportComponent extends ReloadServices
             this.filesOriginal = [];
             this.fileDropRef.nativeElement.type = 'text';
             setTimeout(() => {
-                this.fileDropRef.nativeElement.type = 'file';
+                if (this.fileDropRef && this.fileDropRef.nativeElement) {
+                    this.fileDropRef.nativeElement.type = 'file';
+                }
             }, 200);
             this.progress = false;
             this.fileViewer = false;
@@ -1709,7 +2367,9 @@ export class BankExportComponent extends ReloadServices
                     this.filesOriginal = [];
                     this.fileDropRef.nativeElement.type = 'text';
                     setTimeout(() => {
-                        this.fileDropRef.nativeElement.type = 'file';
+                        if (this.fileDropRef && this.fileDropRef.nativeElement) {
+                            this.fileDropRef.nativeElement.type = 'file';
+                        }
                     }, 200);
                     this.progress = false;
                     this.fileViewer = false;
@@ -1744,7 +2404,9 @@ export class BankExportComponent extends ReloadServices
         if (this.fileDropRef && this.fileDropRef.nativeElement) {
             this.fileDropRef.nativeElement.type = 'text';
             setTimeout(() => {
-                this.fileDropRef.nativeElement.type = 'file';
+                if (this.fileDropRef && this.fileDropRef.nativeElement) {
+                    this.fileDropRef.nativeElement.type = 'file';
+                }
             }, 200);
         }
         this.progress = false;
@@ -1800,18 +2462,18 @@ export class BankExportComponent extends ReloadServices
             ObjString = [
                 '<div class="header-scanPopUpInstall">' +
                 '<h1> זיהוי סורקים </h1>' +
-                '<span class="fa fa-fw fa-times" onclick="Dynamsoft.DWT.CloseDialog()">&nbsp;</span>' +
+                '<span class="fa fa-fw fa-times" onclick="Dynamsoft.WebTwainEnv.CloseDialog()">&nbsp;</span>' +
                 '</div>'
             ];
             ObjString.push(
                 '<div style="display: flex;justify-content: center;align-items: center;margin: 15px 20px 0px 20px;"><a id="dwt-btn-install" style="display: inline-block;" target="_blank" href="'
             );
             let url = '';
-            if (iPlatform === Dynamsoft.DWT.EnumDWT_PlatformType.enumWindow) {
+            if (iPlatform === Dynamsoft.EnumDWT_PlatformType.enumWindow) {
                 url = '/assets/files/resources/dist/DynamsoftServiceSetup.msi';
-            } else if (iPlatform === Dynamsoft.DWT.EnumDWT_PlatformType.enumMac) {
+            } else if (iPlatform === Dynamsoft.EnumDWT_PlatformType.enumMac) {
                 url = '/assets/files/resources/dist/DynamsoftServiceSetup.pkg';
-            } else if (iPlatform === Dynamsoft.DWT.EnumDWT_PlatformType.enumLinux) {
+            } else if (iPlatform === Dynamsoft.EnumDWT_PlatformType.enumLinux) {
                 url = '/assets/files/resources/dist/DynamsoftServiceSetup.deb';
             }
             ObjString.push(url);
@@ -1840,7 +2502,7 @@ export class BankExportComponent extends ReloadServices
 
             ObjString.push(
                 '<div class="scanPopUpInstall-text">' +
-                'כדי להתחיל לסרוק ישירות מהסורק שבמשרדך ל- bizobox' +
+                'כדי להתחיל לסרוק ישירות מהסורק שבמשרדך ל- bizibox' +
                 '<br>' +
                 'נבצע תהליך התקנה חד פעמי של תוכנה לזיהוי סורקים.' +
                 '<strong>' +
@@ -1883,7 +2545,7 @@ export class BankExportComponent extends ReloadServices
             }
 
             // @ts-ignore
-            Dynamsoft.DWT.ShowDialog(
+            Dynamsoft.WebTwainEnv.ShowDialog(
                 window['promptDlgWidth'],
                 0,
                 ObjString.join('')
@@ -1927,16 +2589,16 @@ export class BankExportComponent extends ReloadServices
             if ((new Date() - window['reconnectTime']) / 1000 > 30) {
                 return;
             }
-            Dynamsoft.DWT['CheckConnectToTheService'](
+            Dynamsoft.WebTwainEnv['CheckConnectToTheService'](
                 function () {
-                    Dynamsoft.DWT['ConnectToTheService']();
+                    Dynamsoft.WebTwainEnv['ConnectToTheService']();
                 },
                 function () {
                     setTimeout(window['DWT_Reconnect'], 1000);
                 }
             );
         };
-        Dynamsoft.DWT.Load();
+        Dynamsoft.WebTwainEnv.Load();
     }
 
     unload() {
@@ -1947,7 +2609,7 @@ export class BankExportComponent extends ReloadServices
                     elem.DWObject &&
                     elem.DWObject.config.containerID !== 'dwtcontrolContainer'
                 ) {
-                    Dynamsoft.DWT.DeleteDWTObject(
+                    Dynamsoft.WebTwainEnv.DeleteDWTObject(
                         elem.DWObject.config.containerID
                     );
                 }
@@ -1971,7 +2633,7 @@ export class BankExportComponent extends ReloadServices
         this.showProgressScan = false;
         this.showScanLoader = false;
         this.fileViewer = false;
-        Dynamsoft.DWT.Unload();
+        Dynamsoft.WebTwainEnv.Unload();
         location.reload();
     }
 
@@ -2012,7 +2674,7 @@ export class BankExportComponent extends ReloadServices
         this.dynamsoftReady = true;
         this.scanerList = [];
 
-        Dynamsoft.DWT.CreateDWTObjectEx(
+        Dynamsoft.WebTwainEnv.CreateDWTObjectEx(
             {
                 WebTwainId: 'dwtcontrolContainer'
             },
@@ -2137,7 +2799,7 @@ export class BankExportComponent extends ReloadServices
                 this.arr[this.index].DWObject.config.containerID !==
                 'dwtcontrolContainer'
             ) {
-                Dynamsoft.DWT.DeleteDWTObject(
+                Dynamsoft.WebTwainEnv.DeleteDWTObject(
                     this.arr[this.index].DWObject.config.containerID
                 );
                 this.arr.splice(this.index, 1);
@@ -2161,7 +2823,7 @@ export class BankExportComponent extends ReloadServices
             //base64String, if not empty, it overrides settings and more settings.
             settings: {
                 exception: 'fail', // "ignore" (default) or "fail",
-                pixelType: Dynamsoft.DWT.EnumDWT_PixelType.TWPT_RGB, //rgb, bw, gray, etc
+                pixelType: Dynamsoft.EnumDWT_PixelType.TWPT_RGB, //rgb, bw, gray, etc
                 resolution: 200, // 300
                 bFeeder: true,
                 bDuplex: false //whether to enable duplex
@@ -2169,8 +2831,8 @@ export class BankExportComponent extends ReloadServices
             moreSettings: {
                 exception: 'fail', // "ignore" or “fail”
                 // bitDepth: 24, //1,8,24,etc
-                pageSize: Dynamsoft.DWT.EnumDWT_CapSupportedSizes.TWSS_A4, //A4, etc.
-                unit: Dynamsoft.DWT.EnumDWT_UnitType.TWUN_INCHES
+                pageSize: Dynamsoft.EnumDWT_CapSupportedSizes.TWSS_A4, //A4, etc.
+                unit: Dynamsoft.EnumDWT_UnitType.TWUN_INCHES
                 // layout: {
                 //     left: float,
                 //     top: float,
@@ -2305,7 +2967,7 @@ export class BankExportComponent extends ReloadServices
                         this.arr[this.index].DWObject.config.containerID !==
                         'dwtcontrolContainer'
                     ) {
-                        Dynamsoft.DWT.DeleteDWTObject(
+                        Dynamsoft.WebTwainEnv.DeleteDWTObject(
                             this.arr[this.index].DWObject.config.containerID
                         );
                         this.arr.splice(this.index, 1);
@@ -2351,7 +3013,7 @@ export class BankExportComponent extends ReloadServices
             this.arr.push({
                 DWObject: null
             });
-            Dynamsoft.DWT.CreateDWTObjectEx(
+            Dynamsoft.WebTwainEnv.CreateDWTObjectEx(
                 {
                     WebTwainId: 'dwtcontrolContainer' + this.index
                 },
@@ -2447,7 +3109,9 @@ export class BankExportComponent extends ReloadServices
         }
         this.fileDropRef.nativeElement.type = 'text';
         setTimeout(() => {
-            this.fileDropRef.nativeElement.type = 'file';
+            if (this.fileDropRef && this.fileDropRef.nativeElement) {
+                this.fileDropRef.nativeElement.type = 'file';
+            }
         }, 200);
         if (!this.files.length) {
             this.fileViewer = false;
@@ -2985,7 +3649,13 @@ export class BankExportComponent extends ReloadServices
             const progress = new Subject<number>();
             progress.next(0);
 
-            this.http.request(req).subscribe(
+            this.http.request(req)
+                .pipe(
+                    retry({
+                        count: 3,
+                        delay: 1500
+                    })
+                ).subscribe(
                 {
                     next: (event: any) => {
                         if (event.type === HttpEventType.UploadProgress) {
@@ -3082,7 +3752,12 @@ export class BankExportComponent extends ReloadServices
             );
             const progress = new Subject<number>();
             progress.next(0);
-            this.http.request(req).subscribe(
+            this.http.request(req).pipe(
+                retry({
+                    count: 3,
+                    delay: 1500
+                })
+            ).subscribe(
                 {
                     next: (event: any) => {
                         if (event.type === HttpEventType.UploadProgress) {
@@ -3458,11 +4133,12 @@ export class BankExportComponent extends ReloadServices
         document.removeEventListener('copy', listener);
     }
 
-    disabledData(arr: any) {
+    disabledData(arr: any, company: any, companyId: any) {
+        // arr = arr.filter(it => !it.title && !it.defNull);
         arr.forEach(item => {
-            item.disabled = this.tooltipEditFile['izuCustIdSrc'] === item.custId || this.isExistCustId(item.custId) || item.title;
+            item.disabled = company['izuCustIdSrc'] === item.custId || this.isExistCustId(item.custId, companyId) || item.title;
         });
-        if (!arr.find(it => it.title)) {
+        if (arr.length && !arr.find(it => it.title)) {
             arr.unshift({
                 disabled: true,
                 title: true,
@@ -3471,6 +4147,23 @@ export class BankExportComponent extends ReloadServices
                 hp: null
             });
         }
+        if (this.userService.appData && this.userService.appData.isAdmin) {
+            if ((!company.izuCustId || (company.izuCustId === 'לא משוייך כרטיס')) && arr.length && arr.find(it => it.defNull)) {
+                arr = arr.filter(it => !it.defNull);
+            }
+            if (company.izuCustId && (company.izuCustId !== 'לא משוייך כרטיס') && arr.length && !arr.find(it => it.defNull)) {
+                arr.unshift({
+                    disabled: false,
+                    title: false,
+                    defNull: true,
+                    cartisName: 'ביטול בחירה',
+                    custId: 'defNull',
+                    lName: null,
+                    hp: null
+                });
+            }
+        }
+
         return arr;
     }
 
@@ -3478,9 +4171,157 @@ export class BankExportComponent extends ReloadServices
         dropdown.resetFilter();
     }
 
-    changeIzuCustId(itemChild) {
-        console.log(itemChild);
+    addCreditExportItem(showCreditExportPopupItemChild: any, showCreditExportPopupParent: any) {
+        this.sharedService
+            .addCreditExportItem({
+                uuid: showCreditExportPopupParent.companyId
+            })
+            .subscribe((res) => {
+                showCreditExportPopupItemChild.showCreditExportPopup = false;
+                this.changeIzuCustId(showCreditExportPopupItemChild, showCreditExportPopupParent);
+            });
+    }
+
+    addExchangeRate(showExchangeRatePopup: any) {
+        this.sharedService
+            .addExchangeRate({
+                companyId: showExchangeRatePopup.parent.companyId,
+                'currencyRate': {
+                    'code': showExchangeRatePopup.itemChild.findMatchCode.code,
+                    'delete': false,
+                    fixedRate:
+                        showExchangeRatePopup.itemChild.form.get('type').value === 'FIXED' ? Number(showExchangeRatePopup.itemChild.form.get('fixedRate').value) : 0,
+                    hashCodeId: showExchangeRatePopup.itemChild.form.get('hashCodeId').value ? Number(showExchangeRatePopup.itemChild.form.get('hashCodeId').value) : 0,
+                    type: showExchangeRatePopup.itemChild.form.get('type').value
+                }
+            })
+            .subscribe(() => {
+                showExchangeRatePopup.itemChild.showExchangeRatePopup = false;
+                this.changeIzuCustId(showExchangeRatePopup.itemChild, showExchangeRatePopup.parent);
+            });
+    }
+
+    updateValues(param: any, val: any) {
+        const pbj = {};
+        pbj[param] = val;
+        this.showExchangeRatePopup.itemChild.form.patchValue(pbj);
+    }
+
+    setMaxDigitsAfterDec() {
+        let rateInput = this.showExchangeRatePopup.itemChild.form
+            .get('fixedRate')
+            .value.toString()
+            .replace(/[^0-9.]/g, '');
+        if (rateInput && rateInput.includes('.')) {
+            const splitNumbers = rateInput.split('.');
+            if (splitNumbers[1].length > 2) {
+                rateInput = splitNumbers[0] + '.' + splitNumbers[1].slice(0, 2);
+            }
+        }
+        this.showExchangeRatePopup.itemChild.form.patchValue({
+            fixedRate: rateInput
+        });
+    }
+
+    resetDDCustId(src: any) {
+        const itemChild = src.itemChild;
+        const idChild = (itemChild.accountType !== 'BANK' && (itemChild.creditCardId ||
+            itemChild.creditCardMatahId) ? (itemChild.creditCardId ? 'creditCardId' : 'creditCardMatahId'
+        ) : 'accountId');
+
+        const parent = this.allIzuData.find((item) => item.companyId === src.parent.companyId);
+        if (parent) {
+            const foundChild = parent.dataArray.find(it => it[idChild] === itemChild[idChild]);
+            if (foundChild) {
+                foundChild.izuCustId = itemChild.izuCustIdSrc;
+            }
+        }
+        if (!this.isSearch) {
+            const foundChild = this.activeCompany.dataArray.find(it => it[idChild] === itemChild[idChild]);
+            if (foundChild) {
+                foundChild.izuCustId = itemChild.izuCustIdSrc;
+            }
+        }
+    }
+
+    changeIzuCustId(itemChild: any, parent: any, notUpdatePopUp?: any) {
+        console.log(itemChild, parent);
+        const fullCardSelected = itemChild.companyCustomerDetailsExport ? itemChild.companyCustomerDetailsExport.banksCardsExport.find(it => it.custId === itemChild.izuCustId) : null;
+        itemChild.fullCardSelected = fullCardSelected;
+        this.resetParamDDCust = {
+            itemChild: itemChild,
+            parent: parent
+        };
         this.exportPopupType = false;
+        if (parent.folderPlus && itemChild.fullCardSelected && itemChild.fullCardSelected.lName && (itemChild.fullCardSelected.lName.includes('-') || itemChild.fullCardSelected.lName.includes(';'))) {
+            this.showPopupSpecialCharacters = true;
+            setTimeout(() => {
+                this.resetDDCustId(this.resetParamDDCust);
+            }, 200);
+            return;
+        }
+        if ((this.userService.appData && this.userService.appData.isAdmin) && itemChild.izuCustId === 'defNull') {
+            this.sharedService
+                .connectCust({
+                    accountId: itemChild.accountType !== 'BANK' ? (itemChild.accountType === 'CCARD_MATAH' ? itemChild.creditCardMatahId : itemChild.creditCardId) : itemChild.accountId,
+                    accountType: itemChild.accountType,
+                    companyId: parent.companyId,
+                    custId: null,
+                    popupType: 'DISCONNECT'
+                })
+                .subscribe(() => {
+                    this.reload();
+                });
+            return;
+        }
+        if (itemChild.showCreditExportPopup && !notUpdatePopUp) {
+            this.showCreditExportPopup = {
+                itemChild: itemChild,
+                parent: parent
+            };
+            return;
+        }
+        if (itemChild.showExchangeRatePopup && !notUpdatePopUp) {
+            if (!itemChild.currencyId) {
+                itemChild.currencyId = 1;
+            }
+            itemChild.findMatchCode = this.currencyList.find((it) => it.id === itemChild.currencyId);
+            if (!itemChild.findMatchCode) {
+                itemChild.findMatchCode = {
+                    'id': 1,
+                    'name': 'שקל חדש',
+                    'sign': '₪',
+                    'code': 'ILS',
+                    'common': true,
+                    'bankIsrael': false,
+                    'indDefault': false
+                };
+            }
+            itemChild.form = new FormGroup({
+                type: new FormControl({
+                    // BANK or FIXED
+                    value: 'BANK',
+                    disabled: false
+                }),
+                fixedRate: new FormControl({
+                    // null or number
+                    value: '',
+                    disabled: false
+                }),
+                hashCodeId: new FormControl({
+                    // null or number
+                    value: '',
+                    disabled: false
+                })
+            });
+            this.showExchangeRatePopup = {
+                itemChild: itemChild,
+                parent: parent
+            };
+            return;
+        }
+
+
         if (itemChild.izuCustId) {
             if (
                 itemChild.creditCardId ||
@@ -3489,14 +4330,25 @@ export class BankExportComponent extends ReloadServices
             ) {
                 this.sharedService
                     .exportPopupType({
-                        accountId: itemChild.creditCardId || itemChild.creditCardMatahId,
+                        accountId: itemChild.accountType === 'CCARD_MATAH' ? itemChild.creditCardMatahId : itemChild.creditCardId,
                         accountType: itemChild.accountType,
-                        companyId: itemChild.parent.companyId,
+                        companyId: parent.companyId,
                         custId: itemChild.izuCustId
                     })
                     .subscribe((res) => {
                         const dataPopUp = res ? res['body'] : res;
                         this.exportPopupType = JSON.parse(JSON.stringify(dataPopUp));
+                        if (!this.exportPopupType['fixTrans']) {
+                            this.exportPopupType['fixTrans'] = 'ADD_TRANS';
+                        }
+
+                        if (this.exportPopupType.popupType === 'NOT_EXIST' || this.exportPopupType.popupType === 'NOT_UPDATED') {
+                            this.resetDDCustId({
+                                itemChild: itemChild,
+                                parent: parent
+                            });
+                        }
+                        itemChild['parent'] = parent;
                         this.exportPopupType['item'] = itemChild;
 
                         if (
@@ -3569,9 +4421,11 @@ export class BankExportComponent extends ReloadServices
                                 oldestTransIzuDate.month(),
                                 oldestTransIzuDate.year()
                             );
-
-                            this.max = new Date();
-                            this.max.setDate(this.max.getDate());
+                            const maxTransIzuDate = this.exportPopupType.maxTransIzuDate ? this.userService.appData.moment(
+                                this.exportPopupType.maxTransIzuDate
+                            ) : this.userService.appData.moment();
+                            this.max = new Date(maxTransIzuDate.year(), maxTransIzuDate.month(), maxTransIzuDate.date());
+                            // this.max.setDate(this.max.getDate());
                             this.setMinDateAndRebuildConstraints(oldestTransIzuDate.toDate());
                         }
                         if (this.exportPopupType.popupType === 'BALANCE_DIFFERENCE') {
@@ -3608,6 +4462,10 @@ export class BankExportComponent extends ReloadServices
                             }
                         }
 
+                        // if (this.exportPopupType && this.exportPopupType.popupType === 'VALID') {
+                        //     this.nextAfterVALID();
+                        // }
+
                     });
 
 
@@ -3641,7 +4499,7 @@ export class BankExportComponent extends ReloadServices
                     .exportPopupType({
                         accountId: itemChild.accountId,
                         accountType: itemChild.accountType,
-                        companyId: itemChild.parent.companyId,
+                        companyId: parent.companyId,
                         custId: itemChild.izuCustId
                     })
                     .subscribe((res) => {
@@ -3673,6 +4531,16 @@ export class BankExportComponent extends ReloadServices
                         // };
                         const dataPopUp = res ? res['body'] : res;
                         this.exportPopupType = JSON.parse(JSON.stringify(dataPopUp));
+                        if (!this.exportPopupType['fixTrans']) {
+                            this.exportPopupType['fixTrans'] = 'ADD_TRANS';
+                        }
+                        if (this.exportPopupType.popupType === 'NOT_EXIST' || this.exportPopupType.popupType === 'NOT_UPDATED') {
+                            this.resetDDCustId({
+                                itemChild: itemChild,
+                                parent: parent
+                            });
+                        }
+                        itemChild['parent'] = parent;
                         this.exportPopupType['item'] = itemChild;
 
                         if (
@@ -3745,14 +4613,18 @@ export class BankExportComponent extends ReloadServices
                                 oldestTransIzuDate.month(),
                                 oldestTransIzuDate.year()
                             );
-
-                            this.max = new Date();
-                            this.max.setDate(this.max.getDate());
+                            const maxTransIzuDate = this.exportPopupType.maxTransIzuDate ? this.userService.appData.moment(
+                                this.exportPopupType.maxTransIzuDate
+                            ) : this.userService.appData.moment();
+                            this.max = new Date(maxTransIzuDate.year(), maxTransIzuDate.month(), maxTransIzuDate.date());
                             this.setMinDateAndRebuildConstraints(oldestTransIzuDate.toDate());
                         }
                         if (this.exportPopupType.popupType === 'BALANCE_DIFFERENCE') {
                             this.exportPopupType['fixTrans'] = 'MANUAL';
                         }
+                        // if (this.exportPopupType && this.exportPopupType.popupType === 'VALID') {
+                        //     this.nextAfterVALID();
+                        // }
                     });
 
                 // this.sharedService.updateIzuCust({
@@ -3832,6 +4704,10 @@ export class BankExportComponent extends ReloadServices
         }, 1000);
     }
 
+    goToWebsite() {
+
+    }
+
     nextAfterCUSTEMPTY() {
         const dateFrom = new Date(
             this.selection.from.year,
@@ -3843,7 +4719,7 @@ export class BankExportComponent extends ReloadServices
                 accountId: this.exportPopupType['item'].accountId,
                 accountType: this.exportPopupType['item'].accountType,
                 companyId: this.exportPopupType['item'].parent.companyId,
-                custId: this.exportPopupType['item'].izuCustId.custId,
+                custId: typeof this.exportPopupType['item'].izuCustId === 'string' ? this.exportPopupType['item'].izuCustId : this.exportPopupType['item'].izuCustId.custId,
                 fixTrans: null,
                 izuDateFrom: dateFrom,
                 popupType: this.exportPopupType.popupType,
@@ -3861,7 +4737,7 @@ export class BankExportComponent extends ReloadServices
                 accountId: this.exportPopupType['item'].accountId,
                 accountType: this.exportPopupType['item'].accountType,
                 companyId: this.exportPopupType['item'].parent.companyId,
-                custId: this.exportPopupType['item'].izuCustId.custId,
+                custId: typeof this.exportPopupType['item'].izuCustId === 'string' ? this.exportPopupType['item'].izuCustId : this.exportPopupType['item'].izuCustId.custId,
                 fixTrans: this.exportPopupType.fixTrans,
                 izuDateFrom: null,
                 popupType: this.exportPopupType.popupType,
@@ -3879,7 +4755,7 @@ export class BankExportComponent extends ReloadServices
                 accountId: this.exportPopupType['item'].accountId,
                 accountType: this.exportPopupType['item'].accountType,
                 companyId: this.exportPopupType['item'].parent.companyId,
-                custId: this.exportPopupType['item'].izuCustId.custId,
+                custId: typeof this.exportPopupType['item'].izuCustId === 'string' ? this.exportPopupType['item'].izuCustId : this.exportPopupType['item'].izuCustId.custId,
                 fixTrans: null,
                 izuDateFrom: null,
                 popupType: this.exportPopupType.popupType,
@@ -3897,7 +4773,7 @@ export class BankExportComponent extends ReloadServices
                 accountId: this.exportPopupType['item'].accountId,
                 accountType: this.exportPopupType['item'].accountType,
                 companyId: this.exportPopupType['item'].parent.companyId,
-                custId: this.exportPopupType['item'].izuCustId.custId,
+                custId: typeof this.exportPopupType['item'].izuCustId === 'string' ? this.exportPopupType['item'].izuCustId : this.exportPopupType['item'].izuCustId.custId,
                 fixTrans: null,
                 izuDateFrom: null,
                 popupType: this.exportPopupType.popupType,
@@ -3908,13 +4784,14 @@ export class BankExportComponent extends ReloadServices
             });
         this.exportPopupType = false;
     }
+
     nextAfterMATCHED_HEFRESH() {
         this.sharedService
             .connectCust({
-                accountId: this.exportPopupType['item'].accountId,
+                accountId: this.exportPopupType['item'].accountType === 'CCARD_MATAH' ? this.exportPopupType['item'].creditCardMatahId : this.exportPopupType['item'].creditCardId,
                 accountType: this.exportPopupType['item'].accountType,
                 companyId: this.exportPopupType['item'].parent.companyId,
-                custId: this.exportPopupType['item'].izuCustId.custId,
+                custId: typeof this.exportPopupType['item'].izuCustId === 'string' ? this.exportPopupType['item'].izuCustId : this.exportPopupType['item'].izuCustId.custId,
                 fixTrans: this.exportPopupType['fixTrans'],
                 izuDateFrom: this.exportPopupType.izuDateFrom,
                 popupType: this.exportPopupType.popupType,
@@ -3929,10 +4806,10 @@ export class BankExportComponent extends ReloadServices
     nextAfterCARD_CUST_EMPTY() {
         this.sharedService
             .connectCust({
-                accountId: this.exportPopupType['item'].accountId,
+                accountId: this.exportPopupType['item'].accountType === 'CCARD_MATAH' ? this.exportPopupType['item'].creditCardMatahId : this.exportPopupType['item'].creditCardId,
                 accountType: this.exportPopupType['item'].accountType,
                 companyId: this.exportPopupType['item'].parent.companyId,
-                custId: this.exportPopupType['item'].izuCustId.custId,
+                custId: typeof this.exportPopupType['item'].izuCustId === 'string' ? this.exportPopupType['item'].izuCustId : this.exportPopupType['item'].izuCustId.custId,
                 fixTrans: null,
                 izuDateFrom: this.exportPopupType.izuDateFrom,
                 popupType: this.exportPopupType.popupType,
@@ -3950,9 +4827,9 @@ export class BankExportComponent extends ReloadServices
                 accountId: this.exportPopupType['item'].accountId,
                 accountType: this.exportPopupType['item'].accountType,
                 companyId: this.exportPopupType['item'].parent.companyId,
-                custId: this.exportPopupType['item'].izuCustId.custId,
+                custId: typeof this.exportPopupType['item'].izuCustId === 'string' ? this.exportPopupType['item'].izuCustId : this.exportPopupType['item'].izuCustId.custId,
                 fixTrans:
-                    this.exportPopupType.popupType === 'NO_MATCH'
+                    (this.exportPopupType.popupType === 'NO_MATCH' || this.exportPopupType.popupType === 'LAST_DAY_MATCHED')
                         ? this.exportPopupType.fixTrans
                         : null,
                 izuDateFrom: this.exportPopupType.oldestTransIzuDate,
@@ -3969,6 +4846,10 @@ export class BankExportComponent extends ReloadServices
         if (this.scrollSubscription) {
             this.scrollSubscription.unsubscribe();
         }
+        if (this.scrollSubscriptionFilter) {
+            this.scrollSubscriptionFilter.unsubscribe();
+        }
+
         // if (this.subscription) {
         //     this.subscription.unsubscribe();
         // }
@@ -4405,5 +5286,21 @@ export class BankExportComponent extends ReloadServices
         }
 
         this.rebuildConstraints();
+    }
+
+    ccardTransMatchPeulot(companyAccountId) {
+        this.sharedService.ccardTransMatchPeulot(companyAccountId)
+            .subscribe();
+    }
+
+    currencyTooltipText(company): string {
+        const text = company.currencyName + ' - ' + company.currencyString;
+        return company.bankSnifId ? text.concat("\n" + "סניף " + company.bankSnifId) : text;
+    }
+
+    shouldShowBalanceCheckAdmin(company): boolean {
+        return company.izuCustId && company.izuCustId !== "לא משוייך כרטיס" &&
+            company.lastExportStatus && company.lastExportStatus !== "OK" &&
+            company.lastExportStatus !== "WAIT_TO_EXPORT";
     }
 }

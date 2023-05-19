@@ -38,10 +38,13 @@ export class TokenUpdateDialogComponent
     }
 
     set display(val: boolean) {
+        console.log('val---', val)
         this._display = val;
-        this.displayChange.emit(this._display);
         this.state = null;
         this.account.reset();
+        if (!this._display) {
+            this.displayChange.emit(this._display);
+        }
     }
 
     @Output() displayChange = new EventEmitter<any>();
@@ -184,7 +187,15 @@ export class TokenUpdateDialogComponent
                 }
             );
     }
-
+    mixPanelEvent(eventName: string, params?: any) {
+        if (window['mixpanel']) {
+            if (!params) {
+                window['mixpanel'].track(eventName);
+            } else {
+                window['mixpanel'].track(eventName, params);
+            }
+        }
+    }
     submitTokenUpdate(): void {
         // const cntrlNames = Object.keys(this.account.controls);
         const request = Object.assign(
@@ -211,6 +222,7 @@ export class TokenUpdateDialogComponent
                             ? DialogState.UPDATE_FAILED
                             : null;
                     if (this.state === DialogState.UPDATE_SUCCEEDED) {
+                        this.mixPanelEvent('update information');
                         if (this.pollAfterUpdate) {
                             this.startTokenStatusPolling();
                         } else {

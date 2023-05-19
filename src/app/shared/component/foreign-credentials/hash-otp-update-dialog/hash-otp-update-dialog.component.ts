@@ -7,7 +7,7 @@ import {of} from 'rxjs/internal/observable/of';
 import {Observable} from 'rxjs/internal/Observable';
 import {defer} from 'rxjs/internal/observable/defer';
 import {FormControl, FormGroup, Validators} from '@angular/forms';
-import {UserService} from "@app/core/user.service";
+import {UserService} from '@app/core/user.service';
 
 @Component({
     selector: 'app-hash-otp-update-dialog',
@@ -43,13 +43,13 @@ export class HashOtpUpdateDialogComponent implements OnInit {
     public step: OtpUpdateDialogStep;
     public OtpUpdateDialogStep = OtpUpdateDialogStep;
 
-    awaitConnection$: Observable<Array<TokenStatusResponse>>;
+    awaitConnection$: any;
     otpForm: any;
     tokenLastPollResult: TokenStatusResponse;
     otpCodeApply$: Observable<any>;
     monitoring$: Observable<Array<TokenStatusResponse>>;
 
-    constructor(private tokenService: TokenService,         public userService: UserService) {
+    constructor(private tokenService: TokenService, public userService: UserService) {
     }
 
     ngOnInit() {
@@ -65,6 +65,7 @@ export class HashOtpUpdateDialogComponent implements OnInit {
             this.createAwaitConnectionObs();
         } else {
             this.step = OtpUpdateDialogStep.CODE_PROMPT;
+            this.createAwaitConnectionObs();
         }
 
         this.otpForm = new FormGroup({
@@ -104,30 +105,46 @@ export class HashOtpUpdateDialogComponent implements OnInit {
     createAwaitConnectionObs() {
         // this.setStep(OtpUpdateDialogStep.CODE_PROMPT);
 
+        let status;
         this.awaitConnection$ = defer(() =>
             this.tokenService.hashAppTokenWork({uuid: this.tokenData.token}).pipe(
                 tap(() => {
                     this.setStep(OtpUpdateDialogStep.CODE_PROMPT);
                 }),
-                // switchMap(() => timer(5_000, 5_000)
-                //     .pipe(
-                //         switchMap(() => this.tokenService.stationTokenGetStatus({
-                //                 companyId: this.companyId, stationId: this.stationId, tokens: [this.tokenData.token]
-                //             })
-                //         ),
-                //         tap((response:any) => {
-                //             // if (this.display && !!this.storeLastPollResultFrom(response)
-                //             //     && 'OPT_CODE_INSERT' === this.tokenLastPollResult.tokenStatus) {
-                //             //
-                //             // }
-                //         }),
-                //         takeWhileInclusive(() => this.display
-                //             && (!this.tokenLastPollResult.tokenStatus
-                //                 || 'OPT_CODE_INSERT' !== this.tokenLastPollResult.tokenStatus)),
-                //         finalize(() => {
-                //         })
-                //     )
-                // ),
+                switchMap(() => timer(5000, 5000)
+                    .pipe(
+                        switchMap(() => this.tokenService.stationTokenGetStatus({
+                                companyId: this.companyId, stationId: this.stationId, tokens: [this.tokenData.token]
+                            })
+                        ),
+                        tap((response: any) => {
+                            status = this.fetchTokenStatusResponseFrom(response);
+                            console.log('status.tokenStatus, ', status.tokenStatus)
+                        }),
+                        takeWhileInclusive(() => this.display
+                            && !(status.tokenStatus === 'VALIDPOALIMBAASAKIM'
+                                ||
+                                status.tokenStatus === 'UP_TO_DATE'
+                                ||
+                                status.tokenStatus === 'VALID'
+                                ||
+                                status.tokenStatus === 'INVALIDPASSWORD'
+                                ||
+                                status.tokenStatus === 'WRONG_PASS'
+                                ||
+                                status.tokenStatus === 'PASSWORDEXPIRED'
+                            )),
+                        finalize(() => {
+                            if (status.tokenStatus === 'INVALIDPASSWORD'
+                                ||
+                                status.tokenStatus === 'WRONG_PASS'
+                                ||
+                                status.tokenStatus === 'PASSWORDEXPIRED') {
+                                this.display = false;
+                            }
+                        })
+                    )
+                ),
                 catchError(() => of(null))
             )
         );
@@ -146,7 +163,7 @@ export class HashOtpUpdateDialogComponent implements OnInit {
                 otpPassword: this.otpForm.get('code').value
             })
             .pipe(
-                switchMap(() => timer(5_000, 5_000)
+                switchMap(() => timer(5000, 5000)
                     .pipe(
                         switchMap(() =>
                             this.tokenService.stationTokenGetStatus({
@@ -214,7 +231,7 @@ export class HashOtpUpdateDialogComponent implements OnInit {
     }
 
     private createMonitoringOs() {
-        this.monitoring$ = timer(1_000, 5_000).pipe(
+        this.monitoring$ = timer(1000, 5000).pipe(
             switchMap(() =>
                 this.tokenService.stationTokenGetStatus({
                     companyId: this.companyId,

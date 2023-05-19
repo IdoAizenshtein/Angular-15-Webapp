@@ -27,7 +27,7 @@
 
 
 
-<div class="comapniesTable journalTransTable isDev supplierCustomersJournal">
+<div class="comapniesTable journalTransTable isDev supplierCustomersJournal" [class.hideCompanyName]="userService?.appData?.hideCompanyName">
 	<div #header class="header">
 		<div (click)="toggleCompanyFilesOrderTo('companyName')">
 			שם החברה
@@ -126,6 +126,9 @@
 			</mat-icon>
 		</div>
 		<div>
+			סטטוס קליטת קבצים
+		</div>
+		<div>
 			<app-tooltip-category
 					(changed)="filterCategory($event)"
 					[data]="tokenValidStatusArr"
@@ -167,7 +170,9 @@
 					trackClass="scrollbar">
 
 				<cdk-virtual-scroll-viewport #virtualScroll itemSize="45" scrollViewport>
-					<div *cdkVirtualFor="let company of companies;  let i = index;">
+					<div *cdkVirtualFor="let company of companies    | slice
+              : currentPage * entryLimit
+              : currentPage * entryLimit + entryLimit;  let i = index;">
 						<div
 								(click)="companySelect = company"
 								[class.active]="
@@ -221,6 +226,7 @@
 									<span style="font-size: 16px;"
 											#transDesc
 											(click)="
+												sharedComponent.mixPanelEvent('companyName');
                     storageService.sessionStorageSetter(
                       'suppliersAndCustomersStatus',
                       'WAIT_FOR_CONFIRM'
@@ -262,6 +268,32 @@
 							<div>
 								<div
 										#transDesc
+										*ngIf="!userService.appData?.hideCompanyName || !!!company.authorized"
+										[innerHTML]="
+                  (company.companyHp !== null ? company.companyHp : '-')
+                    | highlight: queryString
+                "
+
+										[pTooltip]="company.companyHp"
+										[tooltipDisabled]="
+                  transDesc.clientWidth >= transDesc.scrollWidth
+                "
+										class="text-ellipsis left-space"
+								></div>
+
+
+
+								<div style="font-size: 16px;"
+									 (mouseleave)="tooltipMoreData.hide()"
+									 (mouseover)="
+
+
+                    eventRightPos($event);
+                    onScrollCubes(i);
+                    tooltipMoreData.show($event)
+                  "
+										*ngIf="userService.appData?.hideCompanyName && !!company.authorized"
+										#transDesc
 										[innerHTML]="
                   (company.companyHp !== null ? company.companyHp : '-')
                     | highlight: queryString
@@ -270,18 +302,33 @@
 										[tooltipDisabled]="
                   transDesc.clientWidth >= transDesc.scrollWidth
                 "
-										class="text-ellipsis left-space"
+										class="text-ellipsis left-space link"
+										(click)="
+											sharedComponent.mixPanelEvent('companyName');
+								storageService.sessionStorageSetter(
+								'suppliersAndCustomersStatus',
+								'WAIT_FOR_CONFIRM'
+								);
+								sharedComponent.selectCompanyParam(
+								company,
+								'journalTrans/bankAndCredit'
+								)
+								"
 								></div>
+
+
 							</div>
 
 							<div>
 								<div
 										#transDesc
-										(click)="
+										(click)="!!company.authorized &&
+										sharedComponent.mixPanelEvent('bank');
+										!!company.authorized &&
                   storageService.sessionStorageSetter(
                     'bankAndCreditScreenTab',
                     'BANK'
-                  );
+                  ); !!company.authorized &&
                   sharedComponent.selectCompanyParam(
                     company,
                     'journalTrans/bankAndCredit'
@@ -295,17 +342,19 @@
 										[tooltipDisabled]="
                   transDesc.clientWidth >= transDesc.scrollWidth
                 "
-										class="text-ellipsis link left-space"
+										[ngClass]="{'text-ellipsis link left-space': !!company.authorized}"
 								></div>
 							</div>
 							<div>
 								<div
 										#transDesc
-										(click)="
+										(click)="!!company.authorized &&
+										sharedComponent.mixPanelEvent('credit');
+										!!company.authorized &&
                   storageService.sessionStorageSetter(
                     'bankAndCreditScreenTab',
                     'CREDIT'
-                  );
+                  ); !!company.authorized &&
                   sharedComponent.selectCompanyParam(
                     company,
                     'journalTrans/bankAndCredit'
@@ -319,16 +368,18 @@
 										[tooltipDisabled]="
                   transDesc.clientWidth >= transDesc.scrollWidth
                 "
-										class="text-ellipsis link left-space"
+										[ngClass]="{'text-ellipsis link left-space': !!company.authorized}"
 								></div>
 							</div>
 							<div>
 								<mat-icon
-										(click)="
+										(click)="!!company.authorized &&
+																				sharedComponent.mixPanelEvent('pkudot');
+																				!!company.authorized &&
                   storageService.sessionStorageSetter(
                     'bankAndCreditScreenTab',
                     'CREATE_JOURNAL_TRANS'
-                  );
+                  ); !!company.authorized &&
                   sharedComponent.selectCompanyParam(
                     company,
                     'journalTrans/bankAndCredit'
@@ -345,6 +396,7 @@
                 "
 								>
 									<div
+											[class.redBg]="company.filesInputStatusDesc"
 											[innerHTML]="
                     company.journalBankCredit | highlight: queryString
                   "
@@ -352,7 +404,9 @@
 									></div>
 								</mat-icon>
 								<mat-icon
-										(click)="
+										(click)="!!company.authorized &&
+																														sharedComponent.mixPanelEvent('pkudot');
+																														!!company.authorized &&
                   sharedComponent.selectCompanyParam(
                     company,
                     'journalTrans/bankAndCredit'
@@ -369,6 +423,22 @@
                 "
 								>
 								</mat-icon>
+							</div>
+							<div>
+								<div
+										[class.red]="company.filesInputStatusDesc"
+										#filesInputStatusDesc
+										[innerHTML]="
+                  (company.filesInputStatusDescText)
+                    | highlight: queryString
+                "
+
+										[pTooltip]="company.filesInputStatusDescText"
+										[tooltipDisabled]="
+                  filesInputStatusDesc.clientWidth >= filesInputStatusDesc.scrollWidth
+                "
+										class="text-ellipsis left-space"
+								></div>
 							</div>
 							<div>
 								<mat-icon
@@ -1300,6 +1370,7 @@
 			[resizable]="false"
 			[visible]="(scanFilesOcrPopUp?.visible)"
 			appendTo="body"
+			maskStyleClass="scanFilesOcrPopUpMask"
 			styleClass="scanFilesOcrPopUp"
 	>
 		<div [appScrollHeight]="55" class="scroll-chrome flexCenter">
@@ -2137,6 +2208,8 @@
 								#plist_subjectsForCompany
 								(onChange)="op.hide()"
 								[dataKey]="'subjectId'"
+								name="subject"
+
 								[formControlName]="'subject'"
 								[listStyle]="{ 'max-height': '200px', width: '237px' }"
 								[optionLabel]="'subjectName'"
@@ -2326,7 +2399,6 @@
 	          [draggable]="false"
 	          [modal]="true"
 	          position="top"
-	          [style]="{'margin-top':'198px'}"
 	          [resizable]="false"
 	          [visible]="(companiesWithoutAgreement)"
 	          appendTo="body"
@@ -3600,1445 +3672,1447 @@ showItrotModal
 	</p-dialog>
 </ng-container>
 
-<ng-container *ngIf="openCardDDEdit">
-	<p-dialog
-			(visibleChange)="openCardDDEdit = $event"
-			[modal]="true"
-			[style]="{width: 450 + 'px'}"
-			[visible]="(
-openCardDDEdit
-        )"
-			appendTo="body"
-			styleClass="deleteMovementDialog accountsOcrTabDeleteMovementDialog"
-	>
-		<p-header>
-			עדכון כרטיס הנהלת חשבונות לחברת
-			{{ tooltipEditFile.parent.companyName }}
-		</p-header>
+<!--<ng-container *ngIf="openCardDDEdit">-->
+<!--	<p-dialog-->
+<!--			(visibleChange)="openCardDDEdit = $event"-->
+<!--			[modal]="true"-->
+<!--			[style]="{width: 450 + 'px'}"-->
+<!--			[visible]="(-->
+<!--openCardDDEdit-->
+<!--        )"-->
+<!--			appendTo="body"-->
+<!--			styleClass="deleteMovementDialog accountsOcrTabDeleteMovementDialog"-->
+<!--	>-->
+<!--		<p-header>-->
+<!--			עדכון כרטיס הנהלת חשבונות לחברת-->
+<!--			{{ tooltipEditFile.parent.companyName }}-->
+<!--		</p-header>-->
 
-		<div style="text-align: center">
-			<!--            <h2>-->
-			<!--                <strong style="-->
-			<!--    font-size: 24px;-->
-			<!--">-->
-			<!--                    שימו לב!-->
-			<!--                </strong>-->
-			<!--            </h2>-->
-			<!--            <p style="-->
-			<!--    margin-bottom: 0;-->
-			<!--">-->
-			<!--                <strong style="-->
-			<!--    line-height: 18px;-->
-			<!--    margin-bottom: 6px;-->
-			<!--">-->
-			<!--                    שינוי כרטיס יגרום למחיקת כל ההיסטוריה מ- bizibox.-->
-			<!--                </strong>-->
-			<!--            </p>-->
-			<!--            <p style="-->
-			<!--    line-height: 18px;-->
-			<!--">-->
-			<!--                יכול לגרום גם לבעיות בהנהלת חשבונות.-->
-			<!--            </p>-->
-			<div style="
-          display: flex;
-          justify-content: center;
-          margin-bottom: 45px;
-          margin-top: 50px;
-        ">
-				<p-dropdown
-						#formDropdowns
-						(onFocus)="clearFilter(formDropdowns)"
+<!--		<div style="text-align: center">-->
+<!--			&lt;!&ndash;            <h2>&ndash;&gt;-->
+<!--			&lt;!&ndash;                <strong style="&ndash;&gt;-->
+<!--			&lt;!&ndash;    font-size: 24px;&ndash;&gt;-->
+<!--			&lt;!&ndash;">&ndash;&gt;-->
+<!--			&lt;!&ndash;                    שימו לב!&ndash;&gt;-->
+<!--			&lt;!&ndash;                </strong>&ndash;&gt;-->
+<!--			&lt;!&ndash;            </h2>&ndash;&gt;-->
+<!--			&lt;!&ndash;            <p style="&ndash;&gt;-->
+<!--			&lt;!&ndash;    margin-bottom: 0;&ndash;&gt;-->
+<!--			&lt;!&ndash;">&ndash;&gt;-->
+<!--			&lt;!&ndash;                <strong style="&ndash;&gt;-->
+<!--			&lt;!&ndash;    line-height: 18px;&ndash;&gt;-->
+<!--			&lt;!&ndash;    margin-bottom: 6px;&ndash;&gt;-->
+<!--			&lt;!&ndash;">&ndash;&gt;-->
+<!--			&lt;!&ndash;                    שינוי כרטיס יגרום למחיקת כל ההיסטוריה מ- bizibox.&ndash;&gt;-->
+<!--			&lt;!&ndash;                </strong>&ndash;&gt;-->
+<!--			&lt;!&ndash;            </p>&ndash;&gt;-->
+<!--			&lt;!&ndash;            <p style="&ndash;&gt;-->
+<!--			&lt;!&ndash;    line-height: 18px;&ndash;&gt;-->
+<!--			&lt;!&ndash;">&ndash;&gt;-->
+<!--			&lt;!&ndash;                יכול לגרום גם לבעיות בהנהלת חשבונות.&ndash;&gt;-->
+<!--			&lt;!&ndash;            </p>&ndash;&gt;-->
+<!--			<div style="-->
+<!--          display: flex;-->
+<!--          justify-content: center;-->
+<!--          margin-bottom: 45px;-->
+<!--          margin-top: 50px;-->
+<!--        ">-->
+<!--				<p-dropdown-->
+<!--						#formDropdowns-->
+<!--						(onFocus)="clearFilter(formDropdowns)"-->
 
-						[(ngModel)]="tooltipEditFile.izuCustId"
-						[autoDisplayFirst]="false"
-						[filter]="true"
+<!--						[(ngModel)]="tooltipEditFile.izuCustId"-->
+<!--						[autoDisplayFirst]="false"-->
+<!--						[filter]="true"-->
 
-						[options]="
-       disabledData(userService.appData.userData.companyCustomerDetails
-            ? userService.appData.userData.companyCustomerDetails.banksCards
-            : [])
-        "
-						[scrollHeight]="'135px'"
-						[style]="{ width: '300px' }"
-						appendTo="body"
-						dataKey="custId"
-						emptyFilterMessage="לא נמצאו תוצאות"
-						filterBy="lName,custId,hp"
-						id="custFrom"
-						optionDisabled="disabled"
-						optionLabel="custId"
-						optionValue="custId"
-						panelStyleClass="company-customer-dropdown-panel cardsDD card282"
-						placeholder="בחירה"
-						styleClass="ddInfoCompanyForm"
-				>
-					<ng-template let-item pTemplate="selectedItem">
-          <span
-		          #spanElement
-		          [pTooltip]="item.cartisName"
-		          [tooltipDisabled]="
-              spanElement.offsetWidth >= spanElement.scrollWidth
-            "
-		          style="
-              vertical-align: middle;
-              display: block;
-              white-space: nowrap;
-              overflow: hidden;
-              text-overflow: ellipsis;
-            "
-		          tooltipPosition="top"
-          >{{ item.cartisName }}</span
-          >
-					</ng-template>
-					<ng-template let-item pTemplate="item">
-						<div *ngIf="item.title" class="p-helper-clearfix">
-							<span> כרטיסי בנק: </span>
-						</div>
-						<div *ngIf="!item.title"
-						     [ngStyle]="
-              tooltipEditFile['izuCustIdSrc'] === item.custId ||
-              isExistCustId(item.custId)
-                ? { opacity: '0.4', cursor: 'default' }
-                : ''
-            "
-						     class="p-helper-clearfix"
-						     style="flex-flow: row wrap"
-						>
-							<div
-									[class.bottom9]="item.isLastHistory"
-									class="p-helper-clearfix"
-							>
-								<div>
-									<span class="text-ellipsis">{{ item.cartisName }}</span>
-								</div>
-							</div>
-							<div
-									*ngIf="
-                tooltipEditFile['izuCustIdSrc'] === item.custId ||
-                isExistCustId(item.custId)
-              "
-									style="flex: none; width: 100%; height: auto; line-height: normal"
-							>
-								הכרטיס מוגדר ככרטיס הנה”ח
-							</div>
-							<div
-									*ngIf="item.value?.isLastHistory"
-									style="
-                height: 1px;
-                background: #cacaca;
-                padding: 0;
-                position: absolute;
-                bottom: -6px;
-                right: 0;
-                left: 0;
-                z-index: 999;
-              "
-							></div>
-						</div>
-					</ng-template>
-				</p-dropdown>
-			</div>
+<!--						[options]="-->
+<!--       disabledData(userService.appData.userData.companyCustomerDetails-->
+<!--            ? userService.appData.userData.companyCustomerDetails.banksCards-->
+<!--            : [])-->
+<!--        "-->
+<!--						[scrollHeight]="'135px'"-->
+<!--						[style]="{ width: '300px' }"-->
+<!--						appendTo="body"-->
+<!--						dataKey="custId"-->
+<!--						emptyFilterMessage="לא נמצאו תוצאות"-->
+<!--						filterBy="lName,custId,hp"-->
+<!--						id="custFrom"-->
+<!--						optionDisabled="disabled"-->
+<!--						optionLabel="custId"-->
+<!--						optionValue="custId"-->
+<!--						panelStyleClass="company-customer-dropdown-panel cardsDD card282"-->
+<!--						placeholder="בחירה"-->
+<!--						styleClass="ddInfoCompanyForm"-->
+<!--				>-->
+<!--					<ng-template let-item pTemplate="selectedItem">-->
+<!--          <span-->
+<!--		          #spanElement-->
+<!--		          [pTooltip]="item.cartisName"-->
+<!--		          [tooltipDisabled]="-->
+<!--              spanElement.offsetWidth >= spanElement.scrollWidth-->
+<!--            "-->
+<!--		          style="-->
+<!--              vertical-align: middle;-->
+<!--              display: block;-->
+<!--              white-space: nowrap;-->
+<!--              overflow: hidden;-->
+<!--              text-overflow: ellipsis;-->
+<!--            "-->
+<!--		          tooltipPosition="top"-->
+<!--          >{{ item.cartisName }}</span-->
+<!--          >-->
+<!--					</ng-template>-->
+<!--					<ng-template let-item pTemplate="item">-->
+<!--						<div *ngIf="item.title" class="p-helper-clearfix">-->
+<!--							<span> כרטיסי בנק: </span>-->
+<!--						</div>-->
+<!--						<div *ngIf="!item.title"-->
+<!--						     [ngStyle]="-->
+<!--              tooltipEditFile['izuCustIdSrc'] === item.custId ||-->
+<!--              isExistCustId(item.custId)-->
+<!--                ? { opacity: '0.4', cursor: 'default' }-->
+<!--                : ''-->
+<!--            "-->
+<!--						     class="p-helper-clearfix"-->
+<!--						     style="flex-flow: row wrap"-->
+<!--						>-->
+<!--							<div-->
+<!--									[class.bottom9]="item.isLastHistory"-->
+<!--									class="p-helper-clearfix"-->
+<!--							>-->
+<!--								<div>-->
+<!--									<span class="text-ellipsis">{{ item.cartisName }}</span>-->
+<!--								</div>-->
+<!--							</div>-->
+<!--							<div-->
+<!--									*ngIf="-->
+<!--                tooltipEditFile['izuCustIdSrc'] === item.custId ||-->
+<!--                isExistCustId(item.custId)-->
+<!--              "-->
+<!--									style="flex: none; width: 100%; height: auto; line-height: normal"-->
+<!--							>-->
+<!--								הכרטיס מוגדר ככרטיס הנה”ח-->
+<!--							</div>-->
+<!--							<div-->
+<!--									*ngIf="item.value?.isLastHistory"-->
+<!--									style="-->
+<!--                height: 1px;-->
+<!--                background: #cacaca;-->
+<!--                padding: 0;-->
+<!--                position: absolute;-->
+<!--                bottom: -6px;-->
+<!--                right: 0;-->
+<!--                left: 0;-->
+<!--                z-index: 999;-->
+<!--              "-->
+<!--							></div>-->
+<!--						</div>-->
+<!--					</ng-template>-->
+<!--				</p-dropdown>-->
+<!--			</div>-->
 
-		</div>
-		<p-footer>
-			<div style="justify-content: center">
-				<button
-						(click)="openCardDDEdit = false"
-						class="button-white button-link"
-				>
-					{{ 'actions.accountRestore.decline' | translate }}
-				</button>
-				<button
-						(click)="openCardDDEdit = false; changeIzuCustId(tooltipEditFile)"
-						class="button-dark"
-						style="width: 160px"
-				>
-					אישור
-				</button>
-			</div>
-		</p-footer>
-	</p-dialog>
-</ng-container>
+<!--		</div>-->
+<!--		<p-footer>-->
+<!--			<div style="justify-content: center">-->
+<!--				<button-->
+<!--						(click)="openCardDDEdit = false"-->
+<!--						class="button-white button-link"-->
+<!--				>-->
+<!--					{{ 'actions.accountRestore.decline' | translate }}-->
+<!--				</button>-->
+<!--				<button-->
+<!--						(click)="openCardDDEdit = false; changeIzuCustId(tooltipEditFile)"-->
+<!--						class="button-dark"-->
+<!--						style="width: 160px"-->
+<!--				>-->
+<!--					אישור-->
+<!--				</button>-->
+<!--			</div>-->
+<!--		</p-footer>-->
+<!--	</p-dialog>-->
+<!--</ng-container>-->
 
-<!--BALANCE_DIFFERENCE-->
-<ng-container
-		*ngIf="exportPopupType && exportPopupType.popupType === 'BALANCE_DIFFERENCE'"
->
-	<p-dialog (onHide)="exportPopupType = false"
-	          (visibleChange)="exportPopupType = false"
+<!--&lt;!&ndash;BALANCE_DIFFERENCE&ndash;&gt;-->
+<!--<ng-container-->
+<!--		*ngIf="exportPopupType && exportPopupType.popupType === 'BALANCE_DIFFERENCE'"-->
+<!--&gt;-->
+<!--	<p-dialog (onHide)="exportPopupType = false"-->
+<!--	          (visibleChange)="exportPopupType = false"-->
 
-	          [draggable]="false"
-	          [modal]="true"
-	          [resizable]="false"
-	          [visible]="(
-      exportPopupType && exportPopupType.popupType === 'BALANCE_DIFFERENCE'
-        )"
-	          appendTo="body"
-	          styleClass="BALANCE_DIFFERENCE {{
-      exportPopupType.biziboxAccountHistory ? 'biziboxAccountHistory_modal' : ''
-    }}"
-	>
-		<p-header
-		>השוואת תנועות -
-			{{ exportPopupType.item.parent.companyName }}
-			- חש -
-			{{ exportPopupType.item.nickname }}
-		</p-header>
-		<ng-container *ngIf="!exportPopupType.biziboxAccountHistory">
-			<div style="width: 673px; margin: 0 auto">
-				<p class="info" style="padding-bottom: 5px">
-					קיים פער תנועות בין החשבשבת לבין ביזיבוקס
-				</p>
-				<div class="data">
-					<div class="table">
-						<div>
-							<p>תאריכי פער</p>
-							<h3>
-								{{
-								exportPopupType.hashBankData
-										? (exportPopupType.hashBankData.date | date: 'd/M/yy')
-										: ''
-								}}
-								{{
-								exportPopupType.hashBankData &&
-								exportPopupType.biziboxTransData
-										? ' - '
-										: ''
-								}}
-								{{
-								exportPopupType.biziboxTransData
-										? (exportPopupType.biziboxTransData.date | date: 'd/M/yy')
-										: ''
-								}}
-							</h3>
-						</div>
-						<div>
-							<p>פעולה אחרונה בחשבשבת</p>
-							<h3>
-								{{
-								exportPopupType.hashBankData
-										? (exportPopupType.hashBankData.date | date: 'd/M/yy')
-										: ''
-								}}
-								<br/>
-								{{
-								exportPopupType.hashBankData
-										? exportPopupType.hashBankData.name
-										: ''
-								}}
-								{{
-								exportPopupType.hashBankData
-										? (exportPopupType.hashBankData.balance | sum: false)
-										: '-'
-								}}
-							</h3>
-						</div>
-						<div>
-							<p>פעולה ראשונה בביזיבוקס</p>
-							<h3>
-								{{
-								exportPopupType.biziboxTransData
-										? (exportPopupType.biziboxTransData.date | date: 'd/M/yy')
-										: ''
-								}}
-								<br/>
-								{{
-								exportPopupType.biziboxTransData
-										? exportPopupType.biziboxTransData.name
-										: ''
-								}}
-								{{
-								exportPopupType.biziboxTransData
-										? (exportPopupType.biziboxTransData.balance | sum: false)
-										: '-'
-								}}
-							</h3>
-						</div>
-					</div>
-					<div class="mark">
-						<div>
-							<p>פער</p>
-							<h3>
-								{{
-								exportPopupType.balanceDifference !== null
-										? '+' + (exportPopupType.balanceDifference | sum: true:true)
-										: '-'
-								}}
-							</h3>
-						</div>
-					</div>
-				</div>
+<!--	          [draggable]="false"-->
+<!--	          [modal]="true"-->
+<!--	          [resizable]="false"-->
+<!--	          [visible]="(-->
+<!--      exportPopupType && exportPopupType.popupType === 'BALANCE_DIFFERENCE'-->
+<!--        )"-->
+<!--	          appendTo="body"-->
+<!--	          styleClass="BALANCE_DIFFERENCE {{-->
+<!--      exportPopupType.biziboxAccountHistory ? 'biziboxAccountHistory_modal' : ''-->
+<!--    }}"-->
+<!--	>-->
+<!--		<p-header-->
+<!--		>השוואת תנועות - -->
+<!--			{{ exportPopupType.item.parent.companyName }}-->
+<!--			- חש - -->
+<!--			{{ exportPopupType.item.nickname }}-->
+<!--		</p-header>-->
+<!--		<ng-container *ngIf="!exportPopupType.biziboxAccountHistory">-->
+<!--			<div style="width: 673px; margin: 0 auto">-->
+<!--				<p class="info" style="padding-bottom: 5px">-->
+<!--					קיים פער תנועות בין החשבשבת לבין ביזיבוקס-->
+<!--				</p>-->
+<!--				<div class="data">-->
+<!--					<div class="table">-->
+<!--						<div>-->
+<!--							<p>תאריכי פער</p>-->
+<!--							<h3>-->
+<!--								{{-->
+<!--								exportPopupType.hashBankData-->
+<!--										? (exportPopupType.hashBankData.date | date: 'd/M/yy')-->
+<!--										: ''-->
+<!--								}}-->
+<!--								{{-->
+<!--								exportPopupType.hashBankData &&-->
+<!--								exportPopupType.biziboxTransData-->
+<!--										? ' - '-->
+<!--										: ''-->
+<!--								}}-->
+<!--								{{-->
+<!--								exportPopupType.biziboxTransData-->
+<!--										? (exportPopupType.biziboxTransData.date | date: 'd/M/yy')-->
+<!--										: ''-->
+<!--								}}-->
+<!--							</h3>-->
+<!--						</div>-->
+<!--						<div>-->
+<!--							<p>פעולה אחרונה בחשבשבת</p>-->
+<!--							<h3>-->
+<!--								{{-->
+<!--								exportPopupType.hashBankData-->
+<!--										? (exportPopupType.hashBankData.date | date: 'd/M/yy')-->
+<!--										: ''-->
+<!--								}}-->
+<!--								<br/>-->
+<!--								{{-->
+<!--								exportPopupType.hashBankData-->
+<!--										? exportPopupType.hashBankData.name-->
+<!--										: ''-->
+<!--								}}-->
+<!--								{{-->
+<!--								exportPopupType.hashBankData-->
+<!--										? (exportPopupType.hashBankData.balance | sum: false)-->
+<!--										: '-'-->
+<!--								}}-->
+<!--							</h3>-->
+<!--						</div>-->
+<!--						<div>-->
+<!--							<p>פעולה ראשונה בביזיבוקס</p>-->
+<!--							<h3>-->
+<!--								{{-->
+<!--								exportPopupType.biziboxTransData-->
+<!--										? (exportPopupType.biziboxTransData.date | date: 'd/M/yy')-->
+<!--										: ''-->
+<!--								}}-->
+<!--								<br/>-->
+<!--								{{-->
+<!--								exportPopupType.biziboxTransData-->
+<!--										? exportPopupType.biziboxTransData.name-->
+<!--										: ''-->
+<!--								}}-->
+<!--								{{-->
+<!--								exportPopupType.biziboxTransData-->
+<!--										? (exportPopupType.biziboxTransData.balance | sum: false)-->
+<!--										: '-'-->
+<!--								}}-->
+<!--							</h3>-->
+<!--						</div>-->
+<!--					</div>-->
+<!--					<div class="mark">-->
+<!--						<div>-->
+<!--							<p>פער</p>-->
+<!--							<h3>-->
+<!--								{{-->
+<!--								exportPopupType.balanceDifference !== null-->
+<!--										? '+' + (exportPopupType.balanceDifference | sum: true:true)-->
+<!--										: '-'-->
+<!--								}}-->
+<!--							</h3>-->
+<!--						</div>-->
+<!--					</div>-->
+<!--				</div>-->
 
-				<div class="select-auto-manual">
-					<p>איך תרצה להתאים את היתרות ?</p>
-					<ul>
-						<li>
-							<div>
-								<p-radioButton
-										[(ngModel)]="exportPopupType['fixTrans']"
-										[value]="'MANUAL'"
-										name="balanceDifferenceAuto"
-								></p-radioButton>
-							</div>
-							<div>
-								<h2>
-									ידנית
-									<img
-											src="/assets/images/balanceDifferenceAutoAlert.png"
-											style="margin-right: 5px; cursor: pointer"
-									/>
-								</h2>
-								<p>אני אשלים את הפער ואנסה לייצא שוב כשאסיים</p>
-							</div>
-						</li>
-						<li>
-							<div>
-								<p-radioButton
-										[(ngModel)]="exportPopupType['fixTrans']"
-										[value]="'ADD_TRANS'"
-										name="balanceDifferenceAuto"
-								></p-radioButton>
-							</div>
-							<div>
-								<h2>הוספת תנועת הפרש</h2>
-								<p>
-									המערכת תוסיף אוטומטית תנועת הפרש בסכום של
-									{{
-									exportPopupType.balanceDifference !== null
-											? (exportPopupType.balanceDifference | sum: false)
-											: '-'
-									}}
-									ש״ח
-								</p>
-							</div>
-						</li>
-					</ul>
-					<p class="link-to-history">
-            <span (click)="exportPopupType.biziboxAccountHistory = true">
-              הצג נתוני ביזיבוקס
-            </span>
-					</p>
-				</div>
-			</div>
-		</ng-container>
-		<p-footer
-				*ngIf="!exportPopupType.biziboxAccountHistory"
-				style="justify-content: center"
-		>
-			<button (click)="exportPopupType = false" class="button-link">
-				{{ 'actions.cancellation' | translate }}
-			</button>
-			<button
-					(click)="nextAfterBALANCEDIFFERENCE()"
-					class="button-dark"
-					style="width: 171px; height: 35px !important; padding: 0"
-			>
-				{{ 'actions.save' | translate }}
-			</button>
-		</p-footer>
-		<ng-container *ngIf="exportPopupType.biziboxAccountHistory">
-			<div class="biziboxAccountHistory" style="width: 690px; margin: 0 auto">
-				<div class="nav">
-					<p class="link-to-history">
-            <span (click)="exportPopupType.biziboxAccountHistory = false">
-              סגור נתוני ביזיבוקס
-            </span>
-					</p>
-					<h1></h1>
-					<button
-							(click)="printHistoryTable()"
-							[matTooltip]="'appWalk.customers.report.printBtn' | translate"
-							matTooltipPosition="above"
-							style="
-              border: none;
-              background: transparent;
-              outline: none;
-              cursor: pointer;
-            "
-					>
-						<img fill ngSrc="/assets/images/to-printer-sm.png"
-						     style="height: auto; width: auto; position: relative;"/>
-					</button>
-				</div>
-				<div #historyToPrint style="margin: 0 auto">
-					<style>
-						@page {
-							size: landscape;
-							margin: 0 auto;
-						}
-					</style>
-					<div style="display: flex; justify-content: space-between">
-						<div *ngIf="exportPopupType.biziboxTransData" style="width: 48%">
-							<h1>נתונים מהבנק</h1>
-							<div class="biziboxAccountHistory_table_balance">
-								<div class="header">
-									<div>תאריך</div>
-									<div>סכום</div>
-									<div>אסמכתא</div>
-									<div>יתרה</div>
-								</div>
-								<div class="row empty">
-									<div class="text-ellipsis"></div>
-									<div class="text-ellipsis ltrNum"></div>
-									<div class="text-ellipsis"></div>
-									<div class="text-ellipsis ltrNum"></div>
-								</div>
-								<div class="row">
-									<div class="text-ellipsis">
-										{{
-										exportPopupType.biziboxTransData.date
-												? (exportPopupType.biziboxTransData.date
-														| date: 'd/M/yy')
-												: '-'
-										}}
-									</div>
-									<div
-											[class.setRedColor]="
-                      exportPopupType.biziboxTransData.total &&
-                      exportPopupType.biziboxTransData.total < 0
-                    "
-											class="text-ellipsis ltrNum"
-									>
-										{{
-										exportPopupType.biziboxTransData.total
-												? (exportPopupType.biziboxTransData.total | sum: false)
-												: '-'
-										}}
-									</div>
-									<div class="text-ellipsis">
-										{{
-										exportPopupType.biziboxTransData.asmachta
-												? exportPopupType.biziboxTransData.asmachta
-												: '-'
-										}}
-									</div>
-									<div
-											[class.setRedColor]="
-                      exportPopupType.biziboxTransData.balance &&
-                      exportPopupType.biziboxTransData.balance < 0
-                    "
-											class="text-ellipsis ltrNum"
-									>
-										{{
-										exportPopupType.biziboxTransData.balance
-												? (exportPopupType.biziboxTransData.balance
-														| sum: false)
-												: '-'
-										}}
-									</div>
-								</div>
-							</div>
-						</div>
-						<div *ngIf="exportPopupType.hashBankData" style="width: 48%">
-							<h1>נתונים מהנה״ח</h1>
-							<div class="biziboxAccountHistory_table_balance">
-								<div class="header">
-									<div>תאריך</div>
-									<div>סכום</div>
-									<div>אסמכתא</div>
-									<div>יתרה</div>
-								</div>
-								<div class="row">
-									<div class="text-ellipsis">
-										{{
-										exportPopupType.hashBankData.date
-												? (exportPopupType.hashBankData.date | date: 'd/M/yy')
-												: '-'
-										}}
-									</div>
-									<div
-											[class.setRedColor]="
-                      exportPopupType.hashBankData.total &&
-                      exportPopupType.hashBankData.total < 0
-                    "
-											class="text-ellipsis ltrNum"
-									>
-										{{
-										exportPopupType.hashBankData.total
-												? (exportPopupType.hashBankData.total | sum: false)
-												: '-'
-										}}
-									</div>
-									<div class="text-ellipsis">
-										{{
-										exportPopupType.hashBankData.asmachta
-												? exportPopupType.hashBankData.asmachta
-												: '-'
-										}}
-									</div>
-									<div
-											[class.setRedColor]="
-                      exportPopupType.hashBankData.balance &&
-                      exportPopupType.hashBankData.balance < 0
-                    "
-											class="text-ellipsis ltrNum"
-									>
-										{{
-										exportPopupType.hashBankData.balance
-												? (exportPopupType.hashBankData.balance | sum: false)
-												: '-'
-										}}
-									</div>
-								</div>
-								<div class="row empty">
-									<div class="text-ellipsis"></div>
-									<div class="text-ellipsis ltrNum"></div>
-									<div class="text-ellipsis"></div>
-									<div class="text-ellipsis ltrNum"></div>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-		</ng-container>
-	</p-dialog>
-</ng-container>
-<!--VALID-->
-<ng-container *ngIf="exportPopupType && exportPopupType.popupType === 'VALID'">
-	<p-dialog (onHide)="exportPopupType = false"
-	          (visibleChange)="exportPopupType = false"
-	          [draggable]="false"
-	          [modal]="true"
-	          [resizable]="false"
-	          [visible]="(
-exportPopupType && exportPopupType.popupType === 'VALID'
-        )"
-	          appendTo="body"
-	          styleClass="BALANCE_DIFFERENCE_VALID"
-	>
-		<p-header
-		>השוואת תנועות -
-			{{ exportPopupType.item.parent.companyName }}
-			- חש -
-			{{ exportPopupType.item.nickname }}
-		</p-header>
-		<div>
-			<p class="info" style="padding-bottom: 5px">
-				יתרת בנק והנה״ח תואמות ל-
-				{{
-				exportPopupType.hashBankData
-						? (exportPopupType.hashBankData.date | date: 'd/M/yy')
-						: ''
-				}}
-			</p>
-			<div class="data">
-				<div class="table">
-					<div>
-						<p>תאריך</p>
-						<h3>
-							{{
-							exportPopupType.hashBankData
-									? (exportPopupType.hashBankData.date | date: 'd/M/yy')
-									: ''
-							}}
-						</h3>
-					</div>
-					<div>
-						<p>
-							יתרה בבנק
-							<i></i>
-							<span>
-                {{ exportPopupType.item.nickname }}
-              </span>
-						</p>
-						<h3 style="color: #229f88">
-							{{
-							exportPopupType.biziboxTransData
-									? (exportPopupType.biziboxTransData.balance | sum: false)
-									: '-'
-							}}
-						</h3>
-					</div>
-					<div>
-						<p>
-							יתרה בהנה״ח
-							<i></i>
-							<span>
-                חשבשבת כ.
-								{{ exportPopupType.item.izuCustId.custId }}
-              </span>
-						</p>
-						<h3 style="color: #229f88">
-							{{
-							exportPopupType.hashBankData
-									? (exportPopupType.hashBankData.balance | sum: false)
-									: '-'
-							}}
-						</h3>
-					</div>
-				</div>
-			</div>
-			<p class="info" style="padding-bottom: 5px">
-				לידיעתכם, היתרות בבנק ובהנהלת חשבונות תואמות.
-			</p>
-		</div>
-		<p-footer style="justify-content: center">
-			<button (click)="exportPopupType = false" class="button-link">
-				{{ 'actions.cancellation' | translate }}
-			</button>
-			<button
-					(click)="nextAfterVALID()"
-					class="button-dark"
-					style="width: 171px; height: 35px !important; padding: 0"
-			>
-				{{ 'actions.save' | translate }}
-			</button>
-		</p-footer>
-	</p-dialog>
-</ng-container>
-<!--CUST_EMPTY-->
-<ng-container
-		*ngIf="exportPopupType && exportPopupType.popupType === 'CUST_EMPTY'"
->
-	<p-dialog (onHide)="exportPopupType = false"
-	          (visibleChange)="exportPopupType = false"
-	          [draggable]="false"
-	          [modal]="true"
-	          [resizable]="false"
-	          [visible]="(
-exportPopupType && exportPopupType.popupType === 'CUST_EMPTY'
-        )"
-	          appendTo="body"
-	          styleClass="CONNECT"
-	>
-		<p-header>
-			קישור כרטיס -
-			{{ exportPopupType.item.parent.companyName }}
+<!--				<div class="select-auto-manual">-->
+<!--					<p>איך תרצה להתאים את היתרות ?</p>-->
+<!--					<ul>-->
+<!--						<li>-->
+<!--							<div>-->
+<!--								<p-radioButton-->
+<!--										[(ngModel)]="exportPopupType['fixTrans']"-->
+<!--										[value]="'MANUAL'"-->
+<!--										name="balanceDifferenceAuto"-->
+<!--								></p-radioButton>-->
+<!--							</div>-->
+<!--							<div>-->
+<!--								<h2>-->
+<!--									ידנית-->
+<!--									<img-->
+<!--											src="/assets/images/balanceDifferenceAutoAlert.png"-->
+<!--											style="margin-right: 5px; cursor: pointer"-->
+<!--									/>-->
+<!--								</h2>-->
+<!--								<p>אני אשלים את הפער ואנסה לייצא שוב כשאסיים</p>-->
+<!--							</div>-->
+<!--						</li>-->
+<!--						<li>-->
+<!--							<div>-->
+<!--								<p-radioButton-->
+<!--										[(ngModel)]="exportPopupType['fixTrans']"-->
+<!--										[value]="'ADD_TRANS'"-->
+<!--										name="balanceDifferenceAuto"-->
+<!--								></p-radioButton>-->
+<!--							</div>-->
+<!--							<div>-->
+<!--								<h2>הוספת תנועת הפרש</h2>-->
+<!--								<p>-->
+<!--									המערכת תוסיף אוטומטית תנועת הפרש בסכום של-->
+<!--									{{-->
+<!--									exportPopupType.balanceDifference !== null-->
+<!--											? (exportPopupType.balanceDifference | sum: false)-->
+<!--											: '-'-->
+<!--									}}-->
+<!--									ש״ח-->
+<!--								</p>-->
+<!--							</div>-->
+<!--						</li>-->
+<!--					</ul>-->
+<!--					<p class="link-to-history">-->
+<!--            <span (click)="exportPopupType.biziboxAccountHistory = true">-->
+<!--              הצג נתוני ביזיבוקס-->
+<!--            </span>-->
+<!--					</p>-->
+<!--				</div>-->
+<!--			</div>-->
+<!--		</ng-container>-->
+<!--		<p-footer-->
+<!--				*ngIf="!exportPopupType.biziboxAccountHistory"-->
+<!--				style="justify-content: center"-->
+<!--		>-->
+<!--			<button (click)="exportPopupType = false" class="button-link">-->
+<!--				{{ 'actions.cancellation' | translate }}-->
+<!--			</button>-->
+<!--			<button-->
+<!--					(click)="nextAfterBALANCEDIFFERENCE()"-->
+<!--					class="button-dark"-->
+<!--					style="width: 171px; height: 35px !important; padding: 0"-->
+<!--			>-->
+<!--				{{ 'actions.save' | translate }}-->
+<!--			</button>-->
+<!--		</p-footer>-->
+<!--		<ng-container *ngIf="exportPopupType.biziboxAccountHistory">-->
+<!--			<div class="biziboxAccountHistory" style="width: 690px; margin: 0 auto">-->
+<!--				<div class="nav">-->
+<!--					<p class="link-to-history">-->
+<!--            <span (click)="exportPopupType.biziboxAccountHistory = false">-->
+<!--              סגור נתוני ביזיבוקס-->
+<!--            </span>-->
+<!--					</p>-->
+<!--					<h1></h1>-->
+<!--					<button-->
+<!--							(click)="printHistoryTable()"-->
+<!--							[matTooltip]="'appWalk.customers.report.printBtn' | translate"-->
+<!--							matTooltipPosition="above"-->
+<!--							style="-->
+<!--              border: none;-->
+<!--              background: transparent;-->
+<!--              outline: none;-->
+<!--              cursor: pointer;-->
+<!--            "-->
+<!--					>-->
+<!--						<img fill ngSrc="/assets/images/to-printer-sm.png"-->
+<!--						     style="height: auto; width: auto; position: relative;"/>-->
+<!--					</button>-->
+<!--				</div>-->
+<!--				<div #historyToPrint style="margin: 0 auto">-->
+<!--					<style>-->
+<!--						@page {-->
+<!--							size: landscape;-->
+<!--							margin: 0 auto;-->
+<!--						}-->
+<!--					</style>-->
+<!--					<div style="display: flex; justify-content: space-between">-->
+<!--						<div *ngIf="exportPopupType.biziboxTransData" style="width: 48%">-->
+<!--							<h1>נתונים מהבנק</h1>-->
+<!--							<div class="biziboxAccountHistory_table_balance">-->
+<!--								<div class="header">-->
+<!--									<div>תאריך</div>-->
+<!--									<div>סכום</div>-->
+<!--									<div>אסמכתא</div>-->
+<!--									<div>יתרה</div>-->
+<!--								</div>-->
+<!--								<div class="row empty">-->
+<!--									<div class="text-ellipsis"></div>-->
+<!--									<div class="text-ellipsis ltrNum"></div>-->
+<!--									<div class="text-ellipsis"></div>-->
+<!--									<div class="text-ellipsis ltrNum"></div>-->
+<!--								</div>-->
+<!--								<div class="row">-->
+<!--									<div class="text-ellipsis">-->
+<!--										{{-->
+<!--										exportPopupType.biziboxTransData.date-->
+<!--												? (exportPopupType.biziboxTransData.date-->
+<!--														| date: 'd/M/yy')-->
+<!--												: '-'-->
+<!--										}}-->
+<!--									</div>-->
+<!--									<div-->
+<!--											[class.setRedColor]="-->
+<!--                      exportPopupType.biziboxTransData.total &&-->
+<!--                      exportPopupType.biziboxTransData.total < 0-->
+<!--                    "-->
+<!--											class="text-ellipsis ltrNum"-->
+<!--									>-->
+<!--										{{-->
+<!--										exportPopupType.biziboxTransData.total-->
+<!--												? (exportPopupType.biziboxTransData.total | sum: false)-->
+<!--												: '-'-->
+<!--										}}-->
+<!--									</div>-->
+<!--									<div class="text-ellipsis">-->
+<!--										{{-->
+<!--										exportPopupType.biziboxTransData.asmachta-->
+<!--												? exportPopupType.biziboxTransData.asmachta-->
+<!--												: '-'-->
+<!--										}}-->
+<!--									</div>-->
+<!--									<div-->
+<!--											[class.setRedColor]="-->
+<!--                      exportPopupType.biziboxTransData.balance &&-->
+<!--                      exportPopupType.biziboxTransData.balance < 0-->
+<!--                    "-->
+<!--											class="text-ellipsis ltrNum"-->
+<!--									>-->
+<!--										{{-->
+<!--										exportPopupType.biziboxTransData.balance-->
+<!--												? (exportPopupType.biziboxTransData.balance-->
+<!--														| sum: false)-->
+<!--												: '-'-->
+<!--										}}-->
+<!--									</div>-->
+<!--								</div>-->
+<!--							</div>-->
+<!--						</div>-->
+<!--						<div *ngIf="exportPopupType.hashBankData" style="width: 48%">-->
+<!--							<h1>נתונים מהנה״ח</h1>-->
+<!--							<div class="biziboxAccountHistory_table_balance">-->
+<!--								<div class="header">-->
+<!--									<div>תאריך</div>-->
+<!--									<div>סכום</div>-->
+<!--									<div>אסמכתא</div>-->
+<!--									<div>יתרה</div>-->
+<!--								</div>-->
+<!--								<div class="row">-->
+<!--									<div class="text-ellipsis">-->
+<!--										{{-->
+<!--										exportPopupType.hashBankData.date-->
+<!--												? (exportPopupType.hashBankData.date | date: 'd/M/yy')-->
+<!--												: '-'-->
+<!--										}}-->
+<!--									</div>-->
+<!--									<div-->
+<!--											[class.setRedColor]="-->
+<!--                      exportPopupType.hashBankData.total &&-->
+<!--                      exportPopupType.hashBankData.total < 0-->
+<!--                    "-->
+<!--											class="text-ellipsis ltrNum"-->
+<!--									>-->
+<!--										{{-->
+<!--										exportPopupType.hashBankData.total-->
+<!--												? (exportPopupType.hashBankData.total | sum: false)-->
+<!--												: '-'-->
+<!--										}}-->
+<!--									</div>-->
+<!--									<div class="text-ellipsis">-->
+<!--										{{-->
+<!--										exportPopupType.hashBankData.asmachta-->
+<!--												? exportPopupType.hashBankData.asmachta-->
+<!--												: '-'-->
+<!--										}}-->
+<!--									</div>-->
+<!--									<div-->
+<!--											[class.setRedColor]="-->
+<!--                      exportPopupType.hashBankData.balance &&-->
+<!--                      exportPopupType.hashBankData.balance < 0-->
+<!--                    "-->
+<!--											class="text-ellipsis ltrNum"-->
+<!--									>-->
+<!--										{{-->
+<!--										exportPopupType.hashBankData.balance-->
+<!--												? (exportPopupType.hashBankData.balance | sum: false)-->
+<!--												: '-'-->
+<!--										}}-->
+<!--									</div>-->
+<!--								</div>-->
+<!--								<div class="row empty">-->
+<!--									<div class="text-ellipsis"></div>-->
+<!--									<div class="text-ellipsis ltrNum"></div>-->
+<!--									<div class="text-ellipsis"></div>-->
+<!--									<div class="text-ellipsis ltrNum"></div>-->
+<!--								</div>-->
+<!--							</div>-->
+<!--						</div>-->
+<!--					</div>-->
+<!--				</div>-->
+<!--			</div>-->
+<!--		</ng-container>-->
+<!--	</p-dialog>-->
+<!--</ng-container>-->
+<!--&lt;!&ndash;VALID&ndash;&gt;-->
+<!--<ng-container *ngIf="exportPopupType && exportPopupType.popupType === 'VALID'">-->
+<!--	<p-dialog (onHide)="exportPopupType = false"-->
+<!--	          (visibleChange)="exportPopupType = false"-->
+<!--	          [draggable]="false"-->
+<!--	          [modal]="true"-->
+<!--	          [resizable]="false"-->
+<!--	          [visible]="(-->
+<!--exportPopupType && exportPopupType.popupType === 'VALID'-->
+<!--        )"-->
+<!--	          appendTo="body"-->
+<!--	          styleClass="BALANCE_DIFFERENCE_VALID"-->
+<!--	>-->
+<!--		<p-header-->
+<!--		>השוואת תנועות - -->
+<!--			{{ exportPopupType.item.parent.companyName }}-->
+<!--			- חש - -->
+<!--			{{ exportPopupType.item.nickname }}-->
+<!--		</p-header>-->
+<!--		<div>-->
+<!--			<p class="info" style="padding-bottom: 5px">-->
+<!--				יתרת בנק והנה״ח תואמות ל- -->
+<!--				{{-->
+<!--				exportPopupType.hashBankData-->
+<!--						? (exportPopupType.hashBankData.date | date: 'd/M/yy')-->
+<!--						: ''-->
+<!--				}}-->
+<!--			</p>-->
+<!--			<div class="data">-->
+<!--				<div class="table">-->
+<!--					<div>-->
+<!--						<p>תאריך</p>-->
+<!--						<h3>-->
+<!--							{{-->
+<!--							exportPopupType.hashBankData-->
+<!--									? (exportPopupType.hashBankData.date | date: 'd/M/yy')-->
+<!--									: ''-->
+<!--							}}-->
+<!--						</h3>-->
+<!--					</div>-->
+<!--					<div>-->
+<!--						<p>-->
+<!--							יתרה בבנק-->
+<!--							<i></i>-->
+<!--							<span>-->
+<!--                {{ exportPopupType.item.nickname }}-->
+<!--              </span>-->
+<!--						</p>-->
+<!--						<h3 style="color: #229f88">-->
+<!--							{{-->
+<!--							exportPopupType.biziboxTransData-->
+<!--									? (exportPopupType.biziboxTransData.balance | sum: false)-->
+<!--									: '-'-->
+<!--							}}-->
+<!--						</h3>-->
+<!--					</div>-->
+<!--					<div>-->
+<!--						<p>-->
+<!--							יתרה בהנה״ח-->
+<!--							<i></i>-->
+<!--							<span>-->
+<!--                חשבשבת כ.-->
+<!--								{{ exportPopupType.item.izuCustId.custId }}-->
+<!--              </span>-->
+<!--						</p>-->
+<!--						<h3 style="color: #229f88">-->
+<!--							{{-->
+<!--							exportPopupType.hashBankData-->
+<!--									? (exportPopupType.hashBankData.balance | sum: false)-->
+<!--									: '-'-->
+<!--							}}-->
+<!--						</h3>-->
+<!--					</div>-->
+<!--				</div>-->
+<!--			</div>-->
+<!--			<p class="info" style="padding-bottom: 5px">-->
+<!--				לידיעתכם, היתרות בבנק ובהנהלת חשבונות תואמות.-->
+<!--			</p>-->
+<!--		</div>-->
+<!--		<p-footer style="justify-content: center">-->
+<!--			<button (click)="exportPopupType = false" class="button-link">-->
+<!--				{{ 'actions.cancellation' | translate }}-->
+<!--			</button>-->
+<!--			<button-->
+<!--					(click)="nextAfterVALID()"-->
+<!--					class="button-dark"-->
+<!--					style="width: 171px; height: 35px !important; padding: 0"-->
+<!--			>-->
+<!--				{{ 'actions.save' | translate }}-->
+<!--			</button>-->
+<!--		</p-footer>-->
+<!--	</p-dialog>-->
+<!--</ng-container>-->
+<!--&lt;!&ndash;CUST_EMPTY&ndash;&gt;-->
+<!--<ng-container-->
+<!--		*ngIf="exportPopupType && exportPopupType.popupType === 'CUST_EMPTY'"-->
+<!--&gt;-->
+<!--	<p-dialog (onHide)="exportPopupType = false"-->
+<!--	          (visibleChange)="exportPopupType = false"-->
+<!--	          [draggable]="false"-->
+<!--	          [modal]="true"-->
+<!--	          [resizable]="false"-->
+<!--	          [visible]="(-->
+<!--exportPopupType && exportPopupType.popupType === 'CUST_EMPTY'-->
+<!--        )"-->
+<!--	          appendTo="body"-->
+<!--	          styleClass="CONNECT"-->
+<!--	>-->
+<!--		<p-header>-->
+<!--			קישור כרטיס - -->
+<!--			{{ exportPopupType.item.parent.companyName }}-->
 
-			{{ exportPopupType.item.nickname }}
-		</p-header>
+<!--			{{ exportPopupType.item.nickname }}-->
+<!--		</p-header>-->
 
-		<div style="width: 300px; margin: 0 auto">
-			<p
-					class="titleCalendar"
-					style="text-align: center; margin-bottom: 10px; margin-top: 5px"
-			>
-				ייצוא לכרטיס הנה״ח ריק - כרטיס
-				{{ exportPopupType.item.izuCustId.custId }}
-				<br/>
-				<small>
-					נראה שכרטיס הנה״ח ריק,
-					<i> בחרו מתי לייבא נתונים: </i>
-				</small>
-			</p>
-			<div id="date-range-select" style="margin: 0 auto; width: 285px">
-				<div class="scrollers modalConnectTitle">
-					<div class="scroller">
-						<button
-								(click)="
-                current.from.year = current.from.year - 1;
-                currentDates.from = createMonth(current.from)
-              "
-								[disabled]="
-                !mayNavigateTo(current.from.month, current.from.year - 1)
-              "
-						>
-							<i class="fas fa-angle-double-right"></i>
-						</button>
-						<button
-								(click)="
-                stepMonth(current.from, -1);
-                currentDates.from = createMonth(current.from)
-              "
-								[disabled]="
-                !mayNavigateTo(current.from.month - 1, current.from.year)
-              "
-						>
-							<i class="fas fa-angle-right"></i>
-						</button>
+<!--		<div style="width: 300px; margin: 0 auto">-->
+<!--			<p-->
+<!--					class="titleCalendar"-->
+<!--					style="text-align: center; margin-bottom: 10px; margin-top: 5px"-->
+<!--			>-->
+<!--				ייצוא לכרטיס הנה״ח ריק - כרטיס-->
+<!--				{{ exportPopupType.item.izuCustId.custId }}-->
+<!--				<br/>-->
+<!--				<small>-->
+<!--					נראה שכרטיס הנה״ח ריק,-->
+<!--					<i> בחרו מתי לייבא נתונים: </i>-->
+<!--				</small>-->
+<!--			</p>-->
+<!--			<div id="date-range-select" style="margin: 0 auto; width: 285px">-->
+<!--				<div class="scrollers modalConnectTitle">-->
+<!--					<div class="scroller">-->
+<!--						<button-->
+<!--								(click)="-->
+<!--                current.from.year = current.from.year - 1;-->
+<!--                currentDates.from = createMonth(current.from)-->
+<!--              "-->
+<!--								[disabled]="-->
+<!--                !mayNavigateTo(current.from.month, current.from.year - 1)-->
+<!--              "-->
+<!--						>-->
+<!--							<i class="fas fa-angle-double-right"></i>-->
+<!--						</button>-->
+<!--						<button-->
+<!--								(click)="-->
+<!--                stepMonth(current.from, -1);-->
+<!--                currentDates.from = createMonth(current.from)-->
+<!--              "-->
+<!--								[disabled]="-->
+<!--                !mayNavigateTo(current.from.month - 1, current.from.year)-->
+<!--              "-->
+<!--						>-->
+<!--							<i class="fas fa-angle-right"></i>-->
+<!--						</button>-->
 
-						<div>
-							{{ ('langCalendar.monthNames' | translate)[current.from.month] }}
-							{{ current?.from.year }}
-						</div>
+<!--						<div>-->
+<!--							{{ ('langCalendar.monthNames' | translate)[current.from.month] }}-->
+<!--							{{ current?.from.year }}-->
+<!--						</div>-->
 
-						<button
-								(click)="
-                stepMonth(current.from, 1);
-                currentDates.from = createMonth(current.from)
-              "
-								[disabled]="
-                !mayNavigateTo(current.from.month + 1, current.from.year) ||
-                isEqual(current.from.month, current.from.year, current.till) ||
-                isAfter(
-                  current.from.month + 1,
-                  current.from.year,
-                  current.till
-                ) ||
-                (selection.till &&
-                  (isEqual(
-                    current.from.month,
-                    current.from.year,
-                    selection.till
-                  ) ||
-                    isAfter(
-                      current.from.month + 1,
-                      current.from.year,
-                      selection.till
-                    )))
-              "
-						>
-							<i class="fas fa-angle-left"></i>
-						</button>
-						<button
-								(click)="
-                current.from.year = current.from.year + 1;
-                currentDates.from = createMonth(current.from)
-              "
-								[disabled]="
-                !mayNavigateTo(current.from.month, current.from.year + 1) ||
-                isAfter(
-                  current.from.month,
-                  current.from.year + 1,
-                  current.till
-                ) ||
-                (selection.till &&
-                  isAfter(
-                    current.from.month,
-                    current.from.year + 1,
-                    selection.till
-                  ))
-              "
-						>
-							<i class="fas fa-angle-double-left"></i>
-						</button>
-					</div>
-				</div>
+<!--						<button-->
+<!--								(click)="-->
+<!--                stepMonth(current.from, 1);-->
+<!--                currentDates.from = createMonth(current.from)-->
+<!--              "-->
+<!--								[disabled]="-->
+<!--                !mayNavigateTo(current.from.month + 1, current.from.year) ||-->
+<!--                isEqual(current.from.month, current.from.year, current.till) ||-->
+<!--                isAfter(-->
+<!--                  current.from.month + 1,-->
+<!--                  current.from.year,-->
+<!--                  current.till-->
+<!--                ) ||-->
+<!--                (selection.till &&-->
+<!--                  (isEqual(-->
+<!--                    current.from.month,-->
+<!--                    current.from.year,-->
+<!--                    selection.till-->
+<!--                  ) ||-->
+<!--                    isAfter(-->
+<!--                      current.from.month + 1,-->
+<!--                      current.from.year,-->
+<!--                      selection.till-->
+<!--                    )))-->
+<!--              "-->
+<!--						>-->
+<!--							<i class="fas fa-angle-left"></i>-->
+<!--						</button>-->
+<!--						<button-->
+<!--								(click)="-->
+<!--                current.from.year = current.from.year + 1;-->
+<!--                currentDates.from = createMonth(current.from)-->
+<!--              "-->
+<!--								[disabled]="-->
+<!--                !mayNavigateTo(current.from.month, current.from.year + 1) ||-->
+<!--                isAfter(-->
+<!--                  current.from.month,-->
+<!--                  current.from.year + 1,-->
+<!--                  current.till-->
+<!--                ) ||-->
+<!--                (selection.till &&-->
+<!--                  isAfter(-->
+<!--                    current.from.month,-->
+<!--                    current.from.year + 1,-->
+<!--                    selection.till-->
+<!--                  ))-->
+<!--              "-->
+<!--						>-->
+<!--							<i class="fas fa-angle-double-left"></i>-->
+<!--						</button>-->
+<!--					</div>-->
+<!--				</div>-->
 
-				<div class="bodies modalConnect">
-					<div class="days">
-						<div
-								*ngFor="
-                let weekday of 'langCalendar.dayNamesShort' | translate;
-                index as i
-              "
-								class="weekday"
-						>
-							{{ weekday }}
-						</div>
-						<!--                            {{currentDates.from[0]| json}}-->
-						<ng-container *ngFor="let week of currentDates.from">
-							<div
-									*ngFor="let day of week; index as i"
-									[style.visibility]="
-                  current.from.month !== day.month ? 'hidden' : 'visible'
-                "
-							>
-								<div
-										(click)="
-                    selection.from.month = day.month;
-                    selection.from.year = day.year;
-                    selection.from.day = day.day
-                  "
-										[class.disabled]="
-                    current.from.month !== day.month || !day.selectable
-                  "
-										[class.selected]="
-                    selection.from &&
-                    selection.from.year === day.year &&
-                    selection.from.month === day.month &&
-                    selection.from.day === day.day
-                  "
-								>
-									{{ day.day }}
-								</div>
-							</div>
-						</ng-container>
-					</div>
-				</div>
-			</div>
-		</div>
+<!--				<div class="bodies modalConnect">-->
+<!--					<div class="days">-->
+<!--						<div-->
+<!--								*ngFor="-->
+<!--                let weekday of 'langCalendar.dayNamesShort' | translate;-->
+<!--                index as i-->
+<!--              "-->
+<!--								class="weekday"-->
+<!--						>-->
+<!--							{{ weekday }}-->
+<!--						</div>-->
+<!--						&lt;!&ndash;                            {{currentDates.from[0]| json}}&ndash;&gt;-->
+<!--						<ng-container *ngFor="let week of currentDates.from">-->
+<!--							<div-->
+<!--									*ngFor="let day of week; index as i"-->
+<!--									[style.visibility]="-->
+<!--                  current.from.month !== day.month ? 'hidden' : 'visible'-->
+<!--                "-->
+<!--							>-->
+<!--								<div-->
+<!--										(click)="-->
+<!--                    selection.from.month = day.month;-->
+<!--                    selection.from.year = day.year;-->
+<!--                    selection.from.day = day.day-->
+<!--                  "-->
+<!--										[class.disabled]="-->
+<!--                    current.from.month !== day.month || !day.selectable-->
+<!--                  "-->
+<!--										[class.selected]="-->
+<!--                    selection.from &&-->
+<!--                    selection.from.year === day.year &&-->
+<!--                    selection.from.month === day.month &&-->
+<!--                    selection.from.day === day.day-->
+<!--                  "-->
+<!--								>-->
+<!--									{{ day.day }}-->
+<!--								</div>-->
+<!--							</div>-->
+<!--						</ng-container>-->
+<!--					</div>-->
+<!--				</div>-->
+<!--			</div>-->
+<!--		</div>-->
 
-		<p-footer style="justify-content: center">
-			<button (click)="exportPopupType = false" class="button-link">
-				{{ 'actions.cancellation' | translate }}
-			</button>
-			<button
-					(click)="nextAfterCUSTEMPTY()"
-					class="button-dark"
-					style="width: 171px; height: 35px !important; padding: 0"
-			>
-				{{ 'actions.save' | translate }}
-			</button>
-		</p-footer>
-	</p-dialog>
-</ng-container>
-<!--NOT_UPDATED-->
-<ng-container
-		*ngIf="exportPopupType && exportPopupType.popupType === 'NOT_UPDATED'"
->
-	<p-dialog (onHide)="exportPopupType = false"
-	          (visibleChange)="exportPopupType = false"
-	          [closable]="true"
-	          [closeOnEscape]="false"
-	          [draggable]="false"
-	          [modal]="true"
-	          [resizable]="false"
-	          [visible]="(
-exportPopupType && exportPopupType.popupType === 'NOT_UPDATED'
-        )"
-	          appendTo="body"
-	          styleClass="hashAppTokenOtpModal alertAppTokenOtpModal"
-	>
-		<p
-				style="
-        padding-top: 62px;
-        padding-bottom: 37px;
-        font-size: 20px;
-        text-align: center;
-        line-height: normal;
-      "
-		>
-			קיימים בתוכנת הנה"ח נתונים חדשים יותר מנתוני הבנק בביזיבוקס, וודא תקינות
-			החשבון
-		</p>
-		<div
-				style="
-          justify-content: center;
-          align-items: center;
-          margin-top: 10px;
-          display: flex;
-        "
-		>
-			<button
-					(click)="nextAfterNOT_UPDATED()"
-					class="button-dark"
-					style="width: 180px; height: 33px !important; padding: 0"
-			>
-				הבנתי
-			</button>
-		</div>
-	</p-dialog>
-</ng-container>
-<!--HB_DELETE || LAST_DAY_MATCHED || NO_MATCH-->
-<ng-container
-		*ngIf="
-    exportPopupType &&
-    (exportPopupType.popupType === 'HB_DELETE' ||
-      exportPopupType.popupType === 'LAST_DAY_MATCHED' ||
-      exportPopupType.popupType === 'NO_MATCH')
-  "
->
-	<p-dialog (onHide)="exportPopupType = false"
-	          (visibleChange)="exportPopupType = false"
-	          [draggable]="false"
+<!--		<p-footer style="justify-content: center">-->
+<!--			<button (click)="exportPopupType = false" class="button-link">-->
+<!--				{{ 'actions.cancellation' | translate }}-->
+<!--			</button>-->
+<!--			<button-->
+<!--					(click)="nextAfterCUSTEMPTY()"-->
+<!--					class="button-dark"-->
+<!--					style="width: 171px; height: 35px !important; padding: 0"-->
+<!--			>-->
+<!--				{{ 'actions.save' | translate }}-->
+<!--			</button>-->
+<!--		</p-footer>-->
+<!--	</p-dialog>-->
+<!--</ng-container>-->
+<!--&lt;!&ndash;NOT_UPDATED&ndash;&gt;-->
+<!--<ng-container-->
+<!--		*ngIf="exportPopupType && exportPopupType.popupType === 'NOT_UPDATED'"-->
+<!--&gt;-->
+<!--	<p-dialog (onHide)="exportPopupType = false"-->
+<!--	          (visibleChange)="exportPopupType = false"-->
+<!--	          [closable]="true"-->
+<!--	          [closeOnEscape]="false"-->
+<!--	          [draggable]="false"-->
+<!--	          [modal]="true"-->
+<!--	          [resizable]="false"-->
+<!--	          [visible]="(-->
+<!--exportPopupType && exportPopupType.popupType === 'NOT_UPDATED'-->
+<!--        )"-->
+<!--	          appendTo="body"-->
+<!--	          styleClass="hashAppTokenOtpModal alertAppTokenOtpModal"-->
+<!--	>-->
+<!--		<p-->
+<!--				style="-->
+<!--        padding-top: 62px;-->
+<!--        padding-bottom: 37px;-->
+<!--        font-size: 20px;-->
+<!--        text-align: center;-->
+<!--        line-height: normal;-->
+<!--      "-->
+<!--		>-->
+<!--			קיימים בתוכנת הנה"ח נתונים חדשים יותר מנתוני הבנק בביזיבוקס, וודא תקינות-->
+<!--			החשבון-->
+<!--		</p>-->
+<!--		<div-->
+<!--				style="-->
+<!--          justify-content: center;-->
+<!--          align-items: center;-->
+<!--          margin-top: 10px;-->
+<!--          display: flex;-->
+<!--        "-->
+<!--		>-->
+<!--			<button-->
+<!--					(click)="nextAfterNOT_UPDATED()"-->
+<!--					class="button-dark"-->
+<!--					style="width: 180px; height: 33px !important; padding: 0"-->
+<!--			>-->
+<!--				הבנתי-->
+<!--			</button>-->
+<!--		</div>-->
+<!--	</p-dialog>-->
+<!--</ng-container>-->
+<!--&lt;!&ndash;HB_DELETE || LAST_DAY_MATCHED || NO_MATCH&ndash;&gt;-->
+<!--<ng-container-->
+<!--		*ngIf="-->
+<!--    exportPopupType &&-->
+<!--    (exportPopupType.popupType === 'HB_DELETE' ||-->
+<!--      exportPopupType.popupType === 'LAST_DAY_MATCHED' ||-->
+<!--      exportPopupType.popupType === 'NO_MATCH')-->
+<!--  "-->
+<!--&gt;-->
+<!--	<p-dialog (onHide)="exportPopupType = false"-->
+<!--	          (visibleChange)="exportPopupType = false"-->
+<!--	          [draggable]="false"-->
 
-	          [modal]="true"
-	          [resizable]="false"
-	          [visible]="(
-     exportPopupType &&
-      (exportPopupType.popupType === 'HB_DELETE' ||
-        exportPopupType.popupType === 'LAST_DAY_MATCHED' ||
-        exportPopupType.popupType === 'NO_MATCH')
-        )"
-	          appendTo="body"
-	          styleClass="BALANCE_DIFFERENCE {{
-      exportPopupType.biziboxAccountHistory ? 'biziboxAccountHistory_modal' : ''
-    }}"
-	>
-		<p-header>
-			<ng-container *ngIf="exportPopupType.popupType === 'LAST_DAY_MATCHED'">
-				ביטול התאמות ומחיקת תנועות -
-				{{ exportPopupType.item.parent.companyName }}
-				-
-				{{ exportPopupType.item.nickname }}
-			</ng-container>
-			<ng-container *ngIf="exportPopupType.popupType === 'HB_DELETE'">
-				מחיקת תנועות -
-				{{ exportPopupType.item.parent.companyName }}
-				-
-				{{ exportPopupType.item.nickname }}
-			</ng-container>
-			<ng-container *ngIf="exportPopupType.popupType === 'NO_MATCH'">
-				השוואת נתונים: הנה"ח - בנק
-			</ng-container>
-		</p-header>
-		<ng-container *ngIf="!exportPopupType.biziboxAccountHistory">
-			<div style="width: 673px; margin: 0 auto">
-				<p class="info" style="padding-bottom: 5px">
-					יתרת בנק והנה״ח לא תואמות ב-
-					{{
-					exportPopupType.hashBankData
-							? (exportPopupType.hashBankData.date | date: 'd/M/yy')
-							: ''
-					}}
-				</p>
-				<div class="data">
-					<div class="table">
-						<div>
-							<p>תאריך</p>
-							<h3>
-								{{
-								exportPopupType.hashBankData
-										? (exportPopupType.hashBankData.date | date: 'd/M/yy')
-										: ''
-								}}
-							</h3>
-						</div>
-						<div>
-							<p>
-								יתרה בבנק
-								<i></i>
-								<span>
-                  {{ exportPopupType.item.nickname }}
-                </span>
-							</p>
-							<h3 style="color: #000000; font-weight: bold">
-								{{
-								exportPopupType.popupType === 'NO_MATCH'
-										? exportPopupType.biziboxTransDataArr &&
-										exportPopupType.biziboxTransDataArr.length
-												? (exportPopupType.biziboxTransDataArr[0].balance
-														| sum: false)
-												: '-'
-										: ((exportPopupType.hashBankData
-												? exportPopupType.hashBankData.balance
-												: 0) -
-										(exportPopupType.balanceDifference !== null
-												? exportPopupType.balanceDifference
-												: 0) | sum: false)
-								}}
-							</h3>
-						</div>
-						<div>
-							<p>
-								יתרה בהנה״ח
-								<i></i>
-								<span>
-                  חשבשבת כ.
-									{{ exportPopupType.item.izuCustId.custId }}
-                </span>
-							</p>
-							<h3
-									style="
-                  color: #df0000;
-                  display: flex;
-                  align-content: center;
-                  align-items: center;
-                  justify-content: center;
-                "
-							>
-								<img
-										src="/assets/images/invalid.png"
-										style="margin-right: 5px"
-								/>
-								{{
-								exportPopupType.hashBankData
-										? (exportPopupType.hashBankData.balance | sum: false)
-										: '-'
-								}}
-							</h3>
-						</div>
-					</div>
-					<div *ngIf="exportPopupType.popupType !== 'NO_MATCH'" class="mark">
-						<div>
-							<p>פער</p>
-							<h3>
-								{{
-								exportPopupType.balanceDifference !== null
-										? '+' + (exportPopupType.balanceDifference | sum: true:true)
-										: '-'
-								}}
-							</h3>
-						</div>
-					</div>
-				</div>
-				<p
-						*ngIf="exportPopupType.popupType === 'HB_DELETE'"
-						class="info"
-						style="padding-bottom: 5px"
-				>
-					נמצאה יתרה תואמת בתאריך
-					{{
-					exportPopupType.oldestTransIzuDate
-							? (exportPopupType.oldestTransIzuDate | date: 'dd/MM/yyyy')
-							: ''
-					}}
-					.
-					<br/>
-					לא קיימות תנועות מותאמות לאחר תנועה זו.
-					<br/>
-					ניתן למחוק תנועות אלו ללא חשש.
+<!--	          [modal]="true"-->
+<!--	          [resizable]="false"-->
+<!--	          [visible]="(-->
+<!--     exportPopupType &&-->
+<!--      (exportPopupType.popupType === 'HB_DELETE' ||-->
+<!--        exportPopupType.popupType === 'LAST_DAY_MATCHED' ||-->
+<!--        exportPopupType.popupType === 'NO_MATCH')-->
+<!--        )"-->
+<!--	          appendTo="body"-->
+<!--	          styleClass="BALANCE_DIFFERENCE {{-->
+<!--      exportPopupType.biziboxAccountHistory ? 'biziboxAccountHistory_modal' : ''-->
+<!--    }}"-->
+<!--	>-->
+<!--		<p-header>-->
+<!--			<ng-container *ngIf="exportPopupType.popupType === 'LAST_DAY_MATCHED'">-->
+<!--				ביטול התאמות ומחיקת תנועות - -->
+<!--				{{ exportPopupType.item.parent.companyName }}-->
+<!--				- -->
+<!--				{{ exportPopupType.item.nickname }}-->
+<!--			</ng-container>-->
+<!--			<ng-container *ngIf="exportPopupType.popupType === 'HB_DELETE'">-->
+<!--				מחיקת תנועות - -->
+<!--				{{ exportPopupType.item.parent.companyName }}-->
+<!--				- -->
+<!--				{{ exportPopupType.item.nickname }}-->
+<!--			</ng-container>-->
+<!--			<ng-container *ngIf="exportPopupType.popupType === 'NO_MATCH'">-->
+<!--				השוואת נתונים: הנה"ח - בנק-->
+<!--			</ng-container>-->
+<!--		</p-header>-->
+<!--		<ng-container *ngIf="!exportPopupType.biziboxAccountHistory">-->
+<!--			<div style="width: 673px; margin: 0 auto">-->
+<!--				<p class="info" style="padding-bottom: 5px">-->
+<!--					יתרת בנק והנה״ח לא תואמות ב- -->
+<!--					{{-->
+<!--					exportPopupType.hashBankData-->
+<!--							? (exportPopupType.hashBankData.date | date: 'd/M/yy')-->
+<!--							: ''-->
+<!--					}}-->
+<!--				</p>-->
+<!--				<div class="data">-->
+<!--					<div class="table">-->
+<!--						<div>-->
+<!--							<p>תאריך</p>-->
+<!--							<h3>-->
+<!--								{{-->
+<!--								exportPopupType.hashBankData-->
+<!--										? (exportPopupType.hashBankData.date | date: 'd/M/yy')-->
+<!--										: ''-->
+<!--								}}-->
+<!--							</h3>-->
+<!--						</div>-->
+<!--						<div>-->
+<!--							<p>-->
+<!--								יתרה בבנק-->
+<!--								<i></i>-->
+<!--								<span>-->
+<!--                  {{ exportPopupType.item.nickname }}-->
+<!--                </span>-->
+<!--							</p>-->
+<!--							<h3 style="color: #000000; font-weight: bold">-->
+<!--								{{-->
+<!--								exportPopupType.popupType === 'NO_MATCH'-->
+<!--										? exportPopupType.biziboxTransDataArr &&-->
+<!--										exportPopupType.biziboxTransDataArr.length-->
+<!--												? (exportPopupType.biziboxTransDataArr[0].balance-->
+<!--														| sum: false)-->
+<!--												: '-'-->
+<!--										: ((exportPopupType.hashBankData-->
+<!--												? exportPopupType.hashBankData.balance-->
+<!--												: 0) - -->
+<!--										(exportPopupType.balanceDifference !== null-->
+<!--												? exportPopupType.balanceDifference-->
+<!--												: 0) | sum: false)-->
+<!--								}}-->
+<!--							</h3>-->
+<!--						</div>-->
+<!--						<div>-->
+<!--							<p>-->
+<!--								יתרה בהנה״ח-->
+<!--								<i></i>-->
+<!--								<span>-->
+<!--                  חשבשבת כ.-->
+<!--									{{ exportPopupType.item.izuCustId.custId }}-->
+<!--                </span>-->
+<!--							</p>-->
+<!--							<h3-->
+<!--									style="-->
+<!--                  color: #df0000;-->
+<!--                  display: flex;-->
+<!--                  align-content: center;-->
+<!--                  align-items: center;-->
+<!--                  justify-content: center;-->
+<!--                "-->
+<!--							>-->
+<!--								<img-->
+<!--										src="/assets/images/invalid.png"-->
+<!--										style="margin-right: 5px"-->
+<!--								/>-->
+<!--								{{-->
+<!--								exportPopupType.hashBankData-->
+<!--										? (exportPopupType.hashBankData.balance | sum: false)-->
+<!--										: '-'-->
+<!--								}}-->
+<!--							</h3>-->
+<!--						</div>-->
+<!--					</div>-->
+<!--					<div *ngIf="exportPopupType.popupType !== 'NO_MATCH'" class="mark">-->
+<!--						<div>-->
+<!--							<p>פער</p>-->
+<!--							<h3>-->
+<!--								{{-->
+<!--								exportPopupType.balanceDifference !== null-->
+<!--										? '+' + (exportPopupType.balanceDifference | sum: true:true)-->
+<!--										: '-'-->
+<!--								}}-->
+<!--							</h3>-->
+<!--						</div>-->
+<!--					</div>-->
+<!--				</div>-->
+<!--				<p-->
+<!--						*ngIf="exportPopupType.popupType === 'HB_DELETE'"-->
+<!--						class="info"-->
+<!--						style="padding-bottom: 5px"-->
+<!--				>-->
+<!--					נמצאה יתרה תואמת בתאריך-->
+<!--					{{-->
+<!--					exportPopupType.oldestTransIzuDate-->
+<!--							? (exportPopupType.oldestTransIzuDate | date: 'dd/MM/yyyy')-->
+<!--							: ''-->
+<!--					}}-->
+<!--					.-->
+<!--					<br/>-->
+<!--					לא קיימות תנועות מותאמות לאחר תנועה זו.-->
+<!--					<br/>-->
+<!--					ניתן למחוק תנועות אלו ללא חשש.-->
 
-					<br/>
-					<br/>
+<!--					<br/>-->
+<!--					<br/>-->
 
-					<span style="text-decoration: underline">
-            מחיקת התנועות בחשבשבת:
-          </span>
-					<br/>
-					<ng-container
-							*ngIf="
-              exportPopupType.hashBankDataArr &&
-              exportPopupType.hashBankDataArr.length === 1
-            "
-					>
-						תנועה מספר
-						{{
-						exportPopupType.hashBankDataArr &&
-						exportPopupType.hashBankDataArr[0].uniqueId
-								? exportPopupType.hashBankDataArr[0].uniqueId
-								: '-'
-						}}
-						בתאריך
-						{{
-						exportPopupType.hashBankDataArr
-								? (exportPopupType.hashBankDataArr[0].date | date: 'dd/MM/yyyy')
-								: '-'
-						}}
-					</ng-container>
-					<ng-container
-							*ngIf="
-              exportPopupType.hashBankDataArr &&
-              exportPopupType.hashBankDataArr.length > 1
-            "
-					>
-						מתנועה מספר
-						{{
-						exportPopupType.hashBankDataArr &&
-						exportPopupType.hashBankDataArr[0].uniqueId
-								? exportPopupType.hashBankDataArr[0].uniqueId
-								: '-'
-						}}
-						בתאריך
-						{{
-						exportPopupType.hashBankDataArr
-								? (exportPopupType.hashBankDataArr[0].date | date: 'dd/MM/yyyy')
-								: '-'
-						}}
-						עד תנועה מספר
-						{{
-						exportPopupType.hashBankDataArr &&
-						exportPopupType.hashBankDataArr[
-						exportPopupType.hashBankDataArr.length - 1
-								].uniqueId
-								? exportPopupType.hashBankDataArr[
-								exportPopupType.hashBankDataArr.length - 1
-										].uniqueId
-								: '-'
-						}}
-						בתאריך
-						{{
-						exportPopupType.hashBankDataArr &&
-						exportPopupType.hashBankDataArr[
-						exportPopupType.hashBankDataArr.length - 1
-								].date
-								? (exportPopupType.hashBankDataArr[
-								exportPopupType.hashBankDataArr.length - 1
-										].date | date: 'dd/MM/yyyy')
-								: '-'
-						}}
-					</ng-container>
+<!--					<span style="text-decoration: underline">-->
+<!--            מחיקת התנועות בחשבשבת:-->
+<!--          </span>-->
+<!--					<br/>-->
+<!--					<ng-container-->
+<!--							*ngIf="-->
+<!--              exportPopupType.hashBankDataArr &&-->
+<!--              exportPopupType.hashBankDataArr.length === 1-->
+<!--            "-->
+<!--					>-->
+<!--						תנועה מספר-->
+<!--						{{-->
+<!--						exportPopupType.hashBankDataArr &&-->
+<!--						exportPopupType.hashBankDataArr[0].uniqueId-->
+<!--								? exportPopupType.hashBankDataArr[0].uniqueId-->
+<!--								: '-'-->
+<!--						}}-->
+<!--						בתאריך-->
+<!--						{{-->
+<!--						exportPopupType.hashBankDataArr-->
+<!--								? (exportPopupType.hashBankDataArr[0].date | date: 'dd/MM/yyyy')-->
+<!--								: '-'-->
+<!--						}}-->
+<!--					</ng-container>-->
+<!--					<ng-container-->
+<!--							*ngIf="-->
+<!--              exportPopupType.hashBankDataArr &&-->
+<!--              exportPopupType.hashBankDataArr.length > 1-->
+<!--            "-->
+<!--					>-->
+<!--						מתנועה מספר-->
+<!--						{{-->
+<!--						exportPopupType.hashBankDataArr &&-->
+<!--						exportPopupType.hashBankDataArr[0].uniqueId-->
+<!--								? exportPopupType.hashBankDataArr[0].uniqueId-->
+<!--								: '-'-->
+<!--						}}-->
+<!--						בתאריך-->
+<!--						{{-->
+<!--						exportPopupType.hashBankDataArr-->
+<!--								? (exportPopupType.hashBankDataArr[0].date | date: 'dd/MM/yyyy')-->
+<!--								: '-'-->
+<!--						}}-->
+<!--						עד תנועה מספר-->
+<!--						{{-->
+<!--						exportPopupType.hashBankDataArr &&-->
+<!--						exportPopupType.hashBankDataArr[-->
+<!--						exportPopupType.hashBankDataArr.length - 1-->
+<!--								].uniqueId-->
+<!--								? exportPopupType.hashBankDataArr[-->
+<!--								exportPopupType.hashBankDataArr.length - 1-->
+<!--										].uniqueId-->
+<!--								: '-'-->
+<!--						}}-->
+<!--						בתאריך-->
+<!--						{{-->
+<!--						exportPopupType.hashBankDataArr &&-->
+<!--						exportPopupType.hashBankDataArr[-->
+<!--						exportPopupType.hashBankDataArr.length - 1-->
+<!--								].date-->
+<!--								? (exportPopupType.hashBankDataArr[-->
+<!--								exportPopupType.hashBankDataArr.length - 1-->
+<!--										].date | date: 'dd/MM/yyyy')-->
+<!--								: '-'-->
+<!--						}}-->
+<!--					</ng-container>-->
 
-					<!--                    כל התנועות לאחר יתרה זו אינן מותאמות וניתן לבצע מחיקה על ידי לחיצה בחשבשבת על פעולות נוספות > מחיקת-->
-					<!--                    קבוצת תנועות:-->
-					<!--                    מתנועה-->
-					<!--                    {{exportPopupType.hashBankDataArr && exportPopupType.hashBankDataArr[0].uniqueId ? exportPopupType.hashBankDataArr[0].uniqueId : '-'}}-->
-					<!--                    בתאריך-->
-					<!--                    {{exportPopupType.hashBankData.date ? (exportPopupType.hashBankData.date| date:'dd/MM/yyyy') : '-'}}-->
-					<!--                    עד תנועה-->
-					<!--                    {{exportPopupType.hashBankDataArr && exportPopupType.hashBankDataArr[exportPopupType.hashBankDataArr.length - 1].uniqueId ? exportPopupType.hashBankDataArr[exportPopupType.hashBankDataArr.length - 1].uniqueId : '-'}}-->
-					<!--                    מתאריך-->
-					<!--                    {{exportPopupType.hashBankDataArr && exportPopupType.hashBankDataArr[exportPopupType.hashBankDataArr.length - 1].date ? (exportPopupType.hashBankDataArr[exportPopupType.hashBankDataArr.length - 1].date | date:'dd/MM/yyyy') : '-'}}-->
-				</p>
-				<p
-						*ngIf="exportPopupType.popupType === 'LAST_DAY_MATCHED'"
-						class="info"
-						style="padding-bottom: 5px"
-				>
-          <span style="font-weight: bold">
-            נמצאה יתרה תואמת בתאריך
-	          {{
-	          exportPopupType.oldestTransIzuDate
-			          ? (exportPopupType.oldestTransIzuDate | date: 'dd/MM/yyyy')
-			          : ''
-	          }}
-	          .
-          </span>
-					<br/>
-					קיימות תנועות מותאמות לאחר תנועה זו.
-					<br/>
-					יש למחוק תנועות אלו לאחר ביטול ההתאמה.
-					<br/>
-					<br/>
-					<!--                    <span style="text-decoration: underline">-->
-					<!--                 ביטול ההתאמה בחשבשבת:-->
-					<!--                   </span>-->
-					<!--                    <br>-->
-					<!--                    לחיצה על הנהלת חשבונות > התאמות וניתוח כרטיסים > איתור ומחיקת התאמות בנק > איתור לפי מפתח חשבון:-->
+<!--					&lt;!&ndash;                    כל התנועות לאחר יתרה זו אינן מותאמות וניתן לבצע מחיקה על ידי לחיצה בחשבשבת על פעולות נוספות > מחיקת&ndash;&gt;-->
+<!--					&lt;!&ndash;                    קבוצת תנועות:&ndash;&gt;-->
+<!--					&lt;!&ndash;                    מתנועה&ndash;&gt;-->
+<!--					&lt;!&ndash;                    {{exportPopupType.hashBankDataArr && exportPopupType.hashBankDataArr[0].uniqueId ? exportPopupType.hashBankDataArr[0].uniqueId : '-'}}&ndash;&gt;-->
+<!--					&lt;!&ndash;                    בתאריך&ndash;&gt;-->
+<!--					&lt;!&ndash;                    {{exportPopupType.hashBankData.date ? (exportPopupType.hashBankData.date| date:'dd/MM/yyyy') : '-'}}&ndash;&gt;-->
+<!--					&lt;!&ndash;                    עד תנועה&ndash;&gt;-->
+<!--					&lt;!&ndash;                    {{exportPopupType.hashBankDataArr && exportPopupType.hashBankDataArr[exportPopupType.hashBankDataArr.length - 1].uniqueId ? exportPopupType.hashBankDataArr[exportPopupType.hashBankDataArr.length - 1].uniqueId : '-'}}&ndash;&gt;-->
+<!--					&lt;!&ndash;                    מתאריך&ndash;&gt;-->
+<!--					&lt;!&ndash;                    {{exportPopupType.hashBankDataArr && exportPopupType.hashBankDataArr[exportPopupType.hashBankDataArr.length - 1].date ? (exportPopupType.hashBankDataArr[exportPopupType.hashBankDataArr.length - 1].date | date:'dd/MM/yyyy') : '-'}}&ndash;&gt;-->
+<!--				</p>-->
+<!--				<p-->
+<!--						*ngIf="exportPopupType.popupType === 'LAST_DAY_MATCHED'"-->
+<!--						class="info"-->
+<!--						style="padding-bottom: 5px"-->
+<!--				>-->
+<!--          <span style="font-weight: bold">-->
+<!--            נמצאה יתרה תואמת בתאריך-->
+<!--	          {{-->
+<!--	          exportPopupType.oldestTransIzuDate-->
+<!--			          ? (exportPopupType.oldestTransIzuDate | date: 'dd/MM/yyyy')-->
+<!--			          : ''-->
+<!--	          }}-->
+<!--	          .-->
+<!--          </span>-->
+<!--					<br/>-->
+<!--					קיימות תנועות מותאמות לאחר תנועה זו.-->
+<!--					<br/>-->
+<!--					יש למחוק תנועות אלו לאחר ביטול ההתאמה.-->
+<!--					<br/>-->
+<!--					<br/>-->
+<!--					&lt;!&ndash;                    <span style="text-decoration: underline">&ndash;&gt;-->
+<!--					&lt;!&ndash;                 ביטול ההתאמה בחשבשבת:&ndash;&gt;-->
+<!--					&lt;!&ndash;                   </span>&ndash;&gt;-->
+<!--					&lt;!&ndash;                    <br>&ndash;&gt;-->
+<!--					&lt;!&ndash;                    לחיצה על הנהלת חשבונות > התאמות וניתוח כרטיסים > איתור ומחיקת התאמות בנק > איתור לפי מפתח חשבון:&ndash;&gt;-->
 
-					<!--&lt;!&ndash;                    ניתן למחוק את התאמת התנועות על ידי לחיצה בחשבשבת על הנהלת&ndash;&gt;-->
-					<!--&lt;!&ndash;                    חשבונות > התאמות וניתוח כרטיסים > איתור ומחיקת התאמות בנק > איתור לפי מפתח חשבון:&ndash;&gt;-->
-					<!--                    מהתאמה-->
-					<!--                    {{exportPopupType.hashBankDataArr && exportPopupType.hashBankDataArr[0].uniqueId ? exportPopupType.hashBankDataArr[0].uniqueId : '-'}}-->
-					<!--                    עד התאמה-->
-					<!--                    {{exportPopupType.hashBankDataArr && exportPopupType.hashBankDataArr[exportPopupType.hashBankDataArr.length - 1].uniqueId ? exportPopupType.hashBankDataArr[0].uniqueId : '-'}}-->
-					<!--                    <br>-->
-					<span style="text-decoration: underline">
-            מחיקת התנועות בחשבשבת:
-          </span>
-					<br/>
+<!--					&lt;!&ndash;&lt;!&ndash;                    ניתן למחוק את התאמת התנועות על ידי לחיצה בחשבשבת על הנהלת&ndash;&gt;&ndash;&gt;-->
+<!--					&lt;!&ndash;&lt;!&ndash;                    חשבונות > התאמות וניתוח כרטיסים > איתור ומחיקת התאמות בנק > איתור לפי מפתח חשבון:&ndash;&gt;&ndash;&gt;-->
+<!--					&lt;!&ndash;                    מהתאמה&ndash;&gt;-->
+<!--					&lt;!&ndash;                    {{exportPopupType.hashBankDataArr && exportPopupType.hashBankDataArr[0].uniqueId ? exportPopupType.hashBankDataArr[0].uniqueId : '-'}}&ndash;&gt;-->
+<!--					&lt;!&ndash;                    עד התאמה&ndash;&gt;-->
+<!--					&lt;!&ndash;                    {{exportPopupType.hashBankDataArr && exportPopupType.hashBankDataArr[exportPopupType.hashBankDataArr.length - 1].uniqueId ? exportPopupType.hashBankDataArr[0].uniqueId : '-'}}&ndash;&gt;-->
+<!--					&lt;!&ndash;                    <br>&ndash;&gt;-->
+<!--					<span style="text-decoration: underline">-->
+<!--            מחיקת התנועות בחשבשבת:-->
+<!--          </span>-->
+<!--					<br/>-->
 
-					<ng-container
-							*ngIf="
-              exportPopupType.hashBankDataArr &&
-              exportPopupType.hashBankDataArr.length === 1
-            "
-					>
-						תנועה מספר
-						{{
-						exportPopupType.hashBankDataArr &&
-						exportPopupType.hashBankDataArr[0].uniqueId
-								? exportPopupType.hashBankDataArr[0].uniqueId
-								: '-'
-						}}
-						בתאריך
-						{{
-						exportPopupType.hashBankDataArr
-								? (exportPopupType.hashBankDataArr[0].date | date: 'dd/MM/yyyy')
-								: '-'
-						}}
-					</ng-container>
-					<ng-container
-							*ngIf="
-              exportPopupType.hashBankDataArr &&
-              exportPopupType.hashBankDataArr.length > 1
-            "
-					>
-						מתנועה מספר
-						{{
-						exportPopupType.hashBankDataArr &&
-						exportPopupType.hashBankDataArr[0].uniqueId
-								? exportPopupType.hashBankDataArr[0].uniqueId
-								: '-'
-						}}
-						בתאריך
-						{{
-						exportPopupType.hashBankDataArr
-								? (exportPopupType.hashBankDataArr[0].date | date: 'dd/MM/yyyy')
-								: '-'
-						}}
-						עד תנועה מספר
-						{{
-						exportPopupType.hashBankDataArr &&
-						exportPopupType.hashBankDataArr[
-						exportPopupType.hashBankDataArr.length - 1
-								].uniqueId
-								? exportPopupType.hashBankDataArr[
-								exportPopupType.hashBankDataArr.length - 1
-										].uniqueId
-								: '-'
-						}}
-						בתאריך
-						{{
-						exportPopupType.hashBankDataArr &&
-						exportPopupType.hashBankDataArr[
-						exportPopupType.hashBankDataArr.length - 1
-								].date
-								? (exportPopupType.hashBankDataArr[
-								exportPopupType.hashBankDataArr.length - 1
-										].date | date: 'dd/MM/yyyy')
-								: '-'
-						}}
-					</ng-container>
-					<br/>
-					תנועות מותאמות לא יימחקו.
-				</p>
-				<div
-						*ngIf="exportPopupType.popupType === 'NO_MATCH'"
-						class="select-auto-manual"
-				>
-					<p>
-						<span style="font-weight: bold"> לא נמצאו יתרות תואמות </span>
-						<br/>
-						<span style="font-weight: 400">
-              נא וודאו כי כרטיס הנה"ח הנבחר תואם לחשבון הבנק.
-            </span>
-						<br/>
-						<br/>
-						איך תרצה להתאים את היתרות?
-					</p>
-					<ul>
-						<li>
-							<div>
-								<p-radioButton
-										[(ngModel)]="exportPopupType['fixTrans']"
-										[value]="'MANUAL'"
-										name="balanceDifferenceAuto"
-								></p-radioButton>
-							</div>
-							<div>
-								<h2>
-									ידנית
-									<img
-											src="/assets/images/balanceDifferenceAutoAlert.png"
-											style="margin-right: 5px; cursor: pointer"
-									/>
-								</h2>
-								<p>
-									איתור הרשומות הבעייתיות ותיקון ידני שלהן כך שיתרת הסגירה ב-
-									{{
-									exportPopupType.hashBankData
-											? (exportPopupType.hashBankData.date | date: 'd/M/yy')
-											: ''
-									}}
-									תהיה שווה ליתרה בבנק
-									<!--                                    <span style="color: #038ed6;">-->
-									<!--                                                                            -->
-									<!--                                    </span>-->
-								</p>
-							</div>
-						</li>
-						<li>
-							<div>
-								<p-radioButton
-										[(ngModel)]="exportPopupType['fixTrans']"
-										[value]="'ADD_TRANS'"
-										name="balanceDifferenceAuto"
-								></p-radioButton>
-							</div>
-							<div>
-								<h2>אוטומטית</h2>
-								<p>
-									הוספה של פעולת גישור זמנית בסכום של
-									{{
-									exportPopupType.balanceDifference !== null
-											? (exportPopupType.balanceDifference | sum: false)
-											: '-'
-									}}
-									ש״ח
-								</p>
-							</div>
-						</li>
-					</ul>
-					<p class="link-to-history">
-            <span
-		            (click)="exportPopupType.biziboxAccountHistory = true"
-		            style="font-weight: bold; font-size: 17px"
-            >
-              הצג פעולות
-            </span>
-					</p>
-				</div>
+<!--					<ng-container-->
+<!--							*ngIf="-->
+<!--              exportPopupType.hashBankDataArr &&-->
+<!--              exportPopupType.hashBankDataArr.length === 1-->
+<!--            "-->
+<!--					>-->
+<!--						תנועה מספר-->
+<!--						{{-->
+<!--						exportPopupType.hashBankDataArr &&-->
+<!--						exportPopupType.hashBankDataArr[0].uniqueId-->
+<!--								? exportPopupType.hashBankDataArr[0].uniqueId-->
+<!--								: '-'-->
+<!--						}}-->
+<!--						בתאריך-->
+<!--						{{-->
+<!--						exportPopupType.hashBankDataArr-->
+<!--								? (exportPopupType.hashBankDataArr[0].date | date: 'dd/MM/yyyy')-->
+<!--								: '-'-->
+<!--						}}-->
+<!--					</ng-container>-->
+<!--					<ng-container-->
+<!--							*ngIf="-->
+<!--              exportPopupType.hashBankDataArr &&-->
+<!--              exportPopupType.hashBankDataArr.length > 1-->
+<!--            "-->
+<!--					>-->
+<!--						מתנועה מספר-->
+<!--						{{-->
+<!--						exportPopupType.hashBankDataArr &&-->
+<!--						exportPopupType.hashBankDataArr[0].uniqueId-->
+<!--								? exportPopupType.hashBankDataArr[0].uniqueId-->
+<!--								: '-'-->
+<!--						}}-->
+<!--						בתאריך-->
+<!--						{{-->
+<!--						exportPopupType.hashBankDataArr-->
+<!--								? (exportPopupType.hashBankDataArr[0].date | date: 'dd/MM/yyyy')-->
+<!--								: '-'-->
+<!--						}}-->
+<!--						עד תנועה מספר-->
+<!--						{{-->
+<!--						exportPopupType.hashBankDataArr &&-->
+<!--						exportPopupType.hashBankDataArr[-->
+<!--						exportPopupType.hashBankDataArr.length - 1-->
+<!--								].uniqueId-->
+<!--								? exportPopupType.hashBankDataArr[-->
+<!--								exportPopupType.hashBankDataArr.length - 1-->
+<!--										].uniqueId-->
+<!--								: '-'-->
+<!--						}}-->
+<!--						בתאריך-->
+<!--						{{-->
+<!--						exportPopupType.hashBankDataArr &&-->
+<!--						exportPopupType.hashBankDataArr[-->
+<!--						exportPopupType.hashBankDataArr.length - 1-->
+<!--								].date-->
+<!--								? (exportPopupType.hashBankDataArr[-->
+<!--								exportPopupType.hashBankDataArr.length - 1-->
+<!--										].date | date: 'dd/MM/yyyy')-->
+<!--								: '-'-->
+<!--						}}-->
+<!--					</ng-container>-->
+<!--					<br/>-->
+<!--					תנועות מותאמות לא יימחקו.-->
+<!--				</p>-->
+<!--				<div-->
+<!--						*ngIf="exportPopupType.popupType === 'NO_MATCH'"-->
+<!--						class="select-auto-manual"-->
+<!--				>-->
+<!--					<p>-->
+<!--						<span style="font-weight: bold"> לא נמצאו יתרות תואמות </span>-->
+<!--						<br/>-->
+<!--						<span style="font-weight: 400">-->
+<!--              נא וודאו כי כרטיס הנה"ח הנבחר תואם לחשבון הבנק.-->
+<!--            </span>-->
+<!--						<br/>-->
+<!--						<br/>-->
+<!--						איך תרצה להתאים את היתרות?-->
+<!--					</p>-->
+<!--					<ul>-->
+<!--						<li>-->
+<!--							<div>-->
+<!--								<p-radioButton-->
+<!--										[(ngModel)]="exportPopupType['fixTrans']"-->
+<!--										[value]="'MANUAL'"-->
+<!--										name="balanceDifferenceAuto"-->
+<!--								></p-radioButton>-->
+<!--							</div>-->
+<!--							<div>-->
+<!--								<h2>-->
+<!--									ידנית-->
+<!--									<img-->
+<!--											src="/assets/images/balanceDifferenceAutoAlert.png"-->
+<!--											style="margin-right: 5px; cursor: pointer"-->
+<!--									/>-->
+<!--								</h2>-->
+<!--								<p>-->
+<!--									איתור הרשומות הבעייתיות ותיקון ידני שלהן כך שיתרת הסגירה ב- -->
+<!--									{{-->
+<!--									exportPopupType.hashBankData-->
+<!--											? (exportPopupType.hashBankData.date | date: 'd/M/yy')-->
+<!--											: ''-->
+<!--									}}-->
+<!--									תהיה שווה ליתרה בבנק-->
+<!--									&lt;!&ndash;                                    <span style="color: #038ed6;">&ndash;&gt;-->
+<!--									&lt;!&ndash;                                                                            &ndash;&gt;-->
+<!--									&lt;!&ndash;                                    </span>&ndash;&gt;-->
+<!--								</p>-->
+<!--							</div>-->
+<!--						</li>-->
+<!--						<li>-->
+<!--							<div>-->
+<!--								<p-radioButton-->
+<!--										[(ngModel)]="exportPopupType['fixTrans']"-->
+<!--										[value]="'ADD_TRANS'"-->
+<!--										name="balanceDifferenceAuto"-->
+<!--								></p-radioButton>-->
+<!--							</div>-->
+<!--							<div>-->
+<!--								<h2>אוטומטית</h2>-->
+<!--								<p>-->
+<!--									הוספה של פעולת גישור זמנית בסכום של-->
+<!--									{{-->
+<!--									exportPopupType.balanceDifference !== null-->
+<!--											? (exportPopupType.balanceDifference | sum: false)-->
+<!--											: '-'-->
+<!--									}}-->
+<!--									ש״ח-->
+<!--								</p>-->
+<!--							</div>-->
+<!--						</li>-->
+<!--					</ul>-->
+<!--					<p class="link-to-history">-->
+<!--            <span-->
+<!--		            (click)="exportPopupType.biziboxAccountHistory = true"-->
+<!--		            style="font-weight: bold; font-size: 17px"-->
+<!--            >-->
+<!--              הצג פעולות-->
+<!--            </span>-->
+<!--					</p>-->
+<!--				</div>-->
 
-				<div
-						*ngIf="exportPopupType.popupType !== 'NO_MATCH'"
-						class="select-auto-manual"
-				>
-					<p class="link-to-history">
-            <span
-		            (click)="exportPopupType.biziboxAccountHistory = true"
-		            style="font-weight: bold; font-size: 17px"
-            >
-              הצג פעולות
-            </span>
-					</p>
-				</div>
+<!--				<div-->
+<!--						*ngIf="exportPopupType.popupType !== 'NO_MATCH'"-->
+<!--						class="select-auto-manual"-->
+<!--				>-->
+<!--					<p class="link-to-history">-->
+<!--            <span-->
+<!--		            (click)="exportPopupType.biziboxAccountHistory = true"-->
+<!--		            style="font-weight: bold; font-size: 17px"-->
+<!--            >-->
+<!--              הצג פעולות-->
+<!--            </span>-->
+<!--					</p>-->
+<!--				</div>-->
 
-				<!--                <p class="info" style="text-align: center"-->
-				<!--                   *ngIf="exportPopupType.popupType === 'NO_MATCH'">-->
-				<!--                    התנתק מאתר הבנק לפני המשך לשלב הבא-->
-				<!--                </p>-->
-			</div>
-		</ng-container>
-
-
-		<p-footer
-				[ngStyle]="{
-        'margin-top':
-          (exportPopupType.popupType === 'HB_DELETE'
-            ? '65'
-            : exportPopupType.popupType === 'NO_MATCH'
-            ? '-14'
-            : '90') + 'px'
-      }"
-				style="justify-content: center"
-		>
-			<ng-container *ngIf="!exportPopupType.biziboxAccountHistory">
-				<button (click)="exportPopupType = false" class="button-link">
-					{{ 'actions.cancellation' | translate }}
-				</button>
-				<button
-						(click)="nextAfterHB_DELETE()"
-						class="button-dark"
-						style="width: 171px; height: 35px !important; padding: 0"
-				>
-					{{ 'actions.approve' | translate }}
-				</button>
-			</ng-container>
-		</p-footer>
+<!--				&lt;!&ndash;                <p class="info" style="text-align: center"&ndash;&gt;-->
+<!--				&lt;!&ndash;                   *ngIf="exportPopupType.popupType === 'NO_MATCH'">&ndash;&gt;-->
+<!--				&lt;!&ndash;                    התנתק מאתר הבנק לפני המשך לשלב הבא&ndash;&gt;-->
+<!--				&lt;!&ndash;                </p>&ndash;&gt;-->
+<!--			</div>-->
+<!--		</ng-container>-->
 
 
-		<ng-container *ngIf="exportPopupType.biziboxAccountHistory">
-			<div class="biziboxAccountHistory" style="width: 690px; margin: 0 auto">
-				<div class="nav">
-					<p class="link-to-history">
-            <span (click)="exportPopupType.biziboxAccountHistory = false">
-              סגור פעולות
-            </span>
-					</p>
-					<h1></h1>
-					<button
-							(click)="printHistoryTable()"
-							[matTooltip]="'appWalk.customers.report.printBtn' | translate"
-							matTooltipPosition="above"
-							style="
-              border: none;
-              background: transparent;
-              outline: none;
-              cursor: pointer;
-            "
-					>
-						<img fill ngSrc="/assets/images/to-printer-sm.png"
-						     style="height: auto; width: auto; position: relative;"/>
-					</button>
-				</div>
-				<div #historyToPrint2 style="margin: 0 auto">
-					<style>
-						@page {
-							size: landscape;
-							margin: 0 auto;
-						}
-					</style>
-					<div style="display: flex; justify-content: space-between">
-						<div
-								*ngIf="exportPopupType.hashBankDataArrWithTitle"
-								style="width: 100%"
-						>
-							<h1>נתונים מהנה״ח</h1>
-							<div class="biziboxAccountHistory_table_balance tableWithTitles">
-								<div class="header">
-									<div>תאריך</div>
-									<div>תיאור</div>
-									<div>סכום</div>
-									<div>אסמכתא</div>
-									<div>יתרה</div>
-									<div *ngIf="exportPopupType.popupType === 'LAST_DAY_MATCHED'">
-										מספר תנועה
-									</div>
-									<div>מותאמת</div>
-								</div>
+<!--		<p-footer-->
+<!--				[ngStyle]="{-->
+<!--        'margin-top':-->
+<!--          (exportPopupType.popupType === 'HB_DELETE'-->
+<!--            ? '65'-->
+<!--            : exportPopupType.popupType === 'NO_MATCH'-->
+<!--            ? '-14'-->
+<!--            : '90') + 'px'-->
+<!--      }"-->
+<!--				style="justify-content: center"-->
+<!--		>-->
+<!--			<ng-container *ngIf="!exportPopupType.biziboxAccountHistory">-->
+<!--				<button (click)="exportPopupType = false" class="button-link">-->
+<!--					{{ 'actions.cancellation' | translate }}-->
+<!--				</button>-->
+<!--				<button-->
+<!--						(click)="nextAfterHB_DELETE()"-->
+<!--						class="button-dark"-->
+<!--						style="width: 171px; height: 35px !important; padding: 0"-->
+<!--				>-->
+<!--					{{ 'actions.approve' | translate }}-->
+<!--				</button>-->
+<!--			</ng-container>-->
+<!--		</p-footer>-->
 
-								<div
-										[ngStyle]="{'height': exportPopupType.popupType === 'LAST_DAY_MATCHED' ? '405.5px' : exportPopupType.popupType === 'NO_MATCH' ? '321px' : '357px'}"
-										class="body containerList"
-										style="position: relative;"
 
-								>
-									<div *ngIf="loader" class="loader">
-										<div class="circle"></div>
-									</div>
-									<ng-scrollbar
-											class="custom-scrollbar"
-											thumbClass="scrollbar-thumb"
-											trackClass="scrollbar">
+<!--		<ng-container *ngIf="exportPopupType.biziboxAccountHistory">-->
+<!--			<div class="biziboxAccountHistory" style="width: 690px; margin: 0 auto">-->
+<!--				<div class="nav">-->
+<!--					<p class="link-to-history">-->
+<!--            <span (click)="exportPopupType.biziboxAccountHistory = false">-->
+<!--              סגור פעולות-->
+<!--            </span>-->
+<!--					</p>-->
+<!--					<h1></h1>-->
+<!--					<button-->
+<!--							(click)="printHistoryTable()"-->
+<!--							[matTooltip]="'appWalk.customers.report.printBtn' | translate"-->
+<!--							matTooltipPosition="above"-->
+<!--							style="-->
+<!--              border: none;-->
+<!--              background: transparent;-->
+<!--              outline: none;-->
+<!--              cursor: pointer;-->
+<!--            "-->
+<!--					>-->
+<!--						<img fill ngSrc="/assets/images/to-printer-sm.png"-->
+<!--						     style="height: auto; width: auto; position: relative;"/>-->
+<!--					</button>-->
+<!--				</div>-->
+<!--				<div #historyToPrint2 style="margin: 0 auto">-->
+<!--					<style>-->
+<!--						@page {-->
+<!--							size: landscape;-->
+<!--							margin: 0 auto;-->
+<!--						}-->
+<!--					</style>-->
+<!--					<div style="display: flex; justify-content: space-between">-->
+<!--						<div-->
+<!--								*ngIf="exportPopupType.hashBankDataArrWithTitle"-->
+<!--								style="width: 100%"-->
+<!--						>-->
+<!--							<h1>נתונים מהנה״ח</h1>-->
+<!--							<div class="biziboxAccountHistory_table_balance tableWithTitles">-->
+<!--								<div class="header">-->
+<!--									<div>תאריך</div>-->
+<!--									<div>תיאור</div>-->
+<!--									<div>סכום</div>-->
+<!--									<div>אסמכתא</div>-->
+<!--									<div>יתרה</div>-->
+<!--									<div *ngIf="exportPopupType.popupType === 'LAST_DAY_MATCHED'">-->
+<!--										מספר תנועה-->
+<!--									</div>-->
+<!--									<div>מותאמת</div>-->
+<!--								</div>-->
 
-										<cdk-virtual-scroll-viewport #virtualScroll itemSize="35" scrollViewport>
-											<div *cdkVirtualFor="let item of exportPopupType.hashBankDataArrWithTitle; let i = index; trackBy: trackByUniqueId">
-												<div
-														(click)="openCol(item); generateArrFilter()"
-														*ngIf="item.title"
-														class="row title"
-												>
-													<div class="text-ellipsis">
-														<i
-																[ngClass]="
-                              item[item.date | date: 'dd/MM/yy'] === true
-                                ? 'fa-angle-up'
-                                : 'fa-angle-down'
-                            "
-																class="fas"
-																style="
-                              padding: 0 6px;
-                              font-size: 18px;
-                              position: absolute;
-                              right: -3px;
-                              top: 8px;
-                            "
-														></i>
-														{{ item.date ? (item.date | date: 'd/M/yy') : '-' }}
-													</div>
-													<div class="text-ellipsis">&nbsp;</div>
-													<div class="text-ellipsis ltrNum">&nbsp;</div>
-													<div class="text-ellipsis">&nbsp;</div>
-													<div
-															[class.setRedColor]="item.balance && item.balance < 0"
-															class="text-ellipsis ltrNum"
-													>
-														{{ item.balance ? (item.balance | sum: false) : '-' }}
-													</div>
-													<div
-															*ngIf="
-                            exportPopupType.popupType === 'LAST_DAY_MATCHED'
-                          "
-													>
-														&nbsp;
-													</div>
-													<div class="text-ellipsis">&nbsp;</div>
-												</div>
-												<div
-														*ngIf="
-                          !item.title &&
-                          item[item.date | date: 'dd/MM/yy'] === true
-                        "
-														class="row empty"
-												>
-													<div class="text-ellipsis">
-														{{ item.date ? (item.date | date: 'd/M/yy') : '-' }}
-													</div>
-													<div class="text-ellipsis">
-														{{ item.name ? item.name : '-' }}
-													</div>
-													<div
-															[class.setRedColor]="item.total && item.total < 0"
-															class="text-ellipsis ltrNum"
-													>
-														{{ item.total ? (item.total | sum: false) : '-' }}
-													</div>
-													<div class="text-ellipsis">
-														{{ item.asmachta ? item.asmachta : '-' }}
-													</div>
-													<div
-															[class.setRedColor]="item.balance && item.balance < 0"
-															class="text-ellipsis ltrNum"
-													>
-														{{ item.balance ? (item.balance | sum: false) : '-' }}
-													</div>
-													<div
-															*ngIf="
-                            exportPopupType.popupType === 'LAST_DAY_MATCHED'
-                          "
-													>
-														{{ item.uniqueId ? item.uniqueId : '-' }}
-													</div>
-													<div class="text-ellipsis">
-														<mat-icon
-																[ngStyle]="{
-                              color: item.matched ? '#229f88' : '#ce1515',
-                              width: item.matched ? '17px' : '14px',
-                              cursor: !item.matched ? 'pointer' : 'default'
-                            }"
-																[svgIcon]="item.matched ? 'tick' : 'close'"
-																class="left-space"
-																style="height: 100%"
-														>
-														</mat-icon>
-													</div>
-												</div>
-											</div>
-										</cdk-virtual-scroll-viewport>
-									</ng-scrollbar>
+<!--								<div-->
+<!--										[ngStyle]="{'height': exportPopupType.popupType === 'LAST_DAY_MATCHED' ? '405.5px' : exportPopupType.popupType === 'NO_MATCH' ? '321px' : '357px'}"-->
+<!--										class="body containerList"-->
+<!--										style="position: relative;"-->
 
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-		</ng-container>
-	</p-dialog>
-</ng-container>
+<!--								>-->
+<!--									<div *ngIf="loader" class="loader">-->
+<!--										<div class="circle"></div>-->
+<!--									</div>-->
+<!--									<ng-scrollbar-->
+<!--											class="custom-scrollbar"-->
+<!--											thumbClass="scrollbar-thumb"-->
+<!--											trackClass="scrollbar">-->
+
+<!--										<cdk-virtual-scroll-viewport #virtualScroll itemSize="35" scrollViewport>-->
+<!--											<div *cdkVirtualFor="let item of exportPopupType.hashBankDataArrWithTitle; let i = index; trackBy: trackByUniqueId">-->
+<!--												<div-->
+<!--														(click)="openCol(item); generateArrFilter()"-->
+<!--														*ngIf="item.title"-->
+<!--														class="row title"-->
+<!--												>-->
+<!--													<div class="text-ellipsis">-->
+<!--														<i-->
+<!--																[ngClass]="-->
+<!--                              item[item.date | date: 'dd/MM/yy'] === true-->
+<!--                                ? 'fa-angle-up'-->
+<!--                                : 'fa-angle-down'-->
+<!--                            "-->
+<!--																class="fas"-->
+<!--																style="-->
+<!--                              padding: 0 6px;-->
+<!--                              font-size: 18px;-->
+<!--                              position: absolute;-->
+<!--                              right: -3px;-->
+<!--                              top: 8px;-->
+<!--                            "-->
+<!--														></i>-->
+<!--														{{ item.date ? (item.date | date: 'd/M/yy') : '-' }}-->
+<!--													</div>-->
+<!--													<div class="text-ellipsis">&nbsp;</div>-->
+<!--													<div class="text-ellipsis ltrNum">&nbsp;</div>-->
+<!--													<div class="text-ellipsis">&nbsp;</div>-->
+<!--													<div-->
+<!--															[class.setRedColor]="item.balance && item.balance < 0"-->
+<!--															class="text-ellipsis ltrNum"-->
+<!--													>-->
+<!--														{{ item.balance ? (item.balance | sum: false) : '-' }}-->
+<!--													</div>-->
+<!--													<div-->
+<!--															*ngIf="-->
+<!--                            exportPopupType.popupType === 'LAST_DAY_MATCHED'-->
+<!--                          "-->
+<!--													>-->
+<!--														&nbsp;-->
+<!--													</div>-->
+<!--													<div class="text-ellipsis">&nbsp;</div>-->
+<!--												</div>-->
+<!--												<div-->
+<!--														*ngIf="-->
+<!--                          !item.title &&-->
+<!--                          item[item.date | date: 'dd/MM/yy'] === true-->
+<!--                        "-->
+<!--														class="row empty"-->
+<!--												>-->
+<!--													<div class="text-ellipsis">-->
+<!--														{{ item.date ? (item.date | date: 'd/M/yy') : '-' }}-->
+<!--													</div>-->
+<!--													<div class="text-ellipsis">-->
+<!--														{{ item.name ? item.name : '-' }}-->
+<!--													</div>-->
+<!--													<div-->
+<!--															[class.setRedColor]="item.total && item.total < 0"-->
+<!--															class="text-ellipsis ltrNum"-->
+<!--													>-->
+<!--														{{ item.total ? (item.total | sum: false) : '-' }}-->
+<!--													</div>-->
+<!--													<div class="text-ellipsis">-->
+<!--														{{ item.asmachta ? item.asmachta : '-' }}-->
+<!--													</div>-->
+<!--													<div-->
+<!--															[class.setRedColor]="item.balance && item.balance < 0"-->
+<!--															class="text-ellipsis ltrNum"-->
+<!--													>-->
+<!--														{{ item.balance ? (item.balance | sum: false) : '-' }}-->
+<!--													</div>-->
+<!--													<div-->
+<!--															*ngIf="-->
+<!--                            exportPopupType.popupType === 'LAST_DAY_MATCHED'-->
+<!--                          "-->
+<!--													>-->
+<!--														{{ item.uniqueId ? item.uniqueId : '-' }}-->
+<!--													</div>-->
+<!--													<div class="text-ellipsis">-->
+<!--														<mat-icon-->
+<!--																[ngStyle]="{-->
+<!--                              color: item.matched ? '#229f88' : '#ce1515',-->
+<!--                              width: item.matched ? '17px' : '14px',-->
+<!--                              cursor: !item.matched ? 'pointer' : 'default'-->
+<!--                            }"-->
+<!--																[svgIcon]="item.matched ? 'tick' : 'close'"-->
+<!--																class="left-space"-->
+<!--																style="height: 100%"-->
+<!--														>-->
+<!--														</mat-icon>-->
+<!--													</div>-->
+<!--												</div>-->
+<!--											</div>-->
+<!--										</cdk-virtual-scroll-viewport>-->
+<!--									</ng-scrollbar>-->
+
+<!--								</div>-->
+<!--							</div>-->
+<!--						</div>-->
+<!--					</div>-->
+<!--				</div>-->
+<!--			</div>-->
+<!--		</ng-container>-->
+<!--	</p-dialog>-->
+<!--</ng-container>-->
+
+
 
 <ng-container *ngIf="exportFileFolderCreatePrompt">
 	<p-dialog (onHide)="

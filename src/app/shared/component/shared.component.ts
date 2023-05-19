@@ -19,20 +19,12 @@ import {OverlayContainer} from '@angular/cdk/overlay';
 import {UserService} from '@app/core/user.service';
 import {TranslateService} from '@ngx-translate/core';
 import {menu} from '@app/shared/config/menu';
-import {
-    ActivatedRoute,
-    NavigationExtras,
-    NavigationStart,
-    Router,
-    UrlSegment,
-    UrlSegmentGroup,
-    UrlTree
-} from '@angular/router';
+import {ActivatedRoute, NavigationExtras, NavigationStart, Router, UrlSegment, UrlSegmentGroup, UrlTree} from '@angular/router';
 import {BreakpointObserver, Breakpoints} from '@angular/cdk/layout';
 import {HttpClient, HttpErrorResponse} from '@angular/common/http';
 import {HttpServices} from '@app/shared/services/http.services';
 import {AuthService} from '@app/login/auth.service';
-import {BehaviorSubject, interval, Observable, ReplaySubject, Subject, Subscription} from 'rxjs';
+import {BehaviorSubject, interval, merge, Observable, ReplaySubject, Subject, Subscription} from 'rxjs';
 import {FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
 import {publishRef} from '../functions/publishRef';
 
@@ -51,6 +43,7 @@ import {LoanDetailsPromptComponent} from './loan-details/loan-details-prompt.com
 import Player from '@vimeo/player';
 import {ReportService} from '@app/core/report.service';
 import {Location} from '@angular/common';
+import {AddCompanyDialogComponent} from '@app/shared/component/add-company-dialog/add-company-dialog-component';
 
 // import {sharedService} from './accountants.service';
 
@@ -64,6 +57,7 @@ export class SharedComponent implements OnInit, AfterViewInit, OnDestroy {
     public isParent = false;
     public isParentChild = false;
     public isOpen: boolean;
+    public dataFromBankAndCreditScreen: any;
     public isHover = false;
     public isHoverChild = false;
     public timeout: any;
@@ -79,6 +73,8 @@ export class SharedComponent implements OnInit, AfterViewInit, OnDestroy {
     public switchMapInit: Observable<{}>;
     public itemsDD: MenuItem[];
     public getDataEvent: Subject<any> = new Subject<any>();
+    public reloadMessagesEve: Subject<void> = new Subject<void>();
+
     public getDataEventGotAcc: Subject<any> = new Subject<any>();
     public getCompaniesEvent: Subject<any> = new Subject<any>();
     public reloadEvent: Subject<any> = new Subject<any>();
@@ -102,12 +98,15 @@ export class SharedComponent implements OnInit, AfterViewInit, OnDestroy {
     public readonly recommendationPresetPublisher$ = new ReplaySubject<any>(1);
 
     messagesSideShow = false;
+    openMessagesAgain = false;
+    reloadMessagesSavedData;
     messagesSideHide = false;
     selectedCompanyPopupMessages$: Observable<Array<Message>>;
     knowledgeBaseVisible: any = false;
     companyId: any = false;
     isBank: any = true;
     nickname: any = false;
+    showAddCompaniesPopUp = false;
 
     readonly knowledgeBaseIntroduction: { visible: boolean };
     readonly biziboxTrialExpired: { visible: number };
@@ -127,6 +126,7 @@ export class SharedComponent implements OnInit, AfterViewInit, OnDestroy {
     private budgetPromoVideoPlayer: Player;
 
     public isCustomer = true;
+    public isNoCompaniesFound = false;
 
     @ViewChild('budgetPromoVideoFrame')
     set budgetPromoVideoFrame(val: any) {
@@ -387,7 +387,8 @@ export class SharedComponent implements OnInit, AfterViewInit, OnDestroy {
                                 companyData.METZALEM_TYPE = 'METZALEM';
                             }
                         }
-                        // companyData.deskTrialExpired = null;
+                        // companyData.deskTrialExpired = true;
+                        // //1111
                         companyData.METZALEM_deskTrialExpired =
                             companyData.METZALEM && !companyData.deskTrialExpired;
                     }
@@ -499,7 +500,12 @@ export class SharedComponent implements OnInit, AfterViewInit, OnDestroy {
                         label: this.translate.instant('actions.installTeamViewer'),
                         icon: 'fas fa-arrows-alt-h',
                         url: 'http://898.tv/bizibox',
-                        target: '_blank'
+                        target: '_blank',
+                        command: () => {
+                            this.mixPanelEvent('my details', {
+                                value: this.translate.instant('actions.installTeamViewer')
+                            });
+                        }
                     },
                     {
                         label:
@@ -507,6 +513,10 @@ export class SharedComponent implements OnInit, AfterViewInit, OnDestroy {
                             .settings,
                         icon: 'fas fa-cog',
                         command: () => {
+                            this.mixPanelEvent('my details', {
+                                value: this.translate.translations[this.translate.currentLang].actions
+                                    .settings
+                            });
                             this.router.navigate(['./settings'], {
                                 queryParamsHandling: 'preserve',
                                 relativeTo: this.route
@@ -517,6 +527,9 @@ export class SharedComponent implements OnInit, AfterViewInit, OnDestroy {
                         label: this.translate.instant('actions.billing'),
                         icon: 'fas fa-shopping-cart',
                         command: () => {
+                            this.mixPanelEvent('my details', {
+                                value: this.translate.instant('actions.billing')
+                            });
                             this.router.navigate(['./billing'], {
                                 queryParamsHandling: 'preserve',
                                 relativeTo: this.route
@@ -529,6 +542,10 @@ export class SharedComponent implements OnInit, AfterViewInit, OnDestroy {
                             .logOut,
                         icon: 'fa fa-sign-out-alt',
                         command: () => {
+                            this.mixPanelEvent('my details', {
+                                value: this.translate.translations[this.translate.currentLang].actions
+                                    .logOut
+                            });
                             this.authService.logout();
                         }
                     }
@@ -540,6 +557,10 @@ export class SharedComponent implements OnInit, AfterViewInit, OnDestroy {
                             .companyProducts,
                         icon: 'icon-company_products',
                         command: () => {
+                            this.mixPanelEvent('my details', {
+                                value: this.translate.translations[this.translate.currentLang].actions
+                                    .companyProducts
+                            });
                             this.router.navigate(
                                 ['/accountants/companies/companyProducts'],
                                 {
@@ -555,16 +576,23 @@ export class SharedComponent implements OnInit, AfterViewInit, OnDestroy {
                             .logOut,
                         icon: 'fa fa-sign-out-alt',
                         command: () => {
+                            this.mixPanelEvent('my details', {
+                                value: this.translate.translations[this.translate.currentLang].actions
+                                    .logOut
+                            });
                             this.authService.logout();
                         }
                     }
                 ];
 
-            if (this.userService.appData.isAdmin) {
+            if (this.userService.appData.isAdmin && this.isCustomer) {
                 this.itemsDD.splice(-2, 0, {
                     label: this.translate.instant('actions.administration'),
                     icon: 'fas fa-fw fa-key',
                     command: () => {
+                        this.mixPanelEvent('my details', {
+                            value: this.translate.instant('actions.administration')
+                        });
                         this.router.navigate(['./admin'], {
                             queryParamsHandling: 'preserve',
                             relativeTo: this.route
@@ -573,7 +601,7 @@ export class SharedComponent implements OnInit, AfterViewInit, OnDestroy {
                 });
             }
 
-            this.selectedCompanyPopupMessages$ = this.getDataEvent.pipe(
+            this.selectedCompanyPopupMessages$ = merge(this.getDataEvent, this.reloadMessagesEve).pipe(
                 startWith(true),
                 switchMap(() =>
                     this.messagesService.getCompanyMessages({
@@ -583,6 +611,10 @@ export class SharedComponent implements OnInit, AfterViewInit, OnDestroy {
                         source: 'popup'
                     })
                 ),
+                tap((response: any) => {
+                    this.openMessagesAgain = this.reloadMessagesSavedData && this.reloadMessagesSavedData.length !== response.length;
+                    this.reloadMessagesSavedData = response;
+                }),
                 publishRef
             );
 
@@ -601,6 +633,12 @@ export class SharedComponent implements OnInit, AfterViewInit, OnDestroy {
 
                     this.showOpenTicket();
                 });
+
+            // @ts-ignore
+            // this.router.events.pipe(filter((e: Event): e is RouterEvent => e instanceof RouterEvent)).subscribe((e: RouterEvent) => {
+            //     // Do something
+            //     debugger
+            // });
 
             this.budgetPromoVideo$ = this.httpClient
                 .get(
@@ -667,7 +705,8 @@ export class SharedComponent implements OnInit, AfterViewInit, OnDestroy {
                         companyData.METZALEM_TYPE = 'METZALEM';
                     }
                 }
-                // companyData.deskTrialExpired = null;
+                // companyData.deskTrialExpired = true;
+                // //1111
                 companyData.METZALEM_deskTrialExpired =
                     companyData.METZALEM && !companyData.deskTrialExpired;
             });
@@ -716,6 +755,7 @@ export class SharedComponent implements OnInit, AfterViewInit, OnDestroy {
     clickRecommendation(): void {
         if (!this.userService.appData.userData.companySelect.lite) {
             this.recommendationCalculatorShow = !this.recommendationCalculatorShow;
+            this.mixPanelEvent('recomended payment');
             if (this.rcmndtnCalendar) {
                 this.rcmndtnCalendar.reset();
             }
@@ -812,16 +852,136 @@ export class SharedComponent implements OnInit, AfterViewInit, OnDestroy {
             'METZALEM' ||
             this.userService.appData.userData.companySelect.METZALEM_TYPE === 'KSAFIM'
         ) {
-            this.menuArray = menu.METZALEM_open;
+            if (this.userService.appData.userData.companySelect.METZALEM_TYPE === 'KSAFIM') {
+                this.menuArray = menu.METZALEM_KSAFIM;
+            } else {
+                this.menuArray = menu.METZALEM_open;
+            }
         } else if (
             this.userService.appData.userData.companySelect.METZALEM_TYPE ===
             'ANHALATHESHBONOT' ||
             this.userService.appData.userData.companySelect.METZALEM_TYPE ===
             'KSAFIM_ANHALATHESHBONOT'
         ) {
-            this.menuArray = menu.METZALEM_open_accountancy;
+            if (this.userService.appData.userData.companySelect.METZALEM_TYPE ===
+                'KSAFIM_ANHALATHESHBONOT') {
+                this.menuArray = menu.METZALEM_KSAFIM_ANHALATHESHBONOT;
+            } else {
+                this.menuArray = menu.METZALEM_open_accountancy;
+            }
+
         }
         this.userService.appData.userData.companySelect.lite = false;
+    }
+
+    mixPanelEvent(eventName: string, params?: any) {
+        if (window['mixpanel']) {
+            if (!params) {
+                window['mixpanel'].track(eventName);
+            } else {
+                window['mixpanel'].track(eventName, params);
+            }
+        }
+    }
+
+    mixPanelNavEvent(routerLink: any) {
+        // console.log('routerLink', routerLink);
+        let mixPanelEvent: string | null = null;
+        let mixPanelEventParams: any = false;
+        switch (true) {
+            case routerLink.includes('general'): {
+                mixPanelEvent = 'tazrim general';
+                mixPanelEventParams = {
+                    'count': this.userService.appData.userData.accounts && Array.isArray(this.userService.appData.userData.accounts) ? this.userService.appData.userData.accounts.length : 0
+                };
+                break;
+            }
+            case routerLink.includes('fixedMovements/details'): {
+                mixPanelEvent = 'trans kvuot';
+                break;
+            }
+            case routerLink.includes('bankAccount'): {
+                mixPanelEvent = 'my accounts';
+                break;
+            }
+            case routerLink.includes('beneficiary'): {
+                mixPanelEvent = 'mutavim';
+                break;
+            }
+            case routerLink.includes('checks'): {
+                mixPanelEvent = 'my checks';
+                break;
+            }
+            case routerLink.includes('creditsCard'): {
+                mixPanelEvent = 'my credits';
+                break;
+            }
+            case routerLink.includes('slika'): {
+                mixPanelEvent = 'solek accounts';
+                mixPanelEventParams = {
+                    'count': this.userService.appData.userData.slika && Array.isArray(this.userService.appData.userData.slika) ? this.userService.appData.userData.slika.length : 0
+                };
+                break;
+            }
+            case routerLink.includes('bankmatch/bank'): {
+                mixPanelEvent = 'matche';
+                break;
+            }
+            case routerLink.includes('budget'): {
+                mixPanelEvent = 'budget screen';
+                break;
+            }
+            case routerLink.includes('accountancy'): {
+                mixPanelEvent = 'bookkeeping screen';
+                break;
+            }
+            case routerLink.includes('help-center'): {
+                mixPanelEvent = 'help center screen';
+                break;
+            }
+            case routerLink.includes('cfl/settings'): {
+                mixPanelEvent = 'settings screen';
+                break;
+            }
+            case routerLink.includes('daily'): {
+                mixPanelEvent = 'tazrim';
+                break;
+            }
+            case routerLink === './companies': {
+                mixPanelEvent = 'havarot';
+                mixPanelEventParams = {
+                    'new screen': this.userService.appData.isAdmin ? true : this.userService.appData.userData.showNewCompaniesPage
+                };
+                break;
+            }
+            case routerLink.includes('bankExport'): {
+                mixPanelEvent = 'izu bank and credit';
+                break;
+            }
+            case routerLink.includes('supplierCustomersJournal'): {
+                mixPanelEvent = 'general sapakim velakohot';
+                break;
+            }
+            case routerLink.includes('bankCreditJournal'): {
+                mixPanelEvent = 'general bank and credit';
+                break;
+            }
+            case routerLink.includes('reports'): {
+                mixPanelEvent = 'dohot';
+                break;
+            }
+            case routerLink.includes('./main'): {
+                mixPanelEvent = 'rashi';
+                break;
+            }
+            case routerLink.includes('companies/settings'): {
+                mixPanelEvent = 'settings';
+                break;
+            }
+        }
+        if (mixPanelEvent) {
+            this.mixPanelEvent(mixPanelEvent, mixPanelEventParams);
+        }
     }
 
     selectCompanyParam(company: any, moveTo?: string): void {
@@ -833,13 +993,67 @@ export class SharedComponent implements OnInit, AfterViewInit, OnDestroy {
             });
     }
 
+    mixScreenName(eventName: any) {
+        if (window['mixpanel']) {
+            const urlState: string = this.router.url.split('?')[0];
+            // console.log(this.menuArray);
+            let textScreen = '';
+            this.menuArray.find((it: any) => {
+                if (it.children.length) {
+                    const findChildMatch = it.children.find((itChild: any) => {
+                        if (itChild.routerLink) {
+                            const urlFix = itChild.routerLink.replace('./', 'accountants/');
+                            if (urlState.includes(urlFix)) {
+                                return itChild;
+                            }
+                        } else {
+                            if (itChild.children) {
+                                const findNestedChildMatch = itChild.children.find((itNestedChild: any) => {
+                                    const urlFix = itNestedChild.routerLink.replace('./', 'accountants/');
+                                    if (urlState.includes(urlFix)) {
+                                        return itChild;
+                                    }
+                                });
+                                if (findNestedChildMatch) {
+                                    textScreen = this.translate.instant(findNestedChildMatch.text);
+                                    return itChild;
+                                }
+                            }
+                        }
+                    });
+                    if (findChildMatch) {
+                        textScreen = this.translate.instant(findChildMatch.text);
+                        return findChildMatch;
+                    }
+                }
+            });
+            if (textScreen === '') {
+                const findByParentMatch = this.menuArray.find((it: any) => {
+                    if (!it.children.length) {
+                        const urlFix = it.routerLink.replace('./', 'accountants/');
+                        if (urlState.includes(urlFix)) {
+                            return it;
+                        }
+                    }
+                });
+                if (findByParentMatch) {
+                    textScreen = this.translate.instant(findByParentMatch.text);
+                }
+            }
+            if (textScreen === 'חברות' && (this.userService.appData.isAdmin ? this.userService.appData.userDataAdmin.showNewCompaniesPage : this.userService.appData.userData.showNewCompaniesPage)) {
+                textScreen += ' - כללי';
+            }
+            window['mixpanel'].track(eventName, {'screen name': textScreen || urlState});
+        }
+    }
+
     selectCompany(
         changeFromDD?: boolean,
         removeId?: boolean,
         moveTo?: string
     ): void {
         let isAlreadySelectedCompany = false;
-        if(this.userService.appData.userData.companySelect){
+        if (this.userService.appData.userData.companySelect) {
             isAlreadySelectedCompany = true;
         }
         this.userService.appData.userData.accountSelect = [];
@@ -859,6 +1073,63 @@ export class SharedComponent implements OnInit, AfterViewInit, OnDestroy {
             this.storageService.sessionStorageRemoveItem('accountants-doc-open');
         }
         this.userService.appData.userData.companySelect = this.selectedValue;
+        if (window['mixpanel']) {
+            // window['mixpanel'].register({
+            //     "company name": this.userService.appData.userData.companySelect.companyName
+            // });
+            window['mixpanel'].set_group('company name', this.userService.appData.userData.companySelect.companyName);
+            if (changeFromDD) {
+                const urlState: string = this.router.url.split('?')[0];
+                // console.log(this.menuArray);
+                let textScreen = '';
+                this.menuArray.find((it: any) => {
+                    if (it.children.length) {
+                        const findChildMatch = it.children.find((itChild: any) => {
+                            if (itChild.routerLink) {
+                                const urlFix = itChild.routerLink.replace('./', 'accountants/');
+                                if (urlState.includes(urlFix)) {
+                                    return itChild;
+                                }
+                            } else {
+                                if (itChild.children) {
+                                    const findNestedChildMatch = itChild.children.find((itNestedChild: any) => {
+                                        const urlFix = itNestedChild.routerLink.replace('./', 'accountants/');
+                                        if (urlState.includes(urlFix)) {
+                                            return itChild;
+                                        }
+                                    });
+                                    if (findNestedChildMatch) {
+                                        textScreen = this.translate.instant(findNestedChildMatch.text);
+                                        return itChild;
+                                    }
+                                }
+                            }
+                        });
+                        if (findChildMatch) {
+                            textScreen = this.translate.instant(findChildMatch.text);
+                            return findChildMatch;
+                        }
+                    }
+                });
+                if (textScreen === '') {
+                    const findByParentMatch = this.menuArray.find((it: any) => {
+                        if (!it.children.length) {
+                            const urlFix = it.routerLink.replace('./', 'accountants/');
+                            if (urlState.includes(urlFix)) {
+                                return it;
+                            }
+                        }
+                    });
+                    if (findByParentMatch) {
+                        textScreen = this.translate.instant(findByParentMatch.text);
+                    }
+                }
+                if (textScreen === 'חברות' && (this.userService.appData.isAdmin ? this.userService.appData.userDataAdmin.showNewCompaniesPage : this.userService.appData.userData.showNewCompaniesPage)) {
+                    textScreen += ' - כללי';
+                }
+                window['mixpanel'].track('change company', {'screen name': textScreen || urlState});
+            }
+        }
         if (
             this.userService.appData.userData.companySelect &&
             this.userService.appData.userData.companySelect.METZALEM_deskTrialExpired
@@ -871,15 +1142,22 @@ export class SharedComponent implements OnInit, AfterViewInit, OnDestroy {
                         .logOut,
                     icon: 'fa fa-sign-out-alt',
                     command: () => {
+                        this.mixPanelEvent('my details', {
+                            value: this.translate.translations[this.translate.currentLang].actions
+                                .logOut
+                        });
                         this.authService.logout();
                     }
                 }
             ];
-            if (this.userService.appData.isAdmin) {
+            if (this.userService.appData.isAdmin && this.isCustomer) {
                 this.itemsDD.splice(-2, 0, {
                     label: this.translate.instant('actions.administration'),
                     icon: 'fas fa-fw fa-key',
                     command: () => {
+                        this.mixPanelEvent('my details', {
+                            value: this.translate.instant('actions.administration')
+                        });
                         this.router.navigate(['./admin'], {
                             queryParamsHandling: 'preserve',
                             relativeTo: this.route
@@ -1026,7 +1304,7 @@ export class SharedComponent implements OnInit, AfterViewInit, OnDestroy {
                                 } else {
                                     // goTo = ['./companies/general/details'];
                                 }
-                                if(!isAlreadySelectedCompany){
+                                if (!isAlreadySelectedCompany) {
                                     goTo = ['./companies/general/details'];
                                 }
                             } else {
@@ -1057,6 +1335,8 @@ export class SharedComponent implements OnInit, AfterViewInit, OnDestroy {
             }
             this.router.navigate(goTo, navigationExtras);
         }
+
+
         if (
             this.userService.appData.userData.companySelect &&
             this.userService.appData.userData.companySelect['METZALEM'] &&
@@ -1078,12 +1358,12 @@ export class SharedComponent implements OnInit, AfterViewInit, OnDestroy {
                 this.userService.appData.userData.companySelect.METZALEM_TYPE ===
                 'KSAFIM'
             ) {
-                this.menuArray = menu.METZALEM_open;
+                this.menuArray = menu.METZALEM_KSAFIM;
             } else if (
                 this.userService.appData.userData.companySelect.METZALEM_TYPE ===
                 'KSAFIM_ANHALATHESHBONOT'
             ) {
-                this.menuArray = menu.METZALEM_open_accountancy;
+                this.menuArray = menu.METZALEM_KSAFIM_ANHALATHESHBONOT;
             }
             this.userService.appData.userData.companySelect.lite = false;
         } else {
@@ -1158,7 +1438,14 @@ export class SharedComponent implements OnInit, AfterViewInit, OnDestroy {
                                                             ),
                                                             icon: 'fas fa-arrows-alt-h',
                                                             url: 'http://898.tv/bizibox',
-                                                            target: '_blank'
+                                                            target: '_blank',
+                                                            command: () => {
+                                                                this.mixPanelEvent('my details', {
+                                                                    value: this.translate.instant(
+                                                                        'actions.installTeamViewer'
+                                                                    )
+                                                                });
+                                                            }
                                                         },
                                                         {
                                                             label:
@@ -1167,6 +1454,11 @@ export class SharedComponent implements OnInit, AfterViewInit, OnDestroy {
                                                                 ].actions.settings,
                                                             icon: 'fas fa-cog',
                                                             command: () => {
+                                                                this.mixPanelEvent('my details', {
+                                                                    value: this.translate.translations[
+                                                                        this.translate.currentLang
+                                                                        ].actions.settings
+                                                                });
                                                                 this.router.navigate(['./settings'], {
                                                                     queryParamsHandling: 'preserve',
                                                                     relativeTo: this.route
@@ -1178,6 +1470,9 @@ export class SharedComponent implements OnInit, AfterViewInit, OnDestroy {
                                                                 this.translate.instant('actions.billing'),
                                                             icon: 'fas fa-shopping-cart',
                                                             command: () => {
+                                                                this.mixPanelEvent('my details', {
+                                                                    value: this.translate.instant('actions.billing')
+                                                                });
                                                                 this.router.navigate(['./billing'], {
                                                                     queryParamsHandling: 'preserve',
                                                                     relativeTo: this.route
@@ -1191,6 +1486,11 @@ export class SharedComponent implements OnInit, AfterViewInit, OnDestroy {
                                                                 ].actions.logOut,
                                                             icon: 'fa fa-sign-out-alt',
                                                             command: () => {
+                                                                this.mixPanelEvent('my details', {
+                                                                    value: this.translate.translations[
+                                                                        this.translate.currentLang
+                                                                        ].actions.logOut
+                                                                });
                                                                 this.authService.logout();
                                                             }
                                                         }
@@ -1203,6 +1503,11 @@ export class SharedComponent implements OnInit, AfterViewInit, OnDestroy {
                                                                 ].actions.companyProducts,
                                                             icon: 'icon-company_products',
                                                             command: () => {
+                                                                this.mixPanelEvent('my details', {
+                                                                    value: this.translate.translations[
+                                                                        this.translate.currentLang
+                                                                        ].actions.companyProducts
+                                                                });
                                                                 this.router.navigate(
                                                                     ['/accountants/companies/companyProducts'],
                                                                     {
@@ -1219,17 +1524,27 @@ export class SharedComponent implements OnInit, AfterViewInit, OnDestroy {
                                                                 ].actions.logOut,
                                                             icon: 'fa fa-sign-out-alt',
                                                             command: () => {
+                                                                this.mixPanelEvent('my details', {
+                                                                    value: this.translate.translations[
+                                                                        this.translate.currentLang
+                                                                        ].actions.logOut
+                                                                });
                                                                 this.authService.logout();
                                                             }
                                                         }
                                                     ];
-                                                if (this.userService.appData.isAdmin) {
+                                                if (this.userService.appData.isAdmin && this.isCustomer) {
                                                     this.itemsDD.splice(-2, 0, {
                                                         label: this.translate.instant(
                                                             'actions.administration'
                                                         ),
                                                         icon: 'fas fa-fw fa-key',
                                                         command: () => {
+                                                            this.mixPanelEvent('my details', {
+                                                                value: this.translate.instant(
+                                                                    'actions.administration'
+                                                                )
+                                                            });
                                                             this.router.navigate(['./admin'], {
                                                                 queryParamsHandling: 'preserve',
                                                                 relativeTo: this.route
@@ -1301,6 +1616,98 @@ export class SharedComponent implements OnInit, AfterViewInit, OnDestroy {
                     }
                 } else {
                     this.menuArray = menu.accountants;
+                }
+            }
+        }
+        if (this.isCustomer && this.userService.appData.userData.companySelect &&
+            this.userService.appData.userData.companySelect['METZALEM']) {
+            if (
+                this.userService.appData.userData.companySelect.METZALEM_TYPE ===
+                'KSAFIM'
+            ) {
+                this.menuArray = menu.METZALEM_KSAFIM;
+            } else if (
+                this.userService.appData.userData.companySelect.METZALEM_TYPE ===
+                'KSAFIM_ANHALATHESHBONOT'
+            ) {
+                this.menuArray = menu.METZALEM_KSAFIM_ANHALATHESHBONOT;
+            }
+            if (
+                this.userService.appData.userData.companySelect.METZALEM_TYPE ===
+                'KSAFIM' ||  this.userService.appData.userData.companySelect.METZALEM_TYPE ===
+                'KSAFIM_ANHALATHESHBONOT'
+            ){
+                if (this.userService.appData.isAdmin){
+                    this.itemsDD =  [
+                        {
+                            label: this.translate.instant('actions.administration'),
+                            icon: 'fas fa-fw fa-key',
+                            command: () => {
+                                this.mixPanelEvent('my details', {
+                                    value: this.translate.instant('actions.administration')
+                                });
+                                this.router.navigate(['./admin'], {
+                                    queryParamsHandling: 'preserve',
+                                    relativeTo: this.route
+                                });
+                            }
+                        },
+                        {
+                            label: this.translate.instant('actions.billing'),
+                            icon: 'fas fa-shopping-cart',
+                            command: () => {
+                                this.mixPanelEvent('my details', {
+                                    value: this.translate.instant('actions.billing')
+                                });
+                                this.router.navigate(['./billing'], {
+                                    queryParamsHandling: 'preserve',
+                                    relativeTo: this.route
+                                });
+                            }
+                        },
+                        {
+                            label:
+                            this.translate.translations[this.translate.currentLang].actions
+                                .logOut,
+                            icon: 'fa fa-sign-out-alt',
+                            command: () => {
+                                this.mixPanelEvent('my details', {
+                                    value: this.translate.translations[this.translate.currentLang].actions
+                                        .logOut
+                                });
+                                this.authService.logout();
+                            }
+                        }
+                    ]
+                }else{
+                    this.itemsDD =  [
+                        {
+                            label: this.translate.instant('actions.billing'),
+                            icon: 'fas fa-shopping-cart',
+                            command: () => {
+                                this.mixPanelEvent('my details', {
+                                    value: this.translate.instant('actions.billing')
+                                });
+                                this.router.navigate(['./billing'], {
+                                    queryParamsHandling: 'preserve',
+                                    relativeTo: this.route
+                                });
+                            }
+                        },
+                        {
+                            label:
+                            this.translate.translations[this.translate.currentLang].actions
+                                .logOut,
+                            icon: 'fa fa-sign-out-alt',
+                            command: () => {
+                                this.mixPanelEvent('my details', {
+                                    value: this.translate.translations[this.translate.currentLang].actions
+                                        .logOut
+                                });
+                                this.authService.logout();
+                            }
+                        }
+                    ]
                 }
             }
         }
@@ -1544,49 +1951,72 @@ export class SharedComponent implements OnInit, AfterViewInit, OnDestroy {
                     clearInterval(interMess);
                 }
             }, 10);
-            this.sharedService
-                .getAccounts(this.selectedValue.companyId)
-                .pipe(
-                    tap((response: any) => {
-                        this.userService.appData.userData.exampleCompany =
-                            response && !response.error && response.body.exampleCompany;
-                    })
-                )
-                .subscribe(
-                    (response: any) => {
-                        this.userService.appData.userData.accounts =
-                            response && !response.error ? response.body.accounts : null;
-                        if (Array.isArray(this.userService.appData.userData.accounts)) {
-                            this.userService.appData.userData.accounts.forEach((acc: any) => {
-                                acc.isUpToDate = acc.isUpdate;
-                                acc.outdatedBecauseNotFound =
-                                    !acc.isUpToDate &&
-                                    acc.alertStatus === 'Not found in bank website';
-                            });
-                            // AccountsByCurrencyGroup.isToday(acc.balanceLastUpdatedDate));
-                        }
-                        if (this.isCustomer) {
-                            this.getDataEvent.next(true);
-                        }
-                        this.getDataEventGotAcc.next(true);
-                        if (
-                            this.topNotificationArea &&
-                            this.topNotificationArea.companySelectionChange$
-                        ) {
-                            this.topNotificationArea.companySelectionChange$.next();
-                        }
-                    },
-                    (err: HttpErrorResponse) => {
-                        if (err.error instanceof Error) {
-                            console.log('An error occurred:', err.error.message);
-                        } else {
-                            console.log(
-                                `Backend returned code ${err.status}, body was: ${err.error}`
-                            );
-                        }
-                    }
-                );
+            this.sharedService.getCurrencyList().subscribe((responseCurr) => {
+                this.userService.appData.userData.currencyList = responseCurr ? responseCurr['body'] : responseCurr;
+                this.getAccounts();
+            });
+
         }
+    }
+
+    getAccounts() {
+        this.sharedService
+            .getAccounts(this.selectedValue.companyId)
+            .pipe(
+                tap((response: any) => {
+                    this.userService.appData.userData.exampleCompany =
+                        response && !response.error && response.body.exampleCompany;
+                })
+            )
+            .subscribe(
+                (response: any) => {
+                    this.userService.appData.userData.accounts =
+                        response && !response.error ? response.body.accounts : null;
+                    if (Array.isArray(this.userService.appData.userData.accounts)) {
+                        this.userService.appData.userData.accounts.forEach((acc: any) => {
+                            if (acc.currency) {
+                                const sign = this.userService.appData.userData.currencyList.find(
+                                    (curr) => curr.code === acc.currency
+                                );
+                                if (sign) {
+                                    acc.sign = sign.sign;
+                                    acc.currencyId = sign.id;
+                                } else {
+                                    acc.sign = '';
+                                    acc.currencyId = 99;
+                                }
+                            } else {
+                                acc.currencyId = 1;
+                                acc.sign = 'ש"ח';
+                            }
+                            acc.isUpToDate = acc.isUpdate;
+                            acc.outdatedBecauseNotFound =
+                                !acc.isUpToDate &&
+                                acc.alertStatus === 'Not found in bank website';
+                        });
+                        // AccountsByCurrencyGroup.isToday(acc.balanceLastUpdatedDate));
+                    }
+                    if (this.isCustomer) {
+                        this.getDataEvent.next(true);
+                    }
+                    this.getDataEventGotAcc.next(true);
+                    if (
+                        this.topNotificationArea &&
+                        this.topNotificationArea.companySelectionChange$
+                    ) {
+                        this.topNotificationArea.companySelectionChange$.next();
+                    }
+                },
+                (err: HttpErrorResponse) => {
+                    if (err.error instanceof Error) {
+                        console.log('An error occurred:', err.error.message);
+                    } else {
+                        console.log(
+                            `Backend returned code ${err.status}, body was: ${err.error}`
+                        );
+                    }
+                }
+            );
     }
 
     ngAfterViewInit(): void {
@@ -1644,7 +2074,8 @@ export class SharedComponent implements OnInit, AfterViewInit, OnDestroy {
                                 companyData.METZALEM_TYPE = 'METZALEM';
                             }
                         }
-                        // companyData.deskTrialExpired = null;
+                        // companyData.deskTrialExpired = true;
+                        // //1111
                         companyData.METZALEM_deskTrialExpired =
                             companyData.METZALEM && !companyData.deskTrialExpired;
                     });
@@ -1724,7 +2155,8 @@ export class SharedComponent implements OnInit, AfterViewInit, OnDestroy {
                                         companyData.METZALEM_TYPE = 'METZALEM';
                                     }
                                 }
-                                // companyData.deskTrialExpired = null;
+                                // companyData.deskTrialExpired = true;
+                                // //1111
                                 companyData.METZALEM_deskTrialExpired =
                                     companyData.METZALEM && !companyData.deskTrialExpired;
                             }
@@ -2057,6 +2489,10 @@ export class SharedComponent implements OnInit, AfterViewInit, OnDestroy {
             this.nickname = nickname;
             this.companyId = companyIDSet;
             this.isBank = !!isBank;
+        } else {
+            this.nickname = false;
+            this.companyId = false;
+            this.isBank = true;
         }
         if (getData) {
             this.sharedService.getUserSettings().subscribe(
@@ -2087,7 +2523,6 @@ export class SharedComponent implements OnInit, AfterViewInit, OnDestroy {
         } else {
             this.knowledgeBaseVisible = true;
         }
-
         // this.helpCenterService.activeTab.next(this.helpCenterService.tabs.find(tab => tab.id === 'serviceCall'));
     }
 
@@ -2097,6 +2532,10 @@ export class SharedComponent implements OnInit, AfterViewInit, OnDestroy {
             'popupAlertShownAt',
             'ttl'
         ].join('_');
+    }
+
+    showOpenCompaniesPopUp() {
+        this.showAddCompaniesPopUp = true;
     }
 
     public tryToShowTaryaPopup() {
@@ -2272,6 +2711,7 @@ export class SharedComponent implements OnInit, AfterViewInit, OnDestroy {
 
     onReload() {
         this.reloadEvent.next(true);
+        this.mixScreenName('refresh button');
         // if (!this.router.url.includes('cfl') && !this.isCustomer) {
         //     this.reloadEvent.next(true);
         // } else {
@@ -2301,5 +2741,10 @@ export class SharedComponent implements OnInit, AfterViewInit, OnDestroy {
                 this.budgetPopUp();
             }
         }
+    }
+
+    onAddCompanyDialogVisibilityChange(addCompanyFormContainer: AddCompanyDialogComponent) {
+        this.showAddCompaniesPopUp = false;
+        addCompanyFormContainer.addCompanyForm.reset();
     }
 }

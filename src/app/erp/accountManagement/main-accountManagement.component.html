@@ -76,7 +76,7 @@
                     >
                         <div class="title-accGr">
                             <div style="display: flex">
-                                <div
+                                <div *ngIf="!userService.appData?.hideCompanyName"
                                         [class.leftSpace]="accGr.companyHp !== null"
                                         [innerHTML]="accGr.companyName | highlight: queryString"
                                 ></div>
@@ -122,7 +122,7 @@
                       "
                                         />
                                     </div>
-                                    <div>
+                                    <div >
                                         <div style="display: flex">
                                             <p
                                                     [innerHTML]="
@@ -170,8 +170,11 @@
                                                 {{ row.currencyString ? ' ' + row.currencyString : '' }}
                                             </p>
                                         </div>
+
+
                                         <p *ngIf="row.tokenStatus" class="small erpUpdateToken">
                                             <app-token-status-view
+                                                    #tokenStatusView
                                                     (creationSuccess)="getAccountsForStation()"
                                                     [accFromBank]="accFromBank"
                                                     [companyId]="accGr.companyId"
@@ -281,7 +284,7 @@
                                 </div>
 
                                 <i
-                                        (click)="tooltipEditFile = row; panelEdit.toggle($event)"
+                                        (click)="row.aaaa = tokenStatusView;tooltipEditFile = row; panelEdit.toggle($event)"
                                         class="fas fa-ellipsis-v"
                                         style="cursor: pointer"
                                 ></i>
@@ -309,6 +312,33 @@
                         <!--                                </p>-->
                         <!--                            </div>-->
                         <!--                        </li>-->
+<!--                        &&  tooltipEditFile.tokenStatus === 'UP_TO_DATE'-->
+                        <li (click)="onUpdateCredentialsClick(tooltipEditFile);panelEdit.hide()"
+                        *ngIf="tooltipEditFile && tooltipEditFile.poalimBeasakim">
+                            <div
+                                    class="p-helper-clearfix"
+                                    style="display: flex; display: -ms-flexbox"
+                            >
+                                <div style="align-self: center; flex: 20; -ms-flex: 20">
+                                    <mat-icon
+                                            style="width: 14px; vertical-align: middle"
+                                            svgIcon="pencil"
+                                    ></mat-icon>
+                                </div>
+                                <p
+                                        class="nameAcc"
+                                        style="
+                    overflow: hidden;
+                    white-space: nowrap;
+                    text-overflow: ellipsis;
+                    flex: 85;
+                    -ms-flex: 85;
+                  "
+                                >
+                             עדכון פרטי זיהוי
+                                </p>
+                            </div>
+                        </li>
                         <li (click)="disconnect(tooltipEditFile); panelEdit.hide()">
                             <div
                                     class="p-helper-clearfix"
@@ -531,13 +561,57 @@
                                     </mat-form-field>
                                 </div>
 
+                                <div class="Login__options" style="
+    width: 268px;
+    margin: 0 auto;
+    text-align: right;
+    padding-top: 10px;
+">
+                                    <p
+                                            style="
+    text-align: right;
+    padding: 0;
+">
+                                        {{ 'formLogin.didNotReceiveTheCode' | translate }}
+                                    </p>
+
+                                    <div
+                                            style="height: 30px;display: flex;"
+                                    >
+                                        <p style="
+    padding: 0;
+    color: #3898ec;
+    line-height: 29px;
+    padding-left: 11px;
+">
+                                            נסו שוב באמצעות
+                                        </p>
+                                        <p-radioButton
+                                                (onClick)="reloadSelf()"
+                                                formControlName="vms"
+                                                [label]="'SMS'"
+                                                [value]="false"
+                                                name="vms"
+                                        >
+                                        </p-radioButton>
+                                        <span style="padding: 0px 6px"></span>
+                                        <p-radioButton
+                                                (onClick)="reloadSelf()"
+                                                formControlName="vms"
+                                                [label]="'הודעה קולית'"
+                                                [value]="true"
+                                                name="vms"
+                                        >
+                                        </p-radioButton>
+                                    </div>
+                                </div>
                                 <div class="Login__submit">
                                     <button
-                                            style="margin-bottom: 0 !important;"
                                             [disabled]="!formLoginOtp.valid || formInProgress"
                                             color="primary"
                                             id="loginOtpSubmit"
                                             mat-raised-button
+                                            style="margin-bottom: 0 !important;"
                                             type="submit"
                                     >
                                         <mat-spinner
@@ -549,14 +623,7 @@
                                     </button>
                                 </div>
 
-                                <div class="Login__options">
-                                    <p>
-                                        {{ 'formLogin.didNotReceiveTheCode' | translate }}
-                                        <a (click)="reloadSelf()" [routerLink]="" id="resendSms">{{
-                                            'formLogin.tryAgain' | translate
-                                            }}</a>
-                                    </p>
-                                </div>
+
                             </form>
                         </ng-template>
                     </div>
@@ -2913,7 +2980,7 @@
         </p-dropdown>
 
         <ul
-                [hidden]="screenPopupType.dateFrom?.value !== 'startingNextCycle'"
+                [hidden]="!screenPopupType.dateFrom?.value"
                 class="balanceDifferenceRadio"
                 style="margin-top: -30px"
         >

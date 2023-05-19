@@ -1,6 +1,5 @@
 import {NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
-import {SharedModule} from '@app/shared/shared.module';
 import {GeneralRoutingModule} from '@app/accountants/companies/general/general-routing.module';
 
 import {GeneralComponent} from '@app/accountants/companies/general/general.component';

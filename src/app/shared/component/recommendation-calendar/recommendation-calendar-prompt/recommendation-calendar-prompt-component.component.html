@@ -4,7 +4,7 @@
 	<!--{{recommendations$| async | json}}-->
 	<div id="step-1" *ngIf="currentStep === 'step-1'">
 		<img  ngSrc="/assets/images/recommendation-calc.png" height="56" width="108"/>
-		
+
 		<form novalidate [formGroup]="step1Inputs" (ngSubmit)="proceedToStep2()">
 			<div
 					class="row"
@@ -19,7 +19,7 @@
 						name="step1Sum"
 				/>
 			</div>
-			
+
 			<div
 					class="row"
 					[class.err]="step1Inputs.get('account').invalid && step1Inputs.dirty"
@@ -27,6 +27,7 @@
 				<label [for]="'step1Account'">חשבון בנק</label>
 				<p-dropdown
 						formControlName="account"
+						name="account"
 						[options]="accountsUpToDate | async"
 						[scrollHeight]="'135px'"
 						[required]="true"
@@ -71,7 +72,7 @@
 					</ng-template>
 				</p-dropdown>
 			</div>
-			
+
 			<div
 					class="row"
 					[class.err]="step1Inputs.get('targetType').invalid && step1Inputs.dirty"
@@ -80,14 +81,15 @@
 				<p-dropdown
 						[options]="targetTypes"
 						formControlName="targetType"
-						
+						name="targetType"
+
 						[autoDisplayFirst]="false"
 						[placeholder]="'actions.select' | translate"
 						[inputId]="'step1TargetType'"
 						[name]="'step1TargetType'"
 				></p-dropdown>
 			</div>
-			
+
 			<div
 					class="row"
 					[class.err]="step1Inputs.get('month').invalid && step1Inputs.dirty"
@@ -96,14 +98,15 @@
 				<p-dropdown
 						[options]="months"
 						formControlName="month"
-						
+						name="month"
+
 						[autoDisplayFirst]="false"
 						[placeholder]="'actions.select' | translate"
 						[inputId]="'step1Month'"
 						[name]="'step1Month'"
 				></p-dropdown>
 			</div>
-			
+
 			<div class="row">
 				<button type="submit" class="button-dark">
 					{{ 'formLogin.continue' | translate }}
@@ -111,7 +114,7 @@
 			</div>
 		</form>
 	</div>
-	
+
 	<div id="step-2" *ngIf="currentStep === 'step-2'">
 		<div id="header-panel">
 			<form novalidate [formGroup]="rcmndtnInputs">
@@ -131,7 +134,8 @@
 						[scrollHeight]="'135px'"
 						[required]="true"
 						optionLabel="accountNickname"
-						
+						name="account"
+
 						[style]="{ width: '228px' }"
 						[dropdownIcon]="'p-dropdown-icon'"
 						placeholder="{{ 'actions.account' | translate }}"
@@ -173,12 +177,12 @@
 				</p-dropdown>
 			</form>
 		</div>
-		
+
 		<app-recommendation-calendar-inline
 				#recCal
 				[presetData]="rcmndtnInput$ | async"
 		></app-recommendation-calendar-inline>
-		
+
 		<div class="buttons-row">
 			<a role="button" class="button-white button-link" (click)="cancel()">
 				{{ 'actions.cancellation' | translate }}

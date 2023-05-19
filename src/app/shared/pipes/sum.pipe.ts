@@ -7,9 +7,10 @@ export class SumPipe implements PipeTransform {
     transform(
         value: any,
         noFraction: boolean = false,
-        unsigned: boolean = false
+        unsigned: boolean = false,
+        parse:boolean = true
     ): string {
-        const valNum = Number.parseFloat(value);
+        const valNum = parse ? Number.parseFloat(value) : value;
 
         if (Number.isFinite(valNum)) {
             return noFraction

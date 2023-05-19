@@ -1,215 +1,216 @@
 <div
-  id="tazrimFixedMovementsDetailsView"
-  style="position: relative"
-  #containerHost
+        #containerHost
+        id="tazrimFixedMovementsDetailsView"
+        style="position: relative"
 >
-  <div class="filterRow">
-    <app-acc-select
-      [accounts]="userService.appData.userData.accounts"
-      (changedTrigger)="changeAcc()"
-      #accountSelector
-    ></app-acc-select>
+    <div class="filterRow">
+        <app-acc-select
+                #accountSelector
+                (changedTrigger)="mixPanelAcc(); changeAcc()"
+                [accounts]="userService.appData.userData.accounts"
+        ></app-acc-select>
 
-    <ul class="tabs" id="paymentTypesFilter">
-      <li
-        id="paymentTypesCredit"
-        (click)="filter.expense = false; doFilter()"
-        [class.active]="filter.expense === false"
-        [title]="'filters.incomes' | translate"
-      >
-        {{ 'filters.incomes' | translate }}
-      </li>
-      <li
-        id="paymentTypeDebit"
-        (click)="filter.expense = true; doFilter()"
-        [class.active]="filter.expense === true"
-        [title]="'filters.expenses' | translate"
-      >
-        {{ 'filters.expenses' | translate }}
-      </li>
-      <li
-        id="paymentTypeBoth"
-        (click)="filter.expense = null; doFilter()"
-        [class.active]="filter.expense === null"
-        [title]="'filters.all' | translate"
-      >
-        {{ 'filters.all' | translate }}
-      </li>
-    </ul>
+        <ul class="tabs" id="paymentTypesFilter">
+            <li
+                    (click)="sharedComponent.mixPanelEvent('filter income');filter.expense = false; doFilter()"
+                    [class.active]="filter.expense === false"
+                    [title]="'filters.incomes' | translate"
+                    id="paymentTypesCredit"
+            >
+                {{ 'filters.incomes' | translate }}
+            </li>
+            <li
+                    (click)="sharedComponent.mixPanelEvent('filter outcome');filter.expense = true; doFilter()"
+                    [class.active]="filter.expense === true"
+                    [title]="'filters.expenses' | translate"
+                    id="paymentTypeDebit"
+            >
+                {{ 'filters.expenses' | translate }}
+            </li>
+            <li
+                    (click)="sharedComponent.mixPanelEvent('filter all');filter.expense = null; doFilter()"
+                    [class.active]="filter.expense === null"
+                    [title]="'filters.all' | translate"
+                    id="paymentTypeBoth"
+            >
+                {{ 'filters.all' | translate }}
+            </li>
+        </ul>
 
-    <div class="search">
-      <input
-        id="containTextFilter"
-        type="text"
-        autocomplete="off"
-        [placeholder]="'filters.search' | translate"
-        [formControl]="queryInp"
-      />
-    </div>
+        <div class="search">
+            <input
+                    [formControl]="queryInp"
+                    [placeholder]="'filters.search' | translate"
+                    autocomplete="off"
+                    id="containTextFilter"
+                    type="text"
+            />
+        </div>
 
-    <div id="createFixedMvmntBtnGroup">
-      <button
-        class="create-item-button create-item-button-green"
-        id="createIncomeBtn"
-        (click)="onCreateMovementClick($event)"
-        [disabled]="createMovementData.loading"
-        [matTooltip]="'appWalk.customers.tazrim.fixed.addIncomeBtn' | translate"
-        matTooltipPosition="above"
-      >
-        {{ 'actions.addFixedIncome' | translate }}
-      </button>
-      <button
-        class="create-item-button create-item-button-red"
-        id="createExpenseBtn"
-        (click)="onCreateMovementClick($event)"
-        [disabled]="createMovementData.loading"
-        [matTooltip]="
+        <div id="createFixedMvmntBtnGroup">
+            <button
+                    (click)="onCreateMovementClick($event)"
+                    [disabled]="createMovementData.loading"
+                    [matTooltip]="'appWalk.customers.tazrim.fixed.addIncomeBtn' | translate"
+                    class="create-item-button create-item-button-green"
+                    id="createIncomeBtn"
+                    matTooltipPosition="above"
+            >
+                {{ 'actions.addFixedIncome' | translate }}
+            </button>
+            <button
+                    (click)="onCreateMovementClick($event)"
+                    [disabled]="createMovementData.loading"
+                    [matTooltip]="
           'appWalk.customers.tazrim.fixed.addOutcomeBtn' | translate
         "
-        matTooltipPosition="above"
-      >
-        {{ 'actions.addFixedExpense' | translate }}
-      </button>
+                    class="create-item-button create-item-button-red"
+                    id="createExpenseBtn"
+                    matTooltipPosition="above"
+            >
+                {{ 'actions.addFixedExpense' | translate }}
+            </button>
+        </div>
     </div>
-  </div>
 
-  <div class="sums" [class.redBg]="outdatedSelectedAccounts?.length > 0">
-    <ng-template #sumNan>
-      <p class="sum-nan"></p>
-    </ng-template>
-    <div class="sum-data">
-      <h3>
-        {{ 'expressions.monthAverage' | translate }}
-        {{ 'filters.incomes' | translate }}
-      </h3>
-      <p
-        [class.sum-credit]="summary.avgIncome > 0"
-        [class.sum-debit]="summary.avgIncome < 0"
-        *ngIf="summary.avgIncome !== null; else sumNan"
-      >
-        <span class="sum">{{ summary.avgIncome | sum: true }}</span>
-        <span class="currency">{{
-          userService.appData?.userData?.accountSelect[0]?.currency
-            | currencySymbol
-        }}</span>
-      </p>
-    </div>
-    <div class="separator"></div>
-    <div class="sum-data">
-      <h3>
-        {{ 'expressions.monthAverage' | translate }}
-        {{ 'filters.expenses' | translate }}
-      </h3>
-      <p
-        [class.sum-debit]="summary.avgExpense"
-        *ngIf="summary.avgExpense !== null; else sumNan"
-      >
+    <div [class.redBg]="outdatedSelectedAccounts?.length > 0" class="sums">
+        <ng-template #sumNan>
+            <p class="sum-nan"></p>
+        </ng-template>
+        <div class="sum-data">
+            <h3>
+                {{ 'expressions.monthAverage' | translate }}
+                {{ 'filters.incomes' | translate }}
+            </h3>
+            <p
+                    *ngIf="summary.avgIncome !== null; else sumNan"
+                    [class.sum-credit]="summary.avgIncome > 0"
+                    [class.sum-debit]="summary.avgIncome < 0"
+            >
+                <span class="sum">{{ summary.avgIncome | sum: true }}</span>
+                <span class="currency">{{
+                    userService.appData?.userData?.accountSelect[0]?.currency
+                        | currencySymbol
+                    }}</span>
+            </p>
+        </div>
+        <div class="separator"></div>
+        <div class="sum-data">
+            <h3>
+                {{ 'expressions.monthAverage' | translate }}
+                {{ 'filters.expenses' | translate }}
+            </h3>
+            <p
+                    *ngIf="summary.avgExpense !== null; else sumNan"
+                    [class.sum-debit]="summary.avgExpense"
+            >
         <span class="sum">{{
-          (summary.avgExpense < 0
-            ? summary.avgExpense * -1
-            : summary.avgExpense
-          ) | sum: true
-        }}</span>
-        <span class="currency">{{
-          userService.appData?.userData?.accountSelect[0]?.currency
-            | currencySymbol
-        }}</span>
-      </p>
-    </div>
+            (summary.avgExpense < 0
+                    ? summary.avgExpense * -1
+                    : summary.avgExpense
+            ) | sum: true
+            }}</span>
+                <span class="currency">{{
+                    userService.appData?.userData?.accountSelect[0]?.currency
+                        | currencySymbol
+                    }}</span>
+            </p>
+        </div>
 
-    <div class="separator" *ngIf="outdatedSelectedAccounts?.length"></div>
-    <div
-      *ngIf="outdatedSelectedAccounts?.length"
-      style="align-self: center; font-weight: 600"
-      #messageContainer
-    >
-      <ng-container
-        *ngIf="outdatedSelectedAccounts.length > 1; else singleOutdatedAcc"
-      >
+        <div *ngIf="outdatedSelectedAccounts?.length" class="separator"></div>
+        <div
+                #messageContainer
+                *ngIf="outdatedSelectedAccounts?.length"
+                style="align-self: center; font-weight: 600"
+        >
+            <ng-container
+                    *ngIf="outdatedSelectedAccounts.length > 1; else singleOutdatedAcc"
+            >
         <span class="sum-debit"
-          ><i class="fa fa-fw fa-exclamation-triangle"></i>
-          {{ 'expressions.cardsDataOutdated0' | translate }}
-          {{ outdatedSelectedAccounts.length }}
-          {{ 'sumsTitles.accounts' | translate }} </span
+        ><i class="fa fa-fw fa-exclamation-triangle"></i>
+            {{ 'expressions.cardsDataOutdated0' | translate }}
+            {{ outdatedSelectedAccounts.length }}
+            {{ 'sumsTitles.accounts' | translate }} </span
         >&nbsp;&#x7c;&nbsp;
-        <span class="link" (click)="tooltipAccDeviation.toggle($event)">
+                <span (click)="tooltipAccDeviation.toggle($event)" class="link">
           {{ 'sumsTitles.forDetails' | translate }}
-          <p-overlayPanel
-            styleClass="tooltip-bottom tooltip-acc-deviation"
-            [style]="{ transform: 'translate(-50%, 10px)', width: 'auto' }"
-            #tooltipAccDeviation
-            appendTo="body"
-          >
+                    <p-overlayPanel
+                            #tooltipAccDeviation
+                            [style]="{ 'width': 'auto' }"
+                            appendTo="body"
+                            styleClass="tooltip-bottom tooltip-acc-deviation left115"
+                    >
             <ul class="scroll-chrome">
               <li
-                *ngFor="let acc of outdatedSelectedAccounts"
-                (click)="selectOutdatedAccount(acc); tooltipAccDeviation.hide()"
+                      (click)="selectOutdatedAccount(acc); tooltipAccDeviation.hide()"
+                      *ngFor="let acc of outdatedSelectedAccounts"
               >
                 <span>{{ acc.accountNickname }}</span
                 >&nbsp;
                 <span class="sum-debit"
-                  >({{
+                >({{
                     acc.balanceLastUpdatedDate | todayRelativeHumanize: 'days'
-                  }})</span
+                    }})</span
                 >
               </li>
             </ul>
           </p-overlayPanel>
         </span>
-      </ng-container>
-      <ng-template #singleOutdatedAcc>
-        <ng-container
-          *ngIf="
+            </ng-container>
+            <ng-template #singleOutdatedAcc>
+                <ng-container
+                        *ngIf="
             userService.appData.userData.accountSelect.length > 1;
             else outdatedIsTheOnlySelected
           "
-        >
+                >
           <span class="sum-debit"
-            ><i class="fa fa-fw fa-exclamation-triangle"></i>
-            {{ 'expressions.cardsDataOutdated0' | translate }}</span
+          ><i class="fa fa-fw fa-exclamation-triangle"></i>
+              {{ 'expressions.cardsDataOutdated0' | translate }}</span
           >
-          <span
-            class="link"
-            (click)="selectOutdatedAccount(outdatedSelectedAccounts[0])"
-          >
+                    <span
+                            (click)="selectOutdatedAccount(outdatedSelectedAccounts[0])"
+                            class="link"
+                    >
             {{ outdatedSelectedAccounts[0].accountNickname }}</span
-          >
-        </ng-container>
-        <ng-template #outdatedIsTheOnlySelected>
-          <app-account-outdated-view
-            [account]="outdatedSelectedAccounts[0]"
-          ></app-account-outdated-view>
-          <!--<app-token-credentials-update-button-->
-          <!--[balanceLastUpdatedDate]="outdatedSelectedAccounts[0].balanceLastUpdatedDate"-->
-          <!--[tokenData]="{-->
-          <!--companyId: userService.appData.userData.companySelect.companyId,-->
-          <!--tokenId: outdatedSelectedAccounts[0].token-->
-          <!--}">-->
-          <!--</app-token-credentials-update-button>-->
-        </ng-template>
-      </ng-template>
-    </div>
+                    >
+                </ng-container>
+                <ng-template #outdatedIsTheOnlySelected>
+                    <app-account-outdated-view
+                            [account]="outdatedSelectedAccounts[0]"
+                    ></app-account-outdated-view>
+                    <!--<app-token-credentials-update-button-->
+                    <!--[balanceLastUpdatedDate]="outdatedSelectedAccounts[0].balanceLastUpdatedDate"-->
+                    <!--[tokenData]="{-->
+                    <!--companyId: userService.appData.userData.companySelect.companyId,-->
+                    <!--tokenId: outdatedSelectedAccounts[0].token-->
+                    <!--}">-->
+                    <!--</app-token-credentials-update-button>-->
+                </ng-template>
+            </ng-template>
+        </div>
 
-    <div class="exports" style="flex-flow: row wrap; max-width: 160px">
-      <button style="flex: 1 0 25%" (click)="printTransactions()">
-        <img  ngSrc="/assets/images/to-printer.png" height="21" width="24" />
-      </button>
-      <button style="flex: 1 0 25%" (click)="reportMailSubmitterToggle = true">
-        <img  ngSrc="/assets/images/to-mail.png" height="21" width="24" />
-        <app-report-mail-scheduler
-          [visible]="reportMailSubmitterToggle"
-          (recipientApproved)="sendTransactions($event)"
-        ></app-report-mail-scheduler>
-      </button>
-      <button style="flex: 1 0 25%" (click)="exportTransactions('PDF')">
-        <img  ngSrc="/assets/images/to-pdf.png" height="21" width="24" />
-      </button>
-      <button style="flex: 1 0 25%" (click)="exportTransactions('EXCEL')">
-        <img  ngSrc="/assets/images/to-excel.png" height="21" width="24" />
-      </button>
+        <div class="exports" style="flex-flow: row wrap; max-width: 160px">
+            <button (click)="sharedComponent.mixPanelEvent('print');printTransactions()" style="flex: 1 0 25%">
+                <img height="21" ngSrc="/assets/images/to-printer.png" width="24"/>
+            </button>
+            <button (click)="sharedComponent.mixPanelEvent('mail');reportMailSubmitterToggle = true"
+                    style="flex: 1 0 25%">
+                <img height="21" ngSrc="/assets/images/to-mail.png" width="24"/>
+                <app-report-mail-scheduler
+                        (recipientApproved)="sendTransactions($event)"
+                        [visible]="reportMailSubmitterToggle"
+                ></app-report-mail-scheduler>
+            </button>
+            <button (click)="sharedComponent.mixPanelEvent('pdf');exportTransactions('PDF')" style="flex: 1 0 25%">
+                <img height="21" ngSrc="/assets/images/to-pdf.png" width="24"/>
+            </button>
+            <button (click)="sharedComponent.mixPanelEvent('excel');exportTransactions('EXCEL')" style="flex: 1 0 25%">
+                <img height="21" ngSrc="/assets/images/to-excel.png" width="24"/>
+            </button>
 
-      <ul
-        style="
+            <ul
+                    style="
           display: flex;
           display: -ms-flexbox;
           width: 120px;
@@ -217,773 +218,782 @@
           margin: 0 10px;
           font-size: 92%;
         "
-      >
-        <li class="button-link" (click)="collapseOpen(true)">
-          {{ 'actions.expandAll' | translate }}
-        </li>
-        <li>|</li>
-        <li class="button-link" (click)="collapseOpen(false)">
-          {{ 'actions.collapseAll' | translate }}
-        </li>
-      </ul>
+            >
+                <li (click)="sharedComponent.mixPanelEvent('open all');collapseOpen(true)" class="button-link">
+                    {{ 'actions.expandAll' | translate }}
+                </li>
+                <li>|</li>
+                <li (click)="sharedComponent.mixPanelEvent('close all');collapseOpen(false)" class="button-link">
+                    {{ 'actions.collapseAll' | translate }}
+                </li>
+            </ul>
+        </div>
     </div>
-  </div>
 
-  <div
-    class="bank-acc-details-table-container fixedMovementsTable"
-    style="position: relative"
-  >
-    <div class="bank-acc-details-table-header" #tableHeader>
-      <div class="bank-acc-details-column-1">
-        {{ 'titles.account' | translate }}
-      </div>
-      <div
-        class="bank-acc-details-column-beneficiary"
-        style="overflow: visible"
-      >
-        <app-tooltip-category
-          [type]="'biziboxMutavId'"
-          [filter]="true"
-          [data]="beneficiaryFilterOptions"
-          (changed)="onCheckableFilterChange($event)"
-        >
-          <img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/beneficiary-header-icon.png" />
-        </app-tooltip-category>
-      </div>
-      <div class="bank-acc-details-column-2">
-        {{ 'titles.description' | translate }}
-      </div>
-      <div class="bank-acc-details-column-3" style="overflow: visible">
-        <div>
-          <app-tooltip-category
-            [title]="'titles.category' | translate"
-            [type]="'transType'"
-            [data]="transTypesArr"
-            (changed)="onCheckableFilterChange($event)"
-          ></app-tooltip-category>
-        </div>
-      </div>
-      <div class="bank-acc-details-column-4" style="overflow: visible">
-        <div>
-          <app-tooltip-category
-            [title]="'titles.updatedBy' | translate"
-            [type]="'autoUpdateTypeName'"
-            [data]="autoUpdateTypesArr"
-            translateEnum="autoUpdateTypes"
-            (changed)="onCheckableFilterChange($event)"
-          ></app-tooltip-category>
-        </div>
-      </div>
-      <div class="bank-acc-details-column-5" style="overflow: visible">
-        <div>
-          <app-tooltip-category
-            [title]="'titles.frequency' | translate"
-            [type]="'transFrequencyName'"
-            [data]="transFrequenciesArr"
-            (changed)="onCheckableFilterChange($event)"
-          ></app-tooltip-category>
-        </div>
-      </div>
-      <div class="bank-acc-details-column-6">
-        {{ 'titles.sum' | translate }}
-      </div>
-      <div class="bank-acc-details-column-7">
-        {{ 'titles.latestTransaction' | translate }}
-      </div>
-      <div class="bank-acc-details-column-8"></div>
-    </div>
     <div
-      [appScrollHeight]="tableHeader.getBoundingClientRect().bottom + 10"
-      class="scrollbar-dynamic bank-acc-details-table-body"
-      style="position: relative"
-      (scroll)="rowHandleOvp.hide()"
+            class="bank-acc-details-table-container fixedMovementsTable"
+            style="position: relative"
     >
-      <ng-template #loader>
-        <div class="loader">
-          <div class="circle"></div>
+        <div #tableHeader class="bank-acc-details-table-header">
+            <div class="bank-acc-details-column-1">
+                {{ 'titles.account' | translate }}
+            </div>
+            <div
+                    class="bank-acc-details-column-beneficiary"
+                    style="overflow: visible"
+            >
+                <app-tooltip-category
+                        (changed)="sharedComponent.mixPanelEvent('mutav filter', {value:$event.checked}); onCheckableFilterChange($event)"
+                        [data]="beneficiaryFilterOptions"
+                        [filter]="true"
+                        [type]="'biziboxMutavId'"
+                >
+                    <img fill ngSrc="/assets/images/beneficiary-header-icon.png"
+                         style="height: auto; width: auto; position: relative;"/>
+                </app-tooltip-category>
+            </div>
+            <div class="bank-acc-details-column-2">
+                {{ 'titles.description' | translate }}
+            </div>
+            <div class="bank-acc-details-column-3" style="overflow: visible">
+                <div>
+                    <app-tooltip-category
+                            (changed)="sharedComponent.mixPanelEvent('category filter', {value:$event.checked});onCheckableFilterChange($event)"
+                            [data]="transTypesArr"
+                            [title]="'titles.category' | translate"
+                            [type]="'transType'"
+                    ></app-tooltip-category>
+                </div>
+            </div>
+            <div class="bank-acc-details-column-4" style="overflow: visible">
+                <div>
+                    <app-tooltip-category
+                            (changed)="sharedComponent.mixPanelEvent('updated by filter', {value:$event.checked});onCheckableFilterChange($event)"
+                            [data]="autoUpdateTypesArr"
+                            [title]="'titles.updatedBy' | translate"
+                            [type]="'autoUpdateTypeName'"
+                            translateEnum="autoUpdateTypes"
+                    ></app-tooltip-category>
+                </div>
+            </div>
+            <div class="bank-acc-details-column-5" style="overflow: visible">
+                <div>
+                    <app-tooltip-category
+                            (changed)="sharedComponent.mixPanelEvent('frequency filter', {value:$event.checked});onCheckableFilterChange($event)"
+                            [data]="transFrequenciesArr"
+                            [title]="'titles.frequency' | translate"
+                            [type]="'transFrequencyName'"
+                    ></app-tooltip-category>
+                </div>
+            </div>
+            <div class="bank-acc-details-column-6">
+                {{ 'titles.sum' | translate }}
+            </div>
+            <div class="bank-acc-details-column-7">
+                {{ 'titles.latestTransaction' | translate }}
+            </div>
+            <div class="bank-acc-details-column-8"></div>
         </div>
-      </ng-template>
+        <div
+                (scroll)="rowHandleOvp.hide()"
+                [appScrollHeight]="tableHeader.getBoundingClientRect().bottom + 10"
+                class="scrollbar-dynamic bank-acc-details-table-body"
+                style="position: relative"
+        >
+            <ng-template #loader>
+                <div class="loader">
+                    <div class="circle"></div>
+                </div>
+            </ng-template>
 
-      <ng-container *ngIf="dataFiltered | async as rslt; else loader">
-        <ng-container *ngIf="loading$ | async; then loader"></ng-container>
+            <ng-container *ngIf="dataFiltered | async as rslt; else loader">
+                <ng-container *ngIf="loading$ | async; then loader"></ng-container>
 
-        <div class="no-rows-found" *ngIf="!rslt.length">
-          <ng-container
-            *ngIf="
+                <div *ngIf="!rslt.length" class="no-rows-found">
+                    <ng-container
+                            *ngIf="
               !userService?.appData?.userData?.accountSelect?.length;
               else changeCriteria
             "
-          >
-            {{ 'expressions.selectAccount' | translate }}
-          </ng-container>
-          <ng-template #changeCriteria>
-            {{ 'expressions.noDataFoundForCriteria' | translate }},
-            {{ 'expressions.changeCriteria' | translate }}
-          </ng-template>
-        </div>
+                    >
+                        {{ 'expressions.selectAccount' | translate }}
+                    </ng-container>
+                    <ng-template #changeCriteria>
+                        {{ 'expressions.noDataFoundForCriteria' | translate }},
+                        {{ 'expressions.changeCriteria' | translate }}
+                    </ng-template>
+                </div>
 
-        <ng-container
-          *ngFor="let gr of rslt; trackBy: groupTrack"
-          style="position: relative"
-        >
-          <div
-            class="bank-acc-details-row titleRow"
-            [class.opened]="gr.expanded"
-            (click)="gr.expanded = !gr.expanded"
-          >
-            <!--[class.bank-acc-details-row-questionable]="gr.transactions[0].paymentDesc === 'RECOMMENDATION'"-->
-            <div>
-              <i
-                class="fas fa-fw"
-                [ngClass]="gr.expanded ? 'fa-caret-up' : 'fa-caret-down'"
-              ></i>
-              <i
-                [matTooltip]="
-                  'appWalk.customers.tazrim.fixed.' + gr.key | translate
-                "
-                matTooltipPosition="after"
-                [matTooltipDisabled]="
+                <ng-container
+                        *ngFor="let gr of rslt; trackBy: groupTrack"
+                        style="position: relative"
+                >
+                    <div
+                            (click)="gr.expanded = !gr.expanded; sharedComponent.mixPanelEvent(
+                            !gr.deletedGr ?
+                 (            gr.transactions[0].paymentDesc === 'RECOMMENDATION' ?
+                            (gr.expanded? 'open recomended transes':'close recomended transes'):
+                           ((gr.expanded? 'open ':'close ') + gr.transactions[0].paymentDesc + ' transes')):
+                           (((gr.expanded? 'open ':'close ') + '  deleted transes'))
+                            )"
+                            [class.opened]="gr.expanded"
+                            class="bank-acc-details-row titleRow"
+                    >
+                        <!--[class.bank-acc-details-row-questionable]="gr.transactions[0].paymentDesc === 'RECOMMENDATION'"-->
+                        <div>
+                            <i
+                                    [ngClass]="gr.expanded ? 'fa-caret-up' : 'fa-caret-down'"
+                                    class="fas fa-fw"
+                            ></i>
+                            <i
+                                    [matTooltipDisabled]="
                   'appWalk.customers.tazrim.fixed.' + gr.key ===
                   ('appWalk.customers.tazrim.fixed.' + gr.key | translate)
                 "
-              >
-                {{ gr.key | translate }}</i
-              >
-              <!--{{('paymentTypes.' + gr.transactions[0].paymentDesc)| translate}}-->
-            </div>
-            <div class="ltrNum">
-              <ng-container
-                *ngIf="
+                                    [matTooltip]="
+                  'appWalk.customers.tazrim.fixed.' + gr.key | translate
+                "
+                                    matTooltipPosition="after"
+                            >
+                                {{ gr.key | translate }}</i
+                            >
+                            <!--{{('paymentTypes.' + gr.transactions[0].paymentDesc)| translate}}-->
+                        </div>
+                        <div class="ltrNum">
+                            <ng-container
+                                    *ngIf="
                   (gr.sum !== null &&
                     gr.transactions[0].paymentDesc !== 'RECOMMENDATION') ||
                   gr.deletedGr
                 "
-                >{{ gr.sum | sum }}</ng-container
-              >
-            </div>
-            <div></div>
-          </div>
+                            >{{ gr.sum | sum }}</ng-container
+                            >
+                        </div>
+                        <div></div>
+                    </div>
 
-          <ng-container *ngIf="gr.expanded">
-            <div
-              class="bank-acc-details-row transactionsRow"
-              tabindex="-1"
-              #transactionsRow
-              [class.deletedGr]="gr.deletedGr"
-              [class.bank-acc-details-row-questionable]="
+                    <ng-container *ngIf="gr.expanded">
+                        <div
+                                #transactionsRow
+                                *ngFor="let trns of gr.transactions; trackBy: transactionTrack"
+                                [class.bank-acc-details-row-questionable]="
                 gr.transactions[0].paymentDesc === 'RECOMMENDATION' &&
                 !gr.deletedGr
               "
-              *ngFor="let trns of gr.transactions; trackBy: transactionTrack"
-            >
-              <div
-                class="bank-acc-details-column-1"
-                style="display: flex; display: -ms-flexbox"
-              >
-                <ng-container
-                  *ngIf="trns.companyAccountId | asBankAccount as acc"
-                >
-                  <img
-                  fill [ngSrc]="acc.bankId | toIconSrc: 'bank'"
-                    alt="{{ acc?.accountNickname }}"
-                    style="
+                                [class.deletedGr]="gr.deletedGr"
+                                class="bank-acc-details-row transactionsRow"
+                                tabindex="-1"
+                        >
+                            <div
+                                    class="bank-acc-details-column-1"
+                                    style="display: flex; display: -ms-flexbox"
+                            >
+                                <ng-container
+                                        *ngIf="trns.companyAccountId | asBankAccount as acc"
+                                >
+                                    <img
+                                            [ngSrc]="acc.bankId | toIconSrc: 'bank'" alt="{{ acc?.accountNickname }}"
+                                            fill
+                                            style="
                     height: auto; width: auto; position: relative;
                       align-self: center;
                       flex: 0 0 auto;
                       margin: 0 0 0 4px;
                     "
-                  />
-                  <p
-                    class="text-ellipsis"
-                    [pTooltip]="acc?.accountNickname"
-                    tooltipPosition="top"
-                  >
-                    {{ acc?.accountNickname }}
-                  </p>
-                </ng-container>
-              </div>
+                                    />
+                                    <p
+                                            [pTooltip]="acc?.accountNickname"
+                                            class="text-ellipsis"
+                                            tooltipPosition="top"
+                                    >
+                                        {{ acc?.accountNickname }}
+                                    </p>
+                                </ng-container>
+                            </div>
 
-              <div class="bank-acc-details-column-beneficiary">
-                <ng-container *ngIf="trns.mutavNames?.length">
-                  <img
-                    style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/beneficiary-row-icon.png"
-                    [pTooltip]="trns.mutavNames.join(', ')"
-                    tooltipPosition="top"
-                  />
-                </ng-container>
-              </div>
+                            <div class="bank-acc-details-column-beneficiary">
+                                <ng-container *ngIf="trns.mutavNames?.length">
+                                    <img
+                                            [pTooltip]="trns.mutavNames.join(', ')" fill
+                                            ngSrc="/assets/images/beneficiary-row-icon.png"
+                                            style="height: auto; width: auto; position: relative;"
+                                            tooltipPosition="top"
+                                    />
+                                </ng-container>
+                            </div>
 
-              <!--<div class="multilinedCell">-->
-              <!--<div [innerHTML]="trns.transName| translate| highlight: filter.query"></div>-->
-              <!--<span *ngIf="trns.targetType"-->
-              <!--style="background-color: #ced7e0; border-radius: 2px; border: 1px solid #ced7e0; font-size: 50%;">{{trns.targetType}}</span>-->
-              <!--</div>-->
-              <div
-                class="text-ellipsis bank-acc-details-column-2"
-                [pTooltip]="!trns.solekNickname ? trns.transName : null"
-                tooltipPosition="top"
-              >
-                <div
-                  [innerHTML]="trns.transName | highlight: filter.query"
-                  style="display: inline-block"
-                  [pTooltip]="trns.solekNickname"
-                  tooltipPosition="top"
-                ></div>
-              </div>
+                            <!--<div class="multilinedCell">-->
+                            <!--<div [innerHTML]="trns.transName| translate| highlight: filter.query"></div>-->
+                            <!--<span *ngIf="trns.targetType"-->
+                            <!--style="background-color: #ced7e0; border-radius: 2px; border: 1px solid #ced7e0; font-size: 50%;">{{trns.targetType}}</span>-->
+                            <!--</div>-->
+                            <div
+                                    [pTooltip]="!trns.solekNickname ? trns.transName : null"
+                                    class="text-ellipsis bank-acc-details-column-2"
+                                    tooltipPosition="top"
+                            >
+                                <div
+                                        [innerHTML]="trns.transName | highlight: filter.query"
+                                        [pTooltip]="trns.solekNickname"
+                                        style="display: inline-block"
+                                        tooltipPosition="top"
+                                ></div>
+                            </div>
 
-              <div
-                class="text-ellipsis bank-acc-details-column-3"
-                [innerHTML]="trns.transTypeName | highlight: filter.query"
-                [pTooltip]="trns.transTypeName"
-                tooltipPosition="top"
-              >
-                <!--{{trns.transTypeId}}-->
-              </div>
+                            <div
+                                    [innerHTML]="trns.transTypeName | highlight: filter.query"
+                                    [pTooltip]="trns.transTypeName"
+                                    class="text-ellipsis bank-acc-details-column-3"
+                                    tooltipPosition="top"
+                            >
+                                <!--{{trns.transTypeId}}-->
+                            </div>
 
-              <div
-                class="text-ellipsis bank-acc-details-column-4"
-                [innerHTML]="
+                            <div
+                                    *ngIf="
+                  trns.transFrequencyName !== 'NONE';
+                  else updateWhenNoneFrequency
+                "
+                                    [innerHTML]="
                   (trns.updatedBy
                     ? ('updateBy.' + trns.updatedBy | translate) + ', '
                     : '') +
                     ('autoUpdateTypes.' + trns.autoUpdateTypeName | translate)
                     | highlight: filter.query
                 "
-                *ngIf="
-                  trns.transFrequencyName !== 'NONE';
-                  else updateWhenNoneFrequency
-                "
-                [pTooltip]="
+                                    [pTooltip]="
                   (trns.updatedBy
                     ? ('updateBy.' + trns.updatedBy | translate) + ', '
                     : '') +
                   ('autoUpdateTypes.' + trns.autoUpdateTypeName | translate)
                 "
-                tooltipPosition="top"
-              >
-                <!--{{trns.autoUpdateTypeName}}-->
-              </div>
-              <ng-template #updateWhenNoneFrequency>
-                <div
-                  class="bank-acc-details-column-4"
-                  style="overflow: visible"
-                >
-                  לא ניתן לחשב צפי, &nbsp;
-                  <span class="link" (click)="onEditMovementClick(trns)">
+                                    class="text-ellipsis bank-acc-details-column-4"
+                                    tooltipPosition="top"
+                            >
+                                <!--{{trns.autoUpdateTypeName}}-->
+                            </div>
+                            <ng-template #updateWhenNoneFrequency>
+                                <div
+                                        class="bank-acc-details-column-4"
+                                        style="overflow: visible"
+                                >
+                                    לא ניתן לחשב צפי, &nbsp;
+                                    <span (click)="onEditMovementClick(trns)" class="link">
                     לחץ לעדכון
                   </span>
-                </div>
-              </ng-template>
+                                </div>
+                            </ng-template>
 
-              <div
-                class="bank-acc-details-column-5"
-                style="display: flex; display: -ms-flexbox; min-width: 0"
-              >
-                <div
-                  class="multilinedCell"
-                  style="min-width: 0; overflow: hidden"
-                >
-                  <ng-container
-                    *ngIf="
+                            <div
+                                    class="bank-acc-details-column-5"
+                                    style="display: flex; display: -ms-flexbox; min-width: 0"
+                            >
+                                <div
+                                        class="multilinedCell"
+                                        style="min-width: 0; overflow: hidden"
+                                >
+                                    <ng-container
+                                            *ngIf="
                       trns.transFrequencyName !== 'NONE';
                       else noneFrequency
                     "
-                  >
-                    <ng-container
-                      *ngIf="
+                                    >
+                                        <ng-container
+                                                *ngIf="
                         trns.autoUpdateTypeName === 'USER_CURRENT_TOTAL' &&
                           (trns.paymentDesc === 'Slika' ||
                             trns.paymentDesc === 'credit');
                         else regularFrequencyView
                       "
-                    >
+                                        >
                       <span>
                         {{
                           trns.paymentDesc === 'Slika'
-                            ? 'לפי זיכוי קרוב'
-                            : 'לפי חיוב קרוב'
-                        }}
+                              ? 'לפי זיכוי קרוב'
+                              : 'לפי חיוב קרוב'
+                          }}
                       </span>
-                      <span></span>
-                    </ng-container>
-                    <ng-template #regularFrequencyView>
+                                            <span></span>
+                                        </ng-container>
+                                        <ng-template #regularFrequencyView>
                       <span>{{
-                        'transactionFrequencyTypes.' +
+                          'transactionFrequencyTypes.' +
                           trns.transFrequencyName +
                           '.text' | translate
-                      }}</span>
-                      <span>{{
-                        trns.frequencyDay
-                          | transactionFrequencyHumanize
-                            : trns.transFrequencyName
-                      }}</span>
-                    </ng-template>
-                  </ng-container>
-                  <!--{{trns.frquencyDay}} + {{trns.transFrequencyName}}-->
-                  <ng-template #noneFrequency></ng-template>
-                </div>
-                <div
-                  class="rowHandle"
-                  *ngIf="!gr.deletedGr"
-                  (click)="showHistoryFor(trns)"
-                  [matTooltip]="
+                          }}</span>
+                                            <span>{{
+                                                trns.frequencyDay
+                                                    | transactionFrequencyHumanize
+                                                    : trns.transFrequencyName
+                                                }}</span>
+                                        </ng-template>
+                                    </ng-container>
+                                    <!--{{trns.frquencyDay}} + {{trns.transFrequencyName}}-->
+                                    <ng-template #noneFrequency></ng-template>
+                                </div>
+                                <div
+                                        (click)="sharedComponent.mixPanelEvent(gr.transactions[0].paymentDesc === 'RECOMMENDATION' ? 'recomended history' : (gr.transactions[0].paymentDesc + ' history')); showHistoryFor(trns)"
+                                        *ngIf="!gr.deletedGr"
+                                        [matTooltip]="
                     'appWalk.customers.tazrim.fixed.historyChart' | translate
                   "
-                  matTooltipPosition="before"
-                >
-                  <img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/bar-chart.png" />
-                  <!--<i class="fa fa-fw fa-chart-bar"></i>-->
-                </div>
-              </div>
+                                        class="rowHandle"
+                                        matTooltipPosition="before"
+                                >
+                                    <img fill ngSrc="/assets/images/bar-chart.png"
+                                         style="height: auto; width: auto; position: relative;"/>
+                                    <!--<i class="fa fa-fw fa-chart-bar"></i>-->
+                                </div>
+                            </div>
 
-              <ng-container
-                *ngIf="trns.targetType === 'SOLEK_TAZRIM'; else regularSumView"
-              >
-                <div
-                  class="bank-acc-details-column-6"
-                  [class.sum-credit]="
+                            <ng-container
+                                    *ngIf="trns.targetType === 'SOLEK_TAZRIM'; else regularSumView"
+                            >
+                                <div
+                                        [class.sum-credit]="
                     trns.monthlyAverageTotal > 0 && !trns.expence
                   "
-                  [class.sum-debit]="trns.expence === true"
-                >
-                  <ng-container *ngIf="trns.monthlyAverageTotal !== null">
-                    <app-sum-view
-                      [sum]="trns.monthlyAverageTotal"
-                      [highlight]="filter.query"
-                    ></app-sum-view>
-                  </ng-container>
-                </div>
-              </ng-container>
-              <ng-template #regularSumView>
-                <div
-                  class="bank-acc-details-column-6"
-                  [class.sum-credit]="trns.total > 0 && !trns.expence"
-                  [class.sum-debit]="trns.expence === true"
-                >
-                  <ng-container *ngIf="trns.total !== null">
-                    <app-sum-view
-                      [sum]="trns.total"
-                      [highlight]="filter.query"
-                    ></app-sum-view>
-                  </ng-container>
-                </div>
-              </ng-template>
-              <!--<div class="ltrNum">{{itemChild.paymentsTotal | sum}}</div>-->
+                                        [class.sum-debit]="trns.expence === true"
+                                        class="bank-acc-details-column-6"
+                                >
+                                    <ng-container *ngIf="trns.monthlyAverageTotal !== null">
+                                        <app-sum-view
+                                                [highlight]="filter.query"
+                                                [sum]="trns.monthlyAverageTotal"
+                                        ></app-sum-view>
+                                    </ng-container>
+                                </div>
+                            </ng-container>
+                            <ng-template #regularSumView>
+                                <div
+                                        [class.sum-credit]="trns.total > 0 && !trns.expence"
+                                        [class.sum-debit]="trns.expence === true"
+                                        class="bank-acc-details-column-6"
+                                >
+                                    <ng-container *ngIf="trns.total !== null">
+                                        <app-sum-view
+                                                [highlight]="filter.query"
+                                                [sum]="trns.total"
+                                        ></app-sum-view>
+                                    </ng-container>
+                                </div>
+                            </ng-template>
+                            <!--<div class="ltrNum">{{itemChild.paymentsTotal | sum}}</div>-->
 
-              <div class="bank-acc-details-column-7 multilinedCell">
+                            <div class="bank-acc-details-column-7 multilinedCell">
                 <span [class.sum-debit]="trns.lastBankDateColor === 'RED'">
                   <ng-container *ngIf="trns.lastBankDate">{{
-                    trns.lastBankDate | todayRelativeHumanize: 'days'
-                  }}</ng-container>
+                      trns.lastBankDate | todayRelativeHumanize: 'days'
+                      }}</ng-container>
                 </span>
-                <span class="ltrNum" *ngIf="trns.lastBankTotal">
+                                <span *ngIf="trns.lastBankTotal" class="ltrNum">
                   <app-sum-view
-                    [sum]="trns.lastBankTotal"
-                    [highlight]="filter.query"
+                          [highlight]="filter.query"
+                          [sum]="trns.lastBankTotal"
                   ></app-sum-view>
                 </span>
-                <!--{{trns.lastBankTotal}}-->
-              </div>
+                                <!--{{trns.lastBankTotal}}-->
+                            </div>
 
-              <div class="bank-acc-details-column-8">
-                <ng-container *ngIf="gr.deletedGr">
-                  <span class="rowHandle" (click)="onRestoreClick(trns)">
+                            <div class="bank-acc-details-column-8">
+                                <ng-container *ngIf="gr.deletedGr">
+                  <span (click)="onRestoreClick(trns)" class="rowHandle">
                     <img
-                       ngSrc="/assets/images/restore.png"
+                            fill
 
-                       style="height: auto; width: 19px; position: relative;vertical-align: middle" fill
+                            ngSrc="/assets/images/restore.png" style="height: auto; width: 19px; position: relative;vertical-align: middle"
 
                     />
                   </span>
-                </ng-container>
-                <ng-container *ngIf="!gr.deletedGr">
-                  <ng-container
-                    *ngIf="
+                                </ng-container>
+                                <ng-container *ngIf="!gr.deletedGr">
+                                    <ng-container
+                                            *ngIf="
                       gr.transactions[0].paymentDesc === 'RECOMMENDATION';
                       else regularRowHandler
                     "
-                  >
-                    <div class="recommendationRowHandle">
-                      <button
-                        class="button-dark"
-                        (click)="onRecommendationAddClick(trns)"
-                      >
-                        הוספה
-                      </button>
-                      <button
-                        class="button-dark"
-                        (click)="onRecommendationRemoveClick(trns)"
-                      >
-                        מחיקה
-                      </button>
-                    </div>
-                  </ng-container>
-                  <ng-template #regularRowHandler>
+                                    >
+                                        <div class="recommendationRowHandle">
+                                            <button
+                                                    (click)="onRecommendationAddClick(trns)"
+                                                    class="button-dark"
+                                            >
+                                                הוספה
+                                            </button>
+                                            <button
+                                                    (click)="onRecommendationRemoveClick(trns)"
+                                                    class="button-dark"
+                                            >
+                                                מחיקה
+                                            </button>
+                                        </div>
+                                    </ng-container>
+                                    <ng-template #regularRowHandler>
                     <span
-                      class="rowHandle"
-                      (click)="
+                            (click)="
                         handlerShownAt = trns; rowHandleOvp.toggle($event)
                       "
+                            class="rowHandle"
                     >
                       <i class="fas fa-ellipsis-v"></i>
                     </span>
-                    <!--<span class="rowHandle" (click)="showHistoryFor(trns)">-->
-                    <!--<i class="fa fa-fw fa-chart-bar"></i>-->
-                    <!--</span>-->
-                  </ng-template>
+                                        <!--<span class="rowHandle" (click)="showHistoryFor(trns)">-->
+                                        <!--<i class="fa fa-fw fa-chart-bar"></i>-->
+                                        <!--</span>-->
+                                    </ng-template>
+                                </ng-container>
+                            </div>
+                        </div>
+
+                        <!--<pre *ngFor="let trns of gr.transactions">{{trns| json}}</pre>-->
+                    </ng-container>
                 </ng-container>
-              </div>
-            </div>
-
-            <!--<pre *ngFor="let trns of gr.transactions">{{trns| json}}</pre>-->
-          </ng-container>
-        </ng-container>
-      </ng-container>
+            </ng-container>
+        </div>
     </div>
-  </div>
 
-  <p-dialog (visibleChange)="createMovementData.visible = false"
-    [visible]="(createMovementData.visible)"
+    <p-dialog (visibleChange)="createMovementData.visible = false"
+              [modal]="true"
 
-    appendTo="body"
-    [modal]="true"
-    [styleClass]="'fixed-movement-edit'"
-    [resizable]="false"
+              [resizable]="false"
+              [styleClass]="'fixed-movement-edit'"
+              [visible]="(createMovementData.visible)"
+              appendTo="body"
 
-  >
-    <p-header>{{ createMovementData?.title }}</p-header>
-    <form
-      novalidate
-      [formGroup]="createMovementData?.form"
-      (ngSubmit)="onSubmitCreatedMovement()"
     >
-      <app-fixed-movement-settings
-        [form]="createMovementData?.form"
-        #createEditor
-        [companyTransTypes]="companyTransTypes"
-        [dontAllowAddition]="true"
-        [companyId]="userService.appData?.userData?.companySelect?.companyId"
-        [source]="createMovementData.source"
-      >
-      </app-fixed-movement-settings>
-      <button
-        type="submit"
-        style="display: none"
-        [disabled]="createMovementData.form.invalid"
-      ></button>
-      <!--{{createMovementData.form.valid}}-->
-    </form>
-    <p-footer>
-      <div
-        style="
+        <p-header>{{ createMovementData?.title }}</p-header>
+        <form
+                (ngSubmit)="onSubmitCreatedMovement()"
+                [formGroup]="createMovementData?.form"
+                novalidate
+        >
+            <app-fixed-movement-settings
+                    #createEditor
+                    [companyId]="userService.appData?.userData?.companySelect?.companyId"
+                    [companyTransTypes]="companyTransTypes"
+                    [dontAllowAddition]="true"
+                    [form]="createMovementData?.form"
+                    [source]="createMovementData.source"
+            >
+            </app-fixed-movement-settings>
+            <button
+                    [disabled]="createMovementData.form.invalid"
+                    style="display: none"
+                    type="submit"
+            ></button>
+            <!--{{createMovementData.form.valid}}-->
+        </form>
+        <p-footer>
+            <div
+                    style="
           width: 100%;
           display: flex;
           display: -ms-flexbox;
           justify-content: center;
         "
-      >
-        <a
-          href="javascript:void(0)"
-          role="button"
-          class="button-white button-link"
-          (click)="createMovementData.visible = false"
-        >
-          {{ 'actions.cancellation' | translate }}
-        </a>
-        <button
-          class="button-dark"
-          (click)="createMovementData.onApprove()"
-          [disabled]="createMovementData.loading"
-        >
-          <i
-            class="fas fa-fw fa-circle-notch fa-spin"
-            *ngIf="createMovementData.loading"
-          ></i>
-          {{ createMovementData?.title }}
-        </button>
-      </div>
-    </p-footer>
-  </p-dialog>
-
-  <p-overlayPanel
-    styleClass="tooltip-bottom tooltip-acc-deviation tooltip-daily-edit"
-    [style]="{ transform: 'translate(-30%, 5px)', width: 'auto' }"
-    #rowHandleOvp
-    appendTo="body"
-    (onHide)="handlerShownAt = null"
-  >
-    <ul>
-      <li (click)="onEditMovementClick(); rowHandleOvp.hide()">
-        <img
-          ngSrc="/assets/images/pencil.png"
-          style="height: auto; width: 14px; position: relative;vertical-align: middle" fill
-
-        />
-        {{ 'actions.edit' | translate }}
-      </li>
-      <li
-        *ngIf="deletePermittedTargetTypes.includes(handlerShownAt?.targetType)"
-        (click)="onDeleteMovementClick(); rowHandleOvp.hide()"
-      >
-        <img ngSrc="/assets/images/trash.png"
-             style="height: auto; width: 14px; position: relative;vertical-align: middle" fill
-
-        />
-        {{ 'actions.remove' | translate }}
-      </li>
-    </ul>
-  </p-overlayPanel>
-
-  <p-dialog (visibleChange)="editMovementData.visible = false"
-		  [visible]="(editMovementData.visible)"
-		
-    appendTo="body"
-    [modal]="true"
-    [styleClass]="'fixed-movement-edit'"
-    [resizable]="false"
-
-    #editMovementDataDlg
-  >
-    <p-header>{{ editMovementData?.title }}</p-header>
-    <form
-      novalidate
-      [formGroup]="editMovementData?.form"
-      (ngSubmit)="onSubmitUpdatedMovement()"
-    >
-      <app-fixed-movement-settings
-        [form]="editMovementData?.form"
-        #editEditor
-        [show_applyCategorySelectionToPastCntrl]="true"
-        [companyTransTypes]="companyTransTypes"
-        [companyId]="userService.appData?.userData?.companySelect?.companyId"
-        [source]="editMovementData.source"
-      >
-      </app-fixed-movement-settings>
-      <button
-        type="submit"
-        style="display: none"
-        [disabled]="editMovementData.form.invalid"
-      ></button>
-      <!--{{createMovementData.form.valid}}-->
-    </form>
-    <p-footer>
-      <div
-        style="
-          width: 100%;
-          display: flex;
-          display: -ms-flexbox;
-          justify-content: center;
-        "
-      >
-        <a
-          href="javascript:void(0)"
-          role="button"
-          class="button-white button-link"
-          (click)="editMovementData.visible = false"
-        >
-          {{ 'actions.cancellation' | translate }}
-        </a>
-        <button
-          class="button-dark"
-          (click)="onSubmitUpdatedMovement()"
-          [disabled]="editMovementData.loading"
-        >
-          <i
-            class="fas fa-fw fa-circle-notch fa-spin"
-            *ngIf="editMovementData.loading"
-          ></i>
-          {{ 'actions.saveAndClose' | translate }}
-        </button>
-      </div>
-    </p-footer>
-  </p-dialog>
-
-  <p-dialog (visibleChange)="deleteConfirmationPrompt.visible = false"
-		  [visible]="(deleteConfirmationPrompt.visible)"
-		
-    styleClass="deleteMovementDialog"
-    appendTo="body"
-    [style]="{width: 300 + 'px'}"
-    [modal]="true"
-  >
-    <p-header>{{ 'מחיקת תנועה קבועה' }}</p-header>
-
-    <div class="mat-h3" [innerHTML]="deleteConfirmationPrompt?.message"></div>
-
-    <p-footer>
-      <div
-        style="
-          width: 100%;
-          display: flex;
-          display: -ms-flexbox;
-          justify-content: center;
-        "
-      >
-        <button
-          class="button-white button-link"
-          (click)="deleteConfirmationPrompt.visible = false"
-        >
-          {{ 'actions.cancellation' | translate }}
-        </button>
-        <button
-          class="button-dark"
-          (click)="deleteConfirmationPrompt.onApprove()"
-          [disabled]="deleteConfirmationPrompt?.processing"
-        >
-          <i
-            class="fas fa-fw fa-circle-notch fa-spin"
-            *ngIf="deleteConfirmationPrompt?.processing"
-          ></i>{{ 'actions.remove' | translate }}
-        </button>
-      </div>
-    </p-footer>
-  </p-dialog>
-
-  <ng-container *ngIf="transHistoryData?.visible">
-    <p-dialog (visibleChange)="transHistoryData.visible = false"
-		    [visible]="(transHistoryData.visible)"
-		    appendTo="body"
-      [modal]="true"
-      [resizable]="false"
-      [styleClass]="'transHistoryDialog'"
-    >
-      <p-header>{{ transHistoryData?.title }}</p-header>
-      <app-cyclic-trans-history
-        [cyclicTrans]="transHistoryData?.trns"
-        (historyRecordDeleted)="changeAcc()"
-      ></app-cyclic-trans-history>
+            >
+                <a
+                        (click)="createMovementData.visible = false"
+                        class="button-white button-link"
+                        href="javascript:void(0)"
+                        role="button"
+                >
+                    {{ 'actions.cancellation' | translate }}
+                </a>
+                <button
+                        (click)="createMovementData.onApprove()"
+                        [disabled]="createMovementData.loading"
+                        class="button-dark"
+                >
+                    <i
+                            *ngIf="createMovementData.loading"
+                            class="fas fa-fw fa-circle-notch fa-spin"
+                    ></i>
+                    {{ createMovementData?.title }}
+                </button>
+            </div>
+        </p-footer>
     </p-dialog>
-  </ng-container>
 
-  <ng-container *ngIf="restoreTrans">
-    <p-dialog (visibleChange)="restoreTrans = false"
-		    [visible]="(restoreTrans)"
-		    styleClass="userDeleteModal"
-      appendTo="body"
-      [draggable]="false"
-      [resizable]="false"
-      (onHide)="restoreTrans = false"
-      [modal]="true"
-      [closeOnEscape]="true"
-      [closable]="true"
+    <p-overlayPanel
+            #rowHandleOvp
+            (onHide)="handlerShownAt = null"
+            [style]="{ transform: 'translate(-30%, 5px)', width: 'auto' }"
+            appendTo="body"
+            styleClass="tooltip-bottom tooltip-acc-deviation tooltip-daily-edit"
     >
-      <p-header> שחזור תנועה קבועה </p-header>
-      <div>
-        האם ברצונך לשחזר את התנועה הקבועה
-        {{ restoreTrans.transName }}?
-      </div>
-      <p-footer>
-        <button class="button-link" (click)="restoreTrans = false">
-          {{ 'actions.cancellation' | translate }}
-        </button>
-        <button class="button-dark" (click)="userRestore()">
-          {{ 'actions.approve' | translate }}
-        </button>
-      </p-footer>
+        <ul>
+            <li (click)="onEditMovementClick(); rowHandleOvp.hide()">
+                <img
+                        fill
+                        ngSrc="/assets/images/pencil.png" style="height: auto; width: 14px; position: relative;vertical-align: middle"
+
+                />
+                {{ 'actions.edit' | translate }}
+            </li>
+            <li
+                    (click)="onDeleteMovementClick(); rowHandleOvp.hide()"
+                    *ngIf="deletePermittedTargetTypes.includes(handlerShownAt?.targetType)"
+            >
+                <img fill
+                     ngSrc="/assets/images/trash.png" style="height: auto; width: 14px; position: relative;vertical-align: middle"
+
+                />
+                {{ 'actions.remove' | translate }}
+            </li>
+        </ul>
+    </p-overlayPanel>
+
+    <p-dialog #editMovementDataDlg
+              (visibleChange)="editMovementData.visible = false"
+
+              [modal]="true"
+              [resizable]="false"
+              [styleClass]="'fixed-movement-edit'"
+              [visible]="(editMovementData.visible)"
+
+              appendTo="body"
+    >
+        <p-header>{{ editMovementData?.title }}</p-header>
+        <form
+                (ngSubmit)="onSubmitUpdatedMovement()"
+                [formGroup]="editMovementData?.form"
+                novalidate
+        >
+            <app-fixed-movement-settings
+                    #editEditor
+                    [companyId]="userService.appData?.userData?.companySelect?.companyId"
+                    [companyTransTypes]="companyTransTypes"
+                    [form]="editMovementData?.form"
+                    [show_applyCategorySelectionToPastCntrl]="true"
+                    [source]="editMovementData.source"
+            >
+            </app-fixed-movement-settings>
+            <button
+                    [disabled]="editMovementData.form.invalid"
+                    style="display: none"
+                    type="submit"
+            ></button>
+            <!--{{createMovementData.form.valid}}-->
+        </form>
+        <p-footer>
+            <div
+                    style="
+          width: 100%;
+          display: flex;
+          display: -ms-flexbox;
+          justify-content: center;
+        "
+            >
+                <a
+                        (click)="editMovementData.visible = false"
+                        class="button-white button-link"
+                        href="javascript:void(0)"
+                        role="button"
+                >
+                    {{ 'actions.cancellation' | translate }}
+                </a>
+                <button
+                        (click)="onSubmitUpdatedMovement()"
+                        [disabled]="editMovementData.loading"
+                        class="button-dark"
+                >
+                    <i
+                            *ngIf="editMovementData.loading"
+                            class="fas fa-fw fa-circle-notch fa-spin"
+                    ></i>
+                    {{ 'actions.saveAndClose' | translate }}
+                </button>
+            </div>
+        </p-footer>
     </p-dialog>
-  </ng-container>
-  <!--<p-dialog (visibleChange)="aaa = false" [visible]="transHistoryData?.visible" (visibleChange)="transHistoryData.visible = $event"-->
-  <!--appendTo="body" [modal]="true" [resizable]="false" -->
-  <!--[styleClass]="'transHistoryDialog'" #transHistoryDlg>-->
-  <!--<p-header>{{transHistoryData?.title}}</p-header>-->
 
-  <!--<div class="transData-section sums" *ngIf="transHistoryData?.trns">-->
-  <!--<div class="sum-data">-->
-  <!--<h3>סכום לתזרים</h3>-->
-  <!--<p [class.sum-credit]="transHistoryData.trns.total > 0 && !transHistoryData.trns.expence"-->
-  <!--[class.sum-debit]="transHistoryData.trns.expence === true">-->
-  <!--<span class="sum">{{transHistoryData.trns.total| sum:true}}</span>-->
-  <!--<span class="currency">{{(transHistoryData.trns.companyAccountId| asBankAccount).currency| currencySymbol}}</span>-->
-  <!--</p>-->
-  <!--</div>-->
+    <p-dialog (visibleChange)="deleteConfirmationPrompt.visible = false"
+              [modal]="true"
 
-  <!--<div class="sum-data">-->
-  <!--<h3>אמצעי תשלום</h3>-->
-  <!--<p>-->
-  <!--{{('paymentTypes.' + (transHistoryData.trns.paymentDescOriginal || transHistoryData.trns.paymentDesc))| translate}}-->
-  <!--</p>-->
-  <!--</div>-->
+              [style]="{width: 300 + 'px'}"
+              [visible]="(deleteConfirmationPrompt.visible)"
+              appendTo="body"
+              styleClass="deleteMovementDialog"
+    >
+        <p-header>{{ 'מחיקת תנועה קבועה' }}</p-header>
 
-  <!--<div class="sum-data">-->
-  <!--<h3>תדירות</h3>-->
-  <!--<p>-->
-  <!--<ng-container *ngIf="transHistoryData.trns.transFrequencyName !== 'NONE'; else noneFrequency;">-->
-  <!--<span>{{('transactionFrequencyTypes.' + transHistoryData.trns.transFrequencyName + '.text')| translate}}</span>-->
-  <!--<span *ngIf="transHistoryData.trns.frequencyDay">-->
-  <!--&nbsp;&#40;{{(transHistoryData.trns.frequencyDay)| transactionFrequencyHumanize:transHistoryData.trns.transFrequencyName}}&#41;</span>-->
-  <!--</ng-container>-->
-  <!--&lt;!&ndash;{{trns.frquencyDay}} + {{trns.transFrequencyName}}&ndash;&gt;-->
-  <!--<ng-template #noneFrequency></ng-template>-->
-  <!--</p>-->
-  <!--</div>-->
-  <!--</div>-->
+        <div [innerHTML]="deleteConfirmationPrompt?.message" class="mat-h3"></div>
 
-  <!--<ng-container *ngIf="(transHistoryData?.historyData| async) as historyData; else loader;">-->
-  <!--<ng-container *ngIf="historyData.transes?.length && historyData.chartData; else noHistoryAvailable;">-->
-  <!--<div class="chart-section">-->
-  <!--<app-charts [chartData]="historyData.chartData" [scrollHeight]="{'height': 160}"></app-charts>-->
-  <!--</div>-->
-  <!--<p class="mat-h4" style="margin: .5em 0;">-->
-  <!--<ng-container *ngIf="transHistoryData.trns.paymentDesc !== 'RECOMMENDATION'">-->
-  <!--כדי לדייק את התזרים מומלץ למחוק תנועות שהותאמו בטעות-->
-  <!--</ng-container>-->
-  <!--</p>-->
-  <!--<div class="bank-acc-details-table-container transesTable">-->
-  <!--<div class="bank-acc-details-table-header">-->
-  <!--<div>-->
-  <!--{{'titles.date'| translate}}-->
-  <!--</div>-->
-  <!--<div>-->
-  <!--{{'titles.description'| translate}}-->
-  <!--</div>-->
-  <!--<div>-->
-  <!--{{'titles.reference'| translate}}-->
-  <!--</div>-->
-  <!--<div>-->
-  <!--{{'titles.sum'| translate}}-->
-  <!--</div>-->
-  <!--<div></div>-->
-  <!--</div>-->
-  <!--<div appScrollbar class="scrollbar-dynamic bank-acc-details-table-body"-->
-  <!--style="position: relative; height: 260px;">-->
-  <!--<div>-->
-  <!--<div class="bank-acc-details-row"-->
-  <!--*ngFor="let trnsh of historyData.transes; trackBy: transactionTrack">-->
-  <!--<div>-->
-  <!--{{trnsh.transDate| todayRelativeHumanize}}-->
-  <!--</div>-->
+        <p-footer>
+            <div
+                    style="
+          width: 100%;
+          display: flex;
+          display: -ms-flexbox;
+          justify-content: center;
+        "
+            >
+                <button
+                        (click)="deleteConfirmationPrompt.visible = false"
+                        class="button-white button-link"
+                >
+                    {{ 'actions.cancellation' | translate }}
+                </button>
+                <button
+                        (click)="deleteConfirmationPrompt.onApprove()"
+                        [disabled]="deleteConfirmationPrompt?.processing"
+                        class="button-dark"
+                >
+                    <i
+                            *ngIf="deleteConfirmationPrompt?.processing"
+                            class="fas fa-fw fa-circle-notch fa-spin"
+                    ></i>{{ 'actions.remove' | translate }}
+                </button>
+            </div>
+        </p-footer>
+    </p-dialog>
 
-  <!--<div [innerHTML]="trnsh.transDesc" #transDesc-->
-  <!--[pTooltip]="trnsh.transDesc" tooltipPosition="top" appendTo="body" [showDelay]="300"-->
-  <!--[tooltipDisabled]="transDesc.clientWidth >= transDesc.scrollWidth">-->
-  <!--</div>-->
+    <ng-container *ngIf="transHistoryData?.visible">
+        <p-dialog (visibleChange)="transHistoryData.visible = false"
+                  [modal]="true"
+                  [resizable]="false"
+                  [styleClass]="'transHistoryDialog'"
+                  [visible]="(transHistoryData.visible)"
+                  appendTo="body"
+        >
+            <p-header>{{ transHistoryData?.title }}</p-header>
+            <app-cyclic-trans-history
+                    (historyRecordDeleted)="changeAcc()"
+                    [cyclicTrans]="transHistoryData?.trns"
+            ></app-cyclic-trans-history>
+        </p-dialog>
+    </ng-container>
 
-  <!--<div [innerHTML]="trnsh.asmachta">-->
-  <!--&lt;!&ndash;{{trns.transTypeId}}&ndash;&gt;-->
-  <!--</div>-->
+    <ng-container *ngIf="restoreTrans">
+        <p-dialog (onHide)="restoreTrans = false"
+                  (visibleChange)="restoreTrans = false"
+                  [closable]="true"
+                  [closeOnEscape]="true"
+                  [draggable]="false"
+                  [modal]="true"
+                  [resizable]="false"
+                  [visible]="(restoreTrans)"
+                  appendTo="body"
+                  styleClass="userDeleteModal"
+        >
+            <p-header> שחזור תנועה קבועה</p-header>
+            <div>
+                האם ברצונך לשחזר את התנועה הקבועה
+                {{ restoreTrans.transName }}?
+            </div>
+            <p-footer>
+                <button (click)="restoreTrans = false" class="button-link">
+                    {{ 'actions.cancellation' | translate }}
+                </button>
+                <button (click)="userRestore()" class="button-dark">
+                    {{ 'actions.approve' | translate }}
+                </button>
+            </p-footer>
+        </p-dialog>
+    </ng-container>
+    <!--<p-dialog (visibleChange)="aaa = false" [visible]="transHistoryData?.visible" (visibleChange)="transHistoryData.visible = $event"-->
+    <!--appendTo="body" [modal]="true" [resizable]="false" -->
+    <!--[styleClass]="'transHistoryDialog'" #transHistoryDlg>-->
+    <!--<p-header>{{transHistoryData?.title}}</p-header>-->
 
-  <!--<div class="ltrNum" [class.sum-credit]="trnsh.bankTotal > 0" [class.sum-debit]="trnsh.bankTotal < 0">-->
-  <!--<app-sum-view [sum]="trnsh.bankTotal"></app-sum-view>-->
-  <!--</div>-->
+    <!--<div class="transData-section sums" *ngIf="transHistoryData?.trns">-->
+    <!--<div class="sum-data">-->
+    <!--<h3>סכום לתזרים</h3>-->
+    <!--<p [class.sum-credit]="transHistoryData.trns.total > 0 && !transHistoryData.trns.expence"-->
+    <!--[class.sum-debit]="transHistoryData.trns.expence === true">-->
+    <!--<span class="sum">{{transHistoryData.trns.total| sum:true}}</span>-->
+    <!--<span class="currency">{{(transHistoryData.trns.companyAccountId| asBankAccount).currency| currencySymbol}}</span>-->
+    <!--</p>-->
+    <!--</div>-->
 
-  <!--<div style="display: flex; display: -ms-flexbox; flex-flow: row nowrap; align-content: baseline;">-->
-  <!--<ng-container *ngIf="transHistoryData.trns.paymentDesc !== 'RECOMMENDATION'">-->
-  <!--<img (click)="onHistoryRowHandleClick(trnsh, transHistoryData.trns)"-->
-  <!--class="rowHandle" style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/trash.png"-->
-  <!--style="width: 12px; height: auto;"/>-->
-  <!--</ng-container>-->
-  <!--</div>-->
-  <!--</div>-->
-  <!--</div>-->
-  <!--</div>-->
-  <!--</div>-->
-  <!--</ng-container>-->
-  <!--<ng-template #noHistoryAvailable>-->
-  <!--<h1 class="mat-h1" style="text-align: center; margin-top: 2em;">-->
-  <!--לא נמצאו רשומות קודמות-->
-  <!--</h1>-->
-  <!--</ng-template>-->
-  <!--&lt;!&ndash;<pre>{{historyData | json}}</pre>&ndash;&gt;-->
-  <!--</ng-container>-->
-  <!--</p-dialog>-->
+    <!--<div class="sum-data">-->
+    <!--<h3>אמצעי תשלום</h3>-->
+    <!--<p>-->
+    <!--{{('paymentTypes.' + (transHistoryData.trns.paymentDescOriginal || transHistoryData.trns.paymentDesc))| translate}}-->
+    <!--</p>-->
+    <!--</div>-->
+
+    <!--<div class="sum-data">-->
+    <!--<h3>תדירות</h3>-->
+    <!--<p>-->
+    <!--<ng-container *ngIf="transHistoryData.trns.transFrequencyName !== 'NONE'; else noneFrequency;">-->
+    <!--<span>{{('transactionFrequencyTypes.' + transHistoryData.trns.transFrequencyName + '.text')| translate}}</span>-->
+    <!--<span *ngIf="transHistoryData.trns.frequencyDay">-->
+    <!--&nbsp;&#40;{{(transHistoryData.trns.frequencyDay)| transactionFrequencyHumanize:transHistoryData.trns.transFrequencyName}}&#41;</span>-->
+    <!--</ng-container>-->
+    <!--&lt;!&ndash;{{trns.frquencyDay}} + {{trns.transFrequencyName}}&ndash;&gt;-->
+    <!--<ng-template #noneFrequency></ng-template>-->
+    <!--</p>-->
+    <!--</div>-->
+    <!--</div>-->
+
+    <!--<ng-container *ngIf="(transHistoryData?.historyData| async) as historyData; else loader;">-->
+    <!--<ng-container *ngIf="historyData.transes?.length && historyData.chartData; else noHistoryAvailable;">-->
+    <!--<div class="chart-section">-->
+    <!--<app-charts [chartData]="historyData.chartData" [scrollHeight]="{'height': 160}"></app-charts>-->
+    <!--</div>-->
+    <!--<p class="mat-h4" style="margin: .5em 0;">-->
+    <!--<ng-container *ngIf="transHistoryData.trns.paymentDesc !== 'RECOMMENDATION'">-->
+    <!--כדי לדייק את התזרים מומלץ למחוק תנועות שהותאמו בטעות-->
+    <!--</ng-container>-->
+    <!--</p>-->
+    <!--<div class="bank-acc-details-table-container transesTable">-->
+    <!--<div class="bank-acc-details-table-header">-->
+    <!--<div>-->
+    <!--{{'titles.date'| translate}}-->
+    <!--</div>-->
+    <!--<div>-->
+    <!--{{'titles.description'| translate}}-->
+    <!--</div>-->
+    <!--<div>-->
+    <!--{{'titles.reference'| translate}}-->
+    <!--</div>-->
+    <!--<div>-->
+    <!--{{'titles.sum'| translate}}-->
+    <!--</div>-->
+    <!--<div></div>-->
+    <!--</div>-->
+    <!--<div appScrollbar class="scrollbar-dynamic bank-acc-details-table-body"-->
+    <!--style="position: relative; height: 260px;">-->
+    <!--<div>-->
+    <!--<div class="bank-acc-details-row"-->
+    <!--*ngFor="let trnsh of historyData.transes; trackBy: transactionTrack">-->
+    <!--<div>-->
+    <!--{{trnsh.transDate| todayRelativeHumanize}}-->
+    <!--</div>-->
+
+    <!--<div [innerHTML]="trnsh.transDesc" #transDesc-->
+    <!--[pTooltip]="trnsh.transDesc" tooltipPosition="top" appendTo="body" [showDelay]="300"-->
+    <!--[tooltipDisabled]="transDesc.clientWidth >= transDesc.scrollWidth">-->
+    <!--</div>-->
+
+    <!--<div [innerHTML]="trnsh.asmachta">-->
+    <!--&lt;!&ndash;{{trns.transTypeId}}&ndash;&gt;-->
+    <!--</div>-->
+
+    <!--<div class="ltrNum" [class.sum-credit]="trnsh.bankTotal > 0" [class.sum-debit]="trnsh.bankTotal < 0">-->
+    <!--<app-sum-view [sum]="trnsh.bankTotal"></app-sum-view>-->
+    <!--</div>-->
+
+    <!--<div style="display: flex; display: -ms-flexbox; flex-flow: row nowrap; align-content: baseline;">-->
+    <!--<ng-container *ngIf="transHistoryData.trns.paymentDesc !== 'RECOMMENDATION'">-->
+    <!--<img (click)="onHistoryRowHandleClick(trnsh, transHistoryData.trns)"-->
+    <!--class="rowHandle" style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/trash.png"-->
+    <!--style="width: 12px; height: auto;"/>-->
+    <!--</ng-container>-->
+    <!--</div>-->
+    <!--</div>-->
+    <!--</div>-->
+    <!--</div>-->
+    <!--</div>-->
+    <!--</ng-container>-->
+    <!--<ng-template #noHistoryAvailable>-->
+    <!--<h1 class="mat-h1" style="text-align: center; margin-top: 2em;">-->
+    <!--לא נמצאו רשומות קודמות-->
+    <!--</h1>-->
+    <!--</ng-template>-->
+    <!--&lt;!&ndash;<pre>{{historyData | json}}</pre>&ndash;&gt;-->
+    <!--</ng-container>-->
+    <!--</p-dialog>-->
 </div>

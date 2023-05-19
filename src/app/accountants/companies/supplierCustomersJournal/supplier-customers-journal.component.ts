@@ -14,10 +14,10 @@ import {
 } from '@angular/core';
 import {UserService} from '@app/core/user.service';
 import {SharedComponent} from '@app/shared/component/shared.component';
-import {ActivatedRoute, NavigationExtras, Router} from '@angular/router';
-import {combineLatest, fromEvent, interval, lastValueFrom, Observable, Subject, Subscription, timer, zip} from 'rxjs';
-import {AbstractControl, FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators} from '@angular/forms';
-import {debounceTime, distinctUntilChanged, startWith, switchMap} from 'rxjs/operators';
+import {ActivatedRoute, Router} from '@angular/router';
+import {fromEvent, interval, lastValueFrom, Observable, Subject, Subscription, timer, zip} from 'rxjs';
+import {FormControl, FormGroup, Validators} from '@angular/forms';
+import {debounceTime, distinctUntilChanged, retry, startWith, switchMap} from 'rxjs/operators';
 import {SortPipe} from '@app/shared/pipes/sort.pipe';
 import {StorageService} from '@app/shared/services/storage.service';
 import {SharedService} from '@app/shared/services/shared.service';
@@ -25,16 +25,7 @@ import {DatePipe} from '@angular/common';
 import {OverlayPanel} from 'primeng/overlaypanel';
 import {TranslateService} from '@ngx-translate/core';
 import {DomSanitizer, SafeUrl} from '@angular/platform-browser';
-import {
-    HttpClient,
-    HttpErrorResponse,
-    HttpEventType,
-    HttpHeaders,
-    HttpRequest,
-    HttpResponse
-} from '@angular/common/http';
-// @ts-ignore
-declare var Dynamsoft: any = window['Dynamsoft'];
+import {HttpClient, HttpErrorResponse, HttpEventType, HttpHeaders, HttpRequest, HttpResponse} from '@angular/common/http';
 import {ReportService} from '@app/core/report.service';
 import {ReloadServices} from '@app/shared/services/reload.services';
 import {ValidatorsFactory} from '@app/shared/component/foreign-credentials/validators';
@@ -43,7 +34,9 @@ import {Listbox} from 'primeng/listbox/listbox';
 import {HttpServices} from '@app/shared/services/http.services';
 import {Dropdown} from 'primeng/dropdown';
 import {CustomPreset, Range, RangePoint} from '@app/shared/component/date-range-selectors/presets';
-import {getPageHeight} from "@app/shared/functions/getPageHeight";
+import {getPageHeight} from '@app/shared/functions/getPageHeight';
+// @ts-ignore
+declare var Dynamsoft: any = window['Dynamsoft'];
 
 const PDFDocument = window['PDFLib'].PDFDocument;
 const pdfjsLib = window['pdfjsLib'];
@@ -559,7 +552,7 @@ export class SupplierCustomersJournalComponent
 
                 this.docToSend.visible = true;
             },
-            approve: () => {
+            approve: async () => {
                 if (this.docToSend.form.value.toMail) {
                     this.storageService.localStorageSetter(
                         'toMail_' + this.docToSend.fd,
@@ -581,10 +574,12 @@ export class SupplierCustomersJournalComponent
                         this.userService.appData.userData.lastName);
                 // console.log(this.docToSend.form);
                 this.docToSend.visible = false;
+                const gRecaptcha = await this.userService.executeAction('send-client-message');
                 this.sharedService
                     .sendClientMessage(
                         this.docToSend.form.value.sendType === 'WHATSAPP'
                             ? {
+                                gRecaptcha:gRecaptcha,
                                 fileIds: [],
                                 details:
                                     !this.docToSend.form.value.subject ||
@@ -603,6 +598,7 @@ export class SupplierCustomersJournalComponent
                                 targetUserId: this.docToSend.form.value.targetUserId
                             }
                             : {
+                                gRecaptcha:gRecaptcha,
                                 targetUserId: this.docToSend.form.value.targetUserId,
                                 fileIds: [],
                                 details:
@@ -761,7 +757,7 @@ export class SupplierCustomersJournalComponent
 
     get isWindows() {
         return (
-            window.navigator['userAgentData']['platform'] === "Windows"
+            window.navigator['userAgentData']['platform'] === 'Windows'
         );
     }
 
@@ -841,7 +837,7 @@ export class SupplierCustomersJournalComponent
                 this.userService.appData.submitAlertContact = true;
                 setTimeout(() => {
                     this.userService.appData.submitAlertContact = false;
-                }, 3000)
+                }, 3000);
                 this.contactsWithoutAgreement = [];
             });
     }
@@ -1049,14 +1045,14 @@ export class SupplierCustomersJournalComponent
             });
 
 
-        Dynamsoft.DWT.ResourcesPath = '/assets/files/resources';
-        // Dynamsoft.DWT.ResourcesPath = 'assets/dwt-resources';
-        Dynamsoft.DWT.ProductKey =
+        Dynamsoft.WebTwainEnv.ResourcesPath = '/assets/files/resources';
+        // Dynamsoft.WebTwainEnv.ResourcesPath = 'assets/dwt-resources';
+        Dynamsoft.WebTwainEnv.ProductKey =
             'f0068WQAAAMjD37MYQuF8gD5cX23zdlnKwTn6csMXDHsXWOK4CRS4lDE82sTzeW1ejTcOS7m7gOE9leRs0VSPDlpjDkIWENg=';
-        // Dynamsoft.DWT.ProductKey = 't0115YQEAADLdsKeUCK4+tJktPdfzkeFCkXXNRfl+fAMlzbNS/nDM0sXKq9mW/WFrty8KF3g7lNtAYfUOiICxcac/R4b8dBDJIczVQygkgTcBywD7uHkqFV0+gY9CX58UiSYJd4uYkjBa/RBSgJwlY3AAym9Xsw==';
-        Dynamsoft.DWT.AutoLoad = false;
+        // Dynamsoft.WebTwainEnv.ProductKey = 't0115YQEAADLdsKeUCK4+tJktPdfzkeFCkXXNRfl+fAMlzbNS/nDM0sXKq9mW/WFrty8KF3g7lNtAYfUOiICxcac/R4b8dBDJIczVQygkgTcBywD7uHkqFV0+gY9CX58UiSYJd4uYkjBa/RBSgJwlY3AAym9Xsw==';
+        Dynamsoft.WebTwainEnv.AutoLoad = false;
         if (this.isWindows) {
-            Dynamsoft.DWT.RegisterEvent('OnWebTwainReady', () => {
+            Dynamsoft.WebTwainEnv.RegisterEvent('OnWebTwainReady', () => {
                 this.Dynamsoft_OnReady();
             });
         }
@@ -1093,12 +1089,17 @@ export class SupplierCustomersJournalComponent
                 const additional = this.userService.appData.userData.companies.find(
                     (item) => item.companyId === company.companyId
                 );
+                this.companiesSrc[idx].filesInputStatusDescText = company.filesInputStatusDesc ? company.filesInputStatusDesc : '-';
+
                 additional.yearlyProgram = !!additional.yearlyProgram;
                 this.companiesSrc[idx] = Object.assign(
                     additional ? additional : {},
                     company
                 );
             });
+
+            this.companiesSrc = this.companiesSrc.filter(company => !!company.authorized || !!company.folderPlus);
+
             console.log('companies: ', this.companiesSrc);
 
             if (!Array.isArray(this.companiesSrc)) {
@@ -1159,9 +1160,9 @@ export class SupplierCustomersJournalComponent
         fromEvent(elem, 'mouseleave').subscribe(
             (x) => {
                 eve.hide();
-                setTimeout(()=>{
+                setTimeout(() => {
                     eve.hide();
-                }, 10)
+                }, 10);
                 // console.log('mouseleave!', eve);
             }
         );
@@ -1202,6 +1203,7 @@ export class SupplierCustomersJournalComponent
                 : this.companiesSrc.filter((fd) => {
                     return [
                         fd.companyName,
+                        fd.filesInputStatusDescText,
                         fd.companyHp,
                         this.dtPipe.transform(fd.lastUploadDate, 'dd/MM/yy'),
                         fd.journalBank,
@@ -1750,7 +1752,6 @@ export class SupplierCustomersJournalComponent
     }
 
 
-
     paginate(event) {
         this.entryLimit = Number(event.rows);
         this.currentPage = event.page;
@@ -1809,7 +1810,7 @@ export class SupplierCustomersJournalComponent
         // console.log(this.files);
     }
 
-    showDocumentStorageDataViewAsGrid(src: string, isPdf: boolean, isNgSrc?:any): void {
+    showDocumentStorageDataViewAsGrid(src: string, isPdf: boolean, isNgSrc?: any): void {
         this.showDocumentStorageDataFired = true;
         this.timeFireHover = false;
         this.isPdf = isPdf;
@@ -1843,7 +1844,9 @@ export class SupplierCustomersJournalComponent
             this.filesOriginal = [];
             this.fileDropRef.nativeElement.type = 'text';
             setTimeout(() => {
-                this.fileDropRef.nativeElement.type = 'file';
+                if(this.fileDropRef && this.fileDropRef.nativeElement){
+                    this.fileDropRef.nativeElement.type = 'file';
+                }
             }, 200);
             this.progress = false;
             this.fileViewer = false;
@@ -1904,7 +1907,9 @@ export class SupplierCustomersJournalComponent
                     this.filesOriginal = [];
                     this.fileDropRef.nativeElement.type = 'text';
                     setTimeout(() => {
-                        this.fileDropRef.nativeElement.type = 'file';
+                        if(this.fileDropRef && this.fileDropRef.nativeElement){
+                            this.fileDropRef.nativeElement.type = 'file';
+                        }
                     }, 200);
                     this.progress = false;
                     this.fileViewer = false;
@@ -1939,7 +1944,9 @@ export class SupplierCustomersJournalComponent
         this.filesOriginal = [];
         this.fileDropRef.nativeElement.type = 'text';
         setTimeout(() => {
-            this.fileDropRef.nativeElement.type = 'file';
+            if(this.fileDropRef && this.fileDropRef.nativeElement){
+                this.fileDropRef.nativeElement.type = 'file';
+            }
         }, 200);
         this.progress = false;
         this.fileViewer = false;
@@ -1961,7 +1968,9 @@ export class SupplierCustomersJournalComponent
         if (this.fileDropRef && this.fileDropRef.nativeElement) {
             this.fileDropRef.nativeElement.type = 'text';
             setTimeout(() => {
-                this.fileDropRef.nativeElement.type = 'file';
+                if(this.fileDropRef && this.fileDropRef.nativeElement){
+                    this.fileDropRef.nativeElement.type = 'file';
+                }
             }, 200);
         }
         this.progress = false;
@@ -2017,18 +2026,18 @@ export class SupplierCustomersJournalComponent
             ObjString = [
                 '<div class="header-scanPopUpInstall">' +
                 '<h1> זיהוי סורקים </h1>' +
-                '<span class="fa fa-fw fa-times" onclick="Dynamsoft.DWT.CloseDialog()">&nbsp;</span>' +
+                '<span class="fa fa-fw fa-times" onclick="Dynamsoft.WebTwainEnv.CloseDialog()">&nbsp;</span>' +
                 '</div>'
             ];
             ObjString.push(
                 '<div style="display: flex;justify-content: center;align-items: center;margin: 15px 20px 0px 20px;"><a id="dwt-btn-install" style="display: inline-block;" target="_blank" href="'
             );
             let url = '';
-            if (iPlatform === Dynamsoft.DWT.EnumDWT_PlatformType.enumWindow) {
+            if (iPlatform === Dynamsoft.EnumDWT_PlatformType.enumWindow) {
                 url = '/assets/files/resources/dist/DynamsoftServiceSetup.msi';
-            } else if (iPlatform === Dynamsoft.DWT.EnumDWT_PlatformType.enumMac) {
+            } else if (iPlatform === Dynamsoft.EnumDWT_PlatformType.enumMac) {
                 url = '/assets/files/resources/dist/DynamsoftServiceSetup.pkg';
-            } else if (iPlatform === Dynamsoft.DWT.EnumDWT_PlatformType.enumLinux) {
+            } else if (iPlatform === Dynamsoft.EnumDWT_PlatformType.enumLinux) {
                 url = '/assets/files/resources/dist/DynamsoftServiceSetup.deb';
             }
             ObjString.push(url);
@@ -2057,7 +2066,7 @@ export class SupplierCustomersJournalComponent
 
             ObjString.push(
                 '<div class="scanPopUpInstall-text">' +
-                'כדי להתחיל לסרוק ישירות מהסורק שבמשרדך ל- bizobox' +
+                'כדי להתחיל לסרוק ישירות מהסורק שבמשרדך ל- bizibox' +
                 '<br>' +
                 'נבצע תהליך התקנה חד פעמי של תוכנה לזיהוי סורקים.' +
                 '<strong>' +
@@ -2100,7 +2109,7 @@ export class SupplierCustomersJournalComponent
             }
 
             // @ts-ignore
-            Dynamsoft.DWT.ShowDialog(
+            Dynamsoft.WebTwainEnv.ShowDialog(
                 window['promptDlgWidth'],
                 0,
                 ObjString.join('')
@@ -2144,16 +2153,16 @@ export class SupplierCustomersJournalComponent
             if ((new Date() - window['reconnectTime']) / 1000 > 30) {
                 return;
             }
-            Dynamsoft.DWT['CheckConnectToTheService'](
+            Dynamsoft.WebTwainEnv['CheckConnectToTheService'](
                 function () {
-                    Dynamsoft.DWT['ConnectToTheService']();
+                    Dynamsoft.WebTwainEnv['ConnectToTheService']();
                 },
                 function () {
                     setTimeout(window['DWT_Reconnect'], 1000);
                 }
             );
         };
-        Dynamsoft.DWT.Load();
+        Dynamsoft.WebTwainEnv.Load();
     }
 
     unload() {
@@ -2164,7 +2173,7 @@ export class SupplierCustomersJournalComponent
                     elem.DWObject &&
                     elem.DWObject.config.containerID !== 'dwtcontrolContainer'
                 ) {
-                    Dynamsoft.DWT.DeleteDWTObject(
+                    Dynamsoft.WebTwainEnv.DeleteDWTObject(
                         elem.DWObject.config.containerID
                     );
                 }
@@ -2188,7 +2197,7 @@ export class SupplierCustomersJournalComponent
         this.showProgressScan = false;
         this.showScanLoader = false;
         this.fileViewer = false;
-        Dynamsoft.DWT.Unload();
+        Dynamsoft.WebTwainEnv.Unload();
         location.reload();
     }
 
@@ -2229,7 +2238,7 @@ export class SupplierCustomersJournalComponent
         this.dynamsoftReady = true;
         this.scanerList = [];
 
-        Dynamsoft.DWT.CreateDWTObjectEx(
+        Dynamsoft.WebTwainEnv.CreateDWTObjectEx(
             {
                 WebTwainId: 'dwtcontrolContainer'
             },
@@ -2354,7 +2363,7 @@ export class SupplierCustomersJournalComponent
                 this.arr[this.index].DWObject.config.containerID !==
                 'dwtcontrolContainer'
             ) {
-                Dynamsoft.DWT.DeleteDWTObject(
+                Dynamsoft.WebTwainEnv.DeleteDWTObject(
                     this.arr[this.index].DWObject.config.containerID
                 );
                 this.arr.splice(this.index, 1);
@@ -2378,7 +2387,7 @@ export class SupplierCustomersJournalComponent
             //base64String, if not empty, it overrides settings and more settings.
             settings: {
                 exception: 'fail', // "ignore" (default) or "fail",
-                pixelType: Dynamsoft.DWT.EnumDWT_PixelType.TWPT_RGB, //rgb, bw, gray, etc
+                pixelType: Dynamsoft.EnumDWT_PixelType.TWPT_RGB, //rgb, bw, gray, etc
                 resolution: 200, // 300
                 bFeeder: true,
                 bDuplex: false //whether to enable duplex
@@ -2386,8 +2395,8 @@ export class SupplierCustomersJournalComponent
             moreSettings: {
                 exception: 'fail', // "ignore" or “fail”
                 // bitDepth: 24, //1,8,24,etc
-                pageSize: Dynamsoft.DWT.EnumDWT_CapSupportedSizes.TWSS_A4, //A4, etc.
-                unit: Dynamsoft.DWT.EnumDWT_UnitType.TWUN_INCHES
+                pageSize: Dynamsoft.EnumDWT_CapSupportedSizes.TWSS_A4, //A4, etc.
+                unit: Dynamsoft.EnumDWT_UnitType.TWUN_INCHES
                 // layout: {
                 //     left: float,
                 //     top: float,
@@ -2522,7 +2531,7 @@ export class SupplierCustomersJournalComponent
                         this.arr[this.index].DWObject.config.containerID !==
                         'dwtcontrolContainer'
                     ) {
-                        Dynamsoft.DWT.DeleteDWTObject(
+                        Dynamsoft.WebTwainEnv.DeleteDWTObject(
                             this.arr[this.index].DWObject.config.containerID
                         );
                         this.arr.splice(this.index, 1);
@@ -2568,7 +2577,7 @@ export class SupplierCustomersJournalComponent
             this.arr.push({
                 DWObject: null
             });
-            Dynamsoft.DWT.CreateDWTObjectEx(
+            Dynamsoft.WebTwainEnv.CreateDWTObjectEx(
                 {
                     WebTwainId: 'dwtcontrolContainer' + this.index
                 },
@@ -2664,7 +2673,9 @@ export class SupplierCustomersJournalComponent
         }
         this.fileDropRef.nativeElement.type = 'text';
         setTimeout(() => {
-            this.fileDropRef.nativeElement.type = 'file';
+            if(this.fileDropRef && this.fileDropRef.nativeElement){
+                this.fileDropRef.nativeElement.type = 'file';
+            }
         }, 200);
         if (!this.files.length) {
             this.fileViewer = false;
@@ -2679,6 +2690,7 @@ export class SupplierCustomersJournalComponent
             this.unload();
         }
     }
+
     addImageProcess(item: any) {
         return new Promise((resolve, reject) => {
             const reader: any = new FileReader();
@@ -3201,53 +3213,61 @@ export class SupplierCustomersJournalComponent
             const progress = new Subject<number>();
             progress.next(0);
 
-            this.http.request(req).subscribe(
-                (event) => {
-                    if (event.type === HttpEventType.UploadProgress) {
-                        const percentDone = Math.round((100 * event.loaded) / event.total);
-                        progress.next(percentDone);
-                        percentDoneTotal[index] = percentDone / files.length;
-                        const totalAll = percentDoneTotal.reduce((a, b) => a + b, 0);
-                        // console.log('totalAll: ', totalAll);
-                        this.progressAll.next(Math.round(totalAll));
-                    } else if (event instanceof HttpResponse) {
-                        progress.complete();
-                    }
-                },
-                (error) => {
-                    const reqServer = new HttpRequest(
-                        'POST',
-                        this.httpServices.mainUrl +
-                        '/v1/ocr/upload-workaround/' +
-                        this.uploadFilesOcrPopUp.urlsFiles.links[index]
-                            .workaroundUploadUrl,
-                        file,
-                        {
-                            headers: new HttpHeaders({
-                                'Content-Type': 'application/octet-stream',
-                                Authorization: this.userService.appData.token
-                            }),
-                            reportProgress: true
+            this.http.request(req)
+                .pipe(
+                    retry({
+                        count: 3,
+                        delay: 1500
+                    })
+                ).subscribe(
+                {
+                    next: (event) => {
+                        if (event.type === HttpEventType.UploadProgress) {
+                            const percentDone = Math.round((100 * event.loaded) / event.total);
+                            progress.next(percentDone);
+                            percentDoneTotal[index] = percentDone / files.length;
+                            const totalAll = percentDoneTotal.reduce((a, b) => a + b, 0);
+                            // console.log('totalAll: ', totalAll);
+                            this.progressAll.next(Math.round(totalAll));
+                        } else if (event instanceof HttpResponse) {
+                            progress.complete();
                         }
-                    );
-                    this.http.request(reqServer).subscribe(
-                        (event) => {
-                            if (event.type === HttpEventType.UploadProgress) {
-                                const percentDone = Math.round(
-                                    (100 * event.loaded) / event.total
-                                );
-                                progress.next(percentDone);
-                                percentDoneTotal[index] = percentDone / files.length;
-                                const totalAll = percentDoneTotal.reduce((a, b) => a + b, 0);
-                                // console.log('totalAll: ', totalAll);
-                                this.progressAll.next(Math.round(totalAll));
-                            } else if (event instanceof HttpResponse) {
-                                progress.complete();
+                    },
+                    error: (error) => {
+                        const reqServer = new HttpRequest(
+                            'POST',
+                            this.httpServices.mainUrl +
+                            '/v1/ocr/upload-workaround/' +
+                            this.uploadFilesOcrPopUp.urlsFiles.links[index]
+                                .workaroundUploadUrl,
+                            file,
+                            {
+                                headers: new HttpHeaders({
+                                    'Content-Type': 'application/octet-stream',
+                                    Authorization: this.userService.appData.token
+                                }),
+                                reportProgress: true
                             }
-                        },
-                        (error) => {
-                        }
-                    );
+                        );
+                        this.http.request(reqServer).subscribe(
+                            (event) => {
+                                if (event.type === HttpEventType.UploadProgress) {
+                                    const percentDone = Math.round(
+                                        (100 * event.loaded) / event.total
+                                    );
+                                    progress.next(percentDone);
+                                    percentDoneTotal[index] = percentDone / files.length;
+                                    const totalAll = percentDoneTotal.reduce((a, b) => a + b, 0);
+                                    // console.log('totalAll: ', totalAll);
+                                    this.progressAll.next(Math.round(totalAll));
+                                } else if (event instanceof HttpResponse) {
+                                    progress.complete();
+                                }
+                            },
+                            (error) => {
+                            }
+                        );
+                    }
                 }
             );
 
@@ -3294,8 +3314,14 @@ export class SupplierCustomersJournalComponent
             );
             const progress = new Subject<number>();
             progress.next(0);
-            this.http.request(req).subscribe(
-                (event) => {
+            this.http.request(req)
+                .pipe(
+                    retry({
+                        count: 3,
+                        delay: 1500
+                    })
+                ).subscribe({
+                next: (event) => {
                     if (event.type === HttpEventType.UploadProgress) {
                         const percentDone = Math.round((100 * event.loaded) / event.total);
                         progress.next(percentDone);
@@ -3307,7 +3333,7 @@ export class SupplierCustomersJournalComponent
                         progress.complete();
                     }
                 },
-                (error) => {
+                error: (error) => {
                     const reqServer = new HttpRequest(
                         'POST',
                         this.httpServices.mainUrl +
@@ -3341,7 +3367,7 @@ export class SupplierCustomersJournalComponent
                         }
                     );
                 }
-            );
+            });
 
             status[file.name] = {
                 progress: progress.asObservable()
@@ -3668,15 +3694,15 @@ export class SupplierCustomersJournalComponent
 
     disabledData(arr: any) {
         arr.forEach(item => {
-            item.disabled = this.tooltipEditFile['izuCustIdSrc'] === item.custId || this.isExistCustId(item.custId)
-        })
+            item.disabled = this.tooltipEditFile['izuCustIdSrc'] === item.custId || this.isExistCustId(item.custId);
+        });
         if (!arr.find(it => it.title)) {
             arr.unshift({
                 title: true,
                 custId: null,
                 lName: null,
                 hp: null
-            })
+            });
         }
         return arr;
     }
@@ -3914,7 +3940,6 @@ export class SupplierCustomersJournalComponent
             }
         }, 1000);
     }
-
 
 
     nextAfterCUSTEMPTY() {
@@ -4336,7 +4361,7 @@ export class SupplierCustomersJournalComponent
     }
 
     getPageHeightFunc(value: any) {
-        return getPageHeight(value)
+        return getPageHeight(value);
     }
 
     private rebuildSourceProgramIdMap(withOtherFiltersApplied: any[]): void {

@@ -245,6 +245,18 @@ export const menu: any = {
             children: []
         },
         {
+            main: 'bankExport',
+            isForceUnSelectedCompany: true,
+            text: 'menu.accountants.companies.bankExport',
+            routerLink: './companies/bankExport',
+            img: {
+                svg: true,
+                src: 'bankExportNav',
+                alt: 'reports'
+            },
+            children: []
+        },
+        {
             main: 'companies',
             text: 'companies',
             img: {
@@ -340,7 +352,6 @@ export const menu: any = {
                 }
             ]
         },
-
         {
             main: 'supplierCustomersJournal',
             text: 'menu.accountants.companies.supplierCustomersJournal',
@@ -364,20 +375,20 @@ export const menu: any = {
             children: []
         },
         {
-            main: 'bankExport',
-            text: 'menu.accountants.companies.bankExport',
-            routerLink: './companies/bankExport',
+            main: 'reports',
+            text: 'menu.accountants.reports.parent',
+            routerLink: './reports',
             img: {
                 svg: true,
-                src: 'bankExportNav',
+                src: 'reportNav',
                 alt: 'reports'
             },
             children: []
         },
         {
-            main: 'reports',
-            text: 'menu.accountants.reports.parent',
-            routerLink: './reports',
+            main: 'accountingFirmEstablishment',
+            text: 'menu.accountants.accountingFirmEstablishment.parent',
+            routerLink: './companies/accountingFirmEstablishment',
             img: {
                 svg: true,
                 src: 'reportNav',
@@ -408,6 +419,18 @@ export const menu: any = {
                 svg: true,
                 src: 'companiesNav',
                 alt: 'companies'
+            },
+            children: []
+        },
+        {
+            main: 'bankExport',
+            isForceUnSelectedCompany: true,
+            text: 'menu.accountants.companies.bankExport',
+            routerLink: './companies/bankExport',
+            img: {
+                svg: true,
+                src: 'bankExportNav',
+                alt: 'reports'
             },
             children: []
         },
@@ -498,20 +521,20 @@ export const menu: any = {
             children: []
         },
         {
-            main: 'bankExport',
-            text: 'menu.accountants.companies.bankExport',
-            routerLink: './companies/bankExport',
+            main: 'reports',
+            text: 'menu.accountants.reports.parent',
+            routerLink: './reports',
             img: {
                 svg: true,
-                src: 'bankExportNav',
+                src: 'reportNav',
                 alt: 'reports'
             },
             children: []
         },
         {
-            main: 'reports',
-            text: 'menu.accountants.reports.parent',
-            routerLink: './reports',
+            main: 'accountingFirmEstablishment',
+            text: 'menu.accountants.accountingFirmEstablishment.parent',
+            routerLink: './companies/accountingFirmEstablishment',
             img: {
                 svg: true,
                 src: 'reportNav',
@@ -697,6 +720,241 @@ export const menu: any = {
             img: {
                 src: 'knowledge-base',
                 alt: 'knowledge-base'
+            },
+            children: []
+        },
+        {
+            main: 'documentManagement',
+            routerLink: './documentManagement/archives',
+            text: 'menu.accountants.companies.archivesDocs',
+            img: {
+                svg: true,
+                src: 'bagNav',
+                alt: 'companies'
+            },
+            children: []
+        }
+    ],
+    METZALEM_KSAFIM: [
+        {
+            main: 'cfl',
+            text: 'menu.customers.general',
+            routerLink: './general',
+            img: {
+                src: 'customers.general',
+                alt: 'general'
+            },
+            children: []
+        },
+        {
+            main: 'financialManagement',
+            text: 'menu.customers.financialManagement.parent',
+            img: {
+                src: 'customers.financialManagement',
+                alt: 'financialManagement'
+            },
+            children: [
+                {
+                    routerLink: './financialManagement/bankAccount',
+                    text: 'menu.customers.financialManagement.bankAccount.main'
+                },
+                {
+                    routerLink: './financialManagement/creditsCard',
+                    text: 'menu.customers.financialManagement.creditsCard.main'
+                },
+                {
+                    routerLink: './financialManagement/checks',
+                    text: 'menu.customers.financialManagement.checks.main'
+                },
+                {
+                    routerLink: './financialManagement/slika',
+                    text: 'menu.customers.financialManagement.slika.main'
+                },
+                {
+                    routerLink: './financialManagement/beneficiary',
+                    text: 'menu.customers.financialManagement.beneficiary.main'
+                }
+            ]
+        },
+        {
+            main: 'cash-flow',
+            text: 'menu.customers.tazrim.parent',
+            img: {
+                src: 'customers.tazrim',
+                alt: 'tazrim'
+            },
+            children: [
+                {
+                    routerLink: './cash-flow/daily',
+                    text: 'menu.customers.tazrim.daily'
+                },
+                {
+                    routerLink: './cash-flow/bankmatch',
+                    text: 'menu.customers.tazrim.bankmatch'
+                },
+                {
+                    routerLink: './cash-flow/fixedMovements',
+                    text: 'menu.customers.tazrim.fixedMovements'
+                }
+            ]
+        },
+        {
+            main: 'budget',
+            text: 'menu.customers.budget',
+            routerLink: './budget',
+            img: {
+                src: 'budget',
+                alt: 'budget'
+            },
+            children: []
+        },
+        {
+            main: 'knowledge-base',
+            text: 'menu.customers.knowledge-base',
+            routerLink: './help-center',
+            img: {
+                src: 'knowledge-base',
+                alt: 'knowledge-base'
+            },
+            children: []
+        },
+        {
+            main: 'settings',
+            text: 'actions.settings',
+            routerLink: './settings',
+            img: {
+                svg: true,
+                src: 'settingsNav',
+                alt: 'settings'
+            },
+            children: []
+        },
+        {
+            main: 'documentManagement',
+            routerLink: './documentManagement/archives',
+            text: 'menu.accountants.companies.archivesDocs',
+            img: {
+                svg: true,
+                src: 'bagNav',
+                alt: 'companies'
+            },
+            children: []
+        }
+    ],
+    METZALEM_KSAFIM_ANHALATHESHBONOT: [
+        {
+            main: 'cfl',
+            text: 'menu.customers.general',
+            routerLink: './general',
+            img: {
+                src: 'customers.general',
+                alt: 'general'
+            },
+            children: []
+        },
+        {
+            main: 'financialManagement',
+            text: 'menu.customers.financialManagement.parent',
+            img: {
+                src: 'customers.financialManagement',
+                alt: 'financialManagement'
+            },
+            children: [
+                {
+                    routerLink: './financialManagement/bankAccount',
+                    text: 'menu.customers.financialManagement.bankAccount.main'
+                },
+                {
+                    routerLink: './financialManagement/creditsCard',
+                    text: 'menu.customers.financialManagement.creditsCard.main'
+                },
+                {
+                    routerLink: './financialManagement/checks',
+                    text: 'menu.customers.financialManagement.checks.main'
+                },
+                {
+                    routerLink: './financialManagement/slika',
+                    text: 'menu.customers.financialManagement.slika.main'
+                },
+                {
+                    routerLink: './financialManagement/beneficiary',
+                    text: 'menu.customers.financialManagement.beneficiary.main'
+                }
+            ]
+        },
+        {
+            main: 'cash-flow',
+            text: 'menu.customers.tazrim.parent',
+            img: {
+                src: 'customers.tazrim',
+                alt: 'tazrim'
+            },
+            children: [
+                {
+                    routerLink: './cash-flow/daily',
+                    text: 'menu.customers.tazrim.daily'
+                },
+                {
+                    routerLink: './cash-flow/bankmatch',
+                    text: 'menu.customers.tazrim.bankmatch'
+                },
+                {
+                    routerLink: './cash-flow/fixedMovements',
+                    text: 'menu.customers.tazrim.fixedMovements'
+                }
+            ]
+        },
+        {
+            main: 'budget',
+            text: 'menu.customers.budget',
+            routerLink: './budget',
+            img: {
+                src: 'budget',
+                alt: 'budget'
+            },
+            children: []
+        },
+        {
+            main: 'accountancy',
+            text: 'menu.customers.accountancy.parent',
+            routerLink: './accountancy',
+            img: {
+                src: 'customers.accountancy',
+                alt: 'accountancy'
+            },
+            children: [
+                {
+                    routerLink: './accountancy/bookKeepingAnalyze',
+                    text: 'menu.customers.accountancy.bookKeepingAnalyze'
+                },
+                {
+                    routerLink: './accountancy/profitAndLoss',
+                    text: 'menu.customers.accountancy.profitAndLoss'
+                },
+                {
+                    routerLink: './accountancy/trialBalance',
+                    text: 'menu.customers.accountancy.trialBalance'
+                }
+            ]
+        },
+        {
+            main: 'knowledge-base',
+            text: 'menu.customers.knowledge-base',
+            routerLink: './help-center',
+            img: {
+                src: 'knowledge-base',
+                alt: 'knowledge-base'
+            },
+            children: []
+        },
+        {
+            main: 'settings',
+            text: 'actions.settings',
+            routerLink: './settings',
+            img: {
+                svg: true,
+                src: 'settingsNav',
+                alt: 'settings'
             },
             children: []
         },

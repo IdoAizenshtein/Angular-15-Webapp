@@ -1,0 +1,150 @@
+<div class="menu-dd menu-with-panel">
+	<button
+			class="buttonDD"
+			[disabled]="disabled"
+			[class.unFocus]="unFocus"
+			(click)="
+        showPanelDD = !showPanelDD;
+        !unFocus && showPanelDD && panelTooltip.show(0)
+      "
+			[class.opened]="showPanelDD"
+			[id]="'account-selector'"
+			#panelTooltip="matTooltip"
+			[matTooltip]="
+        !unFocus
+          ? ('appWalk.customers.accountSelect' +
+              (showPanelDD ? '-outdatedHint' : '') | translate)
+          : ''
+      "
+			matTooltipPosition="above"
+	>
+		<ng-container *ngIf="checkedArr.length === 1">
+			<img
+					style="height: auto; width: auto;max-width: 20px; position: relative;"
+					[src]="
+        checkedArr[0].bankId
+          ? (checkedArr[0].bankId | toIconSrc: 'bank'  : ''
+                                  : false
+                                  : true)
+          : ''
+      "
+					alt="{{checkedArr[0].accountNickname }}"
+			/>
+			<p>
+				{{checkedArr[0].accountNickname
+				}}
+				({{(selectedCur?.sign)}})
+
+				{{
+				checkedArr[0].izuCustId
+						? ' - ' + checkedArr[0].izuCustId
+						: ''
+				}}
+			</p>
+		</ng-container>
+
+		<ng-container *ngIf="!checkedArr.length">
+			{{ 'actions.account' | translate }}  ({{(selectedCur?.sign)}})
+		</ng-container>
+		<ng-container
+				*ngIf="
+          checkedArr.length > 1 &&
+          checkedArr.length < userService.appData.userData.accountSelect.length
+        "
+		>
+			<p>
+				{{ 'filters.multiSelection' | translate }}  ({{(selectedCur?.sign)}})
+			</p>
+		</ng-container>
+		<ng-container
+				*ngIf="
+          checkedArr.length > 1 &&
+          checkedArr.length === userService.appData.userData.accountSelect.length
+        "
+		>
+			<p>
+				{{ 'filters.allAccounts' | translate }} ({{(selectedCur?.sign)}})
+			</p>
+		</ng-container>
+	</button>
+
+	<div class="panelDD accountsPanel cardsPanelCurreny accPanelCurreny" *ngIf="showPanelDD" [@slideInOutDD]>
+		<div class="currenciesList" *ngIf="currenciesList.length > 1">
+			<button *ngFor="let cur of currenciesList" [class.active]="cur.selected" (click)="resetAllSelected(); cur.selected=true; filterByCurrency()">
+				<div>
+					{{cur.currency}}
+				</div>
+				-
+				<div>
+					{{cur.sign}}
+				</div>
+			</button>
+		</div>
+		<ul
+				class="scroll-chrome"
+				tabindex="-1"
+				(keydown.enter)="showPanelDD = false"
+		>
+			<li class="allCreditCards"
+				*ngIf="userService.appData.userData.accountSelect.length">
+				<p-checkbox checkboxIcon="fa fa-check"
+							[inputId]="'all'"
+							[binary]="true"
+							[ngModel]="checkAll"
+							(onChange)="checkAll = !checkAll; changeAll()"
+							[label]="('filters.allAccounts' | translate) + ' ' + '(' + (selectedCur?.sign) + ')'">
+				</p-checkbox>
+			</li>
+
+			<li *ngFor="let item of userService.appData.userData.accountSelect; index as i" class="card"
+				[class.active]="item.checked">
+				<div style="white-space: nowrap; align-items: center">
+					<p-checkbox checkboxIcon="fa fa-check"
+								[inputId]="item.companyAccountId"
+								[binary]="true"
+								[ngModel]="item.checked"
+								(onChange)="item.checked = !item.checked; changeSelectionAt()">
+					</p-checkbox>
+
+					<label [for]="item?.companyAccountId">
+						<img
+								[src]="!item?.bankId ? '' : (item.bankId | toIconSrc: 'bank'  : ''
+                                  : false
+                                  : true)"
+								alt="{{
+                    userService.appData.userData.accountSelect.accountNickname
+                  }}"
+						/>
+
+						<p>{{ item.accountNickname }} ({{item.sign}})
+
+							{{
+							item.izuCustId
+									? ' - ' + item.izuCustId
+									: ''
+							}}
+
+<!--							<span *ngIf="!item.isUpToDate" class="outdated">-->
+<!--                    &lt;!&ndash;                  <span *ngIf="!item.alertStatus && !item.isUpToDate" class="outdated">&ndash;&gt;-->
+<!--                    <span style="color: #0f3860">-</span>&nbsp;{{-->
+<!--								'filters.outdated' | translate-->
+<!--								}}-->
+<!--                  </span>-->
+<!--							<span-->
+<!--									*ngIf="-->
+<!--                      item.alertStatus-->
+<!--                        | alertStatusHumanize as alertStatusHumanized-->
+<!--                    "-->
+<!--									class="outdated"-->
+<!--							>-->
+<!--                    <span style="color: #0f3860">-</span>&nbsp;{{-->
+<!--								alertStatusHumanized-->
+<!--								}}-->
+<!--                  </span>-->
+						</p>
+					</label>
+				</div>
+			</li>
+		</ul>
+	</div>
+</div>

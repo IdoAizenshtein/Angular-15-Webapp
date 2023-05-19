@@ -22,6 +22,10 @@ export class ValidatorsFactory {
         '(050|051|052|053|054|055|057|058|02|03|04|08|09|072|073|076|077|078)-?\\d{7,7}'
     );
 
+    static cellNumberValidatorILWithInternationalFormats = Validators.pattern(
+        '^(?:(?:(\\+?972|\\(\\+?972\\)|\\+?\\(972\\))(?:\\s|\\.|-)?([1-9]\\d?))|(0[23489]{1})|(0[57]{1}[0-9]))(?:\\s|\\.|-)?([^0\\D]{1}\\d{2}(?:\\s|\\.|-)?\\d{4})$'
+    );
+
     static textByLength(min: number, max: number): ValidatorFn[] {
         const result = [];
         if (Number.isFinite(min)) {

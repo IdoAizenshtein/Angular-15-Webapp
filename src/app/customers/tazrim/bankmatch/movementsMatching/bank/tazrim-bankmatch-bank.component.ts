@@ -220,7 +220,7 @@ export class TazrimBankmatchBankComponent
   // readonly systemAutoMatchTypes = ['SOLEK_TAZRIM', 'CCARD_TAZRIM', 'LOAN_TAZRIM'];
   readonly systemAutoMatchTooltip = [
     `תנועה זו תותאם באופן אוטומטי על ידי`,
-    `<img fill ngSrc="/assets/images/logo2.png" style="height: 15px; width: auto; position: relative;">`,
+    `<img src="/assets/images/logo2.png" style="height: 15px; width: auto; position: relative;">`,
     `כאשר תופיע בחשבון בנק`
   ].join(' ');
 
@@ -278,6 +278,8 @@ export class TazrimBankmatchBankComponent
         takeUntil(this.destroyed$)
       )
       .subscribe((term) => {
+        this.sharedComponent.mixPanelEvent('search bank trans',{value: term});
+
         // this.queryString = term;
         this.filtersAll();
       });
@@ -289,6 +291,8 @@ export class TazrimBankmatchBankComponent
         takeUntil(this.destroyed$)
       )
       .subscribe((term) => {
+        this.sharedComponent.mixPanelEvent('search tazrim trans',{value: term});
+
         this.filtersAllCash();
       });
 
@@ -569,6 +573,7 @@ export class TazrimBankmatchBankComponent
   // }
 
   setBankAcc(acc: any): void {
+    this.sharedComponent.mixPanelEvent('accounts bar');
     this.userService.appData.userData.bankMatchAccountAcc = acc;
     setTimeout(() => {
       this.checkNavScroll();
@@ -1693,7 +1698,17 @@ export class TazrimBankmatchBankComponent
       }
     }, 2000);
   }
-
+  mixPanelEventEvent(paymentDesc: unknown) {
+    if (paymentDesc === 'BankTransfer') {
+      this.sharedComponent.mixPanelEvent('perut bank transfer');
+    }
+    if (paymentDesc === 'Checks') {
+      this.sharedComponent.mixPanelEvent('perut check');
+    }
+    if (paymentDesc === 'Loans') {
+      this.sharedComponent.mixPanelEvent('perut loan');
+    }
+  }
   bankMatchSubmit(): void {
     if (!this.cashflowMatchPopup.table.valid) {
       BrowserService.flattenControls(this.cashflowMatchPopup.table).forEach(
@@ -1701,6 +1716,7 @@ export class TazrimBankmatchBankComponent
       );
       return;
     }
+    this.sharedComponent.mixPanelEvent('match transes');
     const cashData = JSON.parse(JSON.stringify(this.arr.value));
     cashData.forEach((it) => {
       delete it.isPeriodicType;
@@ -2206,6 +2222,7 @@ export class TazrimBankmatchBankComponent
         )
       );
       this.postponePrompt.onApprove = () => {
+        debugger
         const dataToSubmit = JSON.parse(
           JSON.stringify(this.postponePrompt.source)
         );
@@ -2234,6 +2251,7 @@ export class TazrimBankmatchBankComponent
           this.postponePrompt.source.targetType;
 
         this.postponePrompt.processing = true;
+
         this.sharedService
           .updateSingleTransactionFromBankMatch(targetType, dataToSubmit)
           .subscribe((rslt) => {
@@ -2391,7 +2409,7 @@ export class TazrimBankmatchBankComponent
     this.postponePrompt.onApprove = () => {
       this.postponePrompt.processing = true;
       combineLatest(
-     [
+
        checkedItems.map((item) => {
          const dataToSubmit = JSON.parse(JSON.stringify(item));
          dataToSubmit.targetOriginalDate = this.postponePrompt.selectedDate;
@@ -2414,6 +2432,7 @@ export class TazrimBankmatchBankComponent
 
          // debugger;
          const targetType = item.targetTypeName || item.targetType;
+
          return this.sharedService.updateSingleTransactionFromBankMatch(
              targetType,
              dataToSubmit
@@ -2423,7 +2442,7 @@ export class TazrimBankmatchBankComponent
          //     dataToSubmit);
        })
 
-     ]
+
 
       )
         .pipe(

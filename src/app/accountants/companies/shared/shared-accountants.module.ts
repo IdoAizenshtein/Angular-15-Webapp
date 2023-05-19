@@ -32,6 +32,8 @@ import {ContactsComponent} from '@app/accountants/companies/general/contacts/con
 import {ArchivesComponent} from '@app/accountants/companies/archives/archives.component';
 import {AccountingCardsComponent} from '@app/accountants/companies/general/accountingCards/accounting-cards.component';
 import {JournalBankAndCreditComponent} from '@app/accountants/companies/general/journalBankAndCredit/journal-bank-and-credit.component';
+// import {GeneralComponent} from '@app/accountants/companies/general/general.component';
+
 import {
     JournalVendorAndCustomerComponent
 } from '@app/accountants/companies/general/journalVendorAndCustomer/journal-vendor-and-customer.component';

@@ -1865,7 +1865,7 @@
           margin-bottom: 1em;
           justify-content: center;
 
-          > p-dropdown {
+          > p-dropdown, > app-dropdown-wrap {
             margin-#{$right}: 2ch;
             width: 14em;
             font-size: inherit;
@@ -2273,6 +2273,25 @@
     }
   }
 
+  .add-company-dialog {
+    .p-dialog-content {
+      padding: 0.5em 1.75em;
+      display: flex;
+      display: -ms-flexbox;
+      flex-flow: column nowrap;
+
+      > * {
+        min-height: 0;
+        flex: 1;
+        display: flex;
+      }
+
+      .p-placeholder {
+        padding-right: 5px !important;
+      }
+    }
+  }
+
   .budgetPromoMovie {
     border-color: transparent;
     border-radius: 4px;
@@ -2597,7 +2616,7 @@
 
             &.firstHistory {
               cursor: auto;
-              height: 120px;
+              height: 34px;
 
               .mat-line {
                 @include font(semi-bold, 15px);
@@ -2834,6 +2853,15 @@
   }
 
   .exportFileFolderCreatePrompt {
+    &.exportFileFolderCreatePromptContentFlex{
+      .p-dialog-content {
+        width: auto;
+      }
+      .p-dialog-header-icons {
+        align-self: center;
+        margin-top: 0px;
+      }
+    }
     .p-dialog-content {
       width: 54ch;
       padding: 1.5em 1.5em 1em;

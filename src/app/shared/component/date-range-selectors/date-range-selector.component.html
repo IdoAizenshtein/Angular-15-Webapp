@@ -2,7 +2,8 @@
 	<button
 			id="account-dates-selector"
 			class="buttonDD"
-			(click)="togglePanel()"
+			[disabled]="disabledDD"
+			(click)="togglePanel(); sendEvent.emit(showPanelDD)"
 			[class.opened]="showPanelDD"
 			#selector
 			[matTooltip]="'appWalk.customers.dateRangeSelect' | translate"
@@ -11,18 +12,18 @@
 		<ng-container *ngIf="selectedPreset && !pristine; else noPreset">
 			<ng-container
 					*ngIf="
-          !selectedPreset.name.includes('custom');
+          (!selectedPreset.name.includes('custom') && selectedPreset.name !=='all');
           else customRangeSelected
-        "
-			>
-				{{
-				selectedPreset.useRawName
+        ">
+				{{selectedPreset.useRawName
 						? selectedPreset.name
 						: ('dateRangePresets.' + selectedPreset.name | translate)
 				}}
 			</ng-container>
+
+
 			<ng-template #customRangeSelected>
-				<ng-container *ngIf="selectedPreset === customMonthsPreset">
+				<ng-container *ngIf="selectedPreset === customMonthsPreset && selectedPreset.name !=='all'">
 					{{
 					('langCalendar.monthNamesShort' | translate)[
 							selectedPreset.from.month
@@ -34,7 +35,7 @@
 							]
 					}}{{' '}}{{ selectedPreset.till.year }}
 				</ng-container>
-				<ng-container *ngIf="selectedPreset === customDatesPreset">
+				<ng-container *ngIf="selectedPreset === customDatesPreset || selectedPreset.name ==='all'">
 					{{ selectedPreset.from.toDate() | date: 'dd/MM/yy' }}
 					- {{ selectedPreset.till.toDate() | date: 'dd/MM/yy' }}
 				</ng-container>
@@ -79,7 +80,7 @@
 				{{ 'dateRangePresets.customDates' | translate }}
 			</div>
 		</div>
-		
+
 		<div
 				*ngIf="
         [customMonthsPreset, customDatesPreset].includes(selectedInDDPreset)
@@ -96,7 +97,7 @@
         "
 					[selection]="selectedInDDPreset"
 			></app-range-calendar>
-			
+
 			<button
 					class="button-dark"
 					(click)="selectedPreset = selectedInDDPreset; showPanelDD = false"

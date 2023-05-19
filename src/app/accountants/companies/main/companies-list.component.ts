@@ -16,8 +16,8 @@ import {UserService} from '@app/core/user.service';
 import {SharedComponent} from '@app/shared/component/shared.component';
 import {ActivatedRoute, Router} from '@angular/router';
 import {fromEvent, interval, lastValueFrom, Observable, Subject, Subscription, timer, zip} from 'rxjs';
-import {FormControl, FormGroup, Validators} from '@angular/forms';
-import {debounceTime, distinctUntilChanged, startWith, switchMap} from 'rxjs/operators';
+import {AbstractControl, FormBuilder, FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators} from '@angular/forms';
+import {debounceTime, distinctUntilChanged, retry, startWith, switchMap, take} from 'rxjs/operators';
 import {SortPipe} from '@app/shared/pipes/sort.pipe';
 import {StorageService} from '@app/shared/services/storage.service';
 import {SharedService} from '@app/shared/services/shared.service';
@@ -58,7 +58,7 @@ declare var Dynamsoft: any = window['Dynamsoft'];
 export class CompaniesListComponent
     extends ReloadServices
     implements AfterViewInit, OnDestroy, OnInit {
-
+    showNewCompaniesPage: any = false;
     @ViewChild('fileDropRef', {read: ElementRef}) fileDropRef: ElementRef;
     public filesForContainer: any = 0;
     public filesForContainerCompleted: any = 0;
@@ -66,7 +66,11 @@ export class CompaniesListComponent
     public openCardDDEdit: any = false;
     public searchableList = ['companyHp', 'companyName'];
     public items = [];
+    public subscriptionUpdate: Subscription;
+
     public loader = false;
+    public loaderGetContactList = true;
+    public authorizedSignerContactModal: any = false;
     public companies: any = false;
     public companiesSrc: any = false;
     public companiesWithoutAgreement: any = false;
@@ -95,6 +99,19 @@ export class CompaniesListComponent
     public sourceProgramIdShow: boolean = false;
     public esderMaamArr: any[];
     public sourceProgramIdArr: any[];
+
+
+    public billingItemExistsArr: any[];
+    public sourceProgramNameArr: any[];
+    public contactAgreementStatusArr: any[];
+    public automaticIntakeArr: any[];
+
+    public filterTypesBillingItemExists: any = null;
+    public filterTypesSourceProgramName: any = null;
+    public filterTypesContactAgreementStatus: any = null;
+    public filterTypesAutomaticIntakeArr: any = null;
+
+
     public tokenValidStatusArr: any[];
     public agreementConfirmedArr: any[];
     public yearlyProgramArr: any[];
@@ -183,6 +200,8 @@ export class CompaniesListComponent
         {label: 'וואטסאפ - בקרוב', value: null, disabled: true},
         {label: 'הודעה - בקרוב', value: null, disabled: true}
     ];
+    public subscriptionReloadContacts: Subscription;
+
     public createTemplateSubjectModal: {
         visible: boolean;
         progress: boolean;
@@ -212,6 +231,11 @@ export class CompaniesListComponent
     public exportPopupType: any = false;
     public contactsModal: any;
     public showContactModal: boolean = false;
+    public showReceivingFilesModal: any = false;
+    public showReceivingFilesModalInside: boolean = false;
+    public showUpdateFolderPlusModal: any = false;
+
+
     current: {
         from: {
             month: number;
@@ -260,6 +284,7 @@ export class CompaniesListComponent
 
     constructor(
         public userService: UserService,
+        public fb: FormBuilder,
         public override sharedComponent: SharedComponent,
         public httpServices: HttpServices,
         private sortPipe: SortPipe,
@@ -553,7 +578,7 @@ export class CompaniesListComponent
 
                 this.docToSend.visible = true;
             },
-            approve: () => {
+            approve: async () => {
                 if (this.docToSend.form.value.toMail) {
                     this.storageService.localStorageSetter(
                         'toMail_' + this.docToSend.fd,
@@ -575,10 +600,12 @@ export class CompaniesListComponent
                         this.userService.appData.userData.lastName);
                 // console.log(this.docToSend.form);
                 this.docToSend.visible = false;
+                const gRecaptcha = await this.userService.executeAction('send-client-message');
                 this.sharedService
                     .sendClientMessage(
                         this.docToSend.form.value.sendType === 'WHATSAPP'
                             ? {
+                                gRecaptcha:gRecaptcha,
                                 fileIds: [],
                                 details:
                                     !this.docToSend.form.value.subject ||
@@ -597,6 +624,7 @@ export class CompaniesListComponent
                                 targetUserId: this.docToSend.form.value.targetUserId
                             }
                             : {
+                                gRecaptcha:gRecaptcha,
                                 targetUserId: this.docToSend.form.value.targetUserId,
                                 fileIds: [],
                                 details:
@@ -751,6 +779,14 @@ export class CompaniesListComponent
                 }
             }
         };
+        if (this.subscriptionReloadContacts) {
+            this.subscriptionReloadContacts.unsubscribe();
+        }
+        this.subscriptionReloadContacts = this.userService.reloadEvent.subscribe(
+            () => {
+                this.reload();
+            }
+        );
     }
 
     get isWindows() {
@@ -1032,9 +1068,12 @@ export class CompaniesListComponent
     }
 
     ngOnInit() {
+        this.showNewCompaniesPage = this.userService.appData.isAdmin ? true : this.userService.appData.userData.showNewCompaniesPage;
+
         this.sharedComponent.getCompaniesEvent
             .pipe(
-                startWith(true)
+                startWith(true),
+                take(1)
             )
             .subscribe((companiesExist: any) => {
                 if (companiesExist) {
@@ -1043,94 +1082,492 @@ export class CompaniesListComponent
             });
 
 
-        Dynamsoft.DWT.ResourcesPath = '/assets/files/Resources';
-        // Dynamsoft.DWT.ResourcesPath = 'assets/dwt-resources';
-        Dynamsoft.DWT.ProductKey =
+        Dynamsoft.WebTwainEnv.ResourcesPath = '/assets/files/resources';
+        // Dynamsoft.WebTwainEnv.ResourcesPath = 'assets/dwt-resources';
+        Dynamsoft.WebTwainEnv.ProductKey =
             'f0068WQAAAMjD37MYQuF8gD5cX23zdlnKwTn6csMXDHsXWOK4CRS4lDE82sTzeW1ejTcOS7m7gOE9leRs0VSPDlpjDkIWENg=';
-        // Dynamsoft.DWT.ProductKey = 't0115YQEAADLdsKeUCK4+tJktPdfzkeFCkXXNRfl+fAMlzbNS/nDM0sXKq9mW/WFrty8KF3g7lNtAYfUOiICxcac/R4b8dBDJIczVQygkgTcBywD7uHkqFV0+gY9CX58UiSYJd4uYkjBa/RBSgJwlY3AAym9Xsw==';
-        Dynamsoft.DWT.AutoLoad = false;
+        // Dynamsoft.WebTwainEnv.ProductKey = 't0115YQEAADLdsKeUCK4+tJktPdfzkeFCkXXNRfl+fAMlzbNS/nDM0sXKq9mW/WFrty8KF3g7lNtAYfUOiICxcac/R4b8dBDJIczVQygkgTcBywD7uHkqFV0+gY9CX58UiSYJd4uYkjBa/RBSgJwlY3AAym9Xsw==';
+        Dynamsoft.WebTwainEnv.AutoLoad = false;
         if (this.isWindows) {
-            Dynamsoft.DWT.RegisterEvent('OnWebTwainReady', () => {
+            Dynamsoft.WebTwainEnv.RegisterEvent('OnWebTwainReady', () => {
                 this.Dynamsoft_OnReady();
             });
         }
     }
 
-    journalTrans(): void {
-        this.loader = true;
-        this.sharedService.journalTrans().subscribe((response: any) => {
-            const journalTrans = response ? response['body'] : response;
-            try {
-                if (journalTrans && journalTrans.showAgreementToast) {
-                    this.userService.appData.companiesWithoutAgreement = {
-                        notSigned: journalTrans.notSigned,
-                        showAgreementToast: journalTrans.showAgreementToast,
-                        totalCompanies: journalTrans.totalCompanies
-                    };
-                }
-                if (journalTrans && journalTrans.companyJournalTrans) {
-                    this.companiesSrc = journalTrans.companyJournalTrans ? JSON.parse(JSON.stringify(journalTrans.companyJournalTrans)) : [];
-                    this.companiesSrc.forEach((company, idx) => {
-                        const additional = this.userService.appData.userData.companies.find(
-                            (item) => item.companyId === company.companyId
-                        );
-                        additional.yearlyProgram = !!additional.yearlyProgram;
-                        this.companiesSrc[idx] = Object.assign(
-                            additional ? additional : {},
-                            company
-                        );
-                    });
-                    console.log('companies: ', this.companiesSrc);
-                }
-
-                if (!Array.isArray(this.companiesSrc)) {
-                    this.companiesSrc = [];
-                }
-
-
-                // for (const fd of this.companiesSrc) {
-                //     fd.uploadSource = fd.uploadSource ? fd.uploadSource.toLowerCase() : fd.uploadSource;
-                //     fd.noDataAvailable = typeof fd.invoiceDate !== 'number'
-                //         && typeof fd.totalIncludeMaam !== 'number'
-                //         && !fd.documentNum && !fd.documentType && !fd.name;
-                //     fd.documentNum = fd.documentNum ? Number(fd.documentNum) : fd.documentNum;
-                //     fd.asmachta = fd.asmachta !== null ? String(fd.asmachta) : fd.asmachta;
-                // }
-                if (this.companiesSrc && this.companiesSrc.length) {
-                    this.filterInput.enable();
-                } else {
-                    this.filterInput.disable();
-                }
-                this.companies = JSON.parse(JSON.stringify(this.companiesSrc));
-                this.esderMaamArr = [
+    addContact($event: any, companySelect: any, isBeforeAddProduct?: any) {
+        $event.stopPropagation();
+        this.userService.appData.addContactModal = {
+            updateDD: new Subject<any>(),
+            disabledFalseAuthorizedSigner: true,
+            company: companySelect,
+            reload: true,
+            contacts: companySelect.companyContacts ? companySelect.companyContacts : [],
+            addContactForm: this.fb.group({
+                firstName: new FormControl(
                     {
-                        checked: true,
-                        id: 'all',
-                        val: 'הכל'
+                        value: null,
+                        disabled: false
                     },
                     {
-                        checked: true,
-                        id: 'MONTH',
-                        val: 'חודשי'
-                    },
-                    {
-                        checked: true,
-                        id: 'TWO_MONTH',
-                        val: 'דו חודשי'
-                    },
-                    {
-                        checked: true,
-                        id: 'NONE',
-                        val: 'ללא מע״מ'
+                        updateOn: 'change',
+                        validators: [Validators.required]
                     }
-                ];
-                this.filtersAll();
-            } catch (e) {
-                console.log('-----err: ', e);
+                ),
+                lastName: new FormControl(
+                    {
+                        value: null,
+                        disabled: false
+                    },
+                    {
+                        validators: [Validators.required],
+                        updateOn: 'change'
+                    }
+                ),
+                cellPhone: new FormControl(
+                    {
+                        value: null,
+                        disabled: false
+                    },
+                    {
+                        validators: [
+                            Validators.required,
+                            Validators.compose([
+                                ValidatorsFactory.cellNumberValidatorIL,
+                                // tslint:disable-next-line:max-line-length
+                                this.forbiddenCellPhoneExistValidator()
+                            ])
+                        ],
+                        updateOn: 'change'
+                    }
+                ),
+                email: new FormControl(
+                    {
+                        value: null,
+                        disabled: false
+                    },
+                    {
+                        validators: [
+                            Validators.required,
+                            ValidatorsFactory.emailExtended,
+                            this.forbiddenMailExistValidator()
+                        ],
+                        updateOn: 'change'
+                    }
+                ),
+                position: new FormControl(
+                    {
+                        value: null,
+                        disabled: false
+                    },
+                    {
+                        updateOn: 'change'
+                    }
+                ),
+                companyContactIdsMark: this.fb.control(false),
+                joinApp: this.fb.control(false),
+                authorizedSigner: this.fb.control(false),
+                agreementConfirmationDate: null,
+                agreementSendDate: null,
+                companyContactId: null
+            })
+        };
+        if (this.subscriptionUpdate) {
+            this.subscriptionUpdate.unsubscribe();
+        }
+        this.subscriptionUpdate = this.userService.appData.addContactModal.updateDD.subscribe((res) => {
+            const getCompany = this.companies.find(it => it.companyId === res.company.companyId);
+            if (getCompany) {
+                getCompany.contactList.push(res.contactAdded);
+                getCompany.contactSelected = res.contactAdded;
+                this.updateContactSelected(getCompany, null);
             }
         });
+        if (isBeforeAddProduct) {
+            this.userService.appData.addContactModal.company.companyId = companySelect.companyId ? companySelect.companyId : companySelect.potentialCompanyId;
+            this.userService.appData.addContactModal.isBeforeAddProduct = true;
+        }
     }
 
+    forbiddenMailExistValidator(): ValidatorFn {
+        return (control: AbstractControl): ValidationErrors | null => {
+            if (!control.value || control.value === '') {
+                return null;
+            }
+            const isEmailExist = this.userService.appData.addContactModal.contacts.filter(
+                (it) => it.email && it.email === control.value
+            );
+            return isEmailExist && isEmailExist.length > 0
+                ? {forbiddenMail: {value: control.value}}
+                : null;
+        };
+    }
+
+    forbiddenCellPhoneExistValidator(): ValidatorFn {
+        return (control: AbstractControl): ValidationErrors | null => {
+            if (!control.value || control.value === '') {
+                return null;
+            }
+            const isEmailExist = this.userService.appData.addContactModal.contacts.filter(
+                (it) => it.cellPhone && it.cellPhone === control.value
+            );
+            return isEmailExist && isEmailExist.length > 0
+                ? {forbiddenCellPhone: {value: control.value}}
+                : null;
+        };
+    }
+
+    updateContactSelected(row: any, dd: any) {
+        if (row.contactSelected && row.contactSelected.value !== 'null') {
+            this.authorizedSignerContactModal = {
+                contact: row
+            };
+        } else {
+            row.contactList = row.contactList.filter(it => it.value !== 'null');
+            if (dd) {
+                dd.options = row.contactList;
+            }
+        }
+    }
+
+    withinTwentyFourHours(dateTime: any) {
+        return Math.floor(Math.abs(dateTime - new Date().getTime()) / 36e5);
+    }
+
+    withinTwentyFourHoursMin(dateTime: any) {
+        const hours = Math.floor(Math.abs(dateTime - new Date().getTime()) / 36e5);
+        if (hours >= 1) {
+            return hours;
+        } else {
+            return Math.floor((Math.abs(dateTime - new Date().getTime()) / 36e5) * 60);
+        }
+    }
+
+    getContactList(company) {
+        if ((company.companyId || company.potentialCompanyId) && !company.authorizedSignerName && (!company['contactList'] || (company['contactList'] && !company['contactList'].length))) {
+            this.loaderGetContactList = true;
+            this.sharedService
+                .contacts({
+                    uuid: company.companyId ? company.companyId : company.potentialCompanyId
+                })
+                .subscribe((response: any) => {
+                    company['contactList'] = response ? response['body'] : response;
+                    company['contactList'].forEach((v) => {
+                        v.label = v.firstName + ' ' + v.lastName;
+                        v.value = v.companyContactId;
+                    });
+                    this.loaderGetContactList = false;
+                });
+        }
+    }
+
+    authorizedSignerContactModalClose() {
+        // contact.patchValue({
+        //     authorizedSigner: !contact.get('authorizedSigner').value
+        // });
+        this.authorizedSignerContactModal.contact.contactSelected = null;
+        this.authorizedSignerContactModal = false;
+        // this.reload();
+    }
+
+    authorizedSignerContactFromModal() {
+        // this.authorizedSignerContactModal.contact.contactList.unshift({
+        //     label: 'ביטול בחירה',
+        //     value: 'null'
+        // });
+        const id = this.authorizedSignerContactModal.contact.contactSelected.value;
+        this.authorizedSignerContactModal = false;
+        this.sharedService
+            .sendLandingPageMessages([id])
+            .subscribe(() => {
+                this.reload();
+            });
+    }
+
+    journalTrans(): void {
+        this.loader = true;
+        if (this.showNewCompaniesPage) {
+            this.sharedService.companiesPage().subscribe((response: any) => {
+                const journalTrans = response ? response['body'] : response;
+                // companyPageDtos
+                // notSigned
+                // totalCompanies
+                try {
+                    if (journalTrans && journalTrans.showAgreementToast) {
+                        this.userService.appData.companiesWithoutAgreement = {
+                            notSigned: journalTrans.notSigned,
+                            showAgreementToast: journalTrans.showAgreementToast,
+                            totalCompanies: journalTrans.totalCompanies
+                        };
+                    }
+                    if (journalTrans && journalTrans.companyPageDtos) {
+                        this.companiesSrc = journalTrans.companyPageDtos ? JSON.parse(JSON.stringify(journalTrans.companyPageDtos)) : [];
+                        if (!this.userService.appData.userData.companies) {
+                            this.sharedService.getCompanies()
+                                .subscribe(companies => this.userService.appData.userData.companies = companies.body)
+                        }
+                        this.companiesSrc.forEach((company, idx) => {
+                            // const additional = this.userService.appData.userData.companies.find(
+                            //     (item) => item.companyId === company.companyId
+                            // );
+                            // additional.yearlyProgram = !!additional.yearlyProgram;
+                            // this.companiesSrc[idx] = Object.assign(
+                            //     additional ? additional : {},
+                            //     company
+                            // );
+                            this.companiesSrc[idx]['automaticIntakeText'] = company.intakeText ? company.intakeText : company.automaticIntake ? 'אוטומטי' : 'ידני';
+                            this.companiesSrc[idx]['automaticIntakeDisabled'] = company.automaticIntake === null;
+                            this.companiesSrc[idx]['automaticIntake'] = !!company.automaticIntake;
+                            this.companiesSrc[idx]['authorized'] = this.companiesSrc[idx].companyId ?
+                                this.userService.appData.userData.companies.find(
+                                companyFromUserData =>
+                                    companyFromUserData.companyId === company.companyId)['authorized']
+                                : true;
+                            switch (company.contactAgreementStatus) {
+                                case 'SENT': {
+                                    this.companiesSrc[idx]['contactAgreementStatusText'] = 'נשלח';
+                                    break;
+                                }
+                                case 'SIGNED': {
+                                    this.companiesSrc[idx]['contactAgreementStatusText'] = 'נחתם';
+                                    break;
+                                }
+                                default: {
+                                    this.companiesSrc[idx]['contactAgreementStatusText'] = '-'
+                                }
+                            }
+                            if (company.companyId && !company.authorizedSignerName) {
+                                this.companiesSrc[idx]['contactList'] = [];
+                            }
+                        });
+
+                        const billingItemExists = this.companiesSrc.filter(
+                            (fd) => !fd['billingItemExists'] && fd['companyId'] !== null
+                        );
+                        const companyIdNull = this.companiesSrc.filter(
+                            (fd) => fd['companyId'] === null
+                        );
+                        this.companiesSrc = this.companiesSrc
+                            .filter(
+                                (fd) =>
+                                    fd['billingItemExists']
+                                    &&
+                                    fd['companyId'] !== null
+                            )
+                            .sort((a, b) => {
+                                const lblA = a['companyName'],
+                                    lblB = b['companyName'];
+                                return (
+                                    (lblA || lblB
+                                        ? !lblA
+                                            ? 1
+                                            : !lblB
+                                                ? -1
+                                                : lblA.localeCompare(lblB)
+                                        : 0) *
+                                    (1)
+                                );
+                            })
+                            .concat(billingItemExists, companyIdNull);
+                        console.log('companies: ', this.companiesSrc);
+                    }
+
+                    if (!Array.isArray(this.companiesSrc)) {
+                        this.companiesSrc = [];
+                    }
+
+
+                    // for (const fd of this.companiesSrc) {
+                    //     fd.uploadSource = fd.uploadSource ? fd.uploadSource.toLowerCase() : fd.uploadSource;
+                    //     fd.noDataAvailable = typeof fd.invoiceDate !== 'number'
+                    //         && typeof fd.totalIncludeMaam !== 'number'
+                    //         && !fd.documentNum && !fd.documentType && !fd.name;
+                    //     fd.documentNum = fd.documentNum ? Number(fd.documentNum) : fd.documentNum;
+                    //     fd.asmachta = fd.asmachta !== null ? String(fd.asmachta) : fd.asmachta;
+                    // }
+                    if (this.companiesSrc && this.companiesSrc.length) {
+                        this.filterInput.enable();
+                    } else {
+                        this.filterInput.disable();
+                    }
+                    this.companies = JSON.parse(JSON.stringify(this.companiesSrc));
+
+
+                    // agreementDate
+                    //     :
+                    //     1670409993000
+                    // authorizedSignerName
+                    //     :
+                    //     "שני בדיקה "
+                    // automaticIntake
+                    //     :
+                    //     null
+                    // billingItemExists
+                    //     :
+                    //     true
+                    // canAddBillingItems
+                    //     :
+                    //     false
+                    // companyHp
+                    //     :
+                    //     209409952
+                    // companyId
+                    //     :
+                    //     "909e0702-483b-1d4b-e053-650019accda1"
+                    // companyName
+                    //     :
+                    //     " פרו1יקט  EXPORTER OCR9  2111"
+                    // contactAgreementStatus
+                    //     :
+                    //     "SENT"
+                    // dbName
+                    //     :
+                    //     "doublefashion"
+                    // intakeErrorMessage
+                    //     :
+                    //     null
+                    // intakeText
+                    //     :
+                    //     null
+                    // potentialCompanyId
+                    //     :
+                    //     null
+                    // sourceProgramName
+                    //     :
+                    //     "חשבשבת"
+                    this.filtersAll();
+                } catch (e) {
+                    console.log('-----err: ', e);
+                }
+            });
+        } else {
+            this.sharedService.journalTrans().subscribe((response: any) => {
+                const journalTrans = response ? response['body'] : response;
+                try {
+                    if (journalTrans && journalTrans.showAgreementToast) {
+                        this.userService.appData.companiesWithoutAgreement = {
+                            notSigned: journalTrans.notSigned,
+                            showAgreementToast: journalTrans.showAgreementToast,
+                            totalCompanies: journalTrans.totalCompanies
+                        };
+                    }
+                    if (journalTrans && journalTrans.companyJournalTrans) {
+                        this.companiesSrc = journalTrans.companyJournalTrans ? JSON.parse(JSON.stringify(journalTrans.companyJournalTrans)) : [];
+                        this.companiesSrc.forEach((company, idx) => {
+                            const additional = this.userService.appData.userData.companies.find(
+                                (item) => item.companyId === company.companyId
+                            );
+                            additional.yearlyProgram = !!additional.yearlyProgram;
+                            this.companiesSrc[idx] = Object.assign(
+                                additional ? additional : {},
+                                company
+                            );
+                        });
+                        console.log('companies: ', this.companiesSrc);
+                    }
+
+                    if (!Array.isArray(this.companiesSrc)) {
+                        this.companiesSrc = [];
+                    }
+
+
+                    // for (const fd of this.companiesSrc) {
+                    //     fd.uploadSource = fd.uploadSource ? fd.uploadSource.toLowerCase() : fd.uploadSource;
+                    //     fd.noDataAvailable = typeof fd.invoiceDate !== 'number'
+                    //         && typeof fd.totalIncludeMaam !== 'number'
+                    //         && !fd.documentNum && !fd.documentType && !fd.name;
+                    //     fd.documentNum = fd.documentNum ? Number(fd.documentNum) : fd.documentNum;
+                    //     fd.asmachta = fd.asmachta !== null ? String(fd.asmachta) : fd.asmachta;
+                    // }
+                    if (this.companiesSrc && this.companiesSrc.length) {
+                        this.filterInput.enable();
+                    } else {
+                        this.filterInput.disable();
+                    }
+                    this.companies = JSON.parse(JSON.stringify(this.companiesSrc));
+                    this.esderMaamArr = [
+                        {
+                            checked: true,
+                            id: 'all',
+                            val: 'הכל'
+                        },
+                        {
+                            checked: true,
+                            id: 'MONTH',
+                            val: 'חודשי'
+                        },
+                        {
+                            checked: true,
+                            id: 'TWO_MONTH',
+                            val: 'דו חודשי'
+                        },
+                        {
+                            checked: true,
+                            id: 'NONE',
+                            val: 'ללא מע״מ'
+                        }
+                    ];
+                    this.filtersAll();
+                } catch (e) {
+                    console.log('-----err: ', e);
+                }
+            });
+        }
+    }
+
+    automaticIntakeChanged(event: any, company: any) {
+        company.automaticIntake = event.checked;
+        if (company.automaticIntake) {//automatic
+            this.showReceivingFilesModal = company;
+        } else {//manual
+            this.showUpdateFolderPlusModal = company;
+        }
+    }
+
+
+    hideReceivingFilesModal($event) {
+        if (!$event) {
+            const getCompany = this.companies.find(it => it.companyId === this.showReceivingFilesModal.companyId);
+            if (getCompany) {
+                getCompany.automaticIntake = false;
+            }
+            this.showReceivingFilesModal = false;
+        }
+    }
+
+    hideUpdateFolderPlusModal($event) {
+        if (!$event) {
+            const getCompany = this.companies.find(it => it.companyId === this.showUpdateFolderPlusModal.companyId);
+            if (getCompany) {
+                getCompany.automaticIntake = true;
+            }
+            this.showUpdateFolderPlusModal = false;
+        }
+    }
+
+    updateFolderPlusStatus() {
+        this.sharedService
+            .updateFolderPlusStatus({
+                companyId: this.showReceivingFilesModal.companyId,
+                folderPlus: this.showReceivingFilesModal.automaticIntake
+            })
+            .subscribe(() => {
+                this.showReceivingFilesModal = false;
+                this.reload();
+            });
+    }
+
+    updateFolderPlusStatusManual() {
+        this.sharedService
+            .updateFolderPlusStatus({
+                companyId: this.showUpdateFolderPlusModal.companyId,
+                folderPlus: this.showUpdateFolderPlusModal.automaticIntake
+            })
+            .subscribe(() => {
+                this.showUpdateFolderPlusModal = false;
+                this.reload();
+            });
+    }
 
     eventRightPos(event: any) {
         this.rightSideTooltip =
@@ -1176,274 +1613,598 @@ export class CompaniesListComponent
 
     }
 
-    filtersAll(priority?: string): void {
+    private rebuildBillingItemExistsMap(withOtherFiltersApplied: any[]): void {
+        const base = [
+            {
+                checked: true,
+                id: 'all',
+                val: 'הכל'
+            }
+        ];
+        if (withOtherFiltersApplied.filter((it) => it.billingItemExists).length) {
+            base.push({
+                checked: true,
+                id: 'true',
+                val: 'קיים'
+            });
+        }
+        if (withOtherFiltersApplied.filter((it) => !it.billingItemExists).length) {
+            base.push({
+                checked: true,
+                id: 'false',
+                val: 'לא קיים'
+            });
+        }
+        this.billingItemExistsArr = base;
+        console.log('this.billingItemExistsArr => %o', this.billingItemExistsArr);
+    }
+
+    private rebuildSourceProgramNameMap(withOtherFiltersApplied: any[]): void {
+        const sourceProgramNameMap: { [key: string]: any } = withOtherFiltersApplied.reduce(
+            (acmltr, dtRow) => {
+                if (
+                    dtRow.sourceProgramName &&
+                    dtRow.sourceProgramName.toString() &&
+                    !acmltr[dtRow.sourceProgramName.toString()]
+                ) {
+                    acmltr[dtRow.sourceProgramName.toString()] = {
+                        val: dtRow.sourceProgramName.toString(),
+                        id: dtRow.sourceProgramName.toString(),
+                        checked: true
+                    };
+
+                    if (
+                        acmltr['all'].checked &&
+                        !acmltr[dtRow.sourceProgramName.toString()].checked
+                    ) {
+                        acmltr['all'].checked = false;
+                    }
+                }
+                return acmltr;
+            },
+            {
+                all: {
+                    val: this.translate.translations[this.translate.currentLang].filters
+                        .all,
+                    id: 'all',
+                    checked: true
+                }
+            }
+        );
+        this.sourceProgramNameArr = Object.values(sourceProgramNameMap);
+        console.log('this.sourceProgramNameMap => %o', this.sourceProgramNameArr);
+    }
+
+    private rebuildAutomaticIntakeMap(withOtherFiltersApplied: any[]): void {
+        const automaticIntakeMap: { [key: string]: any } = withOtherFiltersApplied.reduce((acmltr, dtRow) => {
+                if (
+                    dtRow.automaticIntakeText &&
+                    dtRow.automaticIntakeText.toString() &&
+                    !acmltr[dtRow.automaticIntakeText.toString()]
+                ) {
+                    acmltr[dtRow.automaticIntakeText.toString()] = {
+                        val: dtRow.automaticIntakeText.toString(),
+                        id: dtRow.automaticIntakeText.toString(),
+                        checked: true
+                    };
+
+                    if (
+                        acmltr['all'].checked &&
+                        !acmltr[dtRow.automaticIntakeText.toString()].checked
+                    ) {
+                        acmltr['all'].checked = false;
+                    }
+                }
+                return acmltr;
+            },
+            {
+                all: {
+                    val: this.translate.translations[this.translate.currentLang].filters.all,
+                    id: 'all',
+                    checked: true
+                }
+            }
+        );
+        this.automaticIntakeArr = Object.values(automaticIntakeMap);
+        console.log('this.automaticIntakeArr => %o', this.automaticIntakeArr);
+    }
+
+    private rebuildContactAgreementStatusMap(withOtherFiltersApplied: any[]): void {
+        const base = [
+            {
+                checked: true,
+                id: 'all',
+                val: 'הכל'
+            }
+        ];
+        if (withOtherFiltersApplied.filter((it) => it.contactAgreementStatus === 'SIGNED').length) {
+            base.push({
+                checked: true,
+                id: 'SIGNED',
+                val: 'נחתם'
+            });
+        }
+        if (withOtherFiltersApplied.filter((it) => it.contactAgreementStatus === 'SENT').length) {
+            base.push({
+                checked: true,
+                id: 'SENT',
+                val: 'נשלח'
+            });
+        }
         if (
-            this.companiesSrc &&
-            Array.isArray(this.companiesSrc) &&
-            this.companiesSrc.length
+            withOtherFiltersApplied.filter(
+                (it) => !it.contactAgreementStatus
+            ).length
         ) {
-            this.companies = !this.queryString
-                ? this.companiesSrc
-                : this.companiesSrc.filter((fd) => {
-                    return [
-                        fd.companyName,
-                        fd.companyHp,
-                        this.dtPipe.transform(fd.lastUploadDate, 'dd/MM/yy'),
-                        fd.journalBank,
-                        fd.forConfirm,
-                        fd.forCare,
-                        fd.journalCredit,
-                        fd.journalBankCredit,
-                        fd.journalTrans
-                    ]
-                        .filter(
-                            (v) => (typeof v === 'string' || typeof v === 'number') && !!v
-                        )
-                        .some((vstr) =>
-                            vstr
-                                .toString()
-                                .toUpperCase()
-                                .includes(this.queryString.toUpperCase())
-                        );
-                });
+            base.push({
+                checked: true,
+                id: 'null',
+                val: 'ללא'
+            });
+        }
 
-            if (priority === 'tokenValidStatus') {
-                if (
-                    this.filterTypesTokenValidStatus &&
-                    this.filterTypesTokenValidStatus.length
-                ) {
-                    this.companies = this.companies.filter((item) => {
-                        if (
-                            item.tokenValidStatus !== undefined &&
-                            item.tokenValidStatus !== null
-                        ) {
-                            return this.filterTypesTokenValidStatus.some(
-                                (it) => it === item.tokenValidStatus.toString()
-                            );
-                        }
-                    });
-                } else if (
-                    this.filterTypesTokenValidStatus &&
-                    !this.filterTypesTokenValidStatus.length
-                ) {
-                    this.companies = [];
-                }
-            }
-            if (priority === 'agreementConfirmedStatus') {
-                if (
-                    this.filterTypesAgreementConfirmedStatus &&
-                    this.filterTypesAgreementConfirmedStatus.length
-                ) {
-                    this.companies = this.companies.filter((item) => {
-                        if (
-                            item.agreementConfirmed !== undefined &&
-                            item.agreementConfirmed !== null
-                        ) {
-                            return this.filterTypesAgreementConfirmedStatus.some(
-                                (it) => it === item.agreementConfirmed.toString()
-                            );
-                        }
-                    });
-                } else if (
-                    this.filterTypesAgreementConfirmedStatus &&
-                    !this.filterTypesAgreementConfirmedStatus.length
-                ) {
-                    this.companies = [];
-                }
-            }
+        this.contactAgreementStatusArr = base;
+        console.log('this.contactAgreementStatusArr => %o', this.contactAgreementStatusArr);
+    }
 
-            if (priority === 'sourceProgramId') {
-                if (
-                    this.filterTypesSourceProgramId &&
-                    this.filterTypesSourceProgramId.length
-                ) {
-                    this.companies = this.companies.filter((item) => {
-                        if (
-                            item.sourceProgramId !== undefined &&
-                            item.sourceProgramId !== null
-                        ) {
-                            return this.filterTypesSourceProgramId.some(
-                                (it) => it === item.sourceProgramId.toString()
-                            );
-                        }
-                    });
-                } else if (
-                    this.filterTypesSourceProgramId &&
-                    !this.filterTypesSourceProgramId.length
-                ) {
-                    this.companies = [];
-                }
-            }
-            if (priority === 'yearlyProgram') {
-                if (
-                    this.filterTypesYearlyProgram &&
-                    this.filterTypesYearlyProgram.length
-                ) {
-                    this.companies = this.companies.filter((item) => {
-                        if (
-                            item.yearlyProgram !== undefined &&
-                            item.yearlyProgram !== null
-                        ) {
-                            return this.filterTypesYearlyProgram.some(
-                                (it) => it === item.yearlyProgram.toString()
-                            );
-                        }
-                    });
-                } else if (
-                    this.filterTypesYearlyProgram &&
-                    !this.filterTypesYearlyProgram.length
-                ) {
-                    this.companies = [];
-                }
-            }
-            if (priority === 'esderMaam') {
-                if (this.filterTypesEsderMaam && this.filterTypesEsderMaam.length) {
-                    this.companies = this.companies.filter((item) => {
-                        if (item.esderMaam !== undefined && item.esderMaam !== null) {
-                            return this.filterTypesEsderMaam.some(
-                                (it) => it === item.esderMaam.toString()
-                            );
-                        }
-                    });
-                } else if (
-                    this.filterTypesEsderMaam &&
-                    !this.filterTypesEsderMaam.length
-                ) {
-                    this.companies = [];
-                }
-            }
-
-            if (priority !== 'tokenValidStatus') {
-                this.tokenValidStatusArr = [
-                    {
-                        checked: true,
-                        id: 'all',
-                        val: 'הכל'
-                    },
-                    {
-                        checked: true,
-                        id: 'true',
-                        val: 'תקין'
-                    },
-                    {
-                        checked: true,
-                        id: 'false',
-                        val: 'לא תקין'
-                    }
-                ];
-            }
-
-            if (priority !== 'agreementConfirmedStatus') {
-                this.agreementConfirmedArr = [
-                    {
-                        checked: true,
-                        id: 'all',
-                        val: 'הכל'
-                    },
-                    {
-                        checked: true,
-                        id: 'true',
-                        val: 'תקין'
-                    },
-                    {
-                        checked: true,
-                        id: 'false',
-                        val: 'לא תקין'
-                    }
-                ];
-            }
-
-            if (priority !== 'sourceProgramId') {
-                this.rebuildSourceProgramIdMap(this.companies);
-                this.sourceProgramIdShow = !this.companies.every(
-                    (e) => this.companies[0].sourceProgramId === e.sourceProgramId
-                );
-            }
-            if (priority !== 'yearlyProgram') {
-                this.yearlyProgramArr = [
-                    {
-                        checked: true,
-                        id: 'all',
-                        val: 'הכל'
-                    },
-                    {
-                        checked: true,
-                        id: 'false',
-                        val: 'רב שנתי'
-                    },
-                    {
-                        checked: true,
-                        id: 'true',
-                        val: 'חד שנתי'
-                    }
-                ];
-                this.yearlyProgramShow = !this.companies.every((e) => e.yearlyProgram);
-            }
-
-            if (this.companies.length > 1) {
-                switch (this.companyFilesSortControl.value.orderBy) {
-                    case 'lastUploadDate':
-                    case 'forConfirm':
-                    case 'journalTrans':
-                    case 'forCare':
-                    case 'journalBank':
-                    case 'journalCredit':
-                    case 'journalBankCredit':
-                        // noinspection DuplicatedCode
-                        const notNumber = this.companies.filter(
-                            (fd) =>
-                                typeof fd[this.companyFilesSortControl.value.orderBy] !==
-                                'number'
-                        );
-                        this.companies = this.companies
+    filtersAll(priority?: string): void {
+        if (this.showNewCompaniesPage) {
+            if (
+                this.companiesSrc &&
+                Array.isArray(this.companiesSrc) &&
+                this.companiesSrc.length
+            ) {
+                this.companies = !this.queryString
+                    ? this.companiesSrc
+                    : this.companiesSrc.filter((fd) => {
+                        return [
+                            fd.companyName,
+                            fd.companyHp,
+                            this.dtPipe.transform(fd.agreementDate, 'dd/MM/yy'),
+                            fd.automaticIntakeText,
+                            fd.contactAgreementStatusText,
+                            fd.dbName,
+                            fd.sourceProgramName,
+                            fd.authorizedSignerName
+                        ]
                             .filter(
-                                (fd) =>
-                                    typeof fd[this.companyFilesSortControl.value.orderBy] ===
-                                    'number'
+                                (v) => (typeof v === 'string' || typeof v === 'number') && !!v
                             )
-                            .sort((a, b) => {
-                                const lblA = a[this.companyFilesSortControl.value.orderBy],
-                                    lblB = b[this.companyFilesSortControl.value.orderBy];
-                                return this.companyFilesSortControl.value.order === 'ASC'
-                                    ? lblA - lblB
-                                    : lblB - lblA;
-                            })
-                            .concat(notNumber);
-                        break;
-                    case 'companyName':
-                        // noinspection DuplicatedCode
-                        const notString = this.companies.filter(
-                            (fd) =>
-                                typeof fd[this.companyFilesSortControl.value.orderBy] !==
-                                'string'
-                        );
-                        this.companies = this.companies
-                            .filter(
-                                (fd) =>
-                                    typeof fd[this.companyFilesSortControl.value.orderBy] ===
-                                    'string'
-                            )
-                            .sort((a, b) => {
-                                const lblA = a[this.companyFilesSortControl.value.orderBy],
-                                    lblB = b[this.companyFilesSortControl.value.orderBy];
-                                return (
-                                    (lblA || lblB
-                                        ? !lblA
-                                            ? 1
-                                            : !lblB
-                                                ? -1
-                                                : lblA.localeCompare(lblB)
-                                        : 0) *
-                                    (this.companyFilesSortControl.value.order === 'DESC' ? -1 : 1)
+                            .some((vstr) =>
+                                vstr
+                                    .toString()
+                                    .toUpperCase()
+                                    .includes(this.queryString.trim().toUpperCase())
+                            );
+                    });
+
+
+                if (priority === 'billingItemExists' || this.filterTypesBillingItemExists !== null) {
+                    if (
+                        this.filterTypesBillingItemExists &&
+                        this.filterTypesBillingItemExists.length
+                    ) {
+                        this.companies = this.companies.filter((item) => {
+                            if (
+                                item.billingItemExists !== undefined &&
+                                item.billingItemExists !== null
+                            ) {
+                                return this.filterTypesBillingItemExists.some(
+                                    (it) => it === item.billingItemExists.toString()
                                 );
-                            })
-                            .concat(notString);
-                        break;
+                            }
+                        });
+                    } else if (
+                        this.filterTypesBillingItemExists &&
+                        !this.filterTypesBillingItemExists.length
+                    ) {
+                        this.companies = [];
+                    }
                 }
+                if (priority === 'sourceProgramName' || this.filterTypesSourceProgramName !== null) {
+                    if (
+                        this.filterTypesSourceProgramName &&
+                        this.filterTypesSourceProgramName.length
+                    ) {
+                        this.companies = this.companies.filter((item) => {
+                            if (
+                                item.sourceProgramName !== undefined &&
+                                item.sourceProgramName !== null
+                            ) {
+                                return this.filterTypesSourceProgramName.some(
+                                    (it) => it === item.sourceProgramName.toString()
+                                );
+                            }
+                        });
+                    } else if (
+                        this.filterTypesSourceProgramName &&
+                        !this.filterTypesSourceProgramName.length
+                    ) {
+                        this.companies = [];
+                    }
+                }
+                if (priority === 'automaticIntake' || this.filterTypesAutomaticIntakeArr !== null) {
+                    if (
+                        this.filterTypesAutomaticIntakeArr &&
+                        this.filterTypesAutomaticIntakeArr.length
+                    ) {
+                        this.companies = this.companies.filter((item) => {
+                            if (
+                                item.automaticIntakeText !== undefined &&
+                                item.automaticIntakeText !== null
+                            ) {
+                                return this.filterTypesAutomaticIntakeArr.some(
+                                    (it) => it === item.automaticIntakeText.toString()
+                                );
+                            }
+                        });
+                    } else if (
+                        this.filterTypesAutomaticIntakeArr &&
+                        !this.filterTypesAutomaticIntakeArr.length
+                    ) {
+                        this.companies = [];
+                    }
+                }
+                if (priority === 'contactAgreementStatus' || this.filterTypesContactAgreementStatus !== null) {
+                    if (
+                        this.filterTypesContactAgreementStatus &&
+                        this.filterTypesContactAgreementStatus.length
+                    ) {
+                        this.companies = this.companies.filter((item) => {
+                            return this.filterTypesContactAgreementStatus.some(
+                                (it) => it === String(item.contactAgreementStatus)
+                            );
+                        });
+                    } else if (
+                        this.filterTypesContactAgreementStatus &&
+                        !this.filterTypesContactAgreementStatus.length
+                    ) {
+                        this.companies = [];
+                    }
+                }
+
+                if (priority !== 'billingItemExists' && this.filterTypesBillingItemExists === null) {
+                    this.rebuildBillingItemExistsMap(this.companies);
+                }
+                if (priority !== 'sourceProgramName' && this.filterTypesSourceProgramName === null) {
+                    this.rebuildSourceProgramNameMap(this.companies);
+                }
+                if (priority !== 'automaticIntake' && this.filterTypesAutomaticIntakeArr === null) {
+                    this.rebuildAutomaticIntakeMap(this.companies);
+                }
+                if (priority !== 'contactAgreementStatus' && this.filterTypesContactAgreementStatus === null) {
+                    this.rebuildContactAgreementStatusMap(this.companies);
+                }
+
+
+                if (this.companies.length > 1) {
+                    switch (this.companyFilesSortControl.value.orderBy) {
+                        case 'companyHp':
+                            // noinspection DuplicatedCode
+                            const notNumber = this.companies.filter(
+                                (fd) =>
+                                    typeof fd[this.companyFilesSortControl.value.orderBy] !==
+                                    'number'
+                            );
+                            this.companies = this.companies
+                                .filter(
+                                    (fd) =>
+                                        typeof fd[this.companyFilesSortControl.value.orderBy] ===
+                                        'number'
+                                )
+                                .sort((a, b) => {
+                                    const lblA = a[this.companyFilesSortControl.value.orderBy],
+                                        lblB = b[this.companyFilesSortControl.value.orderBy];
+                                    return this.companyFilesSortControl.value.order === 'ASC'
+                                        ? lblA - lblB
+                                        : lblB - lblA;
+                                })
+                                .concat(notNumber);
+                            break;
+                        case 'companyName':
+                            // noinspection DuplicatedCode
+                            const notString = this.companies.filter(
+                                (fd) =>
+                                    typeof fd[this.companyFilesSortControl.value.orderBy] !==
+                                    'string'
+                            );
+                            this.companies = this.companies
+                                .filter(
+                                    (fd) =>
+                                        typeof fd[this.companyFilesSortControl.value.orderBy] ===
+                                        'string'
+                                )
+                                .sort((a, b) => {
+                                    const lblA = a[this.companyFilesSortControl.value.orderBy],
+                                        lblB = b[this.companyFilesSortControl.value.orderBy];
+                                    return (
+                                        (lblA || lblB
+                                            ? !lblA
+                                                ? 1
+                                                : !lblB
+                                                    ? -1
+                                                    : lblA.localeCompare(lblB)
+                                            : 0) *
+                                        (this.companyFilesSortControl.value.order === 'DESC' ? -1 : 1)
+                                    );
+                                })
+                                .concat(notString);
+                            break;
+                    }
+                }
+            } else {
+                this.companies = [];
             }
         } else {
-            this.companies = [];
+            if (
+                this.companiesSrc &&
+                Array.isArray(this.companiesSrc) &&
+                this.companiesSrc.length
+            ) {
+                this.companies = !this.queryString
+                    ? this.companiesSrc
+                    : this.companiesSrc.filter((fd) => {
+                        return [
+                            fd.companyName,
+                            fd.companyHp,
+                            this.dtPipe.transform(fd.lastUploadDate, 'dd/MM/yy'),
+                            fd.journalBank,
+                            fd.forConfirm,
+                            fd.forCare,
+                            fd.journalCredit,
+                            fd.journalBankCredit,
+                            fd.journalTrans
+                        ]
+                            .filter(
+                                (v) => (typeof v === 'string' || typeof v === 'number') && !!v
+                            )
+                            .some((vstr) =>
+                                vstr
+                                    .toString()
+                                    .toUpperCase()
+                                    .includes(this.queryString.trim().toUpperCase())
+                            );
+                    });
+
+                if (priority === 'tokenValidStatus') {
+                    if (
+                        this.filterTypesTokenValidStatus &&
+                        this.filterTypesTokenValidStatus.length
+                    ) {
+                        this.companies = this.companies.filter((item) => {
+                            if (
+                                item.tokenValidStatus !== undefined &&
+                                item.tokenValidStatus !== null
+                            ) {
+                                return this.filterTypesTokenValidStatus.some(
+                                    (it) => it === item.tokenValidStatus.toString()
+                                );
+                            }
+                        });
+                    } else if (
+                        this.filterTypesTokenValidStatus &&
+                        !this.filterTypesTokenValidStatus.length
+                    ) {
+                        this.companies = [];
+                    }
+                }
+                if (priority === 'agreementConfirmedStatus') {
+                    if (
+                        this.filterTypesAgreementConfirmedStatus &&
+                        this.filterTypesAgreementConfirmedStatus.length
+                    ) {
+                        this.companies = this.companies.filter((item) => {
+                            if (
+                                item.agreementConfirmed !== undefined &&
+                                item.agreementConfirmed !== null
+                            ) {
+                                return this.filterTypesAgreementConfirmedStatus.some(
+                                    (it) => it === item.agreementConfirmed.toString()
+                                );
+                            }
+                        });
+                    } else if (
+                        this.filterTypesAgreementConfirmedStatus &&
+                        !this.filterTypesAgreementConfirmedStatus.length
+                    ) {
+                        this.companies = [];
+                    }
+                }
+
+                if (priority === 'sourceProgramId') {
+                    if (
+                        this.filterTypesSourceProgramId &&
+                        this.filterTypesSourceProgramId.length
+                    ) {
+                        this.companies = this.companies.filter((item) => {
+                            if (
+                                item.sourceProgramId !== undefined &&
+                                item.sourceProgramId !== null
+                            ) {
+                                return this.filterTypesSourceProgramId.some(
+                                    (it) => it === item.sourceProgramId.toString()
+                                );
+                            }
+                        });
+                    } else if (
+                        this.filterTypesSourceProgramId &&
+                        !this.filterTypesSourceProgramId.length
+                    ) {
+                        this.companies = [];
+                    }
+                }
+                if (priority === 'yearlyProgram') {
+                    if (
+                        this.filterTypesYearlyProgram &&
+                        this.filterTypesYearlyProgram.length
+                    ) {
+                        this.companies = this.companies.filter((item) => {
+                            if (
+                                item.yearlyProgram !== undefined &&
+                                item.yearlyProgram !== null
+                            ) {
+                                return this.filterTypesYearlyProgram.some(
+                                    (it) => it === item.yearlyProgram.toString()
+                                );
+                            }
+                        });
+                    } else if (
+                        this.filterTypesYearlyProgram &&
+                        !this.filterTypesYearlyProgram.length
+                    ) {
+                        this.companies = [];
+                    }
+                }
+                if (priority === 'esderMaam') {
+                    if (this.filterTypesEsderMaam && this.filterTypesEsderMaam.length) {
+                        this.companies = this.companies.filter((item) => {
+                            if (item.esderMaam !== undefined && item.esderMaam !== null) {
+                                return this.filterTypesEsderMaam.some(
+                                    (it) => it === item.esderMaam.toString()
+                                );
+                            }
+                        });
+                    } else if (
+                        this.filterTypesEsderMaam &&
+                        !this.filterTypesEsderMaam.length
+                    ) {
+                        this.companies = [];
+                    }
+                }
+
+                if (priority !== 'tokenValidStatus') {
+                    this.tokenValidStatusArr = [
+                        {
+                            checked: true,
+                            id: 'all',
+                            val: 'הכל'
+                        },
+                        {
+                            checked: true,
+                            id: 'true',
+                            val: 'תקין'
+                        },
+                        {
+                            checked: true,
+                            id: 'false',
+                            val: 'לא תקין'
+                        }
+                    ];
+                }
+
+                if (priority !== 'agreementConfirmedStatus') {
+                    this.agreementConfirmedArr = [
+                        {
+                            checked: true,
+                            id: 'all',
+                            val: 'הכל'
+                        },
+                        {
+                            checked: true,
+                            id: 'true',
+                            val: 'תקין'
+                        },
+                        {
+                            checked: true,
+                            id: 'false',
+                            val: 'לא תקין'
+                        }
+                    ];
+                }
+
+                if (priority !== 'sourceProgramId') {
+                    this.rebuildSourceProgramIdMap(this.companies);
+                    this.sourceProgramIdShow = !this.companies.every(
+                        (e) => this.companies[0].sourceProgramId === e.sourceProgramId
+                    );
+                }
+                if (priority !== 'yearlyProgram') {
+                    this.yearlyProgramArr = [
+                        {
+                            checked: true,
+                            id: 'all',
+                            val: 'הכל'
+                        },
+                        {
+                            checked: true,
+                            id: 'false',
+                            val: 'רב שנתי'
+                        },
+                        {
+                            checked: true,
+                            id: 'true',
+                            val: 'חד שנתי'
+                        }
+                    ];
+                    this.yearlyProgramShow = !this.companies.every((e) => e.yearlyProgram);
+                }
+
+                if (this.companies.length > 1) {
+                    switch (this.companyFilesSortControl.value.orderBy) {
+                        case 'lastUploadDate':
+                        case 'forConfirm':
+                        case 'journalTrans':
+                        case 'forCare':
+                        case 'journalBank':
+                        case 'journalCredit':
+                        case 'journalBankCredit':
+                            // noinspection DuplicatedCode
+                            const notNumber = this.companies.filter(
+                                (fd) =>
+                                    typeof fd[this.companyFilesSortControl.value.orderBy] !==
+                                    'number'
+                            );
+                            this.companies = this.companies
+                                .filter(
+                                    (fd) =>
+                                        typeof fd[this.companyFilesSortControl.value.orderBy] ===
+                                        'number'
+                                )
+                                .sort((a, b) => {
+                                    const lblA = a[this.companyFilesSortControl.value.orderBy],
+                                        lblB = b[this.companyFilesSortControl.value.orderBy];
+                                    return this.companyFilesSortControl.value.order === 'ASC'
+                                        ? lblA - lblB
+                                        : lblB - lblA;
+                                })
+                                .concat(notNumber);
+                            break;
+                        case 'companyName':
+                            // noinspection DuplicatedCode
+                            const notString = this.companies.filter(
+                                (fd) =>
+                                    typeof fd[this.companyFilesSortControl.value.orderBy] !==
+                                    'string'
+                            );
+                            this.companies = this.companies
+                                .filter(
+                                    (fd) =>
+                                        typeof fd[this.companyFilesSortControl.value.orderBy] ===
+                                        'string'
+                                )
+                                .sort((a, b) => {
+                                    const lblA = a[this.companyFilesSortControl.value.orderBy],
+                                        lblB = b[this.companyFilesSortControl.value.orderBy];
+                                    return (
+                                        (lblA || lblB
+                                            ? !lblA
+                                                ? 1
+                                                : !lblB
+                                                    ? -1
+                                                    : lblA.localeCompare(lblB)
+                                            : 0) *
+                                        (this.companyFilesSortControl.value.order === 'DESC' ? -1 : 1)
+                                    );
+                                })
+                                .concat(notString);
+                            break;
+                    }
+                }
+            } else {
+                this.companies = [];
+            }
         }
+
 
         this.loader = false;
     }
@@ -1706,6 +2467,18 @@ export class CompaniesListComponent
         } else if (type.type === 'esderMaam') {
             this.filterTypesEsderMaam = type.checked;
             this.filtersAll(type.type);
+        } else if (type.type === 'billingItemExists') {
+            this.filterTypesBillingItemExists = type.checked;
+            this.filtersAll(type.type);
+        } else if (type.type === 'sourceProgramName') {
+            this.filterTypesSourceProgramName = type.checked;
+            this.filtersAll(type.type);
+        } else if (type.type === 'contactAgreementStatus') {
+            this.filterTypesContactAgreementStatus = type.checked;
+            this.filtersAll(type.type);
+        } else if (type.type === 'automaticIntake') {
+            this.filterTypesAutomaticIntakeArr = type.checked;
+            this.filtersAll(type.type);
         }
     }
 
@@ -1826,7 +2599,9 @@ export class CompaniesListComponent
             this.filesOriginal = [];
             this.fileDropRef.nativeElement.type = 'text';
             setTimeout(() => {
-                this.fileDropRef.nativeElement.type = 'file';
+                if(this.fileDropRef && this.fileDropRef.nativeElement){
+                    this.fileDropRef.nativeElement.type = 'file';
+                }
             }, 200);
             this.progress = false;
             this.fileViewer = false;
@@ -1887,7 +2662,9 @@ export class CompaniesListComponent
                     this.filesOriginal = [];
                     this.fileDropRef.nativeElement.type = 'text';
                     setTimeout(() => {
-                        this.fileDropRef.nativeElement.type = 'file';
+                        if(this.fileDropRef && this.fileDropRef.nativeElement){
+                            this.fileDropRef.nativeElement.type = 'file';
+                        }
                     }, 200);
                     this.progress = false;
                     this.fileViewer = false;
@@ -1922,7 +2699,9 @@ export class CompaniesListComponent
         this.filesOriginal = [];
         this.fileDropRef.nativeElement.type = 'text';
         setTimeout(() => {
-            this.fileDropRef.nativeElement.type = 'file';
+            if(this.fileDropRef && this.fileDropRef.nativeElement){
+                this.fileDropRef.nativeElement.type = 'file';
+            }
         }, 200);
         this.progress = false;
         this.fileViewer = false;
@@ -1944,7 +2723,9 @@ export class CompaniesListComponent
         if (this.fileDropRef && this.fileDropRef.nativeElement) {
             this.fileDropRef.nativeElement.type = 'text';
             setTimeout(() => {
-                this.fileDropRef.nativeElement.type = 'file';
+                if(this.fileDropRef && this.fileDropRef.nativeElement){
+                    this.fileDropRef.nativeElement.type = 'file';
+                }
             }, 200);
         }
         this.progress = false;
@@ -2000,18 +2781,18 @@ export class CompaniesListComponent
             ObjString = [
                 '<div class="header-scanPopUpInstall">' +
                 '<h1> זיהוי סורקים </h1>' +
-                '<span class="fa fa-fw fa-times" onclick="Dynamsoft.DWT.CloseDialog()">&nbsp;</span>' +
+                '<span class="fa fa-fw fa-times" onclick="Dynamsoft.WebTwainEnv.CloseDialog()">&nbsp;</span>' +
                 '</div>'
             ];
             ObjString.push(
                 '<div style="display: flex;justify-content: center;align-items: center;margin: 15px 20px 0px 20px;"><a id="dwt-btn-install" style="display: inline-block;" target="_blank" href="'
             );
             let url = '';
-            if (iPlatform === Dynamsoft.DWT.EnumDWT_PlatformType.enumWindow) {
+            if (iPlatform === Dynamsoft.EnumDWT_PlatformType.enumWindow) {
                 url = '/assets/files/resources/dist/DynamsoftServiceSetup.msi';
-            } else if (iPlatform === Dynamsoft.DWT.EnumDWT_PlatformType.enumMac) {
+            } else if (iPlatform === Dynamsoft.EnumDWT_PlatformType.enumMac) {
                 url = '/assets/files/resources/dist/DynamsoftServiceSetup.pkg';
-            } else if (iPlatform === Dynamsoft.DWT.EnumDWT_PlatformType.enumLinux) {
+            } else if (iPlatform === Dynamsoft.EnumDWT_PlatformType.enumLinux) {
                 url = '/assets/files/resources/dist/DynamsoftServiceSetup.deb';
             }
             ObjString.push(url);
@@ -2040,7 +2821,7 @@ export class CompaniesListComponent
 
             ObjString.push(
                 '<div class="scanPopUpInstall-text">' +
-                'כדי להתחיל לסרוק ישירות מהסורק שבמשרדך ל- bizobox' +
+                'כדי להתחיל לסרוק ישירות מהסורק שבמשרדך ל- bizibox' +
                 '<br>' +
                 'נבצע תהליך התקנה חד פעמי של תוכנה לזיהוי סורקים.' +
                 '<strong>' +
@@ -2083,7 +2864,7 @@ export class CompaniesListComponent
             }
 
             // @ts-ignore
-            Dynamsoft.DWT.ShowDialog(
+            Dynamsoft.WebTwainEnv.ShowDialog(
                 window['promptDlgWidth'],
                 0,
                 ObjString.join('')
@@ -2127,16 +2908,16 @@ export class CompaniesListComponent
             if ((new Date() - window['reconnectTime']) / 1000 > 30) {
                 return;
             }
-            Dynamsoft.DWT['CheckConnectToTheService'](
+            Dynamsoft.WebTwainEnv['CheckConnectToTheService'](
                 function () {
-                    Dynamsoft.DWT['ConnectToTheService']();
+                    Dynamsoft.WebTwainEnv['ConnectToTheService']();
                 },
                 function () {
                     setTimeout(window['DWT_Reconnect'], 1000);
                 }
             );
         };
-        Dynamsoft.DWT.Load();
+        Dynamsoft.WebTwainEnv.Load();
     }
 
     unload() {
@@ -2147,7 +2928,7 @@ export class CompaniesListComponent
                     elem.DWObject &&
                     elem.DWObject.config.containerID !== 'dwtcontrolContainer'
                 ) {
-                    Dynamsoft.DWT.DeleteDWTObject(
+                    Dynamsoft.WebTwainEnv.DeleteDWTObject(
                         elem.DWObject.config.containerID
                     );
                 }
@@ -2171,7 +2952,7 @@ export class CompaniesListComponent
         this.showProgressScan = false;
         this.showScanLoader = false;
         this.fileViewer = false;
-        Dynamsoft.DWT.Unload();
+        Dynamsoft.WebTwainEnv.Unload();
         location.reload();
     }
 
@@ -2212,7 +2993,7 @@ export class CompaniesListComponent
         this.dynamsoftReady = true;
         this.scanerList = [];
 
-        Dynamsoft.DWT.CreateDWTObjectEx(
+        Dynamsoft.WebTwainEnv.CreateDWTObjectEx(
             {
                 WebTwainId: 'dwtcontrolContainer'
             },
@@ -2337,7 +3118,7 @@ export class CompaniesListComponent
                 this.arr[this.index].DWObject.config.containerID !==
                 'dwtcontrolContainer'
             ) {
-                Dynamsoft.DWT.DeleteDWTObject(
+                Dynamsoft.WebTwainEnv.DeleteDWTObject(
                     this.arr[this.index].DWObject.config.containerID
                 );
                 this.arr.splice(this.index, 1);
@@ -2361,7 +3142,7 @@ export class CompaniesListComponent
             //base64String, if not empty, it overrides settings and more settings.
             settings: {
                 exception: 'fail', // "ignore" (default) or "fail",
-                pixelType: Dynamsoft.DWT.EnumDWT_PixelType.TWPT_RGB, //rgb, bw, gray, etc
+                pixelType: Dynamsoft.EnumDWT_PixelType.TWPT_RGB, //rgb, bw, gray, etc
                 resolution: 200, // 300
                 bFeeder: true,
                 bDuplex: false //whether to enable duplex
@@ -2369,8 +3150,8 @@ export class CompaniesListComponent
             moreSettings: {
                 exception: 'fail', // "ignore" or “fail”
                 // bitDepth: 24, //1,8,24,etc
-                pageSize: Dynamsoft.DWT.EnumDWT_CapSupportedSizes.TWSS_A4, //A4, etc.
-                unit: Dynamsoft.DWT.EnumDWT_UnitType.TWUN_INCHES
+                pageSize: Dynamsoft.EnumDWT_CapSupportedSizes.TWSS_A4, //A4, etc.
+                unit: Dynamsoft.EnumDWT_UnitType.TWUN_INCHES
                 // layout: {
                 //     left: float,
                 //     top: float,
@@ -2505,7 +3286,7 @@ export class CompaniesListComponent
                         this.arr[this.index].DWObject.config.containerID !==
                         'dwtcontrolContainer'
                     ) {
-                        Dynamsoft.DWT.DeleteDWTObject(
+                        Dynamsoft.WebTwainEnv.DeleteDWTObject(
                             this.arr[this.index].DWObject.config.containerID
                         );
                         this.arr.splice(this.index, 1);
@@ -2551,7 +3332,7 @@ export class CompaniesListComponent
             this.arr.push({
                 DWObject: null
             });
-            Dynamsoft.DWT.CreateDWTObjectEx(
+            Dynamsoft.WebTwainEnv.CreateDWTObjectEx(
                 {
                     WebTwainId: 'dwtcontrolContainer' + this.index
                 },
@@ -2647,7 +3428,9 @@ export class CompaniesListComponent
         }
         this.fileDropRef.nativeElement.type = 'text';
         setTimeout(() => {
-            this.fileDropRef.nativeElement.type = 'file';
+            if(this.fileDropRef && this.fileDropRef.nativeElement){
+                this.fileDropRef.nativeElement.type = 'file';
+            }
         }, 200);
         if (!this.files.length) {
             this.fileViewer = false;
@@ -2662,6 +3445,7 @@ export class CompaniesListComponent
             this.unload();
         }
     }
+
     addImageProcess(item: any) {
         return new Promise((resolve, reject) => {
             const reader: any = new FileReader();
@@ -3184,55 +3968,62 @@ export class CompaniesListComponent
             const progress = new Subject<number>();
             progress.next(0);
 
-            this.http.request(req).subscribe(
-                (event) => {
-                    if (event.type === HttpEventType.UploadProgress) {
-                        const percentDone = Math.round((100 * event.loaded) / event.total);
-                        progress.next(percentDone);
-                        percentDoneTotal[index] = percentDone / files.length;
-                        const totalAll = percentDoneTotal.reduce((a, b) => a + b, 0);
-                        // console.log('totalAll: ', totalAll);
-                        this.progressAll.next(Math.round(totalAll));
-                    } else if (event instanceof HttpResponse) {
-                        progress.complete();
-                    }
-                },
-                (error) => {
-                    const reqServer = new HttpRequest(
-                        'POST',
-                        this.httpServices.mainUrl +
-                        '/v1/ocr/upload-workaround/' +
-                        this.uploadFilesOcrPopUp.urlsFiles.links[index]
-                            .workaroundUploadUrl,
-                        file,
-                        {
-                            headers: new HttpHeaders({
-                                'Content-Type': 'application/octet-stream',
-                                Authorization: this.userService.appData.token
-                            }),
-                            reportProgress: true
+            this.http.request(req)
+                .pipe(
+                    retry({
+                        count: 3,
+                        delay: 1500
+                    })
+                )
+                .subscribe({
+                    next: (event) => {
+                        if (event.type === HttpEventType.UploadProgress) {
+                            const percentDone = Math.round((100 * event.loaded) / event.total);
+                            progress.next(percentDone);
+                            percentDoneTotal[index] = percentDone / files.length;
+                            const totalAll = percentDoneTotal.reduce((a, b) => a + b, 0);
+                            // console.log('totalAll: ', totalAll);
+                            this.progressAll.next(Math.round(totalAll));
+                        } else if (event instanceof HttpResponse) {
+                            progress.complete();
                         }
-                    );
-                    this.http.request(reqServer).subscribe(
-                        (event) => {
-                            if (event.type === HttpEventType.UploadProgress) {
-                                const percentDone = Math.round(
-                                    (100 * event.loaded) / event.total
-                                );
-                                progress.next(percentDone);
-                                percentDoneTotal[index] = percentDone / files.length;
-                                const totalAll = percentDoneTotal.reduce((a, b) => a + b, 0);
-                                // console.log('totalAll: ', totalAll);
-                                this.progressAll.next(Math.round(totalAll));
-                            } else if (event instanceof HttpResponse) {
-                                progress.complete();
+                    },
+                    error: (error) => {
+                        const reqServer = new HttpRequest(
+                            'POST',
+                            this.httpServices.mainUrl +
+                            '/v1/ocr/upload-workaround/' +
+                            this.uploadFilesOcrPopUp.urlsFiles.links[index]
+                                .workaroundUploadUrl,
+                            file,
+                            {
+                                headers: new HttpHeaders({
+                                    'Content-Type': 'application/octet-stream',
+                                    Authorization: this.userService.appData.token
+                                }),
+                                reportProgress: true
                             }
-                        },
-                        (error) => {
-                        }
-                    );
-                }
-            );
+                        );
+                        this.http.request(reqServer).subscribe(
+                            (event) => {
+                                if (event.type === HttpEventType.UploadProgress) {
+                                    const percentDone = Math.round(
+                                        (100 * event.loaded) / event.total
+                                    );
+                                    progress.next(percentDone);
+                                    percentDoneTotal[index] = percentDone / files.length;
+                                    const totalAll = percentDoneTotal.reduce((a, b) => a + b, 0);
+                                    // console.log('totalAll: ', totalAll);
+                                    this.progressAll.next(Math.round(totalAll));
+                                } else if (event instanceof HttpResponse) {
+                                    progress.complete();
+                                }
+                            },
+                            (error) => {
+                            }
+                        );
+                    }
+                });
 
             status[file.name] = {
                 progress: progress.asObservable()
@@ -3277,40 +4068,18 @@ export class CompaniesListComponent
             );
             const progress = new Subject<number>();
             progress.next(0);
-            this.http.request(req).subscribe(
-                (event) => {
-                    if (event.type === HttpEventType.UploadProgress) {
-                        const percentDone = Math.round((100 * event.loaded) / event.total);
-                        progress.next(percentDone);
-                        percentDoneTotal[index] = percentDone / files.length;
-                        const totalAll = percentDoneTotal.reduce((a, b) => a + b, 0);
-                        // console.log('totalAll: ', totalAll);
-                        this.progressAll.next(Math.round(totalAll));
-                    } else if (event instanceof HttpResponse) {
-                        progress.complete();
-                    }
-                },
-                (error) => {
-                    const reqServer = new HttpRequest(
-                        'POST',
-                        this.httpServices.mainUrl +
-                        '/v1/ocr/upload-workaround/' +
-                        this.scanFilesOcrPopUp.urlsFiles.links[index].workaroundUploadUrl,
-                        file,
-                        {
-                            headers: new HttpHeaders({
-                                'Content-Type': 'application/octet-stream',
-                                Authorization: this.userService.appData.token
-                            }),
-                            reportProgress: true
-                        }
-                    );
-                    this.http.request(reqServer).subscribe(
-                        (event) => {
+            this.http.request(req)
+                .pipe(
+                    retry({
+                        count: 3,
+                        delay: 1500
+                    })
+                )
+                .subscribe(
+                    {
+                        next: (event) => {
                             if (event.type === HttpEventType.UploadProgress) {
-                                const percentDone = Math.round(
-                                    (100 * event.loaded) / event.total
-                                );
+                                const percentDone = Math.round((100 * event.loaded) / event.total);
                                 progress.next(percentDone);
                                 percentDoneTotal[index] = percentDone / files.length;
                                 const totalAll = percentDoneTotal.reduce((a, b) => a + b, 0);
@@ -3320,11 +4089,42 @@ export class CompaniesListComponent
                                 progress.complete();
                             }
                         },
-                        (error) => {
+                        error: (error) => {
+                            const reqServer = new HttpRequest(
+                                'POST',
+                                this.httpServices.mainUrl +
+                                '/v1/ocr/upload-workaround/' +
+                                this.scanFilesOcrPopUp.urlsFiles.links[index].workaroundUploadUrl,
+                                file,
+                                {
+                                    headers: new HttpHeaders({
+                                        'Content-Type': 'application/octet-stream',
+                                        Authorization: this.userService.appData.token
+                                    }),
+                                    reportProgress: true
+                                }
+                            );
+                            this.http.request(reqServer).subscribe(
+                                (event) => {
+                                    if (event.type === HttpEventType.UploadProgress) {
+                                        const percentDone = Math.round(
+                                            (100 * event.loaded) / event.total
+                                        );
+                                        progress.next(percentDone);
+                                        percentDoneTotal[index] = percentDone / files.length;
+                                        const totalAll = percentDoneTotal.reduce((a, b) => a + b, 0);
+                                        // console.log('totalAll: ', totalAll);
+                                        this.progressAll.next(Math.round(totalAll));
+                                    } else if (event instanceof HttpResponse) {
+                                        progress.complete();
+                                    }
+                                },
+                                (error) => {
+                                }
+                            );
                         }
-                    );
-                }
-            );
+                    }
+                );
 
             status[file.name] = {
                 progress: progress.asObservable()
@@ -4001,6 +4801,9 @@ export class CompaniesListComponent
         if (this.scrollSubscription) {
             this.scrollSubscription.unsubscribe();
         }
+        if (this.subscriptionReloadContacts) {
+            this.subscriptionReloadContacts.unsubscribe();
+        }
         // if (this.subscription) {
         //     this.subscription.unsubscribe();
         // }
@@ -4358,6 +5161,7 @@ export class CompaniesListComponent
         this.sourceProgramIdArr = Object.values(sourceProgramIdMap);
         console.log('this.sourceProgramIdArr => %o', this.sourceProgramIdArr);
     }
+
 
     private toMonths(mon: number, year: number): number {
         if (mon < 0) {

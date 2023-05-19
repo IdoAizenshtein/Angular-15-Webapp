@@ -1163,7 +1163,7 @@
     }
 
     .bodyPopUp {
-      height: 110px;
+      height: auto;
     }
 
     .step1 {
@@ -5124,7 +5124,7 @@
                 font: inherit;
               }
 
-              p-dropdown {
+              p-dropdown, app-dropdown-wrap {
                 background-color: $white;
               }
 

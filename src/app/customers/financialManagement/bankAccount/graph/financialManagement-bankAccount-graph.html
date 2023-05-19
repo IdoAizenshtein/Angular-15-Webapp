@@ -5,7 +5,7 @@
       (changedTrigger)="changeAcc($event)"
       #accountSelector
     ></app-acc-select>
-    <app-account-dates></app-account-dates>
+    <app-account-dates (sendEvent)="sendEvent($event)"></app-account-dates>
     <!--<app-acc-dates [option]="'monthsWithoutCalendar'" (changedTrigger)="filterDates($event)"></app-acc-dates>-->
 
     <ng-container *ngIf="selectedValueGraph !== 'balance'">
@@ -22,8 +22,8 @@
       <app-tooltip-category
         [title]="'titles.typeOfPayment' | translate"
         [type]="'payment'"
-        [data]="paymentTypesArr"
         [translateEnum]="sharedService.paymentTypesTranslate$"
+        [data]="paymentTypesArr"
         (changed)="filterCategory($event)"
       ></app-tooltip-category>
       <app-tooltip-category
@@ -36,7 +36,8 @@
 
     <ul class="tabs navTabs">
       <li
-        id="navToAggregateView"
+              (click)="sharedComponent.mixPanelEvent('aggregate screen')"
+              id="navToAggregateView"
         routerLink="../aggregate"
         queryParamsHandling="preserve"
 
@@ -51,7 +52,8 @@
         {{ 'filters.consolidated' | translate }}
       </li>
       <li
-        id="navToDetailsView"
+              (click)="sharedComponent.mixPanelEvent('detailed screen')"
+              id="navToDetailsView"
         routerLink="../details"
         queryParamsHandling="preserve"
         routerLinkActive="active"
@@ -65,7 +67,8 @@
         {{ 'filters.detailed' | translate }}
       </li>
       <li
-        id="navToGraphView"
+              (click)="sharedComponent.mixPanelEvent('graph screen')"
+              id="navToGraphView"
         routerLink="../graph"
         queryParamsHandling="preserve"
         routerLinkActive="active"
@@ -327,7 +330,7 @@
         label="הצג ערכים"
         [(ngModel)]="showValues"
         [binary]="true"
-        (onChange)="updateChart()"
+        (onChange)="sharedComponent.mixPanelEvent('show values'); updateChart()"
       ></p-checkbox>
       <p-dropdown
         id="p-chartTypeSelector"

@@ -70,10 +70,7 @@ export class ChecksViewComponent extends AdditionalInfo implements OnDestroy {
             this.additionalDetails$ = null;
             return;
         }
-        const params =
-            this.transaction.source === 'checkpic'
-                ? {}
-                : Object.assign(
+        const params = Object.assign(
                     {
                         pictureLink: this.transaction.pictureLink,
                         companyAccountId: this.transaction.companyAccountId,
@@ -88,7 +85,8 @@ export class ChecksViewComponent extends AdditionalInfo implements OnDestroy {
                                 ? this.transaction.transId
                                 : this.transaction['chequePaymentId']
                                     ? this.transaction['chequePaymentId']
-                                    : null
+                                    : null,
+                        chequePicId: this.transaction.source === 'checkpic' ? this.transaction.bankTransId : null
                     },
                     this.isJournal
                         ? {
@@ -102,22 +100,7 @@ export class ChecksViewComponent extends AdditionalInfo implements OnDestroy {
         }
         console.log('reload --> %o', this.transaction);
         this.additionalDetails$ = (
-            this.transaction.source === 'checkpic'
-                ? of({
-                    body: [
-                        {
-                            depositDate: this.transaction.depositDate,
-                            chequeAccountNumber: this.transaction.chequeAccountNumber,
-                            chequeBankNumber: this.transaction.chequeBankNumber,
-                            chequeBranchNumber: this.transaction.chequeBranchNumber,
-                            chequeNumber: this.transaction.chequeNumber,
-                            chequeTotal: this.transaction.chequeTotal,
-                            imageNameKey: this.transaction.imageNameKey,
-                            image: this.transaction.image
-                        }
-                    ]
-                })
-                : this.restCommonService.getCheckDetail(params)
+            this.restCommonService.getCheckDetail(params)
         ).pipe(
             map((rslt) => rslt['body']),
             tap((adtnlsArr) => {
@@ -161,15 +144,15 @@ export class ChecksViewComponent extends AdditionalInfo implements OnDestroy {
                 //     containerHeight + 'px');
 
                 // if (hasChecksChain) {
-                setTimeout(() => {
-                    if (this.checksChainItemsRef && this.checksChainItemsRef.length > 0) {
-                        this.checksChainItemsRef.first.nativeElement.focus();
-                    } else {
-                        ((this.el.nativeElement as HTMLElement)
-                                .firstElementChild as HTMLElement
-                        ).focus();
-                    }
-                }, 300);
+                // setTimeout(() => {
+                //     if (this.checksChainItemsRef && this.checksChainItemsRef.length > 0) {
+                //         this.checksChainItemsRef.first.nativeElement.focus();
+                //     } else {
+                //         ((this.el.nativeElement as HTMLElement)
+                //                 .firstElementChild as HTMLElement
+                //         ).focus();
+                //     }
+                // }, 300);
                 // }
             }),
             shareReplay(1)
@@ -369,12 +352,13 @@ export class ChecksViewComponent extends AdditionalInfo implements OnDestroy {
                     if (imageBase64.width > width || imageBase64.height > height) {
                         const inputImageAspectRatio =
                             imageBase64.width / imageBase64.height;
-                        if (imageBase64.width > width) {
-                            outputWidth = width;
-                            outputHeight = width / inputImageAspectRatio;
-                        } else if (imageBase64.height > height) {
+
+                        if (imageBase64.height > height) {
                             outputHeight = height;
                             outputWidth = height * inputImageAspectRatio;
+                        } else if (imageBase64.width > width) {
+                            outputWidth = width;
+                            outputHeight = width / inputImageAspectRatio;
                         }
                     }
 
@@ -410,12 +394,13 @@ export class ChecksViewComponent extends AdditionalInfo implements OnDestroy {
                         if (imageBase64.width > width || imageBase64.height > height) {
                             const inputImageAspectRatio =
                                 imageBase64.width / imageBase64.height;
-                            if (imageBase64.width > width) {
-                                outputWidth = width;
-                                outputHeight = width / inputImageAspectRatio;
-                            } else if (imageBase64.height > height) {
+
+                            if (imageBase64.height > height) {
                                 outputHeight = height;
                                 outputWidth = height * inputImageAspectRatio;
+                            } else if (imageBase64.width > width) {
+                                outputWidth = width;
+                                outputHeight = width / inputImageAspectRatio;
                             }
                         }
 

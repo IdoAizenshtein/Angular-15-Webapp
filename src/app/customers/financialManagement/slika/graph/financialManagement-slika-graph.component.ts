@@ -174,7 +174,17 @@ export class FinancialManagementSlikaGraphComponent
     ngOnDestroy() {
         this.destroy();
     }
-
+    sendEvent(isOpened: any) {
+        if (isOpened && this.childDates) {
+            this.childDates.selectedRange
+                .pipe(take(1))
+                .subscribe((paramDate) => {
+                    this.sharedComponent.mixPanelEvent('dates drop', {
+                        value: paramDate.fromDate + '-' + paramDate.toDate
+                    });
+                });
+        }
+    }
     getSlikaDetails(): void {
         // const fieldNames = ['futureCharges', 'futureCredits', 'futureBallance'];
         // const selectedSolkimToSum = this.userService.selectedSolkim().filter(slk => {

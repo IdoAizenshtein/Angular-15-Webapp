@@ -1,582 +1,600 @@
-<div style="display: flex;align-items: flex-start;margin-top: 20px;" *ngIf="!fileScanView">
-	<div>
-		<mat-icon
-				(click)="sharedComponent.forceUnSelectedCompany()"
-				[routerLinkActiveOptions]="{ exact: true }"
-				[routerLink]="[router.url.includes('suppliersAndCustomers') ? '/accountants/companies/supplierCustomersJournal' : '/accountants/companies/bankCreditJournal']"
-				queryParamsHandling="''"
-				routerLinkActive="active"
-				style="margin-right: 0px;margin-left: 19px;cursor: pointer;display: block;align-self: center;width: 18px;height: auto; margin-top: 7px;"
-				svgIcon="arrowBackNew"
-		></mat-icon>
-	</div>
+<div *ngIf="!fileScanView" style="display: flex;align-items: flex-start;margin-top: 20px;">
+    <div>
+        <mat-icon
+                (click)="sharedComponent.forceUnSelectedCompany()"
+                [routerLinkActiveOptions]="{ exact: true }"
+                [routerLink]="[router.url.includes('suppliersAndCustomers') ? '/accountants/companies/supplierCustomersJournal' : '/accountants/companies/bankCreditJournal']"
+                queryParamsHandling="''"
+                routerLinkActive="active"
+                style="margin-right: 0px;margin-left: 19px;cursor: pointer;display: block;align-self: center;width: 18px;height: auto; margin-top: 7px;"
+                svgIcon="arrowBackNew"
+        ></mat-icon>
+    </div>
 
-	<div>
-		<h2
-				(click)="handleClick()"
-				*ngIf="!fileScanView"
-				class="titlePage withLink"
-				style="margin: 0;padding: 0;"
-		>
-			פקודות יומן
+    <div>
+        <h2
+                (click)="handleClick()"
+                *ngIf="!fileScanView"
+                class="titlePage withLink"
+                style="margin: 0;padding: 0;"
+        >
+            פקודות יומן
 
-			{{router.url.includes('suppliersAndCustomers') ? 'ספקים ולקוחות' : 'בנק ואשראי'}}
-			<img
-					*ngIf="
+            {{router.url.includes('suppliersAndCustomers') ? 'ספקים ולקוחות' : 'בנק ואשראי'}}
+            <img
+                    *ngIf="
        userService?.appData?.userData?.companySelect &&
-       !userService?.appData?.userData?.companySelect?.supplierJournalItem
+       ((router.url.includes('suppliersAndCustomers') &&
+       !userService?.appData?.userData?.companySelect?.supplierJournalItem) ||
+       (router.url.includes('bankAndCredit') &&
+       (!userService?.appData?.userData?.companySelect?.bankJournalItem ||
+       !userService?.appData?.userData?.companySelect?.creditJournalItem)))
      "
-					src="/assets/images/diamond.png"
-					style="margin-right: 10px;margin-left: 10px;"
-			/>
-			<ng-container *ngIf="userService.appData?.userData?.companySelect">
-				<i class="splitBig"></i>
-				{{ userService.appData?.userData?.companySelect?.companyName }}
-				<i class="splitBig"></i>
-				<span style="font-size: 16px;font-weight: 400;height: 26px;display: flex;align-items: center;">
-			 ח.פ
-					{{ userService.appData?.userData?.companySelect?.companyHp }}
-					<i class="splitSmaller"></i>
-					{{userService.appData?.userData?.companySelect?.sourceProgramId
-						? ('sourcePrograms.' +
-						userService.appData?.userData?.companySelect?.sourceProgramId
-								| translate)
-						: ''}}
+                    src="/assets/images/diamond.png"
+                    style="margin-right: 10px;margin-left: 10px;"
+            />
+            <ng-container *ngIf="userService.appData?.userData?.companySelect">
+                <i class="splitBig"></i>
+                <ng-container
+                        *ngIf="((userService.appData && userService.appData.isAdmin) && router.url.includes('bankAndCredit')); else companyName">
+					<span (click)="billingExtrapolation()"
+                          style="color: #3A90C2; border-bottom: 2px solid #3A90C2; cursor: pointer">
+						{{ userService.appData?.userData?.companySelect?.viewCompanyName }}
+					</span>
+                </ng-container>
+                <ng-template #companyName>
+                    {{ userService.appData?.userData?.companySelect?.viewCompanyName }}
+                </ng-template>
 
-					{{userService.appData?.userData?.companySelect?.esderMaam
-						? ('esderMaam.' +
-						userService.appData?.userData?.companySelect?.esderMaam
-								| translate)
-						: ''
-					}}
-					<i class="splitSmaller" *ngIf="userService.appData?.userData?.companySelect?.sourceProgramId || userService.appData?.userData?.companySelect?.esderMaam"></i>
-					{{userService.appData?.userData?.companySelect?.vatReportType ?
-						(	 userService.appData?.userData?.companySelect?.vatReportType ===
-						'PCN'
-								? 'PCN'
-								: userService.appData?.userData?.companySelect?.vatReportType ===
-								'DIGITAL'
-										? 'דיגיטלית'
-										: 'שובר')
-						:
-						''
-					}}
-					<i class="splitSmaller" *ngIf="userService.appData?.userData?.companySelect?.vatReportType"></i>
-					{{ userService.appData?.userData?.companySelect?.mainContactName }}
-					{{formatPhone(
-						userService.appData?.userData?.companySelect?.contactPhone
-				)
-					}}
+                <i class="splitBig"></i>
+                <span style="font-size: 16px;font-weight: 400;height: 26px;display: flex;align-items: center;">
+                    <ng-container *ngIf="!userService.appData?.hideCompanyName">
+                        		 ח.פ
+                        {{ userService.appData?.userData?.companySelect?.companyHp }}
+                        <i class="splitSmaller"></i>
+                    </ng-container>
+
+                    {{userService.appData?.userData?.companySelect?.sourceProgramId
+                    ? ('sourcePrograms.' +
+                    userService.appData?.userData?.companySelect?.sourceProgramId
+                        | translate)
+                    : ''}}
+
+                    {{userService.appData?.userData?.companySelect?.esderMaam
+                    ? ('esderMaam.' +
+                    userService.appData?.userData?.companySelect?.esderMaam
+                        | translate)
+                    : ''
+                    }}
+                    <i *ngIf="userService.appData?.userData?.companySelect?.sourceProgramId || userService.appData?.userData?.companySelect?.esderMaam"
+                       class="splitSmaller"></i>
+                    {{userService.appData?.userData?.companySelect?.vatReportType ?
+                    (userService.appData?.userData?.companySelect?.vatReportType ===
+                    'PCN'
+                        ? 'PCN'
+                        : userService.appData?.userData?.companySelect?.vatReportType ===
+                        'DIGITAL'
+                            ? 'דיגיטלית'
+                            : 'שובר')
+                    :
+                    ''
+                    }}
+                    <i *ngIf="userService.appData?.userData?.companySelect?.vatReportType" class="splitSmaller"></i>
+                    {{ userService.appData?.userData?.companySelect?.authorizedSignerName }}
+                    {{formatPhone(
+                    userService.appData?.userData?.companySelect?.authorizedSignerPhone
+                )
+                    }}
 		 </span>
-			</ng-container>
+            </ng-container>
 
-			<!-- 	 -->
-		</h2>
-		<h2
-				*ngIf="!fileScanView"
-				class="titlePage withLink"
-				style="padding-bottom: 0px;padding-top: 5px;"
-		>
-			<p
-					(click)="playVideoInDialog('465664288')"
-					*ngIf="router.url.includes('suppliersAndCustomers')"
-					class="linkHelp"
-			>
-				לצפייה בסרטון הדרכה
-			</p>
-		</h2>
-	</div>
+            <!-- 	 -->
+        </h2>
+
+
+        <h2
+                *ngIf="!fileScanView"
+                class="titlePage withLink"
+                style="padding-bottom: 0px;padding-top: 5px;"
+        >
+            <p
+                    (click)="playVideoInDialog('465664288')"
+                    *ngIf="router.url.includes('suppliersAndCustomers')"
+                    class="linkHelp"
+            >
+                לצפייה בסרטון הדרכה
+            </p>
+        </h2>
+    </div>
 </div>
 
 
+<div (click)="handleClick()" *ngIf="!fileScanView">
+    <!-- 	<div -->
+    <!-- 			class="filterRow journalTransTitles" -->
+    <!-- 			style="margin-top: 0px; margin-bottom: 5px; justify-content: space-between" -->
+    <!-- 	> -->
+    <!-- 		 -->
+    <!-- 		<ul class="tabs"> -->
+    <!-- 			<li -->
+    <!-- 					[class.yellow]=" -->
+    <!--           userService?.appData?.userData?.companySelect && -->
+    <!--           !userService?.appData?.userData?.companySelect?.supplierJournalItem -->
+    <!--         " -->
+    <!-- 					[routerLinkActiveOptions]="{ exact: true }" -->
+    <!-- 					[routerLink]="['./suppliersAndCustomers']" -->
+    <!-- 					queryParamsHandling="merge" -->
+    <!-- 					routerLinkActive="active" -->
+    <!-- 			> -->
+    <!-- 				ספקים ולקוחות -->
+    <!-- 			</li> -->
+    <!-- 			<li -->
+    <!-- 					[routerLinkActiveOptions]="{ exact: true }" -->
+    <!-- 					[routerLink]="['./bankAndCredit']" -->
+    <!-- 					queryParamsHandling="merge" -->
+    <!-- 					routerLinkActive="active" -->
+    <!-- 			> -->
+    <!-- 				בנק ואשראי -->
+    <!-- 			</li> -->
+    <!-- 		</ul> -->
+    <!-- 	</div> -->
+    <div style="display: flex;justify-content: space-between;margin-top: 0px;">
+        <div>
+            <!--			<mat-icon-->
+            <!--					(click)="sharedComponent.forceUnSelectedCompany()"-->
+            <!--					[routerLinkActiveOptions]="{ exact: true }"-->
+            <!--					[routerLink]="[router.url.includes('suppliersAndCustomers') ? '/accountants/companies/supplierCustomersJournal' : '/accountants/companies/bankCreditJournal']"-->
+            <!--					queryParamsHandling="''"-->
+            <!--					routerLinkActive="active"-->
+            <!--					style="-->
+            <!--          margin-right: 0px;-->
+            <!--          margin-left: 16px;-->
+            <!--          cursor: pointer;-->
+            <!--          width: 18px;-->
+            <!--          height: 18px;-->
+            <!--          display: block;-->
+            <!--          transform: rotate(180deg);-->
+            <!--          align-self: center;-->
+            <!--          margin-top: 0px;-->
+            <!--        "-->
+            <!--					svgIcon="arrowBack"-->
+            <!--			></mat-icon>-->
+        </div>
+        <!-- 		<p class="journalTrans_infoCompany"> -->
+        <!--       <span style="display: inline-block; direction: rtl"> -->
+        <!--         ח.פ -->
+        <!-- 	      {{ userService.appData?.userData?.companySelect?.companyHp }} -->
+        <!--       </span> -->
+        <!-- 			<span> | </span> -->
+        <!-- 			<span style="display: inline-block; direction: rtl"> -->
+        <!--         {{ -->
+        <!-- 				userService.appData?.userData?.companySelect?.sourceProgramId -->
+        <!-- 						? ('sourcePrograms.' + -->
+        <!-- 						userService.appData?.userData?.companySelect?.sourceProgramId -->
+        <!-- 								| translate) -->
+        <!-- 						: '' -->
+        <!-- 				}} -->
+        <!-- 				 -->
+        <!-- 				{{ -->
+        <!-- 				userService.appData?.userData?.companySelect?.esderMaam -->
+        <!-- 						? ('esderMaam.' + -->
+        <!-- 						userService.appData?.userData?.companySelect?.esderMaam -->
+        <!-- 								| translate) -->
+        <!-- 						: '' -->
+        <!-- 				}} -->
+        <!--       </span> -->
+        <!-- 			<span> | </span> -->
+        <!-- 			<span -->
+        <!-- 					*ngIf="userService.appData?.userData?.companySelect?.vatReportType" -->
+        <!-- 					style="display: inline-block; direction: rtl" -->
+        <!-- 			> -->
+        <!--         {{ -->
+        <!-- 				userService.appData?.userData?.companySelect?.vatReportType === 'PCN' -->
+        <!-- 						? 'PCN' -->
+        <!-- 						: userService.appData?.userData?.companySelect?.vatReportType === -->
+        <!-- 						'DIGITAL' -->
+        <!-- 								? 'דיגיטלית' -->
+        <!-- 								: 'שובר' -->
+        <!-- 				}} -->
+        <!--       </span> -->
+        <!-- 			<span *ngIf="userService.appData?.userData?.companySelect?.vatReportType"> -->
+        <!--         | -->
+        <!--       </span> -->
+        <!-- 			<span style="display: inline-block; direction: rtl"> -->
+        <!--         {{ userService.appData?.userData?.companySelect?.mainContactName }} -->
+        <!--       </span> -->
+        <!-- 			<span> -->
+        <!--         {{ -->
+        <!-- 				formatPhone( -->
+        <!-- 						userService.appData?.userData?.companySelect?.contactPhone -->
+        <!-- 				) -->
+        <!-- 				}} -->
+        <!--       </span> -->
+        <!-- 		</p> -->
 
-
- <div (click)="handleClick()" *ngIf="!fileScanView">
-<!-- 	<div -->
-<!-- 			class="filterRow journalTransTitles" -->
-<!-- 			style="margin-top: 0px; margin-bottom: 5px; justify-content: space-between" -->
-<!-- 	> -->
-<!-- 		 -->
-<!-- 		<ul class="tabs"> -->
-<!-- 			<li -->
-<!-- 					[class.yellow]=" -->
-<!--           userService?.appData?.userData?.companySelect && -->
-<!--           !userService?.appData?.userData?.companySelect?.supplierJournalItem -->
-<!--         " -->
-<!-- 					[routerLinkActiveOptions]="{ exact: true }" -->
-<!-- 					[routerLink]="['./suppliersAndCustomers']" -->
-<!-- 					queryParamsHandling="merge" -->
-<!-- 					routerLinkActive="active" -->
-<!-- 			> -->
-<!-- 				ספקים ולקוחות -->
-<!-- 			</li> -->
-<!-- 			<li -->
-<!-- 					[routerLinkActiveOptions]="{ exact: true }" -->
-<!-- 					[routerLink]="['./bankAndCredit']" -->
-<!-- 					queryParamsHandling="merge" -->
-<!-- 					routerLinkActive="active" -->
-<!-- 			> -->
-<!-- 				בנק ואשראי -->
-<!-- 			</li> -->
-<!-- 		</ul> -->
-<!-- 	</div> -->
-	<div style="display: flex;justify-content: space-between;margin-top: 0px;">
-		<div>
-<!--			<mat-icon-->
-<!--					(click)="sharedComponent.forceUnSelectedCompany()"-->
-<!--					[routerLinkActiveOptions]="{ exact: true }"-->
-<!--					[routerLink]="[router.url.includes('suppliersAndCustomers') ? '/accountants/companies/supplierCustomersJournal' : '/accountants/companies/bankCreditJournal']"-->
-<!--					queryParamsHandling="''"-->
-<!--					routerLinkActive="active"-->
-<!--					style="-->
-<!--          margin-right: 0px;-->
-<!--          margin-left: 16px;-->
-<!--          cursor: pointer;-->
-<!--          width: 18px;-->
-<!--          height: 18px;-->
-<!--          display: block;-->
-<!--          transform: rotate(180deg);-->
-<!--          align-self: center;-->
-<!--          margin-top: 0px;-->
-<!--        "-->
-<!--					svgIcon="arrowBack"-->
-<!--			></mat-icon>-->
-		</div>
-<!-- 		<p class="journalTrans_infoCompany"> -->
-<!--       <span style="display: inline-block; direction: rtl"> -->
-<!--         ח.פ -->
-<!-- 	      {{ userService.appData?.userData?.companySelect?.companyHp }} -->
-<!--       </span> -->
-<!-- 			<span> | </span> -->
-<!-- 			<span style="display: inline-block; direction: rtl"> -->
-<!--         {{ -->
-<!-- 				userService.appData?.userData?.companySelect?.sourceProgramId -->
-<!-- 						? ('sourcePrograms.' + -->
-<!-- 						userService.appData?.userData?.companySelect?.sourceProgramId -->
-<!-- 								| translate) -->
-<!-- 						: '' -->
-<!-- 				}} -->
-<!-- 				 -->
-<!-- 				{{ -->
-<!-- 				userService.appData?.userData?.companySelect?.esderMaam -->
-<!-- 						? ('esderMaam.' + -->
-<!-- 						userService.appData?.userData?.companySelect?.esderMaam -->
-<!-- 								| translate) -->
-<!-- 						: '' -->
-<!-- 				}} -->
-<!--       </span> -->
-<!-- 			<span> | </span> -->
-<!-- 			<span -->
-<!-- 					*ngIf="userService.appData?.userData?.companySelect?.vatReportType" -->
-<!-- 					style="display: inline-block; direction: rtl" -->
-<!-- 			> -->
-<!--         {{ -->
-<!-- 				userService.appData?.userData?.companySelect?.vatReportType === 'PCN' -->
-<!-- 						? 'PCN' -->
-<!-- 						: userService.appData?.userData?.companySelect?.vatReportType === -->
-<!-- 						'DIGITAL' -->
-<!-- 								? 'דיגיטלית' -->
-<!-- 								: 'שובר' -->
-<!-- 				}} -->
-<!--       </span> -->
-<!-- 			<span *ngIf="userService.appData?.userData?.companySelect?.vatReportType"> -->
-<!--         | -->
-<!--       </span> -->
-<!-- 			<span style="display: inline-block; direction: rtl"> -->
-<!--         {{ userService.appData?.userData?.companySelect?.mainContactName }} -->
-<!--       </span> -->
-<!-- 			<span> -->
-<!--         {{ -->
-<!-- 				formatPhone( -->
-<!-- 						userService.appData?.userData?.companySelect?.contactPhone -->
-<!-- 				) -->
-<!-- 				}} -->
-<!--       </span> -->
-<!-- 		</p> -->
-
-		<div
-				*ngIf="router.url.includes('suppliersAndCustomers') && !(userService?.appData?.userData?.companySelect &&
+        <div
+                *ngIf="router.url.includes('suppliersAndCustomers') && !(userService?.appData?.userData?.companySelect &&
 		!userService?.appData?.userData?.companySelect?.supplierJournalItem)"
-				style="margin-top: 0px"
-		>
-			<img
-					(click)="loadScanFilesOcr()"
-					[matTooltip]="'סריקת מסמכים'"
-					matTooltipPosition="below"
-					*ngIf="isWindows"
-					src="/assets/images/scanIcon.png"
-					style="
+                style="margin-top: 0px"
+        >
+            <img
+                    (click)="loadScanFilesOcr()"
+                    *ngIf="isWindows"
+                    [matTooltip]="'סריקת מסמכים'"
+                    matTooltipPosition="below"
+                    src="/assets/images/scanIcon.png"
+                    style="
           width: 32px;
           height: 21px;
           vertical-align: middle;
           cursor: pointer;
           margin-left: 20px;
         "
-			/>
+            />
 
-			<img
-					(click)="uploadFilesOcr()"
-					[matTooltip]="'העלאת מסמכים'"
-					matTooltipPosition="below"
-					src="/assets/images/uploadIcon.png"
-					style="
+            <img
+                    (click)="uploadFilesOcr()"
+                    [matTooltip]="'העלאת מסמכים'"
+                    matTooltipPosition="below"
+                    src="/assets/images/uploadIcon.png"
+                    style="
           width: 28px;
           height: 22px;
           vertical-align: middle;
           cursor: pointer;
         "
-			/>
-		</div>
-	</div>
+            />
+        </div>
+    </div>
 </div>
 
 <router-outlet (activate)="onActivate($event)"></router-outlet>
 
 <ng-container *ngIf="uploadFilesOcrPopUp && uploadFilesOcrPopUp?.visible">
-	<p-dialog
-			(visibleChange)="uploadFilesOcrPopUp.visible = $event"
-			[visible]="( uploadFilesOcrPopUp?.visible && !fileViewer && !fileUploadProgress)"
-			[closable]="true"
-			[closeOnEscape]="true"
-			[draggable]="false"
-			[modal]="true"
-			[resizable]="false"
-			appendTo="body"
-			styleClass="uploadFilesOcrPopUp"
-	>
-		<p-header> העלאת מסמכים</p-header>
+    <p-dialog
+            (visibleChange)="uploadFilesOcrPopUp.visible = $event"
+            [closable]="true"
+            [closeOnEscape]="true"
+            [draggable]="false"
+            [modal]="true"
+            [resizable]="false"
+            [visible]="( uploadFilesOcrPopUp?.visible && !fileViewer && !fileUploadProgress)"
+            appendTo="body"
+            styleClass="uploadFilesOcrPopUp"
+    >
+        <p-header> העלאת מסמכים</p-header>
 
-		<div class="flexCenter" style="overflow-y: hidden">
-			<div>
-				<h1>
-					העלאת מסמכים לחברת
-					<b>{{ userService.appData?.userData?.companySelect?.companyName }}</b>
-				</h1>
+        <div class="flexCenter" style="overflow-y: hidden">
+            <div>
+                <h1>
+                    העלאת מסמכים לחברת
+                    <b>{{ userService.appData?.userData?.companySelect?.companyName }}</b>
+                </h1>
 
-				<div
-						(fileDropped)="
+                <div
+                        (fileDropped)="
             !uploadFilesOcrPopUp?.urlsFiles?.links.length
               ? onFileDropped($event)
               : null
           "
-						appDnd
-						class="container drop_zone"
-				>
-					<figure>
-						<mat-icon
-								style="color: #022258; height: 95px; width: auto"
-								svgIcon="file"
-						></mat-icon>
+                        appDnd
+                        class="container drop_zone"
+                >
+                    <figure>
+                        <mat-icon
+                                style="color: #022258; height: 95px; width: auto"
+                                svgIcon="file"
+                        ></mat-icon>
 
-						<figcaption>גררו קבצים מהמחשב לכאן</figcaption>
-					</figure>
+                        <figcaption>גררו קבצים מהמחשב לכאן</figcaption>
+                    </figure>
 
-					<div class="uploadBtns">
-						<p>או לחצו כאן</p>
+                    <div class="uploadBtns">
+                        <p>או לחצו כאן</p>
 
-						<label for="fileDropRef">
-							<input
-									#fileDropRef
-									(change)="fileBrowseHandler($event.target)"
-									*ngIf="uploadFilesOcrPopUp?.visible"
-									[disabled]="uploadFilesOcrPopUp?.urlsFiles?.links.length"
-									accept="image/bmp, image/jpg, image/jpeg, image/png, image/tif, image/tiff, application/pdf, .tif"
-									id="fileDropRef"
-									multiple
-									name="fileDropRef"
-									type="file"
-							/>
-							<mat-icon
-									style="color: #022258; height: 29px; width: 19px"
-									svgIcon="clipOutline"
-							></mat-icon>
-							לבחירת קבצים
-						</label>
-					</div>
-				</div>
-				<div class="line">
-					<div>&nbsp;</div>
-				</div>
-				<div class="sendToEmail">
-					<mat-icon
-							style="color: #022258; height: 20px; width: 26px"
-							svgIcon="mail"
-					></mat-icon>
-					ניתן גם לשלוח את החשבוניות לכתובת
+                        <label for="fileDropRef">
+                            <input
+                                #fileDropRef
+                                (change)="fileBrowseHandler($event.target)"
+                                *ngIf="uploadFilesOcrPopUp?.visible"
+                                [disabled]="uploadFilesOcrPopUp?.urlsFiles?.links.length"
+                                accept="image/bmp, image/jpg, image/jpeg, image/png, image/tif, image/tiff, application/pdf, .tif"
+                                id="fileDropRef"
+                                multiple
+                                name="fileDropRef"
+                                type="file"
+                            />
+                            <mat-icon
+                                    style="color: #022258; height: 29px; width: 19px"
+                                    svgIcon="clipOutline"
+                            ></mat-icon>
+                            לבחירת קבצים
+                        </label>
+                    </div>
+                </div>
+                <div class="line">
+                    <div>&nbsp;</div>
+                </div>
+                <div class="sendToEmail">
+                    <mat-icon
+                            style="color: #022258; height: 20px; width: 26px"
+                            svgIcon="mail"
+                    ></mat-icon>
+                    ניתן גם לשלוח את החשבוניות לכתובת
 
-					<a
-							[href]="'mailto:' + companyHpEmail"
-							style="
+                    <a
+                            [href]="'mailto:' + companyHpEmail"
+                            style="
               display: inline-block;
               direction: ltr;
               text-align: left;
               margin-right: 5px;
             "
-							target="_blank"
-					>{{ companyHpEmail }}</a
-					>
-				</div>
-			</div>
-		</div>
+                            target="_blank"
+                    >{{ companyHpEmail }}</a
+                    >
+                </div>
+            </div>
+        </div>
 
-		<!--        <div class="alertSuc" *ngIf="files.length">-->
-		<!--            <mat-icon-->
-		<!--                    svgIcon="tick" style="color: #022258;-->
-		<!--    height: 23px;-->
-		<!--    width: 31px;"></mat-icon>-->
-		<!--            {{files.length}}-->
-		<!--            מסמכים נבחרו בהצלחה-->
-		<!--        </div>-->
-	</p-dialog>
+        <!--        <div class="alertSuc" *ngIf="files.length">-->
+        <!--            <mat-icon-->
+        <!--                    svgIcon="tick" style="color: #022258;-->
+        <!--    height: 23px;-->
+        <!--    width: 31px;"></mat-icon>-->
+        <!--            {{files.length}}-->
+        <!--            מסמכים נבחרו בהצלחה-->
+        <!--        </div>-->
+    </p-dialog>
 
-	<p-dialog
-			#fileViewerModal
-			(visibleChange)="resetAndReturnToMainUploadScreen()"
-			[visible]="(fileViewer && uploadFilesOcrPopUp && uploadFilesOcrPopUp.visible)"
-			[draggable]="false"
-			[modal]="true"
-			[resizable]="false"
-			appendTo="body"
-			styleClass="fileViewer {{
+    <p-dialog
+        #fileViewerModal
+        (visibleChange)="resetAndReturnToMainUploadScreen()"
+        [draggable]="false"
+        [modal]="true"
+        [resizable]="false"
+        [visible]="(fileViewer && uploadFilesOcrPopUp && uploadFilesOcrPopUp.visible)"
+        appendTo="body"
+        styleClass="fileViewer {{
       finishedPrepareFiles &&
       filesForContainerCompleted === 0 &&
       filesForContainer !== filesForContainerCompleted
         ? 'smallWidth'
         : ''
     }}"
-	>
-		<p-header>
-			<h1>
-				<ng-container *ngIf="finishedPrepareFiles">
-					העלאת מסמכים לחברת
-					<b>{{ userService.appData?.userData?.companySelect?.companyName }}</b>
-				</ng-container>
-				<ng-container *ngIf="!finishedPrepareFiles">
-					טעינת מסמכים לחברת
-					<b>{{ userService.appData?.userData?.companySelect?.companyName }}</b>
-				</ng-container>
-			</h1>
-		</p-header>
-		<ng-container *ngIf="finishedPrepareFiles">
-			<ng-container
-					*ngIf="
+    >
+        <p-header>
+            <h1>
+                <ng-container *ngIf="finishedPrepareFiles">
+                    העלאת מסמכים לחברת
+                    <b>{{ userService.appData?.userData?.companySelect?.companyName }}</b>
+                </ng-container>
+                <ng-container *ngIf="!finishedPrepareFiles">
+                    טעינת מסמכים לחברת
+                    <b>{{ userService.appData?.userData?.companySelect?.companyName }}</b>
+                </ng-container>
+            </h1>
+        </p-header>
+        <ng-container *ngIf="finishedPrepareFiles">
+            <ng-container
+                    *ngIf="
           finishedPrepareFiles &&
             filesForContainerCompleted === 0 &&
             filesForContainer !== filesForContainerCompleted;
           else showRegTitles
         "
-			>
-				<p #header class="text">
-					טעינת מסמכים לחברת
-					<strong style="font-weight: 700">
-						{{ userService.appData?.userData?.companySelect?.companyName }}
-						-
-						<span style="color: #cd1010"> נכשלה </span>
-					</strong>
+            >
+                <p #header class="text">
+                    טעינת מסמכים לחברת
+                    <strong style="font-weight: 700">
+                        {{ userService.appData?.userData?.companySelect?.companyName }}
+                        -
+                        <span style="color: #cd1010"> נכשלה </span>
+                    </strong>
 
-					<br/>
-					כל המסמכים לא עלו כי היו פגומים.
-				</p>
-			</ng-container>
-			<ng-template #showRegTitles>
-				<div class="progressBarTitles" style="display: block">
-					<p #header class="text" style="padding-bottom: 0px">
-						<ng-container *ngIf="files.length > 1">
-							<strong style="font-weight: 700">
-								{{ files.length }}
-								מסמכים
-							</strong>
+                    <br/>
+                    כל המסמכים לא עלו כי היו פגומים.
+                </p>
+            </ng-container>
+            <ng-template #showRegTitles>
+                <div class="progressBarTitles" style="display: block">
+                    <p #header class="text" style="padding-bottom: 0px">
+                        <ng-container *ngIf="files.length > 1">
+                            <strong style="font-weight: 700">
+                                {{ files.length }}
+                                מסמכים
+                            </strong>
 
-							עלו מפוצלים, ניתן לבצע איחוד ע"י לחיצה על המספריים, בנוסף ניתן
-							לשנות את מיקום המסמך ע"י גרירה.
-							<br/>
-						</ng-container>
-						למחיקה יש ללחוץ קליק ימני בעכבר על המסמך, ניתן לסמן כמה מסמכים ביחד
-						ע"י לחיצה על ctrl ולמחוק אותם.
+                            עלו מפוצלים, ניתן לבצע איחוד ע"י לחיצה על המספריים, בנוסף ניתן
+                            לשנות את מיקום המסמך ע"י גרירה.
+                            <br/>
+                        </ng-container>
+                        למחיקה יש ללחוץ קליק ימני בעכבר על המסמך, ניתן לסמן כמה מסמכים ביחד
+                        ע"י לחיצה על ctrl ולמחוק אותם.
 
-						<ng-container
-								*ngIf="
+                        <ng-container
+                                *ngIf="
                 finishedPrepareFiles &&
                 filesForContainerCompleted > 0 &&
                 filesForContainer !== filesForContainerCompleted
               "
-						>
-							<br/>
-							<span style="color: #cd1010">
+                        >
+                            <br/>
+                            <span style="color: #cd1010">
                 שימו לב,
 
-								{{
-								filesForContainer - filesForContainerCompleted > 1
-										? filesForContainer -
-										filesForContainerCompleted +
-										' מסמכים לא עלו כי היו פגומים.'
-										: 'מסמך אחד לא עלה כי היה פגום.'
-								}}</span
-							>
-						</ng-container>
-					</p>
+                                {{
+                                filesForContainer - filesForContainerCompleted > 1
+                                    ? filesForContainer -
+                                    filesForContainerCompleted +
+                                    ' מסמכים לא עלו כי היו פגומים.'
+                                    : 'מסמך אחד לא עלה כי היה פגום.'
+                                }}</span
+                            >
+                        </ng-container>
+                    </p>
 
-					<div
-							style="
+                    <div
+                            style="
               display: flex;
               align-items: center;
               margin-bottom: 0px;
               justify-content: space-between;
             "
-					>
-						<div>
-							<p-checkbox (onChange)="
+                    >
+                        <div>
+                            <p-checkbox (onChange)="
                   keepOriginFiles = !keepOriginFiles; keepOriginFilesChange()
                 "
-							            [ngModel]="keepOriginFiles"
-							            [binary]="true"
-							            checkboxIcon="fa fa-check"
-							            label="אל תפצל (שמירה על העלאה המקורית)"
-							>
-							</p-checkbox>
-						</div>
-						<div class="uploadBtns">
-							<label for="fileDropRef">
-								<input
-										#fileDropRef
-										(change)="fileBrowseHandler($event.target)"
-										accept="image/bmp, image/jpg, image/jpeg, image/png, image/tif, image/tiff, application/pdf, .tif"
-										id="fileDropRef"
-										multiple
-										name="fileDropRef"
-										type="file"
-								/>
+                                        [binary]="true"
+                                        [ngModel]="keepOriginFiles"
+                                        checkboxIcon="fa fa-check"
+                                        label="אל תפצל (שמירה על העלאה המקורית)"
+                            >
+                            </p-checkbox>
+                        </div>
+                        <div class="uploadBtns">
+                            <label for="fileDropRef">
+                                <input
+                                    #fileDropRef
+                                    (change)="fileBrowseHandler($event.target)"
+                                    accept="image/bmp, image/jpg, image/jpeg, image/png, image/tif, image/tiff, application/pdf, .tif"
+                                    id="fileDropRef"
+                                    multiple
+                                    name="fileDropRef"
+                                    type="file"
+                                />
 
-								<div
-										class="button-link"
-										style="padding: 0; display: flex; align-items: center"
-								>
-									<img
-											src="/assets/images/addFolder.png"
-											style="margin-left: 4px"
-									/>
-									הוספת מסמכים
-								</div>
-							</label>
-						</div>
-					</div>
-				</div>
-			</ng-template>
-		</ng-container>
-		<ng-container *ngIf="!finishedPrepareFiles">
-			<div class="progressBarTitles">
-				<p #header class="text">המסמכים עולים כעת למערכת</p>
+                                <div
+                                        class="button-link"
+                                        style="padding: 0; display: flex; align-items: center"
+                                >
+                                    <img
+                                            src="/assets/images/addFolder.png"
+                                            style="margin-left: 4px"
+                                    />
+                                    הוספת מסמכים
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </ng-template>
+        </ng-container>
+        <ng-container *ngIf="!finishedPrepareFiles">
+            <div class="progressBarTitles">
+                <p #header class="text">המסמכים עולים כעת למערכת</p>
 
-				<div class="progressBarLeft">
-					<div class="sums-progress">
-						<p>
-							{{
-							round((100 / filesForContainer) * filesForContainerCompleted)
-							}}%
-						</p>
-						<p>{{ filesForContainerCompleted }}/{{ filesForContainer }}</p>
-					</div>
-					<div>
-						<app-progress
-								[progress]="
+                <div class="progressBarLeft">
+                    <div class="sums-progress">
+                        <p>
+                            {{
+                            round((100 / filesForContainer) * filesForContainerCompleted)
+                            }}%
+                        </p>
+                        <p>{{ filesForContainerCompleted }}/{{ filesForContainer }}</p>
+                    </div>
+                    <div>
+                        <app-progress
+                                [progress]="
                 (100 / filesForContainer) * filesForContainerCompleted
               "
-						></app-progress>
-					</div>
-				</div>
-			</div>
-		</ng-container>
+                        ></app-progress>
+                    </div>
+                </div>
+            </div>
+        </ng-container>
 
-		<!--            <div class="container-photos" #container *ngIf="fileViewer && uploadFilesOcrPopUp && uploadFilesOcrPopUp.visible">-->
-		<!--                <ul class="scroll-chrome"-->
-		<!--                    appSortable-->
-		<!--                    (refreshBack)="refreshBack($event)"-->
+        <!--            <div class="container-photos" #container *ngIf="fileViewer && uploadFilesOcrPopUp && uploadFilesOcrPopUp.visible">-->
+        <!--                <ul class="scroll-chrome"-->
+        <!--                    appSortable-->
+        <!--                    (refreshBack)="refreshBack($event)"-->
 
-		<div
-				#container
-				*ngIf="
+        <div
+            #container
+            *ngIf="
         !(
           finishedPrepareFiles &&
           filesForContainerCompleted === 0 &&
           filesForContainer !== filesForContainerCompleted
         )
       "
-				class="container-photos"
-		>
-			<!--                <div class="example-container">-->
-			<!--                    <div id="all"-->
-			<!--                            cdkDropList-->
-			<!--                            cdkDropListOrientation="horizontal"-->
-			<!--                            [cdkDropListData]="files"-->
-			<!--                            class="example-list"-->
-			<!--                            (cdkDropListDropped)="drop($event)">-->
-			<!--                        <div-->
-			<!--                                cdkDragBoundary=".example-list"-->
-			<!--                                class="example-box"-->
-			<!--                                *ngFor="let file of files"-->
-			<!--                                [cdkDragData]="file"-->
-			<!--                                cdkDrag>{{file.val}}</div>-->
-			<!--                    </div>-->
-			<!--                </div>-->
-			<ul
-					#scroll
-					[style.maxHeight.px]="this.maxSizeHeightModal"
-					class="scroll-chrome"
-			>
-				<ng-container
-						*ngFor="
+            class="container-photos"
+        >
+            <!--                <div class="example-container">-->
+            <!--                    <div id="all"-->
+            <!--                            cdkDropList-->
+            <!--                            cdkDropListOrientation="horizontal"-->
+            <!--                            [cdkDropListData]="files"-->
+            <!--                            class="example-list"-->
+            <!--                            (cdkDropListDropped)="drop($event)">-->
+            <!--                        <div-->
+            <!--                                cdkDragBoundary=".example-list"-->
+            <!--                                class="example-box"-->
+            <!--                                *ngFor="let file of files"-->
+            <!--                                [cdkDragData]="file"-->
+            <!--                                cdkDrag>{{file.val}}</div>-->
+            <!--                    </div>-->
+            <!--                </div>-->
+            <ul
+                #scroll
+                [style.maxHeight.px]="this.maxSizeHeightModal"
+                class="scroll-chrome"
+            >
+                <ng-container
+                        *ngFor="
             let file of files;
             let i = index;
             last as isLast;
             trackBy: trackByIndex
           "
-				>
-					<li
-							#element
-							(click)="onKeydownMain($event, file, i)"
-							(contextmenu)="
+                >
+                    <li
+                        #element
+                        (click)="onKeydownMain($event, file, i)"
+                        (contextmenu)="
               onScrollCubes(i);
               eventRclickUpload = $event;
               tooltipEdit.toggle($event, actualTarget);
               onRightClick($event)
             "
-							(dragover)="allowDrop($event, i)"
-							(dragstart)="onDragStart($event, i)"
-							(drop)="onDrop($event, i)"
-							*ngIf="finishedPrepareFiles"
-							draggable="true"
-					>
-						<div *ngIf="onDragOverIndex === i" class="drop-zone"></div>
-						<p #actualTarget>{{ i + 1 }}</p>
-						<img
-								*ngIf="
+                        (dragover)="allowDrop($event, i)"
+                        (dragstart)="onDragStart($event, i)"
+                        (drop)="onDrop($event, i)"
+                        *ngIf="finishedPrepareFiles"
+                        draggable="true"
+                    >
+                        <div *ngIf="onDragOverIndex === i" class="drop-zone"></div>
+                        <p #actualTarget>{{ i + 1 }}</p>
+                        <img
+                                *ngIf="
                 keepOriginFiles &&
                 file.type === 'application/pdf' &&
                 file.numPages &&
                 file.numPages > 1
               "
-								src="/assets/images/corner-bg.png"
-								style="position: absolute; right: 3px; top: 24px; z-index: 999"
-						/>
-						<i
-								*ngIf="
+                                src="/assets/images/corner-bg.png"
+                                style="position: absolute; right: 3px; top: 24px; z-index: 999"
+                        />
+                        <i
+                                *ngIf="
                 keepOriginFiles &&
                 file.type === 'application/pdf' &&
                 file.numPages &&
                 file.numPages > 1
               "
-								class="numPages"
-						>
-							<div>
-								{{ file.numPages }}
-							</div>
-						</i>
-						<div
-								[class.changeStateUploadFile]="changeStateUploadFile"
-								class="image"
-						>
-							<button
-									(click)="
+                                class="numPages"
+                        >
+                            <div>
+                                {{ file.numPages }}
+                            </div>
+                        </i>
+                        <div
+                                [class.changeStateUploadFile]="changeStateUploadFile"
+                                class="image"
+                        >
+                            <button
+                                    (click)="
                   showDocumentStorageDataViewAsGrid(
                     file?.src,
                     file.type === 'application/pdf',
@@ -584,31 +602,31 @@
                   );
                   $event.stopPropagation()
                 "
-									(contextmenu)="
+                                    (contextmenu)="
                   onScrollCubes(i);
                   onRightClickInside($event);
                   tooltipEdit.toggle($event, actualTarget);
                   $event.stopPropagation();
                   onRightClick($event)
                 "
-									*ngIf="file?.src && !tooltipEdit.overlayVisible"
-									class="viewPhoto"
-							>
-								<mat-icon
-										style="
+                                    *ngIf="file?.src && !tooltipEdit.overlayVisible"
+                                    class="viewPhoto"
+                            >
+                                <mat-icon
+                                        style="
                     color: white;
                     width: 18px;
                     height: 18px;
                     display: block;
                     align-self: center;
                   "
-										svgIcon="pictureLines"
-								></mat-icon>
-							</button>
+                                        svgIcon="pictureLines"
+                                ></mat-icon>
+                            </button>
 
-							<div
-									[style.border-width]="file.selcetFile ? '3px' : '1px'"
-									style="
+                            <div
+                                    [style.border-width]="file.selcetFile ? '3px' : '1px'"
+                                    style="
                   border: 1px solid #0f2d61;
                   position: absolute;
                   z-index: 99;
@@ -619,10 +637,10 @@
                   width: 100%;
                   height: 100%;
                 "
-							></div>
+                            ></div>
 
-							<ng-container
-									*ngIf="
+                            <ng-container
+                                    *ngIf="
                   files.length < 50 ||
                     (files.length >= 50 &&
                       scroll.scrollTop + scroll.offsetHeight >
@@ -630,46 +648,46 @@
                       !(scroll.scrollTop > element.offsetTop + 155));
                   else loading
                 "
-							>
-								<ng-container *ngIf="file?.src; else templateNull">
-									<iframe
-											*ngIf="file?.src && file.type === 'application/pdf'"
-											[src]="file?.src"
-											allowfullscreen="false"
-											height="221"
-											type="application/pdf"
-											width="100%"
-									>
-									</iframe>
+                            >
+                                <ng-container *ngIf="file?.src; else templateNull">
+                                    <iframe
+                                            *ngIf="file?.src && file.type === 'application/pdf'"
+                                            [src]="file?.src"
+                                            allowfullscreen="false"
+                                            height="221"
+                                            type="application/pdf"
+                                            width="100%"
+                                    >
+                                    </iframe>
 
-									<img
-											*ngIf="file.type !== 'application/pdf'"
-											 [src]="file?.src"
+                                    <img
+                                            *ngIf="file.type !== 'application/pdf'"
+                                            [src]="file?.src"
 
-											style="height: 221px; width: auto;"
+                                            style="height: 221px; width: auto;"
 
-									/>
-								</ng-container>
-								<ng-template #templateNull>
-									<div style="text-align: center">
-										קובץ גדול לא ניתן לעשות תצוגה מקדימה
-									</div>
-								</ng-template>
-							</ng-container>
+                                    />
+                                </ng-container>
+                                <ng-template #templateNull>
+                                    <div style="text-align: center">
+                                        קובץ גדול לא ניתן לעשות תצוגה מקדימה
+                                    </div>
+                                </ng-template>
+                            </ng-container>
 
-							<ng-template #loading>
-								<div
-										class="loaderPercent"
-										style="background: transparent; opacity: 1"
-								>
-									<div class="circle"></div>
-								</div>
-							</ng-template>
-						</div>
-						<p-overlayPanel
-								#tooltipEdit
+                            <ng-template #loading>
+                                <div
+                                        class="loaderPercent"
+                                        style="background: transparent; opacity: 1"
+                                >
+                                    <div class="circle"></div>
+                                </div>
+                            </ng-template>
+                        </div>
+                        <p-overlayPanel
+                            #tooltipEdit
 
-								[style]="{
+                            [style]="{
 											'margin-left':   (eventRclickUpload && eventRclickUpload.layerX
                     ? eventRclickUpload.layerX - 68
                     : 0) +
@@ -679,69 +697,69 @@
                     : 0) +
                   'px'
               }"
-								appendTo="body"
-								styleClass="tooltip-bottom tooltip-acc-deviation tooltip-daily-edit overlayPanelRightClick"
-						>
-							<ul style="width: 136px">
-								<li (click)="deleteFile(i); tooltipEdit.hide()">
-									<div
-											class="p-helper-clearfix"
-											style="display: flex; display: -ms-flexbox"
-									>
-										<div
-												style="
+                            appendTo="body"
+                            styleClass="tooltip-bottom tooltip-acc-deviation tooltip-daily-edit overlayPanelRightClick"
+                        >
+                            <ul style="width: 136px">
+                                <li (click)="deleteFile(i); tooltipEdit.hide()">
+                                    <div
+                                            class="p-helper-clearfix"
+                                            style="display: flex; display: -ms-flexbox"
+                                    >
+                                        <div
+                                                style="
                         align-self: center;
                         flex: 20;
                         -ms-flex: 20;
                         display: flex;
                         align-items: center;
                       "
-										>
-											<mat-icon style="width: 16px" svgIcon="trash"></mat-icon>
-										</div>
-										<p
-												class="nameAcc"
-												style="
+                                        >
+                                            <mat-icon style="width: 16px" svgIcon="trash"></mat-icon>
+                                        </div>
+                                        <p
+                                                class="nameAcc"
+                                                style="
                         overflow: hidden;
                         white-space: nowrap;
                         text-overflow: ellipsis;
                         flex: 85;
                         -ms-flex: 85;
                       "
-										>
-											מחיקה
-										</p>
-									</div>
-								</li>
-							</ul>
-						</p-overlayPanel>
-					</li>
+                                        >
+                                            מחיקה
+                                        </p>
+                                    </div>
+                                </li>
+                            </ul>
+                        </p-overlayPanel>
+                    </li>
 
-					<li
-							(click)="file.merge = !file.merge"
-							*ngIf="
+                    <li
+                            (click)="file.merge = !file.merge"
+                            *ngIf="
               finishedPrepareFiles &&
               files.length > 1 &&
               !isLast &&
               !keepOriginFiles
             "
-							[class.active]="!file.merge"
-							[pTooltip]="
+                            [class.active]="!file.merge"
+                            [pTooltip]="
               file.merge ? 'לחיצה תפצל את המסמכים' : 'לחיצה תאחד את המסמכים'
             "
-							class="splitLine"
-							tooltipPosition="bottom"
-					>
-						<div class="line">&nbsp;</div>
-						<div class="splitIcon">&#9986;</div>
-					</li>
+                            class="splitLine"
+                            tooltipPosition="bottom"
+                    >
+                        <div class="line">&nbsp;</div>
+                        <div class="splitIcon">&#9986;</div>
+                    </li>
 
-					<li #element *ngIf="!finishedPrepareFiles">
-						<p #actualTarget>{{ i + 1 }}</p>
-						<div class="image">
-							<div
-									[style.border-width]="file.selcetFile ? '3px' : '1px'"
-									style="
+                    <li #element *ngIf="!finishedPrepareFiles">
+                        <p #actualTarget>{{ i + 1 }}</p>
+                        <div class="image">
+                            <div
+                                    [style.border-width]="file.selcetFile ? '3px' : '1px'"
+                                    style="
                   border: 1px solid #0f2d61;
                   position: absolute;
                   z-index: 99;
@@ -752,10 +770,10 @@
                   width: 100%;
                   height: 100%;
                 "
-							></div>
+                            ></div>
 
-							<ng-container
-									*ngIf="
+                            <ng-container
+                                    *ngIf="
                   files.length < 50 ||
                     (files.length >= 50 &&
                       scroll.scrollTop + scroll.offsetHeight >
@@ -763,229 +781,229 @@
                       !(scroll.scrollTop > element.offsetTop + 155));
                   else loading
                 "
-							>
-								<ng-container *ngIf="file?.src; else templateNull">
-									<iframe
-											*ngIf="file?.src && file.type === 'application/pdf'"
-											[src]="file?.src"
+                            >
+                                <ng-container *ngIf="file?.src; else templateNull">
+                                    <iframe
+                                            *ngIf="file?.src && file.type === 'application/pdf'"
+                                            [src]="file?.src"
 
-											allowfullscreen="false"
-											height="221"
-											type="application/pdf"
+                                            allowfullscreen="false"
+                                            height="221"
+                                            type="application/pdf"
 
-											width="100%"
-									>
-									</iframe>
+                                            width="100%"
+                                    >
+                                    </iframe>
 
-									<img
-											*ngIf="file.type !== 'application/pdf'"
-										 [src]="file?.src"
-											style="height: 221px; width: auto; "
+                                    <img
+                                            *ngIf="file.type !== 'application/pdf'"
+                                            [src]="file?.src"
+                                            style="height: 221px; width: auto; "
 
-									/>
-								</ng-container>
-								<ng-template #templateNull>
-									<div style="text-align: center">
-										קובץ גדול לא ניתן לעשות תצוגה מקדימה
-									</div>
-								</ng-template>
-							</ng-container>
+                                    />
+                                </ng-container>
+                                <ng-template #templateNull>
+                                    <div style="text-align: center">
+                                        קובץ גדול לא ניתן לעשות תצוגה מקדימה
+                                    </div>
+                                </ng-template>
+                            </ng-container>
 
-							<ng-template #loading>
-								<div
-										class="loaderPercent"
-										style="background: transparent; opacity: 1"
-								>
-									<div class="circle"></div>
-								</div>
-							</ng-template>
-						</div>
-					</li>
-				</ng-container>
-			</ul>
-		</div>
+                            <ng-template #loading>
+                                <div
+                                        class="loaderPercent"
+                                        style="background: transparent; opacity: 1"
+                                >
+                                    <div class="circle"></div>
+                                </div>
+                            </ng-template>
+                        </div>
+                    </li>
+                </ng-container>
+            </ul>
+        </div>
 
-		<p-footer [ngStyle]="{ display: !finishedPrepareFiles ? 'flex' : 'block' }">
-			<ng-container
-					*ngIf="
+        <p-footer [ngStyle]="{ display: !finishedPrepareFiles ? 'flex' : 'block' }">
+            <ng-container
+                    *ngIf="
           !finishedPrepareFiles ||
             (finishedPrepareFiles &&
               filesForContainerCompleted === 0 &&
               filesForContainer !== filesForContainerCompleted);
           else filesBtnsTemp
         "
-			>
-				<button
-						(click)="resetAndReturnToMainUploadScreen()"
-						*ngIf="!finishedPrepareFiles"
-						class="button-dark"
-				>
-					{{ 'actions.cancellation' | translate }}
-				</button>
-				<button
-						(click)="resetAndReturnToMainUploadScreen()"
-						*ngIf="finishedPrepareFiles"
-						class="button-dark"
-						style="margin: 0 auto; display: block"
-				>
-					הבנתי
-				</button>
-			</ng-container>
-			<ng-template #filesBtnsTemp>
-				<div
-						*ngIf="finishedPrepareFiles"
-						class="filesBtns"
-						style="display: flex; justify-content: space-between"
-				>
-					<div>
-						<h1>לאן תרצו להעביר את החשבוניות/ מסמכים?</h1>
-						<p>
-							<strong> יצירת פקודת יומן - </strong>
-							חשבוניות לקליטה בהנה”ח (יגיעו אוטומטית לארכיון)
-						</p>
-						<p>
-							<strong> העברה לארכיון - </strong>
-							מסמכים אחרים שתרצו לשמור באחת מתיקיות הארכיון
-						</p>
-					</div>
+            >
+                <button
+                        (click)="resetAndReturnToMainUploadScreen()"
+                        *ngIf="!finishedPrepareFiles"
+                        class="button-dark"
+                >
+                    {{ 'actions.cancellation' | translate }}
+                </button>
+                <button
+                        (click)="resetAndReturnToMainUploadScreen()"
+                        *ngIf="finishedPrepareFiles"
+                        class="button-dark"
+                        style="margin: 0 auto; display: block"
+                >
+                    הבנתי
+                </button>
+            </ng-container>
+            <ng-template #filesBtnsTemp>
+                <div
+                        *ngIf="finishedPrepareFiles"
+                        class="filesBtns"
+                        style="display: flex; justify-content: space-between"
+                >
+                    <div>
+                        <h1>לאן תרצו להעביר את החשבוניות/ מסמכים?</h1>
+                        <p>
+                            <strong> יצירת פקודת יומן - </strong>
+                            חשבוניות לקליטה בהנה”ח (יגיעו אוטומטית לארכיון)
+                        </p>
+                        <p>
+                            <strong> העברה לארכיון - </strong>
+                            מסמכים אחרים שתרצו לשמור באחת מתיקיות הארכיון
+                        </p>
+                    </div>
 
-					<div class="btnActions app-folders-selector-up">
-						<button
-								(click)="resetAndReturnToMainUploadScreen()"
-								class="button-link"
-						>
-							{{ 'actions.cancellation' | translate }}
-						</button>
+                    <div class="btnActions app-folders-selector-up">
+                        <button
+                                (click)="resetAndReturnToMainUploadScreen()"
+                                class="button-link"
+                        >
+                            {{ 'actions.cancellation' | translate }}
+                        </button>
 
-						<button
-								(click)="fileViewerOpen('WAIT_FOR_CARE')"
-								[disabled]="!files.length"
-						>
-							יצירת פקודת יומן
-						</button>
+                        <button
+                                (click)="fileViewerOpen('WAIT_FOR_CARE')"
+                                [disabled]="!files.length"
+                        >
+                            יצירת פקודת יומן
+                        </button>
 
-						<app-folders-selector
-								(selectedFolderChange)="
+                        <app-folders-selector
+                                (selectedFolderChange)="
                 folderSelect = $event; fileViewerOpen('ARCHIVE')
               "
-								[disabled]="!files.length"
-								[isDD]="true"
-								[selectedCompanyId]="
+                                [disabled]="!files.length"
+                                [isDD]="true"
+                                [selectedCompanyId]="
                 userService.appData?.userData?.companySelect?.companyId
               "
-						>
-						</app-folders-selector>
-					</div>
-				</div>
-			</ng-template>
-		</p-footer>
-	</p-dialog>
+                        >
+                        </app-folders-selector>
+                    </div>
+                </div>
+            </ng-template>
+        </p-footer>
+    </p-dialog>
 
-	<p-dialog
-			#fileViewerModal
-			(visibleChange)="resetReloadAndReturnToMain()"
-			[visible]="(fileUploadProgress && uploadFilesOcrPopUp && uploadFilesOcrPopUp.visible)"
-			[draggable]="false"
-			[modal]="true"
-			[resizable]="false"
-			appendTo="body"
-			styleClass="fileViewer"
-	>
-		<p-header>
-			<h1>המסמכים שעולים לפענוח במערכת</h1>
-		</p-header>
-		<p #header class="text">
-			<ng-container *ngIf="numberOfFilesForUpload > 1">
+    <p-dialog
+        #fileViewerModal
+        (visibleChange)="resetReloadAndReturnToMain()"
+        [draggable]="false"
+        [modal]="true"
+        [resizable]="false"
+        [visible]="(fileUploadProgress && uploadFilesOcrPopUp && uploadFilesOcrPopUp.visible)"
+        appendTo="body"
+        styleClass="fileViewer"
+    >
+        <p-header>
+            <h1>המסמכים שעולים לפענוח במערכת</h1>
+        </p-header>
+        <p #header class="text">
+            <ng-container *ngIf="numberOfFilesForUpload > 1">
         <span>
           <strong style="font-weight: 700">
             {{ numberOfFilesForUpload }}
-	          מסמכים
+              מסמכים
           </strong>
           עוברים כרגע תהליך פיענוח במערכת. על כל מסמך שעלה יופיע אייקון
         </span>
 
-				<span
-						style="
+                <span
+                        style="
             position: relative;
             width: 40px;
             display: inline-block;
             height: auto;
           "
-				>
+                >
           <img
-		          height="37"
-		        [ngSrc]="'/assets/images/file_ready.png'"
-		          class="file_ready_icon"
-		          style="position: absolute; top: -25px; right: 0"
-		          width="37"
+                  [ngSrc]="'/assets/images/file_ready.png'"
+                  class="file_ready_icon"
+                  height="37"
+                  style="position: absolute; top: -25px; right: 0"
+                  width="37"
           />
         </span>
 
-				<span> ניתן ללחוץ על מסמך זה ולהתחיל לעבוד עליו. </span>
-				<br/>
-				<span style="font-weight: 600">
+                <span> ניתן ללחוץ על מסמך זה ולהתחיל לעבוד עליו. </span>
+                <br/>
+                <span style="font-weight: 600">
           אם ברצונכם להתחיל לעבוד על מסמכים אחרים ניתן ללחוץ על אייקון x שממוקם
           למעלה בצד שמאל והפופ אפ ייסגר, תמשיכו לקבל
           <br/>
           עדכונים על עליית המסמכים במסך עצמו
         </span>
-			</ng-container>
+            </ng-container>
 
-			<ng-container *ngIf="numberOfFilesForUpload === 1">
+            <ng-container *ngIf="numberOfFilesForUpload === 1">
         <span>
           <strong style="font-weight: 700"> המסמך </strong>
 
           עובר כרגע תהליך פיענוח במערכת. כאשר המסמך יעלה יופיע אייקון
         </span>
 
-				<span
-						style="
+                <span
+                        style="
             position: relative;
             width: 40px;
             display: inline-block;
             height: auto;
           "
-				>
+                >
           <img
-		          height="37"
-		          [ngSrc]="'/assets/images/file_ready.png'"
-		          style="position: absolute; top: -25px; right: 0"
-		          class="file_ready_icon"
-		          width="37"
+                  [ngSrc]="'/assets/images/file_ready.png'"
+                  class="file_ready_icon"
+                  height="37"
+                  style="position: absolute; top: -25px; right: 0"
+                  width="37"
           />
         </span>
 
-				<span> ניתן ללחוץ על מסמך זה ולהתחיל לעבוד עליו. </span>
-				<br/>
-				<span style="font-weight: 600">
+                <span> ניתן ללחוץ על מסמך זה ולהתחיל לעבוד עליו. </span>
+                <br/>
+                <span style="font-weight: 600">
           אם ברצונכם להתחיל לעבוד על מסמכים אחרים ניתן ללחוץ על אייקון איקס
           שממוקם למעלה בצד שמאל והפופ אפ ייסגר, תמשיכו לקבל
           <br/>
           עדכונים על עליית המסמך במסך עצמו
         </span>
-			</ng-container>
-		</p>
+            </ng-container>
+        </p>
 
-		<div #container class="container-photos">
-			<ul
-					#scroll
-					[style.maxHeight.px]="this.maxSizeHeightModal"
-					class="scroll-chrome"
-			>
-				<ng-container
-						*ngFor="
+        <div #container class="container-photos">
+            <ul
+                #scroll
+                [style.maxHeight.px]="this.maxSizeHeightModal"
+                class="scroll-chrome"
+            >
+                <ng-container
+                        *ngFor="
             let file of files;
             let i = index;
             last as isLast;
             trackBy: trackByIndex
           "
-				>
-					<li #element>
-						<p #actualTarget>{{ i + 1 }}</p>
-						<div class="image">
-							<div
-									[style.border-width]="'1px'"
-									style="
+                >
+                    <li #element>
+                        <p #actualTarget>{{ i + 1 }}</p>
+                        <div class="image">
+                            <div
+                                    [style.border-width]="'1px'"
+                                    style="
                   border: 1px solid #0f2d61;
                   position: absolute;
                   z-index: 99;
@@ -996,33 +1014,33 @@
                   width: 100%;
                   height: 100%;
                 "
-							></div>
-							<div *ngIf="!file.ready" class="viewPhotoLoader notReady">
-								<div style="justify-content: center">
-									<img
-											height="116"
-											src="/assets/images/loader_upload_files.gif"
-											width="98"
-									/>
-								</div>
-							</div>
+                            ></div>
+                            <div *ngIf="!file.ready" class="viewPhotoLoader notReady">
+                                <div style="justify-content: center">
+                                    <img
+                                            height="116"
+                                            src="/assets/images/loader_upload_files.gif"
+                                            width="98"
+                                    />
+                                </div>
+                            </div>
 
-							<button
-									(click)="goToInvoiceLocal(file)"
-									*ngIf="file.ready"
-									class="viewPhotoLoader"
-							>
-								<div style="justify-content: center">
-									<img
-											height="48"
-											src="/assets/images/file_ready.png"
-											style="cursor: pointer; width: 48px; height: 48px"
-											width="48"
-									/>
-								</div>
-							</button>
-							<ng-container
-									*ngIf="
+                            <button
+                                    (click)="goToInvoiceLocal(file)"
+                                    *ngIf="file.ready"
+                                    class="viewPhotoLoader"
+                            >
+                                <div style="justify-content: center">
+                                    <img
+                                            height="48"
+                                            src="/assets/images/file_ready.png"
+                                            style="cursor: pointer; width: 48px; height: 48px"
+                                            width="48"
+                                    />
+                                </div>
+                            </button>
+                            <ng-container
+                                    *ngIf="
                   files.length < 50 ||
                     (files.length >= 50 &&
                       scroll.scrollTop + scroll.offsetHeight >
@@ -1030,292 +1048,295 @@
                       !(scroll.scrollTop > element.offsetTop + 155));
                   else loading
                 "
-							>
-								<ng-container *ngIf="file?.src; else templateNull">
-									<iframe
-											*ngIf="file?.src && file.type === 'application/pdf'"
-											[src]="file?.src"
+                            >
+                                <ng-container *ngIf="file?.src; else templateNull">
+                                    <iframe
+                                            *ngIf="file?.src && file.type === 'application/pdf'"
+                                            [src]="file?.src"
 
-											allowfullscreen="false"
-											height="221"
-											type="application/pdf"
+                                            allowfullscreen="false"
+                                            height="221"
+                                            type="application/pdf"
 
-											width="100%"
-									>
-									</iframe>
+                                            width="100%"
+                                    >
+                                    </iframe>
 
-									<img
-											*ngIf="file.type !== 'application/pdf'"
-											 [src]="file?.src"
-											style="height: 221px; width: auto; "
+                                    <img
+                                            *ngIf="file.type !== 'application/pdf'"
+                                            [src]="file?.src"
+                                            style="height: 221px; width: auto; "
 
-									/>
-								</ng-container>
-								<ng-template #templateNull>
-									<div style="text-align: center">
-										קובץ גדול לא ניתן לעשות תצוגה מקדימה
-									</div>
-								</ng-template>
-							</ng-container>
+                                    />
+                                </ng-container>
+                                <ng-template #templateNull>
+                                    <div style="text-align: center">
+                                        קובץ גדול לא ניתן לעשות תצוגה מקדימה
+                                    </div>
+                                </ng-template>
+                            </ng-container>
 
-							<ng-template #loading>
-								<div
-										class="loaderPercent"
-										style="background: transparent; opacity: 1"
-								>
-									<div class="circle"></div>
-								</div>
-							</ng-template>
-						</div>
-					</li>
-				</ng-container>
-			</ul>
-		</div>
-	</p-dialog>
+                            <ng-template #loading>
+                                <div
+                                        class="loaderPercent"
+                                        style="background: transparent; opacity: 1"
+                                >
+                                    <div class="circle"></div>
+                                </div>
+                            </ng-template>
+                        </div>
+                    </li>
+                </ng-container>
+            </ul>
+        </div>
+    </p-dialog>
 
-	<!--    <p-dialog (visibleChange)="aaa = false" [visible]="fileUploadProgress && uploadFilesOcrPopUp && uploadFilesOcrPopUp.visible"-->
-	<!--                appendTo="body" [modal]="true" [resizable]="false"-->
-	<!--                [draggable]="false"-->
-	<!--                styleClass="fileUploadProgress">-->
-	<!--        <p-header>-->
-	<!--            <h1>-->
-	<!--                העלאת המסמכים למערכת-->
-	<!--            </h1>-->
-	<!--        </p-header>-->
+    <!--    <p-dialog (visibleChange)="aaa = false" [visible]="fileUploadProgress && uploadFilesOcrPopUp && uploadFilesOcrPopUp.visible"-->
+    <!--                appendTo="body" [modal]="true" [resizable]="false"-->
+    <!--                [draggable]="false"-->
+    <!--                styleClass="fileUploadProgress">-->
+    <!--        <p-header>-->
+    <!--            <h1>-->
+    <!--                העלאת המסמכים למערכת-->
+    <!--            </h1>-->
+    <!--        </p-header>-->
 
-	<!--        <div class="files-list scroll-chrome">-->
-	<!--            <div class="single-file">-->
-	<!--                <div class="info">-->
-	<!--                    <h4 class="name">-->
-	<!--                        <ng-container *ngFor="let file of files; let i = index">-->
-	<!--                            <ng-container *ngIf="i === indexFileTimer">-->
-	<!--                                {{ file?.name}} {{(!progress || (progress && (progress[file.name].progress | async) < 100)) ? '' : ' - הועלה בהצלחה'}}-->
-	<!--                            </ng-container>-->
-	<!--                        </ng-container>-->
-	<!--                    </h4>-->
+    <!--        <div class="files-list scroll-chrome">-->
+    <!--            <div class="single-file">-->
+    <!--                <div class="info">-->
+    <!--                    <h4 class="name">-->
+    <!--                        <ng-container *ngFor="let file of files; let i = index">-->
+    <!--                            <ng-container *ngIf="i === indexFileTimer">-->
+    <!--                                {{ file?.name}} {{(!progress || (progress && (progress[file.name].progress | async) < 100)) ? '' : ' - הועלה בהצלחה'}}-->
+    <!--                            </ng-container>-->
+    <!--                        </ng-container>-->
+    <!--                    </h4>-->
 
-	<!--                    <p class="progressText">-->
-	<!--                        {{ progressAll ? (progressAll | async) : 0}}%-->
-	<!--                    </p>-->
-	<!--                    <app-progress [progress]="progressAll ? (progressAll | async) : 0"></app-progress>-->
-	<!--                </div>-->
-	<!--            </div>-->
+    <!--                    <p class="progressText">-->
+    <!--                        {{ progressAll ? (progressAll | async) : 0}}%-->
+    <!--                    </p>-->
+    <!--                    <app-progress [progress]="progressAll ? (progressAll | async) : 0"></app-progress>-->
+    <!--                </div>-->
+    <!--            </div>-->
 
-	<!--            &lt;!&ndash;                <div class="single-file" *ngFor="let file of files; let i = index">&ndash;&gt;-->
-	<!--            &lt;!&ndash;                    <div class="info">&ndash;&gt;-->
-	<!--            &lt;!&ndash;                        <h4 class="name">&ndash;&gt;-->
-	<!--            &lt;!&ndash;                            {{ file?.name }}&ndash;&gt;-->
-	<!--            &lt;!&ndash;                            &lt;!&ndash;                        <span class="size">&ndash;&gt;&ndash;&gt;-->
-	<!--            &lt;!&ndash;                            &lt;!&ndash;                            ({{ formatBytes(file?.size) }})&ndash;&gt;&ndash;&gt;-->
-	<!--            &lt;!&ndash;                            &lt;!&ndash;                        </span>&ndash;&gt;&ndash;&gt;-->
-	<!--            &lt;!&ndash;                        </h4>&ndash;&gt;-->
+    <!--            &lt;!&ndash;                <div class="single-file" *ngFor="let file of files; let i = index">&ndash;&gt;-->
+    <!--            &lt;!&ndash;                    <div class="info">&ndash;&gt;-->
+    <!--            &lt;!&ndash;                        <h4 class="name">&ndash;&gt;-->
+    <!--            &lt;!&ndash;                            {{ file?.name }}&ndash;&gt;-->
+    <!--            &lt;!&ndash;                            &lt;!&ndash;                        <span class="size">&ndash;&gt;&ndash;&gt;-->
+    <!--            &lt;!&ndash;                            &lt;!&ndash;                            ({{ formatBytes(file?.size) }})&ndash;&gt;&ndash;&gt;-->
+    <!--            &lt;!&ndash;                            &lt;!&ndash;                        </span>&ndash;&gt;&ndash;&gt;-->
+    <!--            &lt;!&ndash;                        </h4>&ndash;&gt;-->
 
-	<!--            &lt;!&ndash;                        <p class="progressText">&ndash;&gt;-->
-	<!--            &lt;!&ndash;                            {{ progress ? (progress[file.name].progress | async) : 0}}%&ndash;&gt;-->
-	<!--            &lt;!&ndash;                        </p>&ndash;&gt;-->
-	<!--            &lt;!&ndash;                        <app-progress [progress]="progress ? (progress[file.name].progress | async) : 0"></app-progress>&ndash;&gt;-->
-	<!--            &lt;!&ndash;                    </div>&ndash;&gt;-->
-	<!--            &lt;!&ndash;                </div>&ndash;&gt;-->
-	<!--        </div>-->
+    <!--            &lt;!&ndash;                        <p class="progressText">&ndash;&gt;-->
+    <!--            &lt;!&ndash;                            {{ progress ? (progress[file.name].progress | async) : 0}}%&ndash;&gt;-->
+    <!--            &lt;!&ndash;                        </p>&ndash;&gt;-->
+    <!--            &lt;!&ndash;                        <app-progress [progress]="progress ? (progress[file.name].progress | async) : 0"></app-progress>&ndash;&gt;-->
+    <!--            &lt;!&ndash;                    </div>&ndash;&gt;-->
+    <!--            &lt;!&ndash;                </div>&ndash;&gt;-->
+    <!--        </div>-->
 
-	<!--        -->
-	<!--        -->
-	<!--        -->
-	<!--    </p-dialog>-->
+    <!--        -->
+    <!--        -->
+    <!--        -->
+    <!--    </p-dialog>-->
 </ng-container>
 
 <ng-container *ngIf="scanFilesOcrPopUp && scanFilesOcrPopUp?.visible">
-	<p-dialog
-			(onHide)="unload()"
-			(visibleChange)="scanFilesOcrPopUp.visible = $event"
-			[visible]="(scanFilesOcrPopUp?.visible)"
-			[closable]="true"
-			[closeOnEscape]="true"
-			[draggable]="false"
-			[modal]="true"
-			[resizable]="false"
-			appendTo="body"
-			styleClass="scanFilesOcrPopUp"
-	>
-		<div [appScrollHeight]="55" class="scroll-chrome flexCenter">
-			<div>
-				<div *ngIf="showScanLoader" class="loader">
-					<div class="circle"></div>
-				</div>
-				<h1>
-					סריקת מסמכים לחברת
-					<b>{{ userService.appData?.userData?.companySelect?.companyName }}</b>
-				</h1>
+    <p-dialog
+            (onHide)="unload()"
+            (visibleChange)="scanFilesOcrPopUp.visible = $event"
+            [closable]="true"
+            [closeOnEscape]="true"
+            [draggable]="false"
+            [modal]="true"
+            [resizable]="false"
+            [visible]="(scanFilesOcrPopUp?.visible)"
+            appendTo="body"
+            maskStyleClass="scanFilesOcrPopUpMask"
+            styleClass="scanFilesOcrPopUp"
+    >
+        <div [appScrollHeight]="55" class="scroll-chrome flexCenter">
+            <div>
+                <div *ngIf="showScanLoader" class="loader">
+                    <div class="circle"></div>
+                </div>
+                <h1>
+                    סריקת מסמכים לחברת
+                    <b>{{ userService.appData?.userData?.companySelect?.companyName }}</b>
+                </h1>
 
-				<div>
-					<figure
-							style="margin: 75px auto 75px auto; width: auto; text-align: center"
-					>
-						<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/iconScan.png"/>
-						<figcaption style="margin-top: 15px">
-							יש לוודא שהמסמכים נמצאים בסורק שנבחר וללחוץ סריקה
-						</figcaption>
-					</figure>
-				</div>
+                <div>
+                    <figure
+                            style="margin: 75px auto 75px auto; width: auto; text-align: center"
+                    >
+                        <img fill ngSrc="/assets/images/iconScan.png"
+                             style="height: auto; width: auto; position: relative;"/>
+                        <figcaption style="margin-top: 15px">
+                            יש לוודא שהמסמכים נמצאים בסורק שנבחר וללחוץ סריקה
+                        </figcaption>
+                    </figure>
+                </div>
 
-				<div *ngIf="files.length" class="alertSuc">
-					<img style="height: auto; width: auto; position: relative;margin-left: 5px" fill ngSrc="/assets/images/tick.png"/>
+                <div *ngIf="files.length" class="alertSuc">
+                    <img fill ngSrc="/assets/images/tick.png"
+                         style="height: auto; width: auto; position: relative;margin-left: 5px"/>
 
-					{{ files.length }}
-					מסמכים נסרקו בהצלחה
-				</div>
-				<div *ngIf="!finishedScan" class="filesBtns">
-					<div class="btnActions scanBtn">
-						<div style="margin-left: 25px; display: flex; align-items: center">
-							<i
-									(click)="refreshScanList()"
-									*ngIf="dynamsoftReady"
-									class="fas fa-sync-alt"
-									pTooltip="רענון רשימת סורקים"
-									style="cursor: pointer; margin-left: 10px"
-									tooltipPosition="top"
-							></i>
-							<p-dropdown
-									[(ngModel)]="selectedScan"
+                    {{ files.length }}
+                    מסמכים נסרקו בהצלחה
+                </div>
+                <div *ngIf="!finishedScan" class="filesBtns">
+                    <div class="btnActions scanBtn">
+                        <div style="margin-left: 25px; display: flex; align-items: center">
+                            <i
+                                    (click)="refreshScanList()"
+                                    *ngIf="dynamsoftReady"
+                                    class="fas fa-sync-alt"
+                                    pTooltip="רענון רשימת סורקים"
+                                    style="cursor: pointer; margin-left: 10px"
+                                    tooltipPosition="top"
+                            ></i>
+                            <p-dropdown
+                                    [(ngModel)]="selectedScan"
 
-									[dropdownIcon]="'p-dropdown-icon'"
-									[options]="scanerList"
-									optionLabel="name"
-									placeholder="בחרו סורק"
-							>
-							</p-dropdown>
-						</div>
+                                    [dropdownIcon]="'p-dropdown-icon'"
+                                    [options]="scanerList"
+                                    optionLabel="name"
+                                    placeholder="בחרו סורק"
+                            >
+                            </p-dropdown>
+                        </div>
 
-						<button
-								(click)="AcquireImage()"
-								[disabled]="!scanerList.length || !selectedScan"
-						>
-							{{ files.length ? 'המשך סריקה' : 'סריקה' }}
-						</button>
+                        <button
+                                (click)="AcquireImage()"
+                                [disabled]="!scanerList.length || !selectedScan"
+                        >
+                            {{ files.length ? 'המשך סריקה' : 'סריקה' }}
+                        </button>
 
-						<button (click)="finishedScan = true" *ngIf="files.length">
-							סיום סריקה
-						</button>
-					</div>
-				</div>
-				<div *ngIf="finishedScan" class="filesBtns">
-					<h1>לאן תרצו להעביר את החשבוניות/ מסמכים?</h1>
-					<p>
-						<strong> יצירת פקודת יומן - </strong>
-						חשבוניות לקליטה בהנה”ח (יגיעו אוטומטית לארכיון)
-					</p>
-					<p>
-						<strong> העברה לארכיון - </strong>
-						מסמכים אחרים שתרצו לשמור באחת מתיקיות הארכיון
-					</p>
-					<div class="btnActions">
-						<button
-								(click)="fileViewerOpen('WAIT_FOR_CARE')"
-								[disabled]="!files.length"
-						>
-							יצירת פקודת יומן
-						</button>
+                        <button (click)="finishedScan = true" *ngIf="files.length">
+                            סיום סריקה
+                        </button>
+                    </div>
+                </div>
+                <div *ngIf="finishedScan" class="filesBtns">
+                    <h1>לאן תרצו להעביר את החשבוניות/ מסמכים?</h1>
+                    <p>
+                        <strong> יצירת פקודת יומן - </strong>
+                        חשבוניות לקליטה בהנה”ח (יגיעו אוטומטית לארכיון)
+                    </p>
+                    <p>
+                        <strong> העברה לארכיון - </strong>
+                        מסמכים אחרים שתרצו לשמור באחת מתיקיות הארכיון
+                    </p>
+                    <div class="btnActions">
+                        <button
+                                (click)="fileViewerOpen('WAIT_FOR_CARE')"
+                                [disabled]="!files.length"
+                        >
+                            יצירת פקודת יומן
+                        </button>
 
-						<app-folders-selector
-								(selectedFolderChange)="
+                        <app-folders-selector
+                                (selectedFolderChange)="
                 folderSelect = $event; fileViewerOpen('ARCHIVE')
               "
-								[disabled]="!files.length"
-								[isDD]="true"
-								[selectedCompanyId]="
+                                [disabled]="!files.length"
+                                [isDD]="true"
+                                [selectedCompanyId]="
                 userService.appData?.userData?.companySelect?.companyId
               "
-						>
-						</app-folders-selector>
-					</div>
-				</div>
-			</div>
-		</div>
+                        >
+                        </app-folders-selector>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-		<p-dialog
-				#fileViewerModal2
-				(visibleChange)="resetAndReturnToMainUploadScreen()"
-				[visible]="(fileViewer && scanFilesOcrPopUp && scanFilesOcrPopUp.visible)"
-				[draggable]="false"
-				[modal]="true"
-				[resizable]="false"
-				appendTo="body"
-				styleClass="fileViewer"
-		>
-			<p-header>
-				<h1>המסמכים שעלו</h1>
-			</p-header>
+        <p-dialog
+            #fileViewerModal2
+            (visibleChange)="resetAndReturnToMainUploadScreen()"
+            [draggable]="false"
+            [modal]="true"
+            [resizable]="false"
+            [visible]="(fileViewer && scanFilesOcrPopUp && scanFilesOcrPopUp.visible)"
+            appendTo="body"
+            styleClass="fileViewer"
+        >
+            <p-header>
+                <h1>המסמכים שעלו</h1>
+            </p-header>
 
-			<p class="text">
-				<ng-container *ngIf="files.length > 1">
-					{{ files.length }}
-					מסמכים נסרקו מפוצלים, ניתן לבצע איחוד ע"י לחיצה על המספריים, בנוסף
-					ניתן לשנות את מיקום המסמך ע"י גרירה.
-					<br/>
-				</ng-container>
-				למחיקה יש ללחוץ קליק ימני בעכבר על המסמך, ניתן לסמן כמה מסמכים ביחד ע"י
-				לחיצה על ctrl ולמחוק אותם.
-			</p>
-			<div #container class="container-photos">
-				<ul
-						[style.maxHeight.px]="this.maxSizeHeightModal"
-						class="scroll-chrome"
-				>
-					<ng-container
-							*ngFor="
+            <p class="text">
+                <ng-container *ngIf="files.length > 1">
+                    {{ files.length }}
+                    מסמכים נסרקו מפוצלים, ניתן לבצע איחוד ע"י לחיצה על המספריים, בנוסף
+                    ניתן לשנות את מיקום המסמך ע"י גרירה.
+                    <br/>
+                </ng-container>
+                למחיקה יש ללחוץ קליק ימני בעכבר על המסמך, ניתן לסמן כמה מסמכים ביחד ע"י
+                לחיצה על ctrl ולמחוק אותם.
+            </p>
+            <div #container class="container-photos">
+                <ul
+                        [style.maxHeight.px]="this.maxSizeHeightModal"
+                        class="scroll-chrome"
+                >
+                    <ng-container
+                            *ngFor="
               let file of files;
               let i = index;
               last as isLast;
               trackBy: trackByIndex
             "
-					>
-						<li
-								#element
-								(click)="onKeydownMain($event, file, i)"
-								(contextmenu)="
+                    >
+                        <li
+                            #element
+                            (click)="onKeydownMain($event, file, i)"
+                            (contextmenu)="
                 onScrollCubes(i);
                 eventRclickUpload = $event;
                 tooltipEdit.toggle($event, actualTarget);
                 onRightClick($event)
               "
-								(dragover)="allowDrop($event, i)"
-								(dragstart)="onDragStart($event, i)"
-								(drop)="onDrop($event, i)"
-								draggable="true"
-						>
-							<div *ngIf="onDragOverIndex === i" class="drop-zone"></div>
-							<p #actualTarget>{{ i + 1 }}</p>
-							<div class="image">
-								<button
-										(click)="
+                            (dragover)="allowDrop($event, i)"
+                            (dragstart)="onDragStart($event, i)"
+                            (drop)="onDrop($event, i)"
+                            draggable="true"
+                        >
+                            <div *ngIf="onDragOverIndex === i" class="drop-zone"></div>
+                            <p #actualTarget>{{ i + 1 }}</p>
+                            <div class="image">
+                                <button
+                                        (click)="
                     showDocumentStorageDataViewAsGrid(file?.src, false, false);
                     $event.stopPropagation()
                   "
-										(contextmenu)="
+                                        (contextmenu)="
                     onScrollCubes(i);
                     onRightClickInside($event);
                     tooltipEdit.toggle($event, actualTarget);
                     $event.stopPropagation();
                     onRightClick($event)
                   "
-										*ngIf="!tooltipEdit.overlayVisible"
-										class="viewPhoto"
-								>
-									<mat-icon
-											style="
+                                        *ngIf="!tooltipEdit.overlayVisible"
+                                        class="viewPhoto"
+                                >
+                                    <mat-icon
+                                            style="
                       color: white;
                       width: 18px;
                       height: 18px;
                       display: block;
                       align-self: center;
                     "
-											svgIcon="pictureLines"
-									></mat-icon>
-								</button>
+                                            svgIcon="pictureLines"
+                                    ></mat-icon>
+                                </button>
 
-								<div
-										[style.border-width]="file.selcetFile ? '3px' : '1px'"
-										style="
+                                <div
+                                        [style.border-width]="file.selcetFile ? '3px' : '1px'"
+                                        style="
                     border: 1px solid #0f2d61;
                     position: absolute;
                     z-index: 99;
@@ -1326,15 +1347,15 @@
                     width: 100%;
                     height: 100%;
                   "
-								></div>
+                                ></div>
 
-								<img  [src]="file?.src"
-								      style="height: 221px; width: auto; " />
-							</div>
+                                <img [src]="file?.src"
+                                     style="height: 221px; width: auto; "/>
+                            </div>
 
-							<p-overlayPanel
-									#tooltipEdit
-									[style]="{
+                            <p-overlayPanel
+                                #tooltipEdit
+                                [style]="{
 											'margin-left':   (eventRclickUpload && eventRclickUpload.layerX
                     ? eventRclickUpload.layerX - 68
                     : 0) +
@@ -1345,617 +1366,617 @@
                   'px'
               }"
 
-									appendTo="body"
-									styleClass="tooltip-bottom tooltip-acc-deviation tooltip-daily-edit overlayPanelRightClick"
-							>
-								<ul style="width: 185px">
-									<li (click)="deleteScanFile(i); tooltipEdit.hide()">
-										<div
-												class="p-helper-clearfix"
-												style="display: flex; display: -ms-flexbox"
-										>
-											<div
-													style="
+                                appendTo="body"
+                                styleClass="tooltip-bottom tooltip-acc-deviation tooltip-daily-edit overlayPanelRightClick"
+                            >
+                                <ul style="width: 185px">
+                                    <li (click)="deleteScanFile(i); tooltipEdit.hide()">
+                                        <div
+                                                class="p-helper-clearfix"
+                                                style="display: flex; display: -ms-flexbox"
+                                        >
+                                            <div
+                                                    style="
                           align-self: center;
                           flex: 20;
                           -ms-flex: 20;
                           display: flex;
                           align-items: center;
                         "
-											>
-												<mat-icon
-														style="width: 16px"
-														svgIcon="trash"
-												></mat-icon>
-											</div>
-											<p
-													class="nameAcc"
-													style="
+                                            >
+                                                <mat-icon
+                                                        style="width: 16px"
+                                                        svgIcon="trash"
+                                                ></mat-icon>
+                                            </div>
+                                            <p
+                                                    class="nameAcc"
+                                                    style="
                           overflow: hidden;
                           white-space: nowrap;
                           text-overflow: ellipsis;
                           flex: 85;
                           -ms-flex: 85;
                         "
-											>
-												מחיקה
-											</p>
-										</div>
-									</li>
-									<li
-											(click)="
+                                            >
+                                                מחיקה
+                                            </p>
+                                        </div>
+                                    </li>
+                                    <li
+                                            (click)="
                       RotateRight(file?.index, file?.idxImg, file?.id);
                       tooltipEdit.hide()
                     "
-									>
-										<div
-												class="p-helper-clearfix"
-												style="display: flex; display: -ms-flexbox"
-										>
-											<div
-													style="
+                                    >
+                                        <div
+                                                class="p-helper-clearfix"
+                                                style="display: flex; display: -ms-flexbox"
+                                        >
+                                            <div
+                                                    style="
                           align-self: center;
                           flex: 20;
                           -ms-flex: 20;
                           display: flex;
                           align-items: center;
                         "
-											>
-												<mat-icon
-														style="
+                                            >
+                                                <mat-icon
+                                                        style="
                             display: block;
                             font-size: 16px;
                             width: auto;
                             height: auto;
                             line-height: normal;
                           "
-												>rotate_right
-												</mat-icon>
-											</div>
-											<p
-													class="nameAcc"
-													style="
+                                                >rotate_right
+                                                </mat-icon>
+                                            </div>
+                                            <p
+                                                    class="nameAcc"
+                                                    style="
                           overflow: hidden;
                           white-space: nowrap;
                           text-overflow: ellipsis;
                           flex: 85;
                           -ms-flex: 85;
                         "
-											>
-												סובב ימינה
-											</p>
-										</div>
-									</li>
-									<li
-											(click)="
+                                            >
+                                                סובב ימינה
+                                            </p>
+                                        </div>
+                                    </li>
+                                    <li
+                                            (click)="
                       RotateLeft(file?.index, file?.idxImg, file?.id);
                       tooltipEdit.hide()
                     "
-									>
-										<div
-												class="p-helper-clearfix"
-												style="display: flex; display: -ms-flexbox"
-										>
-											<div
-													style="
+                                    >
+                                        <div
+                                                class="p-helper-clearfix"
+                                                style="display: flex; display: -ms-flexbox"
+                                        >
+                                            <div
+                                                    style="
                           align-self: center;
                           flex: 20;
                           -ms-flex: 20;
                           display: flex;
                           align-items: center;
                         "
-											>
-												<mat-icon
-														style="
+                                            >
+                                                <mat-icon
+                                                        style="
                             display: block;
                             font-size: 16px;
                             width: auto;
                             height: auto;
                             line-height: normal;
                           "
-												>rotate_left
-												</mat-icon>
-											</div>
-											<p
-													class="nameAcc"
-													style="
+                                                >rotate_left
+                                                </mat-icon>
+                                            </div>
+                                            <p
+                                                    class="nameAcc"
+                                                    style="
                           overflow: hidden;
                           white-space: nowrap;
                           text-overflow: ellipsis;
                           flex: 85;
                           -ms-flex: 85;
                         "
-											>
-												סובב שמאלה
-											</p>
-										</div>
-									</li>
-									<!--                                    <li (click)="Flip(file?.index, file?.idxImg, file?.id); tooltipEdit.hide();">-->
-									<!--                                        <div class="p-helper-clearfix"-->
-									<!--                                             style="display: flex; display: -ms-flexbox;">-->
-									<!--                                            <div style="align-self: center; flex: 20;-ms-flex:20; display: flex; align-items: center;">-->
-									<!--                                                <mat-icon style="display: block;-->
-									<!--    font-size: 16px;-->
-									<!--    width: auto;-->
-									<!--    height: auto;-->
-									<!--    line-height: normal;">rotate_90_degrees_ccw-->
-									<!--                                                </mat-icon>-->
-									<!--                                            </div>-->
-									<!--                                            <p class="nameAcc"-->
-									<!--                                               style="overflow: hidden; white-space: nowrap; text-overflow: ellipsis;flex: 85;-ms-flex:85;">-->
-									<!--                                                היפוך-->
-									<!--                                            </p>-->
-									<!--                                        </div>-->
-									<!--                                    </li>-->
-									<!--                                    <li (click)="Mirror(file?.index, file?.idxImg, file?.id); tooltipEdit.hide();">-->
-									<!--                                        <div class="p-helper-clearfix"-->
-									<!--                                             style="display: flex; display: -ms-flexbox;">-->
-									<!--                                            <div style="align-self: center; flex: 20;-ms-flex:20; display: flex; align-items: center;">-->
-									<!--                                                <mat-icon style="display: block;-->
-									<!--    font-size: 16px;-->
-									<!--    width: auto;-->
-									<!--    height: auto;-->
-									<!--    line-height: normal;">flip-->
-									<!--                                                </mat-icon>-->
-									<!--                                            </div>-->
-									<!--                                            <p class="nameAcc"-->
-									<!--                                               style="overflow: hidden; white-space: nowrap; text-overflow: ellipsis;flex: 85;-ms-flex:85;">-->
-									<!--                                                היפוך מראה-->
-									<!--                                            </p>-->
-									<!--                                        </div>-->
-									<!--                                    </li>-->
-								</ul>
-							</p-overlayPanel>
-						</li>
+                                            >
+                                                סובב שמאלה
+                                            </p>
+                                        </div>
+                                    </li>
+                                    <!--                                    <li (click)="Flip(file?.index, file?.idxImg, file?.id); tooltipEdit.hide();">-->
+                                    <!--                                        <div class="p-helper-clearfix"-->
+                                    <!--                                             style="display: flex; display: -ms-flexbox;">-->
+                                    <!--                                            <div style="align-self: center; flex: 20;-ms-flex:20; display: flex; align-items: center;">-->
+                                    <!--                                                <mat-icon style="display: block;-->
+                                    <!--    font-size: 16px;-->
+                                    <!--    width: auto;-->
+                                    <!--    height: auto;-->
+                                    <!--    line-height: normal;">rotate_90_degrees_ccw-->
+                                    <!--                                                </mat-icon>-->
+                                    <!--                                            </div>-->
+                                    <!--                                            <p class="nameAcc"-->
+                                    <!--                                               style="overflow: hidden; white-space: nowrap; text-overflow: ellipsis;flex: 85;-ms-flex:85;">-->
+                                    <!--                                                היפוך-->
+                                    <!--                                            </p>-->
+                                    <!--                                        </div>-->
+                                    <!--                                    </li>-->
+                                    <!--                                    <li (click)="Mirror(file?.index, file?.idxImg, file?.id); tooltipEdit.hide();">-->
+                                    <!--                                        <div class="p-helper-clearfix"-->
+                                    <!--                                             style="display: flex; display: -ms-flexbox;">-->
+                                    <!--                                            <div style="align-self: center; flex: 20;-ms-flex:20; display: flex; align-items: center;">-->
+                                    <!--                                                <mat-icon style="display: block;-->
+                                    <!--    font-size: 16px;-->
+                                    <!--    width: auto;-->
+                                    <!--    height: auto;-->
+                                    <!--    line-height: normal;">flip-->
+                                    <!--                                                </mat-icon>-->
+                                    <!--                                            </div>-->
+                                    <!--                                            <p class="nameAcc"-->
+                                    <!--                                               style="overflow: hidden; white-space: nowrap; text-overflow: ellipsis;flex: 85;-ms-flex:85;">-->
+                                    <!--                                                היפוך מראה-->
+                                    <!--                                            </p>-->
+                                    <!--                                        </div>-->
+                                    <!--                                    </li>-->
+                                </ul>
+                            </p-overlayPanel>
+                        </li>
 
-						<li
-								(click)="file.merge = !file.merge"
-								*ngIf="files.length > 1 && !isLast"
-								[class.active]="!file.merge"
-								[pTooltip]="
+                        <li
+                                (click)="file.merge = !file.merge"
+                                *ngIf="files.length > 1 && !isLast"
+                                [class.active]="!file.merge"
+                                [pTooltip]="
                 file.merge ? 'לחיצה תפצל את המסמכים' : 'לחיצה תאחד את המסמכים'
               "
-								class="splitLine"
-								tooltipPosition="bottom"
-						>
-							<div class="line">&nbsp;</div>
-							<div class="splitIcon">&#9986;</div>
-						</li>
-					</ng-container>
-				</ul>
-			</div>
+                                class="splitLine"
+                                tooltipPosition="bottom"
+                        >
+                            <div class="line">&nbsp;</div>
+                            <div class="splitIcon">&#9986;</div>
+                        </li>
+                    </ng-container>
+                </ul>
+            </div>
 
-			<p-footer>
-				<button
-						(click)="resetAndReturnToMainUploadScreen(true)"
-						class="button-link"
-				>
-					{{ 'actions.cancellation' | translate }}
-				</button>
-				<button (click)="uploadsScan(fileViewer)" class="button-dark">
-					אישור
-				</button>
-			</p-footer>
-		</p-dialog>
+            <p-footer>
+                <button
+                        (click)="resetAndReturnToMainUploadScreen(true)"
+                        class="button-link"
+                >
+                    {{ 'actions.cancellation' | translate }}
+                </button>
+                <button (click)="uploadsScan(fileViewer)" class="button-dark">
+                    אישור
+                </button>
+            </p-footer>
+        </p-dialog>
 
-		<p-dialog (visibleChange)="fileUploadProgress = false"
-				[visible]="(fileUploadProgress && scanFilesOcrPopUp && scanFilesOcrPopUp.visible)"
-				[draggable]="false"
-				[modal]="true"
-				[resizable]="false"
-				appendTo="body"
-				styleClass="fileUploadProgress"
-		>
-			<p-header>
-				<h1>העלאת הסריקות למערכת</h1>
-			</p-header>
+        <p-dialog (visibleChange)="fileUploadProgress = false"
+                  [draggable]="false"
+                  [modal]="true"
+                  [resizable]="false"
+                  [visible]="(fileUploadProgress && scanFilesOcrPopUp && scanFilesOcrPopUp.visible)"
+                  appendTo="body"
+                  styleClass="fileUploadProgress"
+        >
+            <p-header>
+                <h1>העלאת הסריקות למערכת</h1>
+            </p-header>
 
-			<div class="files-list scroll-chrome">
-				<div class="single-file">
-					<div class="info">
-						<h4 class="name">
-							<ng-container *ngFor="let file of files; let i = index">
-								<ng-container *ngIf="i === indexFileTimer">
-									{{ file?.name }}
-									{{
-									!progress ||
-									(progress && (progress[file.name].progress | async) < 100)
-											? ''
-											: ' - הועלה בהצלחה'
-									}}
-								</ng-container>
-							</ng-container>
-						</h4>
+            <div class="files-list scroll-chrome">
+                <div class="single-file">
+                    <div class="info">
+                        <h4 class="name">
+                            <ng-container *ngFor="let file of files; let i = index">
+                                <ng-container *ngIf="i === indexFileTimer">
+                                    {{ file?.name }}
+                                    {{
+                                    !progress ||
+                                    (progress && (progress[file.name].progress | async) < 100)
+                                        ? ''
+                                        : ' - הועלה בהצלחה'
+                                    }}
+                                </ng-container>
+                            </ng-container>
+                        </h4>
 
-						<p class="progressText">
-							{{ progressAll ? (progressAll | async) : 0 }}%
-						</p>
-						<app-progress
-								[progress]="progressAll ? (progressAll | async) : 0"
-						></app-progress>
-					</div>
-				</div>
+                        <p class="progressText">
+                            {{ progressAll ? (progressAll | async) : 0 }}%
+                        </p>
+                        <app-progress
+                                [progress]="progressAll ? (progressAll | async) : 0"
+                        ></app-progress>
+                    </div>
+                </div>
 
-				<!--                <div class="single-file" *ngFor="let file of files; let i = index">-->
-				<!--                    <div class="info">-->
-				<!--                        <h4 class="name">-->
-				<!--                            {{ file?.name }}-->
-				<!--                        </h4>-->
+                <!--                <div class="single-file" *ngFor="let file of files; let i = index">-->
+                <!--                    <div class="info">-->
+                <!--                        <h4 class="name">-->
+                <!--                            {{ file?.name }}-->
+                <!--                        </h4>-->
 
-				<!--                        <p class="progressText">-->
-				<!--                            {{ progress ? (progress[file.name].progress | async) : 0}}%-->
-				<!--                        </p>-->
-				<!--                        <app-progress [progress]="progress ? (progress[file.name].progress | async) : 0"></app-progress>-->
-				<!--                    </div>-->
-				<!--                </div>-->
-			</div>
-		</p-dialog>
+                <!--                        <p class="progressText">-->
+                <!--                            {{ progress ? (progress[file.name].progress | async) : 0}}%-->
+                <!--                        </p>-->
+                <!--                        <app-progress [progress]="progress ? (progress[file.name].progress | async) : 0"></app-progress>-->
+                <!--                    </div>-->
+                <!--                </div>-->
+            </div>
+        </p-dialog>
 
-		<p-dialog (visibleChange)="scanFilesOcrPopUp.visible = false"
-				[visible]="(     showProgressScan &&
+        <p-dialog (visibleChange)="scanFilesOcrPopUp.visible = false"
+                  [closeOnEscape]="true"
+                  [draggable]="false"
+                  [modal]="true"
+                  [resizable]="false"
+                  [style]="{'margin-top':'100px'}"
+                  [visible]="(     showProgressScan &&
         scanFilesOcrPopUp &&
         scanFilesOcrPopUp.visible &&
         !stopped)"
-				[closeOnEscape]="true"
-				[draggable]="false"
-				[modal]="true"
-				  position="top"
-				  [style]="{'margin-top':'100px'}"
-				[resizable]="false"
-				appendTo="body"
-				styleClass="fileUploadProgress scanProgress"
-		>
-			<p-header>
-				<h1>העלאה מסורק</h1>
-			</p-header>
+                  appendTo="body"
+                  position="top"
+                  styleClass="fileUploadProgress scanProgress"
+        >
+            <p-header>
+                <h1>העלאה מסורק</h1>
+            </p-header>
 
-			<div
-					*ngIf="showProgressScan"
-					class="files-list scroll-chrome"
-					style="padding-top: 5px; padding-bottom: 10px"
-			>
-				<p
-						*ngIf="
+            <div
+                    *ngIf="showProgressScan"
+                    class="files-list scroll-chrome"
+                    style="padding-top: 5px; padding-bottom: 10px"
+            >
+                <p
+                        *ngIf="
             !showProgressScan.bScanCompleted &&
             showProgressScan.result &&
             showProgressScan.result &&
             showProgressScan.result.currentPageNum
           "
-				>
-					סורק מסמך {{ showProgressScan?.result.currentPageNum + 1 }}
-				</p>
-				<p
-						*ngIf="
+                >
+                    סורק מסמך {{ showProgressScan?.result.currentPageNum + 1 }}
+                </p>
+                <p
+                        *ngIf="
             showProgressScan.bScanCompleted &&
             showProgressScan.result &&
             showProgressScan.result &&
             showProgressScan.result.currentPageNum > 0
           "
-				>
-					הסריקה הסתיימה בהצלחה.
+                >
+                    הסריקה הסתיימה בהצלחה.
 
-					{{
-					showProgressScan.result.currentPageNum > 1
-							? showProgressScan.result.currentPageNum + ' מסמכים נסרקו'
-							: 'מסמך אחד נסרק'
-					}}
-				</p>
-			</div>
-			<div class="progress-base">
-				<div class="progress-bar"></div>
-			</div>
-			<p-footer style="justify-content: center">
-				<button (click)="stopScan()" class="button-dark">
-					{{ 'actions.cancellation' | translate }}
-				</button>
-			</p-footer>
-		</p-dialog>
+                    {{
+                    showProgressScan.result.currentPageNum > 1
+                        ? showProgressScan.result.currentPageNum + ' מסמכים נסרקו'
+                        : 'מסמך אחד נסרק'
+                    }}
+                </p>
+            </div>
+            <div class="progress-base">
+                <div class="progress-bar"></div>
+            </div>
+            <p-footer style="justify-content: center">
+                <button (click)="stopScan()" class="button-dark">
+                    {{ 'actions.cancellation' | translate }}
+                </button>
+            </p-footer>
+        </p-dialog>
 
-		<p-dialog (visibleChange)="errorString = false"
-				(onHide)="errorString = false"
-				[visible]="(errorString)"
-				[closeOnEscape]="true"
-				[draggable]="false"
-				[modal]="true"
-				  position="top"
-				  [style]="{'margin-top':'100px'}"
-				[resizable]="false"
-				appendTo="body"
-				styleClass="fileUploadProgress err"
-		>
-			<p-header>
-				<h1>שגיאה</h1>
-			</p-header>
+        <p-dialog (onHide)="errorString = false"
+                  (visibleChange)="errorString = false"
+                  [closeOnEscape]="true"
+                  [draggable]="false"
+                  [modal]="true"
+                  [resizable]="false"
+                  [style]="{'margin-top':'100px'}"
+                  [visible]="(errorString)"
+                  appendTo="body"
+                  position="top"
+                  styleClass="fileUploadProgress err"
+        >
+            <p-header>
+                <h1>שגיאה</h1>
+            </p-header>
 
-			<h1
-					[innerHTML]="errorString?.errorString"
-					style="padding-top: 10px; text-align: center"
-			></h1>
-			<p
-					*ngIf="errorString?.errorCode"
-					style="padding-top: 5px; direction: ltr; text-align: center"
-			>
-				errorCode: {{ errorString?.errorCode }}
-			</p>
-		</p-dialog>
-	</p-dialog>
+            <h1
+                    [innerHTML]="errorString?.errorString"
+                    style="padding-top: 10px; text-align: center"
+            ></h1>
+            <p
+                    *ngIf="errorString?.errorCode"
+                    style="padding-top: 5px; direction: ltr; text-align: center"
+            >
+                errorCode: {{ errorString?.errorCode }}
+            </p>
+        </p-dialog>
+    </p-dialog>
 </ng-container>
 
 <ng-container *ngIf="showDocumentStorageDataFired">
-	<p-sidebar
-			(onHide)="hideDocumentStorageData()"
-			[visible]="(showDocumentStorageDataFired)"
-			[modal]="true"
-			[position]="'left'"
-			[styleClass]="'sidebar-show-imgs'"
-			appendTo="body"
-	>
-		<div class="zoom-controls-inside">
-			<button (click)="imageScaleNewInvoice = 1" mat-icon-button>
-				<mat-icon class="rotate-90">height</mat-icon>
-			</button>
-			<button
-					(click)="rotateInside(); $event.stopPropagation()"
-					mat-icon-button
-			>
-				<mat-icon style="width: 17px; height: 17px" svgIcon="rotate"></mat-icon>
-			</button>
-			<button
-					(click)="zoomStepInside(1, 'imageScaleNewInvoice')"
-					mat-icon-button
-			>
-				<mat-icon>add</mat-icon>
-			</button>
-			<button
-					(click)="zoomStepInside(-1, 'imageScaleNewInvoice')"
-					mat-icon-button
-			>
-				<mat-icon>remove</mat-icon>
-			</button>
-		</div>
-		<div
-				[ngStyle]="{ height: window['innerHeight'] - 10 + 'px' }"
-				class="scrollbar-dynamic scroll-chrome"
-				style="overflow: auto"
-		>
-			<div *ngIf="!sidebarImgs" class="loader">
-				<div class="circle"></div>
-			</div>
+    <p-sidebar
+            (onHide)="hideDocumentStorageData()"
+            [modal]="true"
+            [position]="'left'"
+            [styleClass]="'sidebar-show-imgs'"
+            [visible]="(showDocumentStorageDataFired)"
+            appendTo="body"
+    >
+        <div class="zoom-controls-inside">
+            <button (click)="imageScaleNewInvoice = 1" mat-icon-button>
+                <mat-icon class="rotate-90">height</mat-icon>
+            </button>
+            <button
+                    (click)="rotateInside(); $event.stopPropagation()"
+                    mat-icon-button
+            >
+                <mat-icon style="width: 17px; height: 17px" svgIcon="rotate"></mat-icon>
+            </button>
+            <button
+                    (click)="zoomStepInside(1, 'imageScaleNewInvoice')"
+                    mat-icon-button
+            >
+                <mat-icon>add</mat-icon>
+            </button>
+            <button
+                    (click)="zoomStepInside(-1, 'imageScaleNewInvoice')"
+                    mat-icon-button
+            >
+                <mat-icon>remove</mat-icon>
+            </button>
+        </div>
+        <div
+                [ngStyle]="{ height: window['innerHeight'] - 10 + 'px' }"
+                class="scrollbar-dynamic scroll-chrome"
+                style="overflow: auto"
+        >
+            <div *ngIf="!sidebarImgs" class="loader">
+                <div class="circle"></div>
+            </div>
 
-			<div style="margin: 5px 0px; height: 100%">
-				<iframe
-						*ngIf="isPdf"
-						[src]="sidebarImgs"
+            <div style="margin: 5px 0px; height: 100%">
+                <iframe
+                        *ngIf="isPdf"
+                        [src]="sidebarImgs"
 
-						allowfullscreen="false"
-						height="100%"
-						scrolling="auto"
-						type="application/pdf"
-						width="100%"
-				>
-				</iframe>
-				<ng-container *ngIf="!isPdf && !!sidebarImgs">
-					<img
-							*ngIf="isNgSrc"
-							[ngStyle]="{ transform: 'rotate(' + degRotateImg + 'deg)' }"
-							[ngSrc]="sidebarImgs"
-							[style.zoom.%]="imageScaleNewInvoice * 100"
-							style="height: auto; width: 680px; position: relative;display: block; margin: 0 auto" fill
-					/>
-					<img
-							*ngIf="!isNgSrc"
-							[ngStyle]="{ transform: 'rotate(' + degRotateImg + 'deg)' }"
-							[src]="sidebarImgs"
-							[style.zoom.%]="imageScaleNewInvoice * 100"
-							style="height: auto; width: 680px; position: relative;display: block; margin: 0 auto"
-					/>
-				</ng-container>
+                        allowfullscreen="false"
+                        height="100%"
+                        scrolling="auto"
+                        type="application/pdf"
+                        width="100%"
+                >
+                </iframe>
+                <ng-container *ngIf="!isPdf && !!sidebarImgs">
+                    <img
+                            *ngIf="isNgSrc"
+                            [ngSrc]="sidebarImgs"
+                            [ngStyle]="{ transform: 'rotate(' + degRotateImg + 'deg)' }"
+                            [style.zoom.%]="imageScaleNewInvoice * 100"
+                            fill style="height: auto; width: 680px; position: relative;display: block; margin: 0 auto"
+                    />
+                    <img
+                            *ngIf="!isNgSrc"
+                            [ngStyle]="{ transform: 'rotate(' + degRotateImg + 'deg)' }"
+                            [src]="sidebarImgs"
+                            [style.zoom.%]="imageScaleNewInvoice * 100"
+                            style="height: auto; width: 680px; position: relative;display: block; margin: 0 auto"
+                    />
+                </ng-container>
 
-			</div>
-		</div>
-	</p-sidebar>
+            </div>
+        </div>
+    </p-sidebar>
 </ng-container>
 
 <ng-container *ngIf="docFolders.visible">
-	<p-dialog (visibleChange)="docFolders.visible = false"
-			[visible]="(docFolders.visible)"
-			[draggable]="false"
-			[modal]="true"
-			[positionLeft]="
+    <p-dialog (visibleChange)="docFolders.visible = false"
+              [draggable]="false"
+              [modal]="true"
+              [positionLeft]="
       docFolders.positionLeft ? docFolders.positionLeft : undefined
     "
-			  [position]="docFolders.positionLeft ? 'top' : 'center'"
-			  [style]="{'margin-top': docFolders.positionLeft ? 250 : 0 +'px'}"
-			[resizable]="false"
-			appendTo="body"
-			styleClass="ocrDocumentCompanyArchiveDialog"
-	>
-		<p-header>{{ 'העברה לארכיון' }}</p-header>
-		<app-folders-selector
-				(selectedFolderChange)="docFolders.folderSelect = $event"
-				[selectedCompanyId]="docFolders.companyId"
-		>
-		</app-folders-selector>
-		<p-footer>
-			<button (click)="docFolders.visible = false" class="button-link">
-				{{ 'actions.cancellation' | translate }}
-			</button>
-			<button
-					(click)="docFolders.onApprove(docFolders.folderSelect)"
-					[disabled]="!docFolders.folderSelect?.folderId"
-					class="button-dark"
-			>
-				{{ 'actions.save' | translate }}
-			</button>
-		</p-footer>
-	</p-dialog>
+              [position]="docFolders.positionLeft ? 'top' : 'center'"
+              [resizable]="false"
+              [style]="{'margin-top': docFolders.positionLeft ? 250 : 0 +'px'}"
+              [visible]="(docFolders.visible)"
+              appendTo="body"
+              styleClass="ocrDocumentCompanyArchiveDialog"
+    >
+        <p-header>{{ 'העברה לארכיון' }}</p-header>
+        <app-folders-selector
+                (selectedFolderChange)="docFolders.folderSelect = $event"
+                [selectedCompanyId]="docFolders.companyId"
+        >
+        </app-folders-selector>
+        <p-footer>
+            <button (click)="docFolders.visible = false" class="button-link">
+                {{ 'actions.cancellation' | translate }}
+            </button>
+            <button
+                    (click)="docFolders.onApprove(docFolders.folderSelect)"
+                    [disabled]="!docFolders.folderSelect?.folderId"
+                    class="button-dark"
+            >
+                {{ 'actions.save' | translate }}
+            </button>
+        </p-footer>
+    </p-dialog>
 </ng-container>
 
-<p-dialog (visibleChange)="docNote.visible = false"
-		(onShow)="focusNote(textarea)"
-		[visible]="(docNote.visible)"
+<p-dialog (onShow)="focusNote(textarea)"
+          (visibleChange)="docNote.visible = false"
+          [modal]="true"
 
-		[modal]="true"
-		[resizable]="false"
-		appendTo="body"
-		styleClass="ocrDocumentNoteDialog"
+          [resizable]="false"
+          [visible]="(docNote.visible)"
+          appendTo="body"
+          styleClass="ocrDocumentNoteDialog"
 >
-	<p-header>
-		<h1>
-			{{ !!docNote.note ? 'עריכת פתק' : 'הוספת פתק' }}
-			<!--            {{(this.componentRefChild.fileStatus === 'BANK' || this.componentRefChild.fileStatus === 'CREDIT') ? 'הערות' : 'עריכת פתק'}}-->
-		</h1>
-	</p-header>
-	<form (ngSubmit)="docNote.approve()" [formGroup]="docNote.noteFC" novalidate>
+    <p-header>
+        <h1>
+            {{ !!docNote.note ? 'עריכת פתק' : 'הוספת פתק' }}
+            <!--            {{(this.componentRefChild.fileStatus === 'BANK' || this.componentRefChild.fileStatus === 'CREDIT') ? 'הערות' : 'עריכת פתק'}}-->
+        </h1>
+    </p-header>
+    <form (ngSubmit)="docNote.approve()" [formGroup]="docNote.noteFC" novalidate>
     <textarea
-		    #textarea
-		    [formControl]="docNote.noteFC.get('note')"
-		    [placeholder]="'הקלידו הערה'"
-		    class="scroll-chrome"
-		    cols="48"
-		    rows="8"
+        #textarea
+        [formControl]="docNote.noteFC.get('note')"
+        [placeholder]="'הקלידו הערה'"
+        class="scroll-chrome"
+        cols="48"
+        rows="8"
     ></textarea>
-	</form>
-	<p-footer>
-		<button
-				(click)="docNote.noteFC.get('note').setValue(null); docNote.approve()"
-				*ngIf="
+    </form>
+    <p-footer>
+        <button
+                (click)="docNote.noteFC.get('note').setValue(null); docNote.approve()"
+                *ngIf="
         !(
           this.componentRefChild.fileStatus === 'BANK' ||
           this.componentRefChild.fileStatus === 'CREDIT'
         )
       "
-				class="button-link"
-				style="margin-left: auto; padding: 0; color: #022258 !important"
-		>
-			<mat-icon style="width: 16px" svgIcon="trash"></mat-icon>
-		</button>
+                class="button-link"
+                style="margin-left: auto; padding: 0; color: #022258 !important"
+        >
+            <mat-icon style="width: 16px" svgIcon="trash"></mat-icon>
+        </button>
 
-		<button (click)="docNote.visible = false" class="button-link">
-			{{ 'actions.cancellation' | translate }}
-		</button>
-		<button (click)="docNote.approve()" class="button-dark">אישור</button>
-	</p-footer>
+        <button (click)="docNote.visible = false" class="button-link">
+            {{ 'actions.cancellation' | translate }}
+        </button>
+        <button (click)="docNote.approve()" class="button-dark">אישור</button>
+    </p-footer>
 </p-dialog>
 
 <ng-container *ngIf="docCompanyReplacement.visible">
-	<p-dialog (visibleChange)="docCompanyReplacement.visible = false"
-			[visible]="(docCompanyReplacement.visible)"
-			[modal]="true"
-			[resizable]="false"
-			appendTo="body"
-			styleClass="ocrDocumentCompanyReplaceDialog"
-	>
-		<p-header>{{ 'העברת מסמך לחברה אחרת' }}</p-header>
-		<app-accountants-company-selector
-				(selectedCompanyChange)="
+    <p-dialog (visibleChange)="docCompanyReplacement.visible = false"
+              [modal]="true"
+              [resizable]="false"
+              [visible]="(docCompanyReplacement.visible)"
+              appendTo="body"
+              styleClass="ocrDocumentCompanyReplaceDialog"
+    >
+        <p-header>{{ 'העברת מסמך לחברה אחרת' }}</p-header>
+        <app-accountants-company-selector
+                (selectedCompanyChange)="
         docCompanyReplacement.companyReplacement = $event
       "
-				[selectedCompanyId]="
+                [selectedCompanyId]="
         userService.appData?.userData?.companySelect?.companyId
       "
-		></app-accountants-company-selector>
-		<p-footer>
-			<button
-					(click)="docCompanyReplacement.visible = false"
-					class="button-link"
-			>
-				{{ 'actions.cancellation' | translate }}
-			</button>
-			<button
-					(click)="docCompanyReplacement.onApprove()"
-					[disabled]="!docCompanyReplacement.companyReplacement?.companyId"
-					class="button-dark"
-			>
-				{{ 'actions.save' | translate }}
-			</button>
-		</p-footer>
-	</p-dialog>
+        ></app-accountants-company-selector>
+        <p-footer>
+            <button
+                    (click)="docCompanyReplacement.visible = false"
+                    class="button-link"
+            >
+                {{ 'actions.cancellation' | translate }}
+            </button>
+            <button
+                    (click)="docCompanyReplacement.onApprove()"
+                    [disabled]="!docCompanyReplacement.companyReplacement?.companyId"
+                    class="button-dark"
+            >
+                {{ 'actions.save' | translate }}
+            </button>
+        </p-footer>
+    </p-dialog>
 </ng-container>
 
 <ng-container *ngIf="docToRemove.visible">
-	<p-dialog (visibleChange)="docToRemove.visible = false"
-			[visible]="(docToRemove.visible)"
-			[modal]="true"
-			[resizable]="false"
-			appendTo="body"
-			styleClass="ocrDocumentNoteDialog docToRemove"
-	>
-		<p-header>
-			<h1>
-				{{
-				componentRefChild?.showFloatNav &&
-				docToRemove.fd === null &&
-				componentRefChild?.showFloatNav?.selcetedFiles.length > 1
-						? 'הסרת מסמכים'
-						: 'הסרת מסמך'
-				}}
-			</h1>
-		</p-header>
+    <p-dialog (visibleChange)="docToRemove.visible = false"
+              [modal]="true"
+              [resizable]="false"
+              [visible]="(docToRemove.visible)"
+              appendTo="body"
+              styleClass="ocrDocumentNoteDialog docToRemove"
+    >
+        <p-header>
+            <h1>
+                {{
+                componentRefChild?.showFloatNav &&
+                docToRemove.fd === null &&
+                componentRefChild?.showFloatNav?.selcetedFiles.length > 1
+                    ? 'הסרת מסמכים'
+                    : 'הסרת מסמך'
+                }}
+            </h1>
+        </p-header>
 
-		<p
-				*ngIf="
+        <p
+                *ngIf="
         componentRefChild?.showFloatNav &&
           docToRemove.fd === null &&
           componentRefChild?.showFloatNav?.selcetedFiles.length > 1;
         else onlyOne
       "
-		>
-			הסרת המסמכים תעביר אותם לתיקיית “מסמכים לא מוכרים שהוסרו”
-			<br/>
-			בארכיון. לתשומת לבך, ממסמכים אלו לא תיווצר פקודת יומן.
-		</p>
-		<ng-template #onlyOne>
-			<p>
-				הסרת המסמך תעביר אותו לתיקיית “מסמכים לא מוכרים שהוסרו”
-				<br/>
-				בארכיון. לתשומת לבך, ממסמך זה לא תיווצר פקודת יומן.
-			</p>
-		</ng-template>
-		<form
-				[formGroup]="docToRemove.form"
-				class="docToRemove"
-				novalidate
-				style="width: 385px; overflow: hidden"
-		>
-			<div class="rowForm">
-				<label> עדכון הלקוח במייל </label>
-				<div style="display: flex; justify-content: flex-end">
-					<label class="switchBtn">
-						<input
-								[formControl]="docToRemove.form.get('sendToClient')"
-								type="checkbox"
-						/>
-						<span class="slider round"></span>
-					</label>
-				</div>
-			</div>
+        >
+            הסרת המסמכים תעביר אותם לתיקיית “מסמכים לא מוכרים שהוסרו”
+            <br/>
+            בארכיון. לתשומת לבך, ממסמכים אלו לא תיווצר פקודת יומן.
+        </p>
+        <ng-template #onlyOne>
+            <p>
+                הסרת המסמך תעביר אותו לתיקיית “מסמכים לא מוכרים שהוסרו”
+                <br/>
+                בארכיון. לתשומת לבך, ממסמך זה לא תיווצר פקודת יומן.
+            </p>
+        </ng-template>
+        <form
+                [formGroup]="docToRemove.form"
+                class="docToRemove"
+                novalidate
+                style="width: 385px; overflow: hidden"
+        >
+            <div class="rowForm">
+                <label> עדכון הלקוח במייל </label>
+                <div style="display: flex; justify-content: flex-end">
+                    <label class="switchBtn">
+                        <input
+                                [formControl]="docToRemove.form.get('sendToClient')"
+                                type="checkbox"
+                        />
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+            </div>
 
-			<ng-container *ngIf="docToRemove.form.get('sendToClient').value">
-				<div class="rowForm">
-					<label> מאת </label>
-					<div>
-						<input
-								[formControl]="docToRemove.form.get('from')"
-								placeholder="יש להזין את שם השולח"
-								type="text"
-						/>
-					</div>
-				</div>
+            <ng-container *ngIf="docToRemove.form.get('sendToClient').value">
+                <div class="rowForm">
+                    <label> מאת </label>
+                    <div>
+                        <input
+                                [formControl]="docToRemove.form.get('from')"
+                                placeholder="יש להזין את שם השולח"
+                                type="text"
+                        />
+                    </div>
+                </div>
 
-				<div class="rowForm">
-					<label> כתובת מייל השולח </label>
-					<div style="position: relative">
-						<input
-								(keypress)="handleKeyPressHeb1($event)"
-								[formControl]="docToRemove.form.get('fromMail')"
-								placeholder="יש להזין את כתובת מייל השולח"
-								type="text"
-						/>
-						<div
-								*ngIf="isHebrew1"
-								class="invalidAlert"
-								style="
+                <div class="rowForm">
+                    <label> כתובת מייל השולח </label>
+                    <div style="position: relative">
+                        <input
+                                (keypress)="handleKeyPressHeb1($event)"
+                                [formControl]="docToRemove.form.get('fromMail')"
+                                placeholder="יש להזין את כתובת מייל השולח"
+                                type="text"
+                        />
+                        <div
+                                *ngIf="isHebrew1"
+                                class="invalidAlert"
+                                style="
                 font-size: 13px;
                 color: red;
                 display: block;
@@ -1964,25 +1985,25 @@
                 bottom: -5px;
                 right: 5px;
               "
-						>
-							כתובת באנגלית
-						</div>
-					</div>
-				</div>
-				<div class="rowForm">
-					<label> כתובת מייל הלקוח </label>
-					<div style="position: relative">
-						<!--                    appNoNationalCharacters-->
-						<input
-								(keypress)="handleKeyPressHeb2($event)"
-								[formControl]="docToRemove.form.get('toMail')"
-								placeholder="יש להזין את כתובת מייל הלקוח"
-								type="text"
-						/>
-						<div
-								*ngIf="isHebrew2"
-								class="invalidAlert"
-								style="
+                        >
+                            כתובת באנגלית
+                        </div>
+                    </div>
+                </div>
+                <div class="rowForm">
+                    <label> כתובת מייל הלקוח </label>
+                    <div style="position: relative">
+                        <!--                    appNoNationalCharacters-->
+                        <input
+                                (keypress)="handleKeyPressHeb2($event)"
+                                [formControl]="docToRemove.form.get('toMail')"
+                                placeholder="יש להזין את כתובת מייל הלקוח"
+                                type="text"
+                        />
+                        <div
+                                *ngIf="isHebrew2"
+                                class="invalidAlert"
+                                style="
                 font-size: 13px;
                 color: red;
                 display: block;
@@ -1991,46 +2012,46 @@
                 bottom: -5px;
                 right: 5px;
               "
-						>
-							כתובת באנגלית
-						</div>
-					</div>
-				</div>
+                        >
+                            כתובת באנגלית
+                        </div>
+                    </div>
+                </div>
 
-				<!--                <div class="rowForm">-->
-				<!--                    <label>-->
-				<!--                        כתובת מייל השולח-->
-				<!--                    </label>-->
-				<!--                    <div>-->
-				<!--                        <input type="text" [formControl]="docToRemove.form.get('fromMail')" appNoNationalCharacters-->
-				<!--                               placeholder="יש להזין את כתובת מייל השולח">-->
-				<!--                    </div>-->
-				<!--                </div>-->
-				<!--                <div class="rowForm">-->
-				<!--                    <label>-->
-				<!--                        כתובת מייל הלקוח-->
-				<!--                    </label>-->
-				<!--                    <div>-->
-				<!--                        <input type="text" [formControl]="docToRemove.form.get('toMail')" appNoNationalCharacters-->
-				<!--                               placeholder="יש להזין את כתובת מייל הלקוח">-->
-				<!--                    </div>-->
-				<!--                </div>-->
-				<div class="rowForm">
-					<label> נושא </label>
-					<div>
-						<button
-								(click)="op.toggle($event)"
-								class="subjectBtn"
-								type="button"
-						>
-							{{ docToRemove.form.get('subject')?.value.subjectName }}
+                <!--                <div class="rowForm">-->
+                <!--                    <label>-->
+                <!--                        כתובת מייל השולח-->
+                <!--                    </label>-->
+                <!--                    <div>-->
+                <!--                        <input type="text" [formControl]="docToRemove.form.get('fromMail')" appNoNationalCharacters-->
+                <!--                               placeholder="יש להזין את כתובת מייל השולח">-->
+                <!--                    </div>-->
+                <!--                </div>-->
+                <!--                <div class="rowForm">-->
+                <!--                    <label>-->
+                <!--                        כתובת מייל הלקוח-->
+                <!--                    </label>-->
+                <!--                    <div>-->
+                <!--                        <input type="text" [formControl]="docToRemove.form.get('toMail')" appNoNationalCharacters-->
+                <!--                               placeholder="יש להזין את כתובת מייל הלקוח">-->
+                <!--                    </div>-->
+                <!--                </div>-->
+                <div class="rowForm">
+                    <label> נושא </label>
+                    <div>
+                        <button
+                                (click)="op.toggle($event)"
+                                class="subjectBtn"
+                                type="button"
+                        >
+                            {{ docToRemove.form.get('subject')?.value.subjectName }}
 
-							<i
-									[ngStyle]="{
+                            <i
+                                    [ngStyle]="{
                   transform: op.overlayVisible ? 'rotate(225deg)' : 'rotate(45deg)',
                   'margin-top': op.overlayVisible ? '8px' : '0px'
                 }"
-									style="
+                                    style="
                   border-style: solid;
                   border-width: 0 2px 2px 0;
                   content: '';
@@ -2039,40 +2060,42 @@
                   vertical-align: middle;
                   width: 7px;
                 "
-							></i>
-						</button>
-						<p-overlayPanel
-								#op
-								appendTo="body"
-								styleClass="overlayPanelSubjects"
-						>
-							<p-listbox
-									#plist_subjectsForCompany
-									(onChange)="op.hide()"
-									[dataKey]="'subjectId'"
-									[formControlName]="'subject'"
-									[listStyle]="{ 'max-height': '200px', width: '237px' }"
-									[optionLabel]="'subjectName'"
-									[options]="subjectsForCompany"
-							>
-								<ng-template let-subjects pTemplate="item">
-									<div>
-										<p>{{ subjects.subjectName }}</p>
-										<div
-												*ngIf="
+                            ></i>
+                        </button>
+                        <p-overlayPanel
+                            #op
+                            appendTo="body"
+                            styleClass="overlayPanelSubjects"
+                        >
+                            <p-listbox
+                                #plist_subjectsForCompany
+                                (onChange)="op.hide()"
+                                [dataKey]="'subjectId'"
+                                [formControlName]="'subject'"
+
+                                [listStyle]="{ 'max-height': '200px', width: '237px' }"
+                                [optionLabel]="'subjectName'"
+                                [options]="subjectsForCompany"
+                                name="subject"
+                            >
+                                <ng-template let-subjects pTemplate="item">
+                                    <div>
+                                        <p>{{ subjects.subjectName }}</p>
+                                        <div
+                                                *ngIf="
                       !subjects.system &&
                       docToSend.form.value.sendType === 'MAIL'
                     "
-												style="
+                                                style="
                       display: flex;
                       width: 50px;
                       justify-content: space-between;
                       height: 27px;
                       position: relative;
                     "
-										>
-											<div
-													(click)="
+                                        >
+                                            <div
+                                                    (click)="
                           createTemplateSubjectModal.show(
                             true,
                             subjects.subjectName,
@@ -2081,7 +2104,7 @@
                           );
                           $event.stopPropagation();
                         "
-													style="
+                                                    style="
 												    width: 25px;
 													z-index: 9999999;
 													position: absolute;
@@ -2093,21 +2116,21 @@
                               height: 27px;
                         flex: 1;
                       "
-											>
-												<mat-icon
+                                            >
+                                                <mat-icon
 
-														style="
+                                                        style="
 																z-index: 9999999;
                           width: 14px;
                           height: 15px;
                           vertical-align: middle;
                         "
-														svgIcon="pencil"
-												></mat-icon>
-											</div>
-											<div
-													(click)="subjectToRemove = subjects;$event.stopPropagation();"
-													style="
+                                                        svgIcon="pencil"
+                                                ></mat-icon>
+                                            </div>
+                                            <div
+                                                    (click)="subjectToRemove = subjects;$event.stopPropagation();"
+                                                    style="
 															z-index: 9999999;
 													position: absolute;
 													    width: 25px;
@@ -2119,98 +2142,98 @@
                               height: 27px;
                         flex: 1;
                       "
-											>
-												<mat-icon
-														style="
+                                            >
+                                                <mat-icon
+                                                        style="
                           width: 14px;
                           height: 15px;
                           vertical-align: middle;
                         "
-														svgIcon="trash"
-												></mat-icon>
-											</div>
-										</div>
-									</div>
-								</ng-template>
+                                                        svgIcon="trash"
+                                                ></mat-icon>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </ng-template>
 
 
-								<p-footer (click)="createTemplateSubjectModal.show()">
-									<img
-											src="/assets/images/addFolder.png"
-											style="margin-left: 7px"
-									/>
+                                <p-footer (click)="createTemplateSubjectModal.show()">
+                                    <img
+                                            src="/assets/images/addFolder.png"
+                                            style="margin-left: 7px"
+                                    />
 
-									יצירת תבנית
-								</p-footer>
-							</p-listbox>
-						</p-overlayPanel>
-					</div>
-				</div>
-				<div class="textarea docToRemove_textarea">
-					<label> תוכן ההודעה </label>
-					<div>
+                                    יצירת תבנית
+                                </p-footer>
+                            </p-listbox>
+                        </p-overlayPanel>
+                    </div>
+                </div>
+                <div class="textarea docToRemove_textarea">
+                    <label> תוכן ההודעה </label>
+                    <div>
             <textarea
-		            [(ngModel)]="docToRemove.form.get('subject').value.subjectText"
-		            [ngModelOptions]="{ standalone: true }"
-		            [placeholder]="'הקלידו הערה'"
-		            class="scroll-chrome"
-		            cols="48"
-		            rows="8"
+                    [(ngModel)]="docToRemove.form.get('subject').value.subjectText"
+                    [ngModelOptions]="{ standalone: true }"
+                    [placeholder]="'הקלידו הערה'"
+                    class="scroll-chrome"
+                    cols="48"
+                    rows="8"
             ></textarea>
 
-						<div class="endText">
-							בברכה,
-							<br/>
-							{{
-							docToRemove.form.get('from').value
-									? docToRemove.form.get('from').value
-									: userService.appData.userData.firstName +
-									' ' +
-									userService.appData.userData.lastName
-							}}
-						</div>
-					</div>
-				</div>
-			</ng-container>
-		</form>
-		<p-footer>
-			<button (click)="docToRemove.visible = false" class="button-link">
-				{{ 'actions.cancellation' | translate }}
-			</button>
-			<button
-					(click)="docToRemove.approve()"
-					[disabled]="
+                        <div class="endText">
+                            בברכה,
+                            <br/>
+                            {{
+                            docToRemove.form.get('from').value
+                                ? docToRemove.form.get('from').value
+                                : userService.appData.userData.firstName +
+                                ' ' +
+                                userService.appData.userData.lastName
+                            }}
+                        </div>
+                    </div>
+                </div>
+            </ng-container>
+        </form>
+        <p-footer>
+            <button (click)="docToRemove.visible = false" class="button-link">
+                {{ 'actions.cancellation' | translate }}
+            </button>
+            <button
+                    (click)="docToRemove.approve()"
+                    [disabled]="
           docToRemove.form.get('sendToClient').value &&
           (docToRemove.form.get('from').invalid ||
             docToRemove.form.get('fromMail').invalid ||
             docToRemove.form.get('toMail').invalid ||
             !docToRemove.form.get('subject').value.subjectText)
         "
-					class="button-dark"
-			>
-				אישור
-			</button>
-		</p-footer>
-	</p-dialog>
+                    class="button-dark"
+            >
+                אישור
+            </button>
+        </p-footer>
+    </p-dialog>
 </ng-container>
 
 <ng-container *ngIf="docToSend.visible">
-	<p-dialog (visibleChange)="docToSend.visible = false"
-			[visible]="(docToSend.visible)"
-			[modal]="true"
-			[resizable]="false"
-			appendTo="body"
-			styleClass="ocrDocumentNoteDialog docToRemove"
-	>
-		<p-header>
-			<h1>שליחת הודעה ללקוח</h1>
-		</p-header>
-		<div
-				*ngIf="
+    <p-dialog (visibleChange)="docToSend.visible = false"
+              [modal]="true"
+              [resizable]="false"
+              [visible]="(docToSend.visible)"
+              appendTo="body"
+              styleClass="ocrDocumentNoteDialog docToRemove"
+    >
+        <p-header>
+            <h1>שליחת הודעה ללקוח</h1>
+        </p-header>
+        <div
+                *ngIf="
         contactsWithoutAgreement.length &&
         docToSend.form.value.sendType === 'WHATSAPP'
       "
-				style="
+                style="
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -2224,122 +2247,122 @@
         margin-right: -20px;
         padding: 0 20px;
       "
-		>
-			<p style="font-weight: 700; padding: 0">
-				{{ contactsWithoutAgreementNames }}
-				{{ contactsWithoutAgreement.length === 1 ? ' צריכ/ה ' : ' צריכים ' }}
-				לאשר את הסכם ההתקשרות כדי לקבל ממך הודעות
-			</p>
+        >
+            <p style="font-weight: 700; padding: 0">
+                {{ contactsWithoutAgreementNames }}
+                {{ contactsWithoutAgreement.length === 1 ? ' צריכ/ה ' : ' צריכים ' }}
+                לאשר את הסכם ההתקשרות כדי לקבל ממך הודעות
+            </p>
 
-			<p style="padding: 0">
+            <p style="padding: 0">
         <span
-		        (click)="contactsWithoutAgreementSend()"
-		        style="cursor: pointer; text-decoration: underline"
+                (click)="contactsWithoutAgreementSend()"
+                style="cursor: pointer; text-decoration: underline"
         >
           שליחת הסכם התקשרות
         </span>
-			</p>
-		</div>
-		<form [formGroup]="docToSend.form" class="docToRemove" novalidate>
-			<div class="rowForm">
-				<label> שליחה באמצעות </label>
-				<div>
-					<p-dropdown
-							[dropdownIcon]="'p-dropdown-icon'"
+            </p>
+        </div>
+        <form [formGroup]="docToSend.form" class="docToRemove" novalidate>
+            <div class="rowForm">
+                <label> שליחה באמצעות </label>
+                <div>
+                    <p-dropdown
+                            (onChange)="changeSendType()"
 
-							(onChange)="changeSendType()"
-							[autoDisplayFirst]="false"
-							[formControl]="docToSend.form.get('sendType')"
-							[options]="sendTypeList"
-							[style]="{ width: '205px' }"
-							appendTo="body"
+                            [autoDisplayFirst]="false"
+                            [dropdownIcon]="'p-dropdown-icon'"
+                            [formControl]="docToSend.form.get('sendType')"
+                            [options]="sendTypeList"
+                            [style]="{ width: '205px' }"
+                            appendTo="body"
 
-							placeholder="בחירה"
-					>
-						<ng-template let-option pTemplate="item">
-							<div>
-								<div
-										(click)="onClickOptionDD(option.disabled, $event)"
-										[ngStyle]="
+                            placeholder="בחירה"
+                    >
+                        <ng-template let-option pTemplate="item">
+                            <div>
+                                <div
+                                        (click)="onClickOptionDD(option.disabled, $event)"
+                                        [ngStyle]="
                     option.disabled ? { opacity: '0.4', cursor: 'default' } : ''
                   "
-								>
-									{{ option.label }}
-								</div>
-							</div>
-						</ng-template>
-					</p-dropdown>
-				</div>
-			</div>
-			<div
-					*ngIf="
+                                >
+                                    {{ option.label }}
+                                </div>
+                            </div>
+                        </ng-template>
+                    </p-dropdown>
+                </div>
+            </div>
+            <div
+                    *ngIf="
           docToSend.form.value.sendType === 'WHATSAPP' ||
           docToSend.form.value.sendType === 'MAIL'
         "
-					class="rowForm"
-			>
-				<label style="line-height: normal">
-					איש קשר
+                    class="rowForm"
+            >
+                <label style="line-height: normal">
+                    איש קשר
 
-					<small
-							(click)="moveToContact()"
-							class="link"
-							style="display: block; line-height: normal; font-size: 13px"
-					>
-						הוספה/עריכה
-					</small>
-				</label>
+                    <small
+                            (click)="moveToContact()"
+                            class="link"
+                            style="display: block; line-height: normal; font-size: 13px"
+                    >
+                        הוספה/עריכה
+                    </small>
+                </label>
 
-				<div>
-					<p-dropdown
-							(onChange)="targetUserIdChanged()"
-							[autoDisplayFirst]="false"
-							[formControl]="docToSend.form.get('targetUserId')"
-							[options]="contacts"
-							[style]="{ width: '205px' }"
-							appendTo="body"
-							[dropdownIcon]="'p-dropdown-icon'"
+                <div>
+                    <p-dropdown
+                            (onChange)="targetUserIdChanged()"
+                            [autoDisplayFirst]="false"
+                            [dropdownIcon]="'p-dropdown-icon'"
+                            [formControl]="docToSend.form.get('targetUserId')"
+                            [options]="contacts"
+                            [style]="{ width: '205px' }"
+                            appendTo="body"
 
-							placeholder="בחירה"
-					>
-						<ng-template let-option pTemplate="item">
-							<div>
-								<div
-										(click)="onClickOptionDD(option.disabled, $event)"
-										[ngStyle]="
+                            placeholder="בחירה"
+                    >
+                        <ng-template let-option pTemplate="item">
+                            <div>
+                                <div
+                                        (click)="onClickOptionDD(option.disabled, $event)"
+                                        [ngStyle]="
                     option.disabled ? { opacity: '0.4', cursor: 'default' } : ''
                   "
-								>
-									{{ option.label }}
-								</div>
-							</div>
-						</ng-template>
-					</p-dropdown>
-				</div>
-			</div>
-			<div *ngIf="docToSend.form.value.sendType === 'MAIL'" class="rowForm">
-				<label> מאת </label>
-				<div>
-					<input
-							[formControl]="docToSend.form.get('from')"
-							placeholder="יש להזין את שם השולח"
-							type="text"
-					/>
-				</div>
-			</div>
-			<div *ngIf="docToSend.form.value.sendType === 'MAIL'" class="rowForm">
-				<label> כתובת מייל השולח </label>
-				<div style="position: relative">
-					<input
-							(keypress)="handleKeyPressHeb1($event)"
-							[formControl]="docToSend.form.get('fromMail')"
-							placeholder="יש להזין את כתובת מייל השולח"
-							type="text"
-					/>
-					<div
-							*ngIf="isHebrew1"
-							class="invalidAlert"
-							style="
+                                >
+                                    {{ option.label }}
+                                </div>
+                            </div>
+                        </ng-template>
+                    </p-dropdown>
+                </div>
+            </div>
+            <div *ngIf="docToSend.form.value.sendType === 'MAIL'" class="rowForm">
+                <label> מאת </label>
+                <div>
+                    <input
+                            [formControl]="docToSend.form.get('from')"
+                            placeholder="יש להזין את שם השולח"
+                            type="text"
+                    />
+                </div>
+            </div>
+            <div *ngIf="docToSend.form.value.sendType === 'MAIL'" class="rowForm">
+                <label> כתובת מייל השולח </label>
+                <div style="position: relative">
+                    <input
+                            (keypress)="handleKeyPressHeb1($event)"
+                            [formControl]="docToSend.form.get('fromMail')"
+                            placeholder="יש להזין את כתובת מייל השולח"
+                            type="text"
+                    />
+                    <div
+                            *ngIf="isHebrew1"
+                            class="invalidAlert"
+                            style="
               font-size: 13px;
               color: red;
               display: block;
@@ -2348,56 +2371,56 @@
               bottom: -5px;
               right: 5px;
             "
-					>
-						כתובת באנגלית
-					</div>
-				</div>
-			</div>
-<!-- 			<div -->
-<!-- 					*ngIf=" -->
-<!--           docToSend.form.value.sendType === 'MAIL' && -->
-<!--           !docToSend.form.value.targetUserId -->
-<!--         " -->
-<!-- 					class="rowForm" -->
-<!-- 			> -->
-<!-- 				<label> כתובת מייל הלקוח </label> -->
-<!-- 				<div style="position: relative"> -->
-<!-- 					&lt;!&ndash;                    appNoNationalCharacters&ndash;&gt; -->
-<!-- 					<input -->
-<!-- 							(keypress)="handleKeyPressHeb2($event)" -->
-<!-- 							[formControl]="docToSend.form.get('toMail')" -->
-<!-- 							placeholder="יש להזין את כתובת מייל הלקוח" -->
-<!-- 							type="text" -->
-<!-- 					/> -->
-<!-- 					<div -->
-<!-- 							*ngIf="isHebrew2" -->
-<!-- 							class="invalidAlert" -->
-<!-- 							style=" -->
-<!--               font-size: 13px; -->
-<!--               color: red; -->
-<!--               display: block; -->
-<!--               line-height: 0px; -->
-<!--               position: absolute; -->
-<!--               bottom: -5px; -->
-<!--               right: 5px; -->
-<!--             " -->
-<!-- 					> -->
-<!-- 						כתובת באנגלית -->
-<!-- 					</div> -->
-<!-- 				</div> -->
-<!-- 			</div> -->
-			<div class="rowForm">
-				<label> נושא </label>
-				<div>
-					<button (click)="op.toggle($event)" class="subjectBtn" type="button">
-						{{ docToSend.form.get('subject')?.value.subjectName }}
+                    >
+                        כתובת באנגלית
+                    </div>
+                </div>
+            </div>
+            <!-- 			<div -->
+            <!-- 					*ngIf=" -->
+            <!--           docToSend.form.value.sendType === 'MAIL' && -->
+            <!--           !docToSend.form.value.targetUserId -->
+            <!--         " -->
+            <!-- 					class="rowForm" -->
+            <!-- 			> -->
+            <!-- 				<label> כתובת מייל הלקוח </label> -->
+            <!-- 				<div style="position: relative"> -->
+            <!-- 					&lt;!&ndash;                    appNoNationalCharacters&ndash;&gt; -->
+            <!-- 					<input -->
+            <!-- 							(keypress)="handleKeyPressHeb2($event)" -->
+            <!-- 							[formControl]="docToSend.form.get('toMail')" -->
+            <!-- 							placeholder="יש להזין את כתובת מייל הלקוח" -->
+            <!-- 							type="text" -->
+            <!-- 					/> -->
+            <!-- 					<div -->
+            <!-- 							*ngIf="isHebrew2" -->
+            <!-- 							class="invalidAlert" -->
+            <!-- 							style=" -->
+            <!--               font-size: 13px; -->
+            <!--               color: red; -->
+            <!--               display: block; -->
+            <!--               line-height: 0px; -->
+            <!--               position: absolute; -->
+            <!--               bottom: -5px; -->
+            <!--               right: 5px; -->
+            <!--             " -->
+            <!-- 					> -->
+            <!-- 						כתובת באנגלית -->
+            <!-- 					</div> -->
+            <!-- 				</div> -->
+            <!-- 			</div> -->
+            <div class="rowForm">
+                <label> נושא </label>
+                <div>
+                    <button (click)="op.toggle($event)" class="subjectBtn" type="button">
+                        {{ docToSend.form.get('subject')?.value.subjectName }}
 
-						<i
-								[ngStyle]="{
+                        <i
+                                [ngStyle]="{
                 transform: op.overlayVisible ? 'rotate(225deg)' : 'rotate(45deg)',
                 'margin-top': op.overlayVisible ? '8px' : '0px'
               }"
-								style="
+                                style="
                 border-style: solid;
                 border-width: 0 2px 2px 0;
                 content: '';
@@ -2406,40 +2429,41 @@
                 vertical-align: middle;
                 width: 7px;
               "
-						></i>
-					</button>
-					<p-overlayPanel #op appendTo="body" styleClass="overlayPanelSubjects">
-						<p-listbox
-								#plist_subjectsForCompany
-								(onChange)="op.hide()"
-								[dataKey]="'subjectId'"
-								[formControlName]="'subject'"
-								[listStyle]="{ 'max-height': '200px', width: '237px' }"
-								[optionLabel]="'subjectName'"
-								[options]="
+                        ></i>
+                    </button>
+                    <p-overlayPanel #op appendTo="body" styleClass="overlayPanelSubjects">
+                        <p-listbox
+                            #plist_subjectsForCompany
+                            (onChange)="op.hide()"
+                            [dataKey]="'subjectId'"
+                            [formControlName]="'subject'"
+                            [listStyle]="{ 'max-height': '200px', width: '237px' }"
+                            [optionLabel]="'subjectName'"
+                            [options]="
                 docToSend.form.value.sendType === 'MAIL'
                   ? subjectsForCompany
                   : subjectsForCompanyWhatsApp
               "
-						>
-							<ng-template let-subjects pTemplate="item">
-								<div>
-									<p>{{ subjects.subjectName }}</p>
-									<div
-											*ngIf="
+                            name="subject"
+                        >
+                            <ng-template let-subjects pTemplate="item">
+                                <div>
+                                    <p>{{ subjects.subjectName }}</p>
+                                    <div
+                                            *ngIf="
                       !subjects.system &&
                       docToSend.form.value.sendType === 'MAIL'
                     "
-											style="
+                                            style="
                       display: flex;
                       width: 50px;
                       justify-content: space-between;
                       height: 27px;
                       position: relative;
                     "
-									>
-										<div
-												(click)="
+                                    >
+                                        <div
+                                                (click)="
                           createTemplateSubjectModal.show(
                             true,
                             subjects.subjectName,
@@ -2448,7 +2472,7 @@
                           );
                           $event.stopPropagation();
                         "
-												style="
+                                                style="
 												    width: 25px;
 													z-index: 9999999;
 													position: absolute;
@@ -2460,21 +2484,21 @@
                               height: 27px;
                         flex: 1;
                       "
-										>
-											<mat-icon
+                                        >
+                                            <mat-icon
 
-													style="
+                                                    style="
 																z-index: 9999999;
                           width: 14px;
                           height: 15px;
                           vertical-align: middle;
                         "
-													svgIcon="pencil"
-											></mat-icon>
-										</div>
-										<div
-												(click)="subjectToRemove = subjects;$event.stopPropagation();"
-												style="
+                                                    svgIcon="pencil"
+                                            ></mat-icon>
+                                        </div>
+                                        <div
+                                                (click)="subjectToRemove = subjects;$event.stopPropagation();"
+                                                style="
 															z-index: 9999999;
 													position: absolute;
 													    width: 25px;
@@ -2486,108 +2510,107 @@
                               height: 27px;
                         flex: 1;
                       "
-										>
-											<mat-icon
-													style="
+                                        >
+                                            <mat-icon
+                                                    style="
                           width: 14px;
                           height: 15px;
                           vertical-align: middle;
                         "
-													svgIcon="trash"
-											></mat-icon>
-										</div>
-									</div>
-								</div>
-							</ng-template>
+                                                    svgIcon="trash"
+                                            ></mat-icon>
+                                        </div>
+                                    </div>
+                                </div>
+                            </ng-template>
 
 
+                            <p-footer
+                                    (click)="createTemplateSubjectModal.show()"
+                                    *ngIf="docToSend.form.value.sendType === 'MAIL'"
+                            >
+                                <img
+                                        src="/assets/images/addFolder.png"
+                                        style="margin-left: 7px"
+                                />
 
-							<p-footer
-									(click)="createTemplateSubjectModal.show()"
-									*ngIf="docToSend.form.value.sendType === 'MAIL'"
-							>
-								<img
-										src="/assets/images/addFolder.png"
-										style="margin-left: 7px"
-								/>
-
-								יצירת תבנית
-							</p-footer>
-						</p-listbox>
-					</p-overlayPanel>
-				</div>
-			</div>
-			<div
-					*ngIf="
-          componentRefChild?.showFloatNav ||
+                                יצירת תבנית
+                            </p-footer>
+                        </p-listbox>
+                    </p-overlayPanel>
+                </div>
+            </div>
+            <div
+                    *ngIf="
+          (componentRefChild?.showFloatNav && docToSend.sendToClient_show) ||
           (docToSend?.fd !== null && docToSend.showCheckBox)
         "
-					class="rowForm"
-					style="justify-content: flex-start"
-			>
-				<p-checkbox [binary]="true"
-				            [formControl]="docToSend.form.get('sendToClient')"
-				            checkboxIcon="fa fa-check"
-				            label="צירוף תמונת החשבונית"
-				>
-				</p-checkbox>
-			</div>
-			<div class="textarea docToRemove_textarea">
-				<label> תוכן ההודעה </label>
-				<div *ngIf="docToSend.form.value.sendType === 'MAIL'">
+                    class="rowForm"
+                    style="justify-content: flex-start"
+            >
+                <p-checkbox [binary]="true"
+                            [formControl]="docToSend.form.get('sendToClient')"
+                            checkboxIcon="fa fa-check"
+                            label="צירוף תמונת החשבונית"
+                >
+                </p-checkbox>
+            </div>
+            <div class="textarea docToRemove_textarea">
+                <label> תוכן ההודעה </label>
+                <div *ngIf="docToSend.form.value.sendType === 'MAIL'">
           <textarea
-		          [(ngModel)]="docToSend.form.get('subject').value.subjectText"
-		          [class.isWhatsApp]="docToSend.form.value.sendType === 'WHATSAPP'"
-		          [ngModelOptions]="{ standalone: true }"
-		          [placeholder]="'הקלידו הערה'"
-		          class="scroll-chrome"
-		          cols="48"
-		          rows="8"
+                  [(ngModel)]="docToSend.form.get('subject').value.subjectText"
+                  [class.isWhatsApp]="docToSend.form.value.sendType === 'WHATSAPP'"
+                  [ngModelOptions]="{ standalone: true }"
+                  [placeholder]="'הקלידו הערה'"
+                  class="scroll-chrome"
+                  cols="48"
+                  rows="8"
           ></textarea>
 
-					<div class="endText">
-						בברכה,
-						<br/>
-						{{
-						docToSend.form.get('from').value
-								? docToSend.form.get('from').value
-								: userService.appData.userData.firstName +
-								' ' +
-								userService.appData.userData.lastName
-						}}
-					</div>
-				</div>
-				<div *ngIf="docToSend.form.value.sendType === 'WHATSAPP'">
-					<p
-							style="
+                    <div class="endText">
+                        בברכה,
+                        <br/>
+                        {{
+                        docToSend.form.get('from').value
+                            ? docToSend.form.get('from').value
+                            : userService.appData.userData.firstName +
+                            ' ' +
+                            userService.appData.userData.lastName
+                        }}
+                    </div>
+                </div>
+                <div *ngIf="docToSend.form.value.sendType === 'WHATSAPP'">
+                    <p
+                            style="
               float: right;
               padding-bottom: 0;
               padding-left: 5px;
               opacity: 0.5;
             "
-					>
-						{{ docToSend.form.get('subject').value.subjectTextBasic }}
-					</p>
-					<p
-							(input)="
+                    >
+                        {{ docToSend.form.get('subject').value.subjectTextBasic }}
+                    </p>
+                    <p
+                            (input)="
               docToSend.form.get('subject').value.subjectText =
                 $event.target.innerHTML
             "
-							[(ngModel)]="docToSend.form.get('subject').value.subjectText"
-							[ngModelOptions]="{ standalone: true }"
-							contenteditable="true"
-							style="z-index: 9999; position: relative"
-					></p>
-				</div>
-			</div>
-		</form>
-		<p-footer>
-			<button (click)="docToSend.visible = false" class="button-link">
-				{{ 'actions.cancellation' | translate }}
-			</button>
-			<button
-					(click)="docToSend.approve()"
-					[disabled]="
+                            [(ngModel)]="docToSend.form.get('subject').value.subjectText"
+                            [ngModelOptions]="{ standalone: true }"
+                            contenteditable="true"
+                            style="z-index: 9999; position: relative"
+                    ></p>
+                </div>
+            </div>
+        </form>
+        <p-footer>
+            <button (click)="docToSend.visible = false" class="button-link">
+                {{ 'actions.cancellation' | translate }}
+            </button>
+            <button
+                    (click)="docToSend.approve()"
+                    [disabled]="
           (contactsWithoutAgreement.length &&
             docToSend.form.value.sendType === 'WHATSAPP') ||
           (docToSend.form.value.sendType === 'MAIL' &&
@@ -2598,151 +2621,239 @@
           (docToSend.form.value.sendType !== 'MAIL' &&
             !docToSend.form.get('subject').value.subjectText)
         "
-					class="button-dark"
-			>
-				אישור
-			</button>
-		</p-footer>
-	</p-dialog>
+                    class="button-dark"
+            >
+                אישור
+            </button>
+        </p-footer>
+    </p-dialog>
 </ng-container>
 
 <ng-container *ngIf="companiesWithoutAgreement">
-	<p-dialog (visibleChange)="companiesWithoutAgreement = false"
-			[visible]="(companiesWithoutAgreement)"
+    <p-dialog (visibleChange)="companiesWithoutAgreement = false"
+              [closeOnEscape]="true"
 
-			[closeOnEscape]="true"
-			[draggable]="false"
-			[modal]="true"
-			  position="top"
-			  [style]="{'margin-top':'198px'}"
-			[resizable]="false"
-			appendTo="body"
-			styleClass="companiesWithoutAgreement"
-	>
-		<p-header> שליחת הסכם התקשרות</p-header>
+              [draggable]="false"
+              [modal]="true"
+              [resizable]="false"
+              [visible]="(companiesWithoutAgreement)"
+              appendTo="body"
+              styleClass="companiesWithoutAgreement"
+    >
+        <p-header> שליחת הסכם התקשרות</p-header>
 
-		<div>
-			<div style="text-align: center; margin-top: 30px">
-				<i
-						class="fas fa-check-circle"
-						style="color: #73b573; font-size: 70px"
-				></i>
-			</div>
-			<div style="text-align: center; margin-top: 15px; margin-bottom: 30px">
-				<strong style="font-size: 24px; font-weight: 700">
-					ההסכם נשלח בהצלחה!
-				</strong>
-			</div>
-		</div>
-	</p-dialog>
+        <div>
+            <div style="text-align: center; margin-top: 30px">
+                <i
+                        class="fas fa-check-circle"
+                        style="color: #73b573; font-size: 70px"
+                ></i>
+            </div>
+            <div style="text-align: center; margin-top: 15px; margin-bottom: 30px">
+                <strong style="font-size: 24px; font-weight: 700">
+                    ההסכם נשלח בהצלחה!
+                </strong>
+            </div>
+        </div>
+    </p-dialog>
 </ng-container>
 
 <ng-container *ngIf="createTemplateSubjectModal">
-	<p-dialog (visibleChange)="createTemplateSubjectModal.visible = false"
-			[visible]="(createTemplateSubjectModal.visible)"
+    <p-dialog (visibleChange)="createTemplateSubjectModal.visible = false"
+              [closeOnEscape]="true"
 
-			[closeOnEscape]="true"
-			[draggable]="false"
-			[modal]="true"
-			  position="top"
-			  [style]="{'margin-top':'198px'}"
-			[resizable]="false"
-			appendTo="body"
-			styleClass="createTemplateSubjectModal"
-	>
-		<p-header>{{
-			createTemplateSubjectModal.createType ? 'יצירת תבנית חדשה' : 'עריכת תבנית'
-			}}</p-header>
+              [draggable]="false"
+              [modal]="true"
+              [resizable]="false"
+              [style]="{'margin-top':'198px'}"
+              [visible]="(createTemplateSubjectModal.visible)"
+              appendTo="body"
+              position="top"
+              styleClass="createTemplateSubjectModal"
+    >
+        <p-header>{{
+            createTemplateSubjectModal.createType ? 'יצירת תבנית חדשה' : 'עריכת תבנית'
+            }}</p-header>
 
-		<div class="rowForm">
-			<label> נושא התבנית </label>
-			<!--            [placeholder]="createTemplateSubjectModal.createType ?'בחרו שם לתבנית החדשה' : ''"-->
+        <div class="rowForm">
+            <label> נושא התבנית </label>
+            <!--            [placeholder]="createTemplateSubjectModal.createType ?'בחרו שם לתבנית החדשה' : ''"-->
 
-			<div
-					[class.error]="
+            <div
+                    [class.error]="
           createTemplateSubjectModal.subjectName.dirty &&
           createTemplateSubjectModal.subjectName.invalid
         "
-			>
-				<input
-						[formControl]="createTemplateSubjectModal.subjectName"
-						autocomplete="off"
-						name="subjectName"
-						required
-						type="text"
-				/>
-			</div>
-		</div>
-		<div class="textarea">
-			<label> תוכן ההודעה </label>
-			<div
-					[class.error]="
+            >
+                <input
+                        [formControl]="createTemplateSubjectModal.subjectName"
+                        autocomplete="off"
+                        name="subjectName"
+                        required
+                        type="text"
+                />
+            </div>
+        </div>
+        <div class="textarea">
+            <label> תוכן ההודעה </label>
+            <div
+                    [class.error]="
           createTemplateSubjectModal.subjectText.dirty &&
           createTemplateSubjectModal.subjectText.invalid
         "
-			>
+            >
         <textarea
-		        [formControl]="createTemplateSubjectModal.subjectText"
-		        [placeholder]="'הקלידו טקסט חופשי'"
-		        class="scroll-chrome"
-		        cols="48"
-		        required
-		        rows="8"
-		        style="resize: none"
+                [formControl]="createTemplateSubjectModal.subjectText"
+                [placeholder]="'הקלידו טקסט חופשי'"
+                class="scroll-chrome"
+                cols="48"
+                required
+                rows="8"
+                style="resize: none"
         ></textarea>
-			</div>
-		</div>
+            </div>
+        </div>
 
-		<p-footer>
-			<button
-					(click)="createTemplateSubjectModal.visible = false"
-					class="button-link"
-			>
-				{{ 'actions.cancellation' | translate }}
-			</button>
-			<button
-					(click)="createTemplateSubjectModal.approve()"
-					[disabled]="
+        <p-footer>
+            <button
+                    (click)="createTemplateSubjectModal.visible = false"
+                    class="button-link"
+            >
+                {{ 'actions.cancellation' | translate }}
+            </button>
+            <button
+                    (click)="createTemplateSubjectModal.approve()"
+                    [disabled]="
           createTemplateSubjectModal.subjectName.invalid ||
           createTemplateSubjectModal.subjectText.invalid
         "
-					class="button-dark"
-			>
-				{{ 'actions.approve' | translate }}
-			</button>
-		</p-footer>
-	</p-dialog>
+                    class="button-dark"
+            >
+                {{ 'actions.approve' | translate }}
+            </button>
+        </p-footer>
+    </p-dialog>
 </ng-container>
 
 <ng-container *ngIf="subjectToRemove">
-	<p-dialog (visibleChange)="subjectToRemove = false"
-			(onHide)="subjectToRemove = false"
-			[visible]="(subjectToRemove)"
+    <p-dialog (onHide)="subjectToRemove = false"
+              (visibleChange)="subjectToRemove = false"
+              [modal]="true"
 
-			[modal]="true"
-			[resizable]="false"
-			appendTo="body"
-			styleClass="ocrExportFileToRemove"
-	>
-		<p-header>
-			<h1>מחיקת תבנית</h1>
-		</p-header>
+              [resizable]="false"
+              [visible]="(subjectToRemove)"
+              appendTo="body"
+              styleClass="ocrExportFileToRemove"
+    >
+        <p-header>
+            <h1>מחיקת תבנית</h1>
+        </p-header>
 
-		<p class="text">
-			התבנית
-			<strong>{{ subjectToRemove?.subjectName }}</strong>
-			תמחק ללא אפשרות שחזור.
-			<br/>
-			האם למחוק?
-		</p>
+        <p class="text">
+            התבנית
+            <strong>{{ subjectToRemove?.subjectName }}</strong>
+            תמחק ללא אפשרות שחזור.
+            <br/>
+            האם למחוק?
+        </p>
 
-		<p-footer>
-			<button (click)="subjectToRemove = false" class="button-link">
-				{{ 'actions.cancellation' | translate }}
-			</button>
-			<button (click)="deleteSubject()" class="button-dark">
-				{{ 'actions.approve' | translate }}
-			</button>
-		</p-footer>
-	</p-dialog>
+        <p-footer>
+            <button (click)="subjectToRemove = false" class="button-link">
+                {{ 'actions.cancellation' | translate }}
+            </button>
+            <button (click)="deleteSubject()" class="button-dark">
+                {{ 'actions.approve' | translate }}
+            </button>
+        </p-footer>
+    </p-dialog>
 </ng-container>
+
+
+<ng-container *ngIf="bankCreditBillingExtrapolation">
+    <p-dialog (onHide)="bankCreditBillingExtrapolation = false"
+              (visibleChange)="bankCreditBillingExtrapolation = false"
+              [modal]="true"
+              [resizable]="false"
+              [draggable]="false"
+              [visible]="(bankCreditBillingExtrapolation)"
+              appendTo="body"
+              styleClass="bankCreditBillingExtrapolation">
+        <p-header>
+            <h1>
+                פירוט לחיוב החברה
+            </h1>
+        </p-header>
+
+        <div *ngIf="!extrapolationErrorMessage;else showErrorMessage" class="table">
+            <div class="header">
+                <div>
+                    חודש
+                </div>
+                <div>
+                    סך תנועות שזוהו
+                </div>
+                <div>
+                    סכום
+                </div>
+                <div>
+                    סכום מצטבר
+                </div>
+            </div>
+            <div *ngFor="let row of bankCreditBillingExtrapolation; let i = index"
+                 class="row">
+                <div>
+                    <p-calendar
+                            *ngIf="i === 0"
+                            (onSelect)="updateFreeBillingMonth($event)"
+                            [(ngModel)]="row.month"
+                            view="month"
+                            [dateFormat]="'mm/y'"
+                            [locale]="'langCalendar' | translate"
+                            [readonlyInput]="true"
+                            [showIcon]="false"
+                            [style]="{ width: '95px' }"
+                            appendTo="body"
+                            panelStyleClass="bankCreditBillingExtrapolation_panel"
+                            styleClass="calendarInput_accountsBar calendarInput_bankCreditBillingExtrapolation"
+                    ></p-calendar>
+                    <ng-container *ngIf="i > 0">
+                        {{row.month | date: 'MM/yy'}}
+                    </ng-container>
+                </div>
+                <div>
+                    {{row.identifiedTranses !== null ? row.identifiedTranses : '-'}}
+                </div>
+                <div>
+                    {{
+                    row.total !== null
+                        ? (row.total | sum: false) + ' ₪'
+                        : '-'
+                    }}
+                </div>
+                <div>
+                    {{
+                    row.cumulativeTotal !== null
+                        ? (row.cumulativeTotal | sum: false) + ' ₪'
+                        : '-'
+                    }}
+                </div>
+            </div>
+        </div>
+
+        <div *ngIf="bankCreditBillingExtrapolation === true && !extrapolationErrorMessage" class="loader">
+            <div class="circle"></div>
+        </div>
+
+        <ng-template #showErrorMessage>
+            <div style="padding: 30px">
+                <p>
+                    קיימת בעיה בנתונים:
+                    <br>
+                    <br>
+                    {{extrapolationErrorMessage}}
+                </p>
+            </div>
+        </ng-template>
+    </p-dialog>
+</ng-container>
+

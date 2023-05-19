@@ -17,7 +17,7 @@ import {
     first,
     map,
     startWith,
-    switchMap,
+    switchMap, take,
     tap,
     withLatestFrom
 } from 'rxjs/operators';
@@ -194,7 +194,14 @@ export class FinancialManagementCreditsCardGraphComponent
             withLatestFrom(this.childDates.selectedRange),
             map(([detailedData, range]) => this.repack(detailedData, range))
         );
-
+        this.showValuesControl.valueChanges
+            .subscribe(() => {
+                this.sharedComponent.mixPanelEvent('show values');
+            });
+        this.showStackedControl.valueChanges
+            .subscribe(() => {
+                this.sharedComponent.mixPanelEvent('united view');
+            });
         this.chartData$ = defer(() => {
             return combineLatest([
                     this.loadedDataRepacked$,
@@ -242,6 +249,10 @@ export class FinancialManagementCreditsCardGraphComponent
                 })
             )
             .subscribe((val) => {
+                this.sharedComponent.mixPanelEvent('search',{
+                    value:val
+                });
+
                 this.filterChanged$.next({
                     query: val,
                     categories: this.filterChanged$.value.categories
@@ -271,7 +282,7 @@ export class FinancialManagementCreditsCardGraphComponent
     }
 
     ngOnInit(): void {
-
+        console.log('')
     }
 
     ngOnDestroy(): void {
@@ -281,7 +292,17 @@ export class FinancialManagementCreditsCardGraphComponent
         }
         this.destroy();
     }
-
+    sendEvent(isOpened: any) {
+        if (isOpened && this.childDates) {
+            this.childDates.selectedRange
+                .pipe(take(1))
+                .subscribe((paramDate) => {
+                    this.sharedComponent.mixPanelEvent('days drop', {
+                        value: paramDate.fromDate + '-' + paramDate.toDate
+                    });
+                });
+        }
+    }
     getCreditCardTazrimGraph(cardsDD?:any): void {
         const cardsSelector = cardsDD ? cardsDD : this.cardsSelector
         // console.log(cardsSelector)
@@ -293,6 +314,9 @@ export class FinancialManagementCreditsCardGraphComponent
             (cc) => cc.alertStatus === 'Not found in bank website'
         );
         this.cardsSelected$.next(cardsSelector.selectedCards);
+        this.sharedComponent.mixPanelEvent('credits drop', {
+            credits: (this.userService.appData.userData.creditCards.length === cardsSelector.selectedCards.length) ? 'כל הכרטיסים' : cardsSelector.selectedCards.map((card) => card.creditCardId)
+        });
     }
 
     // filterDates(paramDate: any): void {
@@ -666,6 +690,9 @@ export class FinancialManagementCreditsCardGraphComponent
     }
 
     filterCategory($event: any) {
+        this.sharedComponent.mixPanelEvent('filter category', {
+            value: $event.checked
+        });
         this.filterChanged$.next({
             query: this.queryControl.value,
             categories: $event.checked

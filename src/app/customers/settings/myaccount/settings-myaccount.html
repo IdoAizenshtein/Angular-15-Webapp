@@ -266,6 +266,51 @@
       <div *ngIf="!popUpAuthenticationShow.valid" class="alertErr">
         הקוד לא תואם לקוד שנשלח, אנא בדקו ונסו שוב
       </div>
+      <div *ngIf="tokenInfo.smsRemained !== 0" class="Login__options" style="
+    width: 268px;
+    display:block;
+    margin: 0 auto;
+    text-align: right;
+    padding-top: 10px;
+">
+        <p
+                style="
+    text-align: right;
+    padding: 0;
+">
+          {{ 'formLogin.didNotReceiveTheCode' | translate }}
+        </p>
+
+        <div
+                style="height: 30px;display: flex;"
+        >
+          <p style="
+    padding: 0;
+    color: #3898ec;
+    line-height: 29px;
+    padding-left: 11px;
+">
+            נסו שוב באמצעות
+          </p>
+          <p-radioButton
+                  (onClick)="resendSms()"
+                  [(ngModel)]="vms"
+                  [label]="'SMS'"
+                  [value]="false"
+                  name="vms"
+          >
+          </p-radioButton>
+          <span style="padding: 0px 6px"></span>
+          <p-radioButton
+                  (onClick)="resentOtpVms()"
+                  [(ngModel)]="vms"
+                  [label]="'הודעה קולית'"
+                  [value]="true"
+                  name="vms"
+          >
+          </p-radioButton>
+        </div>
+      </div>
     </div>
     <div *ngIf="popUpAuthenticationShow.step === 3" class="step3">
       כניסה מחמירה
@@ -465,7 +510,7 @@
 
 <p-dialog (visibleChange)="changePasswordPrompt.visible = false"
 		[visible]="(changePasswordPrompt.visible)"
-		
+
   (onHide)="changePasswordPrompt.reset()"
   appendTo="body"
   [modal]="true"

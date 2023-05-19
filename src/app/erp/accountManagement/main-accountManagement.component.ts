@@ -1,5 +1,5 @@
 /* tslint:disable:max-line-length */
-import {AfterViewInit, Component, ElementRef, OnInit, Renderer2, ViewChild, ViewEncapsulation} from '@angular/core';
+import {AfterViewInit, Component, ElementRef, OnInit, Renderer2, ViewChild, ViewChildren, ViewEncapsulation} from '@angular/core';
 import {UserService} from '@app/core/user.service';
 import {Location} from '@angular/common';
 import {ActivatedRoute} from '@angular/router';
@@ -27,6 +27,7 @@ import {BrowserService} from '@app/shared/services/browser.service';
 import {ReportService} from '@app/core/report.service';
 import {CustomPreset, Range, RangePoint} from '@app/shared/component/date-range-selectors/presets';
 import {ValidatorsFactory} from '@app/shared/component/foreign-credentials/validators';
+import {HttpServices} from '@app/shared/services/http.services';
 
 @Component({
     templateUrl: './main-accountManagement.component.html',
@@ -63,6 +64,7 @@ export class MainAccountManagementComponent
     public showModalStatus: any = false;
     @ViewChild('elemToPrint') elemToPrint: HTMLElement;
     @ViewChild('historyToPrint') historyToPrint: HTMLElement;
+    @ViewChildren('tokenStatusView') tokenStatusViewRef: any;
 
     public screenPopupType: any = {};
     public accountConnectRecommendationResponse: any = [];
@@ -113,6 +115,7 @@ export class MainAccountManagementComponent
     max: Date;
     selection: CustomPreset;
     public showModalGetStationId: boolean = false;
+    vms: any = false;
 
     // tslint:disable-next-line:member-ordering
     constructor(
@@ -125,9 +128,32 @@ export class MainAccountManagementComponent
         private renderer: Renderer2,
         private storageService: StorageService,
         private route: ActivatedRoute,
+        public httpServices: HttpServices,
         private _fb: FormBuilder,
         public authService: AuthService
     ) {
+/*
+        this.httpServices.sendHttp<any>({
+            method: 'get',
+            path: 'v1/users/current',
+            isProtected: true,
+            isAuthorization: true
+        }).subscribe((response)=>{
+            if (response) {
+                this.userService.appData.userData = response.body;
+                try {
+                    if ((this.userService.appData.userData.biziboxRole === 'REPRESENTATIVE' || this.userService.appData.userData.biziboxRole === 'REPRESENTATIVE_MANAGER') && this.userService.appData.isAdmin) {
+                        this.userService.appData.hideCompanyName = true;
+                    } else {
+                        this.userService.appData.hideCompanyName = false;
+                    }
+                } catch (e) {
+
+                }
+            }
+        })
+*/
+
         this.locale = translate.instant('langCalendar');
         this.selection = new CustomPreset('customDates');
         const mmntNow = this.userService.appData.moment().subtract(1, 'days');
@@ -222,7 +248,8 @@ export class MainAccountManagementComponent
                     Validators.required,
                     Validators.pattern(new RegExp(/^-?[0-9][^\.]*$/))
                 ])
-            ]
+            ],
+            vms: new FormControl(false)
         });
         if (!this.userService.appData.station_id) {
             this.showModalGetStationId = true;
@@ -278,6 +305,7 @@ export class MainAccountManagementComponent
         if (this.userService.appData && this.userService.appData.station_id) {
             this.erpService
                 .trustStatus({
+                    vms: this.formLoginOtp.value.vms,
                     stationId: this.userService.appData.station_id,
                     trustId: this.storageService.localStorageGetterItem('trustId')
                         ? this.storageService.localStorageGetterItem('trustId')
@@ -2033,6 +2061,15 @@ export class MainAccountManagementComponent
         }
 
         return validMin && validMax;
+    }
+
+    onUpdateCredentialsClick(tooltipEditFile: any) {
+        if (this.tokenStatusViewRef && this.tokenStatusViewRef._results) {
+            const elemFind = this.tokenStatusViewRef._results.find(it => it.status.token === tooltipEditFile.token);
+            if (elemFind) {
+                elemFind.onUpdateCredentialsClick();
+            }
+        }
     }
 }
 

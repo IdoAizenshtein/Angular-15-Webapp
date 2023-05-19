@@ -5,12 +5,13 @@
       (changed)="getSlikaDetails()"
     ></app-solek-select>
 
-    <app-clragencies-dates></app-clragencies-dates>
+    <app-clragencies-dates (sendEvent)="sendEvent($event)"></app-clragencies-dates>
     <!--<app-solek-dates [option]="'monthCreditWithoutCalendar'" (onChange)="filterDates($event)"></app-solek-dates>-->
 
     <ul class="tabs navTabs">
       <li
-        routerLink="../aggregate"
+              (click)="sharedComponent.mixPanelEvent('aggregate screen')"
+              routerLink="../aggregate"
         queryParamsHandling="preserve"
 
         routerLinkActive="active"
@@ -26,7 +27,7 @@
       <li
         routerLink="../details"
         queryParamsHandling="preserve"
-
+        (click)="sharedComponent.mixPanelEvent('detailed screen')"
         routerLinkActive="active"
         [routerLinkActiveOptions]="{ exact: false }"
         [matTooltip]="
@@ -40,7 +41,7 @@
       <li
         routerLink="../graph"
         queryParamsHandling="preserve"
-
+        (click)="sharedComponent.mixPanelEvent('graph screen')"
         routerLinkActive="active"
         [routerLinkActiveOptions]="{ exact: false }"
         [matTooltip]="
@@ -151,7 +152,7 @@
       [label]="'actions.displayValues' | translate"
       [(ngModel)]="showValues"
       [binary]="true"
-      (onChange)="updateChart()"
+      (onChange)="sharedComponent.mixPanelEvent('show values'); updateChart()"
     ></p-checkbox>
     <app-charts
       [chartData]="chartData"

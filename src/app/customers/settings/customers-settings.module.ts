@@ -20,6 +20,7 @@ import { SettingsUserListComponent } from './users/user-list/settings-user-list.
 import { SettingsUserDetailsComponent } from './users/user-details/settings-user-details.component';
 // import {AutoCompleteModule} from 'primeng/autocomplete';
 import { AutocompleteEmptyOptionedComponent } from '@app/shared/component/autocomplete-empty-optioned/autocomplete-empty-optioned.component';
+import {ProductSettingsComponent} from '@app/customers/settings/productSettings/product-settings.component';
 
 @NgModule({
   imports: [
@@ -42,7 +43,8 @@ import { AutocompleteEmptyOptionedComponent } from '@app/shared/component/autoco
     SettingsUserListComponent,
     SettingsUserDetailsComponent,
     SettingsOfficeUsersComponent,
-    AutocompleteEmptyOptionedComponent
+    AutocompleteEmptyOptionedComponent,
+    ProductSettingsComponent
   ]
 })
 export class CustomersSettingsModule {}

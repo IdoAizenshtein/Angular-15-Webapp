@@ -7,7 +7,7 @@
 
     <!--<app-tazrim-dates [option]="'DaysTazrim'" (onChange)="filterDates($event)"></app-tazrim-dates>-->
     <!--&lt;!&ndash;<app-acc-dates [option]="'DaysTazrim'" (changedTrigger)="filterDates($event)"></app-acc-dates>&ndash;&gt;-->
-    <app-cashflow-dates></app-cashflow-dates>
+    <app-cashflow-dates (sendEvent)="sendEvent($event)"></app-cashflow-dates>
 
     <ng-container *ngIf="selectedValueGraph === 'expenses'">
       <div class="search">
@@ -21,8 +21,8 @@
       <app-tooltip-category
         [title]="'titles.typeOfPayment' | translate"
         [type]="'payment'"
-        [data]="paymentTypesArr"
         [translateEnum]="sharedService.paymentTypesTranslate$"
+        [data]="paymentTypesArr"
         (changed)="filterCategory($event)"
       ></app-tooltip-category>
       <app-tooltip-category
@@ -35,7 +35,8 @@
 
     <ul class="tabs navTabs">
       <li
-        id="navToAggregateView"
+              (click)="sharedComponent.mixPanelEvent('aggregate screen')"
+              id="navToAggregateView"
         routerLink="../aggregate"
         queryParamsHandling="preserve"
 
@@ -45,7 +46,8 @@
         {{ 'filters.consolidated' | translate }}
       </li>
       <li
-        id="navToDetailsView"
+              (click)="sharedComponent.mixPanelEvent('detailed screen')"
+              id="navToDetailsView"
         routerLink="../details"
         queryParamsHandling="preserve"
 
@@ -55,7 +57,8 @@
         {{ 'filters.detailed' | translate }}
       </li>
       <li
-        id="navToGraphView"
+              (click)="sharedComponent.mixPanelEvent('graph screen')"
+              id="navToGraphView"
         routerLink="../graph"
         queryParamsHandling="preserve"
 
@@ -275,7 +278,7 @@
                 </ng-container>
               </span>
               <span>&nbsp;&#x7c;&nbsp;</span>
-              <span class="link" (click)="tooltipWithNavigation.toggle($event)">
+              <span class="link" (click)="sharedComponent.mixPanelEvent('details button'); tooltipWithNavigation.toggle($event)">
                 {{ 'sumsTitles.forDetails' | translate }}
                 <p-overlayPanel
                   styleClass="tooltip-bottom tooltip-acc-deviation"
@@ -358,7 +361,7 @@
 
     <div class="exports">
       <p-checkbox checkboxIcon="fa fa-check"
-        id="p-showHideCreditLimits"
+                  id="p-showHideCreditLimits"
         inputId="showHideCreditLimits"
         class="checkboxGraph"
         *ngIf="selectedValueGraph === 'balance'"
@@ -367,7 +370,8 @@
         [binary]="true"
       ></p-checkbox>
       <p-checkbox checkboxIcon="fa fa-check"
-        id="p-showHideValuesInside"
+                  (onChange)="sharedComponent.mixPanelEvent('show values');"
+                  id="p-showHideValuesInside"
         inputId="showHideValuesInside"
         class="checkboxGraph"
         [label]="'actions.displayValues' | translate"
@@ -375,6 +379,7 @@
         [binary]="true"
       ></p-checkbox>
       <p-dropdown
+              (onChange)="sharedComponent.mixPanelEvent('view drop');"
         id="p-chartTypeSelector"
         inputId="chartTypeSelector"
         [style]="{'width': '155px'}"
@@ -384,6 +389,8 @@
         [dropdownIcon]="'p-dropdown-icon'"
       >
       </p-dropdown>
+
+
       <!--<button><img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/to-printer.png" height="21" width="24"/></button>-->
       <!--<button><img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/to-pdf.png" height="21" width="24"/></button>-->
     </div>
@@ -407,7 +414,7 @@
       "
     >
       <li
-        (click)="showBarsControl.setValue(false)"
+        (click)="sharedComponent.mixPanelEvent('graph button'); showBarsControl.setValue(false)"
         style="cursor: pointer; margin-left: 15px"
       >
         <mat-icon
@@ -418,7 +425,7 @@
           style="width: 17px; vertical-align: middle"
         ></mat-icon>
       </li>
-      <li (click)="showBarsControl.setValue(true)" style="cursor: pointer">
+      <li (click)="sharedComponent.mixPanelEvent('diagram button'); showBarsControl.setValue(true)" style="cursor: pointer">
         <mat-icon
           svgIcon="bar"
           [ngStyle]="{

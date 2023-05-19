@@ -1,7 +1,7 @@
 import {CustomPreset, Preset, RangePoint} from './presets';
 import {ActivatedRoute, UrlSegment} from '@angular/router';
 import {StorageService} from '@app/shared/services/storage.service';
-import {Directive, ElementRef, OnDestroy, OnInit, ViewChild} from '@angular/core';
+import {Directive, ElementRef, EventEmitter, OnDestroy, OnInit, Output, ViewChild} from '@angular/core';
 import {fromEvent, ReplaySubject} from 'rxjs';
 import {RangeSelectionType} from '../range-calendar/range-calendar.component';
 import {UserService} from '@app/core/user.service';
@@ -26,6 +26,7 @@ export class DateRangeSelectorBaseComponent implements OnInit, OnDestroy {
             val === this.customDatesPreset
         ) {
             this._selectedPreset = val;
+
             this.selectedRange.next(
                 this._selectedPreset
                     ? this._selectedPreset.selectedPeriod(this.us)
@@ -44,11 +45,14 @@ export class DateRangeSelectorBaseComponent implements OnInit, OnDestroy {
     }> = new ReplaySubject(1);
 
     showPanelDD = false;
+    disabledDD:boolean = false;
+
     customMonthsPreset: CustomPreset;
     customDatesPreset: CustomPreset;
     selectedInDDPreset: Preset;
 
     @ViewChild('selector', {read: ElementRef}) selectorRef: ElementRef;
+    @Output() sendEvent: EventEmitter<any> = new EventEmitter();
 
     pristine = true;
     private readonly destroyed$ = new Subject<void>();
@@ -106,10 +110,11 @@ export class DateRangeSelectorBaseComponent implements OnInit, OnDestroy {
         this.customDatesPreset = new CustomPreset('customDates');
     }
 
-    ngOnInit(): void {
+    ngOnInit(setDef?:boolean): void {
         const storedVal = this.readFromStorage();
         let storedPresetDetected: Preset;
         if (
+            !setDef &&
             storedVal &&
             storedVal.name &&
             (storedPresetDetected = [
@@ -143,6 +148,7 @@ export class DateRangeSelectorBaseComponent implements OnInit, OnDestroy {
             this.selectedPreset =
                 this.presets.find((prst) => prst.default) || this.presets[0];
             this.pristine = false;
+
             if(this.selectorRef){
                 fromEvent(this.selectorRef.nativeElement, 'click')
                     .pipe(take(1), takeUntil(this.destroyed$))

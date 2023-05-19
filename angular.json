@@ -133,6 +133,10 @@
               {
                 "input": "src/assets/style/styleSixth.scss",
                 "bundleName": "styleSixth"
+              },
+              {
+                "input": "src/assets/style/styleSeventh.scss",
+                "bundleName": "styleSeventh"
               }
             ],
             "scripts": [
@@ -145,11 +149,11 @@
                 "bundleName": "jschardet"
               },
               {
-                "input": "node_modules/jquery/dist/jquery.min.js",
+                "input": "src/assets/js/jquery-3.6.0.min.js",
                 "bundleName": "jquerye"
               },
               {
-                "input": "node_modules/jquery-ui/dist/jquery-ui.js",
+                "input": "src/assets/js/jquery-ui.min.js",
                 "bundleName": "jquery-ui"
               },
               {
@@ -163,10 +167,6 @@
               {
                 "input": "src/assets/js/jquery.scrollbar.min.js",
                 "bundleName": "scrollbar"
-              },
-              {
-                "input": "src/assets/files/resources/dynamsoft.webtwain.min.js",
-                "bundleName": "webtwain-initiate"
               }
             ]
           },
@@ -205,7 +205,7 @@
               "optimization": false,
               "vendorChunk": true,
               "extractLicenses": false,
-              "sourceMap": true,
+              "sourceMap": false,
               "namedChunks": true
             }
           },

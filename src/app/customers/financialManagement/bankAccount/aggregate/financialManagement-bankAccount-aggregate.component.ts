@@ -25,18 +25,14 @@ import {ActivatedRoute, Router} from '@angular/router';
 import {AccountSelectComponent} from '@app/shared/component/account-select/account-select.component';
 import {ReportService} from '@app/core/report.service';
 import {BrowserService} from '@app/shared/services/browser.service';
-import {
-    AccountsDateRangeSelectorComponent
-} from '@app/shared/component/date-range-selectors/accounts-date-range-selector.component';
+import {AccountsDateRangeSelectorComponent} from '@app/shared/component/date-range-selectors/accounts-date-range-selector.component';
 import {filter, take} from 'rxjs/operators';
 import {Subscription} from 'rxjs';
-import {
-    DateRangeSelectorBaseComponent
-} from '@app/shared/component/date-range-selectors/date-range-selector-base.component';
+import {DateRangeSelectorBaseComponent} from '@app/shared/component/date-range-selectors/date-range-selector-base.component';
 import {CustomPreset} from '@app/shared/component/date-range-selectors/presets';
 import {ReloadServices} from '@app/shared/services/reload.services';
-import {CdkVirtualForOf, CdkVirtualScrollViewport} from "@angular/cdk/scrolling";
-import {CdkDragDrop, moveItemInArray} from "@angular/cdk/drag-drop";
+import {CdkVirtualForOf, CdkVirtualScrollViewport} from '@angular/cdk/scrolling';
+import {CdkDragDrop, moveItemInArray} from '@angular/cdk/drag-drop';
 
 declare var $: any;
 
@@ -98,10 +94,11 @@ export class FinancialManagementBankAccountAggregateComponent
     private selectedRangeSub: Subscription;
     private allTransactionsSub: Subscription;
     @ViewChild(CdkVirtualScrollViewport) viewPort: CdkVirtualScrollViewport;
+
     @ViewChild(CdkVirtualForOf, {static: true}) private virtualForOf: CdkVirtualForOf<any[]>;
     private rangeVirtual: any;
     public window: any = window;
-    cardHandlesScrollIndex: number = 0;
+    cardHandlesScrollIndex: number = 1;
 
     constructor(
         public translate: TranslateService,
@@ -183,8 +180,39 @@ export class FinancialManagementBankAccountAggregateComponent
                 .subscribe((rng) => this.filterDates(rng));
         }
 
+        // if (this.userService.appData.userData.accountSelect.filter((account) => {
+        //     return account.currency !== 'ILS';
+        // }).length) {
+        //     this.sharedComponent.mixPanelEvent('accounts drop');
+        // }
+        const accountSelectExchange = this.userService.appData.userData.accountSelect.filter((account) => {
+            return account.currency !== 'ILS';
+        });
+        this.sharedComponent.mixPanelEvent('accounts drop', {
+            accounts: (this.userService.appData.userData.accountSelect.length === accountSelectExchange.length) ? 'כל החשבונות מט"ח' :
+                (((this.userService.appData.userData.accounts.length - accountSelectExchange.length) === this.userService.appData.userData.accountSelect.length) ? 'כל החשבונות' :
+                    (
+                        this.userService.appData.userData.accountSelect.map(
+                            (account) => {
+                                return account.companyAccountId;
+                            }
+                        )
+                    ))
+        });
         // this.childDates.filter('days');
         // this.filterDates(this.childDates.selectedPeriod);
+    }
+
+    sendEvent(isOpened: any) {
+        if (isOpened && this.childDates) {
+            this.childDates.selectedRange
+                .pipe(take(1))
+                .subscribe((paramDate) => {
+                    this.sharedComponent.mixPanelEvent('days drop', {
+                        value: paramDate.fromDate + '-' + paramDate.toDate
+                    });
+                });
+        }
     }
 
     getInfoAcc(id: string, param: string, applyAbsForCreditLimit = true): any {
@@ -261,10 +289,8 @@ export class FinancialManagementBankAccountAggregateComponent
         this.allTransactionsSub = this.sharedService
             .getBankTransAggregate(parameters)
             .pipe(take(1))
-            .subscribe(
-                (response: any) => {
+            .subscribe((response: any) => {
                     const dataTableAll = response ? response['body'] : response;
-
                     const allAcc = dataTableAll.slice(dataTableAll.length - 1);
                     // const allAcc = dataTableAll.filter((account) => {
                     //   return account.accountUuid === null;// && account.accountTransactions.length;
@@ -320,10 +346,10 @@ export class FinancialManagementBankAccountAggregateComponent
                             if (storedIndexOfA === storedIndexOfB) {
                                 return (
                                     this.userService.appData.userData.accountSelect.findIndex(
-                                        (acc:any) => acc.companyAccountId === a.accountUuid
+                                        (acc: any) => acc.companyAccountId === a.accountUuid
                                     ) -
                                     this.userService.appData.userData.accountSelect.findIndex(
-                                        (acc:any) => acc.companyAccountId === b.accountUuid
+                                        (acc: any) => acc.companyAccountId === b.accountUuid
                                     )
                                 );
                             }
@@ -334,7 +360,7 @@ export class FinancialManagementBankAccountAggregateComponent
                             return storedIndexOfA - storedIndexOfB;
                         });
                     }
-                    this.sortableIdGr = accounts.map((acc:any) => acc.accountUuid);
+                    this.sortableIdGr = accounts.map((acc: any) => acc.accountUuid);
                     this.storageService.sessionStorageSetter(
                         'sortableIdGr',
                         JSON.stringify(this.sortableIdGr)
@@ -342,14 +368,20 @@ export class FinancialManagementBankAccountAggregateComponent
 
                     this.dataTableAll = allAcc.concat(accounts);
 
-                    this.dataTableAll.forEach((acc:any) => {
+
+                    this.dataTableAll.forEach((acc: any) => {
                         if (acc.accountTransactions) {
                             acc.accountTransactions.sort((a, b) => {
                                 return b.transDate - a.transDate;
                             });
                         }
                     });
-
+                    setTimeout(() => {
+                        this.viewPort.scrollToIndex(1, 'smooth');
+                        setTimeout(() => {
+                            this.loader = false;
+                        }, 100);
+                    }, 10);
                     // if (this.userService.appData.moment().isBetween(paramDate.fromDate, paramDate.toDate, 'day', '[]')) {
                     //     const parametersToday: any = {
                     //         'companyAccountIds': this.userService.appData.userData.accountSelect.filter((account) => {
@@ -466,7 +498,6 @@ export class FinancialManagementBankAccountAggregateComponent
                     // setTimeout(() => {
                     //     this.checkNavScroll();
                     // }, 600);
-                    this.loader = false;
                 },
                 (err: HttpErrorResponse) => {
                     if (err.error) {
@@ -479,7 +510,6 @@ export class FinancialManagementBankAccountAggregateComponent
                 }
             );
     }
-
 
 
     nextScroll(elem: any) {
@@ -502,6 +532,7 @@ export class FinancialManagementBankAccountAggregateComponent
             // const nextIndex:any = idx + 1 > this.userService.appData.userData.creditCardsDetails.length ? this.userService.appData.userData.creditCardsDetails.length - 1 : idx;
             this.cardHandlesScrollIndex = idx;
             this.viewPort.scrollToIndex(this.cardHandlesScrollIndex, 'smooth');
+            console.log(this.cardHandlesScrollIndex);
         }
         // console.log(end, total, measureScrollOffsetEnd)
         // this.scrollIntoViewCardAt(scrollToIndex);
@@ -529,7 +560,8 @@ export class FinancialManagementBankAccountAggregateComponent
             const idx = this.cardHandlesScrollIndex - 1;
             // const prevIndex:any = idx < 0 ? 0 : idx;
             this.cardHandlesScrollIndex = idx;
-            this.viewPort.scrollToIndex(this.cardHandlesScrollIndex, 'smooth')
+            this.viewPort.scrollToIndex(this.cardHandlesScrollIndex, 'smooth');
+            console.log(this.cardHandlesScrollIndex);
         }
         // this.scrollIntoViewCardAt(scrollToIndex, 'start');
         // this.scrollTo(elem, 1040, 200);
@@ -650,14 +682,13 @@ export class FinancialManagementBankAccountAggregateComponent
                 if (this.viewPort.measureScrollOffset('right') > 505) {
                     // const prevIndex:any = idx < 0 ? 0 : idx;
                     this.cardHandlesScrollIndex = this.cardHandlesScrollIndex - 1;
-                    this.viewPort.scrollToIndex(this.cardHandlesScrollIndex, 'smooth')
+                    this.viewPort.scrollToIndex(this.cardHandlesScrollIndex, 'smooth');
                 }
             }
             // this.viewPort.scrollToIndex(this.cardHandlesScrollIndex, 'smooth')
             // this.scrollIntoViewCardAt(+evnt.target.getAttribute('tabindex') + dir);
         }
     }
-
 
 
     arrayMove(arr: any[], old_index: number, new_index: number): any[] {
@@ -678,6 +709,8 @@ export class FinancialManagementBankAccountAggregateComponent
     }
 
     goToFinancialManagementBankAccountDetailsComponent(filtersParams: any) {
+        this.sharedComponent.mixPanelEvent('all transes');
+
         this.storageService.sessionStorageSetter(
             'bankAccount/*-filterAcc',
             filtersParams[0] === null
@@ -1011,14 +1044,14 @@ export class FinancialManagementBankAccountAggregateComponent
 
     private reportParamsFromCurrentView(): any {
         const dataTableWithoutSummary = this.dataTableAll.filter(
-            (acc:any) => acc.accountUuid
+            (acc: any) => acc.accountUuid
         );
         const dataTableForReport =
             dataTableWithoutSummary.length === 1
                 ? dataTableWithoutSummary
                 : this.dataTableAll;
 
-        const accountData = dataTableForReport.map((acc:any) => {
+        const accountData = dataTableForReport.map((acc: any) => {
             if (!acc.accountUuid) {
                 return {
                     accountUuid: null,

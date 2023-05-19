@@ -17,7 +17,7 @@ import {
     first,
     map,
     startWith,
-    switchMap,
+    switchMap, take,
     tap,
     withLatestFrom
 } from 'rxjs/operators';
@@ -131,6 +131,7 @@ export class TazrimDailyGraphComponent
     }
 
     ngAfterViewInit(): void {
+
         this.selectedRangeRecalc$ = this.childDates.selectedRange.pipe(
             map(() => this.childDates.recalculateSelectedRangeIfNecessary()),
             publishRef
@@ -340,6 +341,8 @@ export class TazrimDailyGraphComponent
                 })
             )
             .subscribe((val) => {
+                this.sharedComponent.mixPanelEvent('search',{value: val});
+
                 this.filterChanged$.next({
                     query: val,
                     categories: this.filterChanged$.value.categories,
@@ -465,7 +468,17 @@ export class TazrimDailyGraphComponent
         console.log('reload child');
         this.changeAcc();
     }
-
+    sendEvent(isOpened: any) {
+        if (isOpened && this.childDates) {
+            this.childDates.selectedRange
+                .pipe(take(1))
+                .subscribe((paramDate) => {
+                    this.sharedComponent.mixPanelEvent('days drop', {
+                        value: paramDate.fromDate + '-' + paramDate.toDate
+                    });
+                });
+        }
+    }
     changeAcc(): void {
         // // this.loader = true;
         // this.childDates.selectedRange
@@ -476,7 +489,25 @@ export class TazrimDailyGraphComponent
         //     .subscribe(() => this.filterDates(this.childDates.recalculateSelectedRangeIfNecessary()));
         // // this.childDates.filter('DaysTazrim');
         // // this.filterDates(this.childDates.selectedPeriod);
-
+        // if (this.userService.appData.userData.accountSelect.filter((account) => {
+        //     return account.currency !== 'ILS';
+        // }).length) {
+        //     this.sharedComponent.mixPanelEvent('accounts drop');
+        // }
+        const accountSelectExchange = this.userService.appData.userData.accountSelect.filter((account) => {
+            return account.currency !== 'ILS';
+        })
+        this.sharedComponent.mixPanelEvent('accounts drop', {
+            accounts:(this.userService.appData.userData.accountSelect.length === accountSelectExchange.length) ? 'כל החשבונות מט"ח' :
+                (((this.userService.appData.userData.accounts.length-accountSelectExchange.length) === this.userService.appData.userData.accountSelect.length)? 'כל החשבונות' :
+                    (
+                        this.userService.appData.userData.accountSelect.map(
+                            (account) => {
+                                return account.companyAccountId;
+                            }
+                        )
+                    ))
+        });
         this.accountSelectionChange$.next(
             this.userService.appData.userData.accountSelect
         );
@@ -1072,6 +1103,10 @@ export class TazrimDailyGraphComponent
             dates = Object.keys(repacked).map((dt) => +dt);
             dates.sort((a, b) => +a - +b);
         }
+        // console.log(this.selectedValueGraph === 'expenses' && this.showBarsControl.value ? repacked.map((datesChild) => datesChild.date) :
+        //     dates.map((dt) =>
+        //     this.userService.appData.moment(dt).toDate()
+        // ))
 
         return this.selectedValueGraph === 'expenses' && this.showBarsControl.value
             ? {
@@ -1311,6 +1346,7 @@ export class TazrimDailyGraphComponent
 
     filterCategory(type: any) {
         if (type.type === 'payment') {
+            this.sharedComponent.mixPanelEvent('payment type filter', {value:type.checked});
             this.filterChanged$.next({
                 query: this.filterChanged$.value.query,
                 paymentTypes: type.checked,
@@ -1321,6 +1357,7 @@ export class TazrimDailyGraphComponent
                 JSON.stringify(type.checked)
             );
         } else if (type.type === 'transType') {
+            this.sharedComponent.mixPanelEvent('category fillter');
             this.filterChanged$.next({
                 query: this.filterChanged$.value.query,
                 categories: type.checked,

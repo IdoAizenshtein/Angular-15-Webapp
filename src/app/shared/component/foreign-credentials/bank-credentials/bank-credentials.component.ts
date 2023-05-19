@@ -1,4 +1,4 @@
-import {Component, Input, OnChanges, OnInit, SimpleChange, ViewEncapsulation} from '@angular/core';
+import {Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChange, ViewEncapsulation} from '@angular/core';
 import {FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
 import {TranslateService} from '@ngx-translate/core';
 import {BankForeignCredentialsService, QuestionBase} from '../foreign-credentials.service';
@@ -14,6 +14,7 @@ export class BankCredentialsComponent implements OnInit, OnChanges {
     @Input() bankCredentialsGroup: any;
     @Input() settings: any[];
     @Input() is_station: any = false;
+    @Output() changedTrigger = new EventEmitter<boolean>();
 
     voiceMessage: boolean = false;
 
@@ -27,6 +28,19 @@ export class BankCredentialsComponent implements OnInit, OnChanges {
     bankCodeUpdateGroup: any = null;
 
     @Input() useMaterialComponents = false;
+
+    @Input()
+    set resetBankDD(reset: any) {
+        if (reset) {
+            Object.keys(this.bankCredentialsGroup.controls).forEach((key) => {
+                if (key !== 'bank') {
+                    this.bankCredentialsGroup.removeControl(key);
+                }
+            });
+            this.bankCredentialsGroup.get('bank').patchValue(null);
+            this.setBankControlsFor(null);
+        }
+    }
 
     constructor(
         public translate: TranslateService,
@@ -113,6 +127,9 @@ export class BankCredentialsComponent implements OnInit, OnChanges {
     }
 
     setBankControlsFor(bankSelection: any): void {
+        if (bankSelection) {
+            this.changedTrigger.emit(true);
+        }
         this.selectedSettings =
             bankSelection === '122' && this.is_station
                 ? this.translate.instant('122_station')

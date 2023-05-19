@@ -2,7 +2,7 @@ import {Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewEncapsula
 import {FormBuilder, FormControl, Validators} from '@angular/forms';
 import {delay, filter, map, switchMap, tap} from 'rxjs/operators';
 import {TokenService, TokenStatus, TokenType} from '@app/core/token.service';
-import {combineLatest, defer, EMPTY, Observable, of, Subscription, timer, zip} from 'rxjs';
+import {combineLatest, defer, EMPTY, Observable, of, Subscription, timer} from 'rxjs';
 import {takeWhileInclusive} from '../../../functions/takeWhileInclusive';
 import {RestCommonService} from '@app/shared/services/restCommon.service';
 import {AccountSelectComponent} from '../../account-select/account-select.component';
@@ -37,6 +37,9 @@ export class TokenCreateDialogComponent implements OnDestroy, OnInit {
     }
 
     public bankCredentialsOTP: any;
+    public resetBankDD: boolean = false;
+
+
 
     @Input() title: string;
 
@@ -80,6 +83,9 @@ export class TokenCreateDialogComponent implements OnDestroy, OnInit {
     private createOrUpdateToken$: Observable<any>;
     private readonly MAX_POLLING_ATTEMPTS = 60;
     tokenStatusPoll$: Observable<any>;
+    public formLoginOtpModal: boolean = false;
+    @Input() exampleCompany: any = false;
+
 
     // private createdCredentialsCache: {[key: string]: string} = {};
     constructor(
@@ -90,6 +96,24 @@ export class TokenCreateDialogComponent implements OnDestroy, OnInit {
         private fb: FormBuilder
     ) {
         this.processing = false;
+    }
+
+    otpModalClose(eve: any) {
+        this.formLoginOtpModal = false;
+        if (!eve) {
+            this.resetBankDD = true;
+            setTimeout(()=>{
+                this.resetBankDD = false;
+            }, 10);
+        } else {
+            this.userService.appData.userData.otpVerified = true;
+        }
+    }
+
+    changedBankTrigger(eve: any) {
+        if ((this.exampleCompany || this.userService.appData.userData.exampleCompany) && !this.userService.appData.userData.otpVerified) {
+            this.formLoginOtpModal = true;
+        }
     }
 
     accounts$: Observable<any>;
@@ -119,7 +143,7 @@ export class TokenCreateDialogComponent implements OnDestroy, OnInit {
                     map((responseAccs) =>
                         responseAccs && !responseAccs.error
                             ? responseAccs.body.accounts.filter(
-                                (acc:any) =>
+                                (acc: any) =>
                                     acc.currency ===
                                     AccountSelectComponent.DEFAULT_PRIMARY_CURRENCY
                             )
@@ -149,10 +173,10 @@ export class TokenCreateDialogComponent implements OnDestroy, OnInit {
 
         const accountNumberAutoFill$ = defer(() => {
             return combineLatest(
-         [
-             this.settings.get('linkedAccount').valueChanges,
-             this.settings.get('clearingAgency').valueChanges
-         ]
+                [
+                    this.settings.get('linkedAccount').valueChanges,
+                    this.settings.get('clearingAgency').valueChanges
+                ]
             ).pipe(
                 filter(
                     ([accVal, solekVal]: any) =>
@@ -170,7 +194,15 @@ export class TokenCreateDialogComponent implements OnDestroy, OnInit {
             this.autoCloseSub.unsubscribe();
         }
     }
-
+    mixPanelEvent(eventName: string, params?: any) {
+        if (window['mixpanel']) {
+            if (!params) {
+                window['mixpanel'].track(eventName);
+            } else {
+                window['mixpanel'].track(eventName, params);
+            }
+        }
+    }
     submitSettings(bankCredsResult: any) {
         this.lastUsedWebsiteTargetId = bankCredsResult['bankId'];
         // debugger;
@@ -179,6 +211,12 @@ export class TokenCreateDialogComponent implements OnDestroy, OnInit {
             return;
         }
 
+
+        this.mixPanelEvent('add ' + (
+            this.type === this.tokenTypes.ACCOUNT ? 'bank' : this.type === this.tokenTypes.CREDITCARD ? 'credit' : 'solek'
+        ), {
+            type: bankCredsResult['bankId']
+        });
         const request =
             this.companyId === ''
                 ? Object.assign(
@@ -430,17 +468,17 @@ export class TokenCreateDialogComponent implements OnDestroy, OnInit {
     // }
     hashAppTokenOtp(): void {
         combineLatest(
-    [
-        this.tokenService.downloadAppMessage({
-            cellPhone: this.settings.get('cellPhone').value
-            // 'linkAndroid': 'linkAndroid',
-            // 'linkApple': 'linkApple'
-        }),
-        this.tokenService.hashAppTokenOtp({
-            token: this.newTokenSaved,
-            otpPassword: this.bankCredentialsOTP.get('otpPassword').value
-        })
-    ]
+            [
+                this.tokenService.downloadAppMessage({
+                    cellPhone: this.settings.get('cellPhone').value
+                    // 'linkAndroid': 'linkAndroid',
+                    // 'linkApple': 'linkApple'
+                }),
+                this.tokenService.hashAppTokenOtp({
+                    token: this.newTokenSaved,
+                    otpPassword: this.bankCredentialsOTP.get('otpPassword').value
+                })
+            ]
         ).subscribe(
             {
                 next: (respWork) => {

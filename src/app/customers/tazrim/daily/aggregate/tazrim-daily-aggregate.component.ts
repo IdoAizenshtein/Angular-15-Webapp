@@ -168,10 +168,40 @@ export class TazrimDailyAggregateComponent
   get yearRange(): string {
     return `${this.today.getFullYear()}:${this.calendarMax.getFullYear()}`;
   }
-
+  sendEvent(isOpened: any) {
+    if (isOpened && this.childDates) {
+      this.childDates.selectedRange
+          .pipe(take(1))
+          .subscribe((paramDate) => {
+            this.sharedComponent.mixPanelEvent('days drop', {
+              value: paramDate.fromDate + '-' + paramDate.toDate
+            });
+          });
+    }
+  }
   changeAcc(event): void {
     this.loader = true;
     console.log(this.userService.appData.userData.accountSelect);
+    // if (this.userService.appData.userData.accountSelect.filter((account) => {
+    //   return account.currency !== 'ILS';
+    // }).length) {
+    //   this.sharedComponent.mixPanelEvent('accounts drop');
+    // }
+
+    const accountSelectExchange = this.userService.appData.userData.accountSelect.filter((account) => {
+      return account.currency !== 'ILS';
+    })
+    this.sharedComponent.mixPanelEvent('accounts drop', {
+      accounts:(this.userService.appData.userData.accountSelect.length === accountSelectExchange.length) ? 'כל החשבונות מט"ח' :
+          (((this.userService.appData.userData.accounts.length-accountSelectExchange.length) === this.userService.appData.userData.accountSelect.length)? 'כל החשבונות' :
+              (
+                  this.userService.appData.userData.accountSelect.map(
+                      (account) => {
+                        return account.companyAccountId;
+                      }
+                  )
+              ))
+    });
     [this.accountBalance, this.creditLimit, this.balanceUse] =
       this.userService.appData.userData.accountSelect.reduce(
         function (a, b) {
@@ -460,6 +490,8 @@ export class TazrimDailyAggregateComponent
   }
 
   goToFinancialManagementBankAccountDetailsComponent(filtersParams: any) {
+    this.sharedComponent.mixPanelEvent('all transes');
+
     this.storageService.sessionStorageSetter(
       'daily/*-filterAcc',
       filtersParams[0] === null
@@ -836,6 +868,7 @@ export class TazrimDailyAggregateComponent
     this.changeAcc(null);
   }
   ngOnInit(): void {
+
     this.route.data.subscribe((data: any) => {
       console.log('resolved data ===> %o, aRoute: %o', data, this.route);
       this.entryLimit =

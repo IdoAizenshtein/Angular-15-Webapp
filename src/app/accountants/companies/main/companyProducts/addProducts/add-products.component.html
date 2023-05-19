@@ -9,7 +9,7 @@
 		<h2 class="titlePage">
 			<i>{{ 'menu.accountants.companies.addProduct' | translate }}</i>
 		</h2>
-		
+
 		<ul class="wizardSteps">
 			<li [class.active]="step === 1 || step === 2" [class.passed]="step > 2">
 				<ng-container *ngIf="step === 1 || step === 2; else templateReg">
@@ -26,7 +26,7 @@
 						/>
 					</svg>
 				</ng-container>
-				
+
 				<ng-template #templateReg>
 					<svg
 							height="75"
@@ -46,7 +46,7 @@
 					פרטי החברה
 				</div>
 			</li>
-			
+
 			<ng-container
 					*ngIf="
           !(
@@ -78,7 +78,7 @@
 							></polyline>
 						</svg>
 					</ng-container>
-					
+
 					<ng-template #templateReg3>
 						<svg
 								height="75"
@@ -93,10 +93,10 @@
 							></polyline>
 						</svg>
 					</ng-template>
-					
+
 					<div *ngIf="step !== 1" class="textWizard">
 						<i>2</i>
-						
+
 						{{
 						products &&
 						((products.supplierJournal &&
@@ -117,13 +117,13 @@
 					</div>
 				</li>
 			</ng-container>
-			
+
 			<!--            <ng-container *ngIf="step === 1 || (products && (!products.saved.creditJournal && products.creditJournal) && (!products.saved.bankJournal && products.bankJournal) && (!products.saved.supplierJournal && products.supplierJournal)); else anotherOptNav">-->
 			<!--              -->
 			<!--            </ng-container>-->
 			<!--            <ng-template #anotherOptNav>-->
 			<!--            </ng-template>-->
-			
+
 			<li
 					*ngIf="
           step === 1 ||
@@ -158,7 +158,7 @@
 						></polyline>
 					</svg>
 				</ng-container>
-				
+
 				<ng-template #templateReg4>
 					<svg
 							height="75"
@@ -173,7 +173,7 @@
 						></polyline>
 					</svg>
 				</ng-template>
-				
+
 				<div *ngIf="step !== 1" class="textWizard">
 					<i>{{
 						products &&
@@ -224,7 +224,7 @@
 						></polyline>
 					</svg>
 				</ng-container>
-				
+
 				<ng-template #templateReg4>
 					<svg
 							height="75"
@@ -239,13 +239,13 @@
 						></polyline>
 					</svg>
 				</ng-template>
-				
+
 				<div *ngIf="step !== 1" class="textWizard">
 					<i>3</i>
 					פ.יומן ספקים ולקוחות
 				</div>
 			</li>
-			
+
 			<li
 					*ngIf="
           step === 1 ||
@@ -278,7 +278,7 @@
 						></polyline>
 					</svg>
 				</ng-container>
-				
+
 				<ng-template #templateReg5>
 					<svg
 							height="75"
@@ -293,7 +293,7 @@
 						></polyline>
 					</svg>
 				</ng-template>
-				
+
 				<div *ngIf="step !== 1" class="textWizard">
 					<i>4</i>
 					פ.יומן בנק ואשראי
@@ -332,7 +332,7 @@
 					>
 						<ng-template let-company pTemplate="item">
 							<!--                            [ngStyle]="company.supplierJournalItem ? {'opacity': '0.4', 'cursor': 'default'} : ''"-->
-							
+
 							<div (click)="onClickOptionDD(company.supplierJournalItem, $event)">
 								<div class="p-helper-clearfix" style="display: flex">
 									<div>
@@ -346,7 +346,7 @@
 							</div>
 						</ng-template>
 					</p-autoComplete>
-					
+
 					<div *ngIf="autoFilter.noResults && selectedCompany" class="noData">
 						<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/companiesSNotFound.png"/>
 						<h1>החברה שחיפשתם לא נמצאת במאגר</h1>
@@ -393,7 +393,7 @@
 									<!--                                            *ngIf="!products.saved.bankExport"-->
 									<!--                                            [(ngModel)]="products.bankExport">-->
 									<!--                                    </p-checkbox>-->
-									
+
 									<mat-icon
 											*ngIf="products.saved.bankExport"
 											style="
@@ -404,7 +404,7 @@
                     "
 											svgIcon="tick"
 									></mat-icon>
-									
+
 									<mat-icon
 											*ngIf="!products.saved.bankExport"
 											style="width: 17px; vertical-align: middle; color: #df0000"
@@ -416,7 +416,7 @@
 									<!--                                                *ngIf="!products.saved.creditExport"-->
 									<!--                                                [(ngModel)]="products.creditExport">-->
 									<!--                                    </p-checkbox>-->
-									
+
 									<mat-icon
 											*ngIf="products.saved.creditExport"
 											style="
@@ -427,7 +427,7 @@
                     "
 											svgIcon="tick"
 									></mat-icon>
-									
+
 									<mat-icon
 											*ngIf="!products.saved.creditExport"
 											style="width: 17px; vertical-align: middle; color: #df0000"
@@ -441,7 +441,7 @@
 									            checkboxIcon="fa fa-check"
 									>
 									</p-checkbox>
-									
+
 									<mat-icon
 											*ngIf="products.saved.supplierJournal"
 											style="
@@ -463,13 +463,13 @@
 									            [(ngModel)]="products.bankJournal"
 									            [binary]="true"
 									            [disabled]="
-                      !userService?.appData?.isAdmin ||
+                      !selectedCompany?.addProductPermission ||
                       !products.saved.bankExport
                     "
 									            checkboxIcon="fa fa-check"
 									>
 									</p-checkbox>
-									
+
 									<mat-icon
 											*ngIf="products.saved.bankJournal"
 											style="
@@ -486,7 +486,7 @@
 									            [(ngModel)]="products.creditJournal"
 									            [binary]="true"
 									            [disabled]="
-                      !userService?.appData?.isAdmin ||
+                      !selectedCompany?.addProductPermission ||
                       !products.saved.creditExport ||
                       !products.saved.bankExport ||
                       (!products.saved.bankJournal && !products.bankJournal)
@@ -494,7 +494,7 @@
 									            checkboxIcon="fa fa-check"
 									>
 									</p-checkbox>
-									
+
 									<mat-icon
 											*ngIf="products.saved.creditJournal"
 											style="
@@ -519,7 +519,7 @@
 							<!--                                        {{!products.bankExport && !products.creditExport ? 'בחירת מוצרים אלו מחייבת בחירה ביצוא בנק ואשראי' : !products.bankExport ? 'בחירת מוצרים אלו מחייבת בחירה ביצוא בנק' : 'בחירת מוצרים אלו מחייבת בחירה ביצוא אשראי'-->
 							<!--                                        }}-->
 							<!--                                    </ng-container>-->
-							
+
 							<!--                                    <ng-container *ngIf="(!products.creditExport && !products.bankJournal)">-->
 							<!--                                        {{(!products.bankExport && !products.creditExport)-->
 							<!--                                        ? 'בחירה במוצר זה מחייבת בחירה ביצוא בנק ואשראי' :-->
@@ -527,7 +527,7 @@
 							<!--                                            :-->
 							<!--                                            'בחירה במוצר זה מחייבת בחירה ביצוא אשראי')}}-->
 							<!--                                    </ng-container>-->
-							
+
 							<!--                                </p>-->
 							<!--                            </div>-->
 						</div>
@@ -564,7 +564,7 @@
 						>
 							הוספת מוצר פקודות יומן ספקים ולקוחות ופ.בנק
 						</ng-container>
-						
+
 						<ng-container
 								*ngIf="
                 products.creditJournal &&
@@ -574,7 +574,7 @@
 						>
 							הוספת מוצר פקודות יומן אשראי
 						</ng-container>
-						
+
 						<ng-container
 								*ngIf="
                 products.creditJournal &&
@@ -584,7 +584,7 @@
 						>
 							הוספת מוצר פקודות יומן ספקים ולקוחות ופ.בנק ואשראי
 						</ng-container>
-						
+
 						<ng-container
 								*ngIf="
                 products.creditJournal &&
@@ -630,7 +630,7 @@
 											<i style="color: #df0000">*</i>
 											דיווח למע"מ
 										</div>
-										
+
 										<div>
 											<div style="padding: 0px 10px; height: 30px">
 												<p-radioButton
@@ -694,7 +694,8 @@
 													[style]="{ width: '80%' }"
 													appendTo="body"
 													formControlName="vatReportType"
-													
+													name="vatReportType"
+
 													placeholder="בחירה"
 													styleClass="ddInfoCompanyForm"
 											>
@@ -746,7 +747,7 @@
 										</div>
 									</div>
 								</div>
-								
+
 								<div class="sett-table">
 									<div>
 										<div
@@ -857,7 +858,7 @@
 										<!--                                            </div>-->
 										<!--                                        </div>-->
 									</div>
-									
+
 									<div *ngIf="products && products.supplierJournal">
 										<div>
 											<div>סוגי תנועה</div>
@@ -1032,7 +1033,7 @@
 											>
 												המספר שהוקלד קיים כבר בשדה אחר
 											</div>
-											
+
 											<div
 													*ngIf="i === 0"
 													[class.withAlert]="
@@ -1158,7 +1159,7 @@
 							<br/>
 							האפשרות של צירוף לקוח לאפליקציית הצילום תתאפשר רק כאשר כל השדות
 							מלאים
-							
+
 							<ng-container *ngIf="contactsList.length">
 								<br/>
 								לחברה זו מוגדרים
@@ -1191,7 +1192,7 @@
 								</li>
 							</ul>
 						</p-overlayPanel>
-						
+
 						<app-contacts
 								[contactsInput]="contacts"
 								[isModal]="selectedCompany"
@@ -1230,7 +1231,7 @@
 							>
 								הוספת מוצר פקודות יומן ספקים ולקוחות ופ.בנק
 							</ng-container>
-							
+
 							<ng-container
 									*ngIf="
                   products.creditJournal &&
@@ -1240,7 +1241,7 @@
 							>
 								הוספת מוצר פקודות יומן אשראי
 							</ng-container>
-							
+
 							<ng-container
 									*ngIf="
                   products.creditJournal &&
@@ -1250,7 +1251,7 @@
 							>
 								הוספת מוצר פקודות יומן ספקים ולקוחות ופ.בנק ואשראי
 							</ng-container>
-							
+
 							<ng-container
 									*ngIf="
                   products.creditJournal &&
@@ -1270,7 +1271,7 @@
 								הוספת מוצר פקודות יומן בנק ואשראי
 							</ng-container>
 						</h1>
-						
+
 						<h3>
 							הגדרת כרטיסי הנהלת חשבונות לחברת
 							{{ selectedCompany.companyName }}
@@ -1280,7 +1281,7 @@
 							הרלוונטים לחברה כבר עכשיו
 						</p>
 					</div>
-					
+
 					<app-accounting-cards
 							[infoAccountingCards]="infoAccountingCards"
 							[isModal]="selectedCompany"
@@ -1319,7 +1320,7 @@
 							>
 								הוספת מוצר פקודות יומן ספקים ולקוחות ופ.בנק
 							</ng-container>
-							
+
 							<ng-container
 									*ngIf="
                   products.creditJournal &&
@@ -1329,7 +1330,7 @@
 							>
 								הוספת מוצר פקודות יומן אשראי
 							</ng-container>
-							
+
 							<ng-container
 									*ngIf="
                   products.creditJournal &&
@@ -1339,7 +1340,7 @@
 							>
 								הוספת מוצר פקודות יומן ספקים ולקוחות ופ.בנק ואשראי
 							</ng-container>
-							
+
 							<ng-container
 									*ngIf="
                   products.creditJournal &&
@@ -1359,13 +1360,13 @@
 								הוספת מוצר פקודות יומן בנק ואשראי
 							</ng-container>
 						</h1>
-						
+
 						<h3>
 							הגדרות כלליות ליצירת פקודות יומן לחברת
 							{{ selectedCompany.companyName }}
 						</h3>
 					</div>
-					
+
 					<ng-container
 							*ngIf="
               products &&
@@ -1391,7 +1392,7 @@
 								[isModal]="selectedCompany"
 						></app-journal-vendor-and-customer>
 					</ng-container>
-					
+
 					<ng-template #anotherOpt>
 						<app-journal-bank-and-credit
 								[hide_bankProcessTransType]="
@@ -1442,7 +1443,7 @@
 							>
 								הוספת מוצר פקודות יומן ספקים ולקוחות ופ.בנק
 							</ng-container>
-							
+
 							<ng-container
 									*ngIf="
                   products.creditJournal &&
@@ -1452,7 +1453,7 @@
 							>
 								הוספת מוצר פקודות יומן אשראי
 							</ng-container>
-							
+
 							<ng-container
 									*ngIf="
                   products.creditJournal &&
@@ -1462,7 +1463,7 @@
 							>
 								הוספת מוצר פקודות יומן ספקים ולקוחות ופ.בנק ואשראי
 							</ng-container>
-							
+
 							<ng-container
 									*ngIf="
                   products.creditJournal &&
@@ -1482,7 +1483,7 @@
 								הוספת מוצר פקודות יומן בנק ואשראי
 							</ng-container>
 						</h1>
-						
+
 						<h3>
 							הגדרות כלליות ליצירת פקודות יומן לחברת
 							{{ selectedCompany.companyName }}
@@ -1506,7 +1507,7 @@
 			</ng-container>
 		</ng-container>
 	</div>
-	
+
 	<div #footer class="footer stepFooter{{ step }}">
 		<ng-container [ngSwitch]="step">
 			<ng-container *ngSwitchCase="1">
@@ -1776,7 +1777,7 @@
 			styleClass="showModalScreenTransTypes"
 	>
 		<p-header> הגדרת סוגי תנועה</p-header>
-		
-		<app-trans-type [isModal]="selectedCompany"></app-trans-type>
+
+		<app-trans-type [isModal]="selectedCompany" [showAllTypes]="products.supplierJournal"></app-trans-type>
 	</p-dialog>
 </ng-container>

@@ -1,18 +1,7 @@
 import {Component, ElementRef, OnDestroy, OnInit, ViewChild, ViewEncapsulation} from '@angular/core';
 import {UserService} from '@app/core/user.service';
 import {FormControl, FormGroup} from '@angular/forms';
-import {
-    debounceTime,
-    distinctUntilChanged,
-    filter,
-    first,
-    map,
-    startWith,
-    switchMap,
-    take,
-    tap,
-    withLatestFrom
-} from 'rxjs/operators';
+import {debounceTime, distinctUntilChanged, filter, first, map, startWith, switchMap, take, tap, withLatestFrom} from 'rxjs/operators';
 import {SharedService} from '@app/shared/services/shared.service'; // import {sharedService} from '../../../customers.service';
 import {combineLatest, Observable, of, Subject, Subscription} from 'rxjs';
 import {FilterPipe} from '@app/shared/pipes/filter.pipe';
@@ -31,7 +20,7 @@ import {ActionService} from '@app/core/action.service';
 import {TransTypesService} from '@app/core/transTypes.service';
 import {ReloadServices} from '@app/shared/services/reload.services';
 import {publishRef} from '@app/shared/functions/publishRef';
-import {Dialog} from "primeng/dialog";
+import {Dialog} from 'primeng/dialog';
 
 @Component({
     templateUrl: './tazrim-fixedMovements-details.component.html',
@@ -256,6 +245,9 @@ export class TazrimFixedMovementsDetailsComponent
                 distinctUntilChanged()
             )
             .subscribe((term) => {
+                this.sharedComponent.mixPanelEvent('search', {
+                    value: term
+                });
                 this.filter.query = term;
                 this.doFilter();
             });
@@ -923,6 +915,23 @@ export class TazrimFixedMovementsDetailsComponent
         this.doFilter();
     }
 
+    mixPanelAcc() {
+        const accountSelectExchange = this.userService.appData.userData.accountSelect.filter((account) => {
+            return account.currency !== 'ILS';
+        });
+        this.sharedComponent.mixPanelEvent('accounts drop', {
+            accounts: (this.userService.appData.userData.accountSelect.length === accountSelectExchange.length) ? 'כל החשבונות מט"ח' :
+                (((this.userService.appData.userData.accounts.length - accountSelectExchange.length) === this.userService.appData.userData.accountSelect.length) ? 'כל החשבונות' :
+                    (
+                        this.userService.appData.userData.accountSelect.map(
+                            (account) => {
+                                return account.companyAccountId;
+                            }
+                        )
+                    ))
+        });
+    }
+
     private rebuildTransTypesMap(withOtherFiltersApplied: any[]): void {
         this.transTypesMap = withOtherFiltersApplied
             ? withOtherFiltersApplied.reduce(
@@ -1085,6 +1094,7 @@ export class TazrimFixedMovementsDetailsComponent
             ? '856f4212-3f5f-4cfc-b2fb-b283a1da2f7c'
             : this.userService.appData.userData.companySelect.companyId;
         this.createMovementData.loading = true;
+        this.sharedComponent.mixPanelEvent(this.createMovementData.source.expence ? 'add outcome' : 'add income');
         this.sharedService
             .createCyclicTransaction(dataToSubmit)
             .subscribe((rslt) => {
@@ -1110,6 +1120,7 @@ export class TazrimFixedMovementsDetailsComponent
 
         const dataToSubmit = this.editEditor.result; // Object.assign(this.editMovementData.source, this.editEditor.result);
         this.editMovementData.loading = true;
+        this.sharedComponent.mixPanelEvent('add ' + this.editMovementData.source.targetType);
         this.sharedService
             .updateCyclicTransaction(
                 EditingType.Series,
@@ -1162,7 +1173,6 @@ export class TazrimFixedMovementsDetailsComponent
         // trnsInner.logic = false;
         this.editMovementData.source = JSON.parse(JSON.stringify(trnsInner));
         this.editMovementData.visible = true;
-
         setTimeout(() => this.editMovementDataDlg.center());
     }
 
@@ -1179,6 +1189,7 @@ export class TazrimFixedMovementsDetailsComponent
     }
 
     userRestore() {
+        this.sharedComponent.mixPanelEvent('restore trans');
         this.sharedService
             .cyclicTransRestore({
                 keyId: this.restoreTrans.transId,
@@ -1254,6 +1265,8 @@ export class TazrimFixedMovementsDetailsComponent
                 );
                 return;
             }
+
+            this.sharedComponent.mixPanelEvent('add recomended');
             const dataToSubmit = Object.assign(
                 this.createMovementData.source,
                 this.createEditor.result
@@ -1301,6 +1314,7 @@ export class TazrimFixedMovementsDetailsComponent
         );
         this.deleteConfirmationPrompt.onApprove = () => {
             this.deleteConfirmationPrompt.processing = true;
+            this.sharedComponent.mixPanelEvent('delete recomended');
             this.sharedService
                 .recommendationRemove({
                     companyAccountId: trns.companyAccountId,
@@ -1333,6 +1347,10 @@ export class TazrimFixedMovementsDetailsComponent
             this.deleteConfirmationPrompt.item
         );
         this.deleteConfirmationPrompt.onApprove = () => {
+            this.sharedComponent.mixPanelEvent('edit ' + this.deleteConfirmationPrompt.item.targetType, {
+                value: this.deleteConfirmationPrompt.item.transId
+            });
+
             this.deleteConfirmationPrompt.processing = true;
             this.sharedService
                 .deleteCyclicTransaction(

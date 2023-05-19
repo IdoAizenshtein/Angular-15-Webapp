@@ -14,12 +14,16 @@
 <div class="search" #headerBottom="matAutocompleteOrigin" matAutocompleteOrigin>
   <input
     type="text"
+    (keydown)="sharedComponent.mixPanelEvent('search', {
+				   value: searchFC.value
+				})"
     autocomplete="off"
     placeholder="{{ 'help-center.search.placeholder' | translate }}"
     [formControl]="searchFC"
     [matAutocomplete]="auto"
     [matAutocompleteConnectedTo]="headerBottom"
   />
+
   <mat-autocomplete #auto="matAutocomplete">
     <!--                    [displayWith]="displayFn">-->
     <ng-container

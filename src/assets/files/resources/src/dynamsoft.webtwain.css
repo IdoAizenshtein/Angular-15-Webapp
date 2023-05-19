@@ -392,6 +392,7 @@ dialog[closed] {
     left: 0;
     top: 20%;
     width: 90%;
+    z-index: 9999999 !important;
 }
 
 .dynamsoft-dialog-close {

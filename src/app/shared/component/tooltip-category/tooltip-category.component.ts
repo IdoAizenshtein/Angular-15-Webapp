@@ -271,7 +271,6 @@ export class TooltipCategoryComponent {
         }
         this.showPanelDD = !this.showPanelDD;
         this.clickOpen.emit(this.showPanelDD);
-
         if (!this.showPanelDD && this.filter && !!this.itemsFilter.value) {
             this.itemsFilter.setValue('');
         }

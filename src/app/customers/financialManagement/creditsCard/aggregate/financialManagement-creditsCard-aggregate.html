@@ -4,11 +4,11 @@
 				(changedTrigger)="getCreditCardTazrimSummary()"
 				[cards]="userService.appData.userData.creditCards"
 		></app-cards-select>
-		
+
 		<div class="exports">
 			<!--<button (click)="printTransactions()"><img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/to-printer.png" height="21" width="24"/></button>-->
 			<button
-					(click)="reportMailSubmitterToggle = true"
+					(click)="sharedComponent.mixPanelEvent('mail'); reportMailSubmitterToggle = true"
 					[matTooltip]="'appWalk.customers.report.mailBtn' | translate"
 					matTooltipPosition="above"
 			>
@@ -20,16 +20,17 @@
 			</button>
 			<!--<button (click)="exportTransactions('PDF')"><img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/to-pdf.png" height="21" width="24"/></button>-->
 			<button
-					(click)="exportTransactions('EXCEL')"
+					(click)="sharedComponent.mixPanelEvent('excel'); exportTransactions('EXCEL')"
 					[matTooltip]="'appWalk.customers.report.excelBtn' | translate"
 					matTooltipPosition="above"
 			>
 				<img height="21" ngSrc="/assets/images/to-excel.png" width="24"/>
 			</button>
 		</div>
-		
+
 		<ul class="tabs navTabs" style="margin: 0">
 			<li
+					(click)="sharedComponent.mixPanelEvent('aggregate screen')"
 					[matTooltip]="
           'appWalk.customers.financialManagement.creditsCard.viewSwitchAggregate'
             | translate
@@ -43,6 +44,7 @@
 				{{ 'filters.consolidated' | translate }}
 			</li>
 			<li
+					(click)="sharedComponent.mixPanelEvent('detailed screen')"
 					[matTooltip]="
           'appWalk.customers.financialManagement.creditsCard.viewSwitchDetails'
             | translate
@@ -56,6 +58,7 @@
 				{{ 'filters.detailed' | translate }}
 			</li>
 			<li
+					(click)="sharedComponent.mixPanelEvent('graph screen')"
 					[matTooltip]="
           'appWalk.customers.financialManagement.creditsCard.viewSwitchChart'
             | translate
@@ -101,14 +104,14 @@
 		<div class="prevScroll">
 			<img
 					(click)="prevScroll(aggregate)"
-					*ngIf="viewPort && viewPort['_totalContentSize'] &&viewPort['_viewportSize']&& (viewPort['_totalContentSize'] > viewPort['_viewportSize']) && cardHandlesScrollIndex !== 0 && viewPort.measureScrollOffset('right') > 505"
+					*ngIf="viewPort && viewPort['_totalContentSize'] &&viewPort['_viewportSize']&& (viewPort['_totalContentSize'] > viewPort['_viewportSize']) && cardHandlesScrollIndex !== 0 && viewPort.measureScrollOffset('right') >= 505"
 					alt="next"
 					height="43"
 					ngSrc="/assets/images/arrowNexPrev.png"
 					width="42"
 			/>
 		</div>
-		
+
 		<cdk-virtual-scroll-viewport
 				[ngStyle]="{'height': (window.innerHeight - header.getBoundingClientRect().bottom) +'px'}"
 				itemSize="505"
@@ -161,7 +164,7 @@
 											</h3>
 											<p>
 												{{ item?.creditCardNo }}
-												
+
 												<small *ngIf="item && !item?.bankLoaded">
 													({{ 'sumsTitles.nonBank' | translate }})
 												</small>
@@ -242,7 +245,7 @@
 										</div>
 										<div>
 											<h3>{{ 'sumsTitles.billingDate' | translate }}</h3>
-											
+
 											<p *ngIf="item?.cycleDay; else cycleDay">
 												{{ item?.cycleDay }}
 												{{ 'sumsTitles.ofTheMonth' | translate }}
@@ -370,8 +373,8 @@
 				</ng-container>
 			</ul>
 		</cdk-virtual-scroll-viewport>
-		
-		
+
+
 		<div class="nextScroll">
 			<img
 					(click)="nextScroll(aggregate)"

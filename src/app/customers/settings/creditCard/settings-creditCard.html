@@ -214,6 +214,7 @@
                       [optionLabel]="'accountNickname'"
                       [dataKey]="'companyAccountId'"
                       [(ngModel)]="itemChild.account"
+                      (onClick)="itemChild.accountSaved = itemChild.account"
                       (onChange)="
                         promptForAccountChangeAt(
                           itemChild,
@@ -291,7 +292,7 @@
                     [(ngModel)]="itemChild.creditCardNickname"
                     #nicknameInp
                     (focus)="selectedCard = itemChild"
-                    (blur)="selectedCard = null"
+                    (blur)="sharedComponent.mixPanelEvent('change credit nicname'); selectedCard = null"
                     (keydown.enter)="nicknameInp.blur()"
                     (keydown.esc)="
                       selectedCard.creditCardNickname = ''; nicknameInp.blur()
@@ -323,7 +324,7 @@
                   #creditLimitInp
                   style="width: 100%"
                   (focus)="selectedCard = itemChild"
-                  (blur)="selectedCard = null"
+                  (blur)="sharedComponent.mixPanelEvent('credit limit'); selectedCard = null"
                   (keydown.enter)="creditLimitInp.blur()"
                   (keydown.esc)="
                     selectedCard.creditLimit = null; creditLimitInp.blur()
@@ -565,7 +566,7 @@
 </p-dialog>
 
 <p-dialog (visibleChange)=" changeCardLinkedAccountPrompt.visible = $event;
-    changeCardLinkedAccountPrompt.syncSelection()"
+    changeCardLinkedAccountPrompt.syncSelection($event)"
   *ngIf="changeCardLinkedAccountPrompt"
   [visible]="(changeCardLinkedAccountPrompt?.visible)"
 

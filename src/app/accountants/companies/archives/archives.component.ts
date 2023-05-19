@@ -35,7 +35,7 @@ import {
     debounceTime,
     distinctUntilChanged,
     filter,
-    map,
+    map, retry,
     startWith,
     switchMap,
     take,
@@ -278,6 +278,8 @@ export class ArchivesComponent
     public interval$: BehaviorSubject<number> = new BehaviorSubject(
         2 * 60 * 1000
     );
+
+
     public draggedIndex: number = -1;
     public onDragOverIndex: number = -1;
     public getCompanyData$: Observable<any>;
@@ -833,14 +835,14 @@ export class ArchivesComponent
                 this.router.navigate([], navigationExtras);
             }
         });
-        Dynamsoft.DWT.ResourcesPath = '/assets/files/resources';
-        // Dynamsoft.DWT.ResourcesPath = 'assets/dwt-resources';
-        Dynamsoft.DWT.ProductKey =
+        Dynamsoft.WebTwainEnv.ResourcesPath = '/assets/files/resources';
+        // Dynamsoft.WebTwainEnv.ResourcesPath = 'assets/dwt-resources';
+        Dynamsoft.WebTwainEnv.ProductKey =
             'f0068WQAAAMjD37MYQuF8gD5cX23zdlnKwTn6csMXDHsXWOK4CRS4lDE82sTzeW1ejTcOS7m7gOE9leRs0VSPDlpjDkIWENg=';
-        // Dynamsoft.DWT.ProductKey = 't0115YQEAADLdsKeUCK4+tJktPdfzkeFCkXXNRfl+fAMlzbNS/nDM0sXKq9mW/WFrty8KF3g7lNtAYfUOiICxcac/R4b8dBDJIczVQygkgTcBywD7uHkqFV0+gY9CX58UiSYJd4uYkjBa/RBSgJwlY3AAym9Xsw==';
-        Dynamsoft.DWT.AutoLoad = false;
+        // Dynamsoft.WebTwainEnv.ProductKey = 't0115YQEAADLdsKeUCK4+tJktPdfzkeFCkXXNRfl+fAMlzbNS/nDM0sXKq9mW/WFrty8KF3g7lNtAYfUOiICxcac/R4b8dBDJIczVQygkgTcBywD7uHkqFV0+gY9CX58UiSYJd4uYkjBa/RBSgJwlY3AAym9Xsw==';
+        Dynamsoft.WebTwainEnv.AutoLoad = false;
         if (this.isWindows) {
-            Dynamsoft.DWT.RegisterEvent('OnWebTwainReady', () => {
+            Dynamsoft.WebTwainEnv.RegisterEvent('OnWebTwainReady', () => {
                 this.Dynamsoft_OnReady();
             });
         }
@@ -958,6 +960,9 @@ export class ArchivesComponent
             this.getFolders();
             return;
         }
+        if (this.subscriptionStatus) {
+            this.subscriptionStatus.unsubscribe();
+        }
         this.subscriptionStatus = this.interval$
             .pipe(
                 switchMap((value) => interval(value)),
@@ -970,7 +975,8 @@ export class ArchivesComponent
                     this.sharedService.countStatus({
                         uuid: this.userService.appData.userData.companySelect.companyId
                     })
-                )
+                ),
+                takeUntil(this.destroyed$)
             )
             .subscribe((response: any) => {
                 const numNewDocs =
@@ -2056,7 +2062,9 @@ export class ArchivesComponent
         if (this.fileDropRef && this.fileDropRef.nativeElement) {
             this.fileDropRef.nativeElement.type = 'text';
             setTimeout(() => {
-                this.fileDropRef.nativeElement.type = 'file';
+                if(this.fileDropRef && this.fileDropRef.nativeElement){
+                    this.fileDropRef.nativeElement.type = 'file';
+                }
             }, 200);
         }
 
@@ -2118,18 +2126,18 @@ export class ArchivesComponent
             ObjString = [
                 '<div class="header-scanPopUpInstall">' +
                 '<h1> זיהוי סורקים </h1>' +
-                '<span class="fa fa-fw fa-times" onclick="Dynamsoft.DWT.CloseDialog()">&nbsp;</span>' +
+                '<span class="fa fa-fw fa-times" onclick="Dynamsoft.WebTwainEnv.CloseDialog()">&nbsp;</span>' +
                 '</div>'
             ];
             ObjString.push(
                 '<div style="display: flex;justify-content: center;align-items: center;margin: 15px 20px 0px 20px;"><a id="dwt-btn-install" style="display: inline-block;" target="_blank" href="'
             );
             let url = '';
-            if (iPlatform === Dynamsoft.DWT.EnumDWT_PlatformType.enumWindow) {
+            if (iPlatform === Dynamsoft.EnumDWT_PlatformType.enumWindow) {
                 url = '/assets/files/resources/dist/DynamsoftServiceSetup.msi';
-            } else if (iPlatform === Dynamsoft.DWT.EnumDWT_PlatformType.enumMac) {
+            } else if (iPlatform === Dynamsoft.EnumDWT_PlatformType.enumMac) {
                 url = '/assets/files/resources/dist/DynamsoftServiceSetup.pkg';
-            } else if (iPlatform === Dynamsoft.DWT.EnumDWT_PlatformType.enumLinux) {
+            } else if (iPlatform === Dynamsoft.EnumDWT_PlatformType.enumLinux) {
                 url = '/assets/files/resources/dist/DynamsoftServiceSetup.deb';
             }
             ObjString.push(url);
@@ -2158,7 +2166,7 @@ export class ArchivesComponent
 
             ObjString.push(
                 '<div class="scanPopUpInstall-text">' +
-                'כדי להתחיל לסרוק ישירות מהסורק שבמשרדך ל- bizobox' +
+                'כדי להתחיל לסרוק ישירות מהסורק שבמשרדך ל- bizibox' +
                 '<br>' +
                 'נבצע תהליך התקנה חד פעמי של תוכנה לזיהוי סורקים.' +
                 '<strong>' +
@@ -2201,7 +2209,7 @@ export class ArchivesComponent
             }
 
             // @ts-ignore
-            Dynamsoft.DWT.ShowDialog(
+            Dynamsoft.WebTwainEnv.ShowDialog(
                 window['promptDlgWidth'],
                 0,
                 ObjString.join('')
@@ -2245,16 +2253,16 @@ export class ArchivesComponent
             if ((new Date() - window['reconnectTime']) / 1000 > 30) {
                 return;
             }
-            Dynamsoft.DWT['CheckConnectToTheService'](
+            Dynamsoft.WebTwainEnv['CheckConnectToTheService'](
                 function () {
-                    Dynamsoft.DWT['ConnectToTheService']();
+                    Dynamsoft.WebTwainEnv['ConnectToTheService']();
                 },
                 function () {
                     setTimeout(window['DWT_Reconnect'], 1000);
                 }
             );
         };
-        Dynamsoft.DWT.Load();
+        Dynamsoft.WebTwainEnv.Load();
     }
 
     resetVarsUpload() {
@@ -2265,7 +2273,9 @@ export class ArchivesComponent
             this.fileDropRef.nativeElement.type = 'text';
             setTimeout(() => {
                 if (this.fileDropRef && this.fileDropRef.nativeElement) {
-                    this.fileDropRef.nativeElement.type = 'file';
+                    if(this.fileDropRef && this.fileDropRef.nativeElement){
+                        this.fileDropRef.nativeElement.type = 'file';
+                    }
                 }
             }, 200);
         }
@@ -2327,7 +2337,9 @@ export class ArchivesComponent
                     this.filesOriginal = [];
                     this.fileDropRef.nativeElement.type = 'text';
                     setTimeout(() => {
-                        this.fileDropRef.nativeElement.type = 'file';
+                        if(this.fileDropRef && this.fileDropRef.nativeElement){
+                            this.fileDropRef.nativeElement.type = 'file';
+                        }
                     }, 200);
                     this.progress = false;
                     this.fileViewer = false;
@@ -2369,7 +2381,9 @@ export class ArchivesComponent
             this.filesBeforeOrder = [];
             this.fileDropRef.nativeElement.type = 'text';
             setTimeout(() => {
-                this.fileDropRef.nativeElement.type = 'file';
+                if(this.fileDropRef && this.fileDropRef.nativeElement){
+                    this.fileDropRef.nativeElement.type = 'file';
+                }
             }, 200);
             this.progress = false;
             this.fileViewer = false;
@@ -2407,7 +2421,9 @@ export class ArchivesComponent
         this.filesBeforeOrder = [];
         this.fileDropRef.nativeElement.type = 'text';
         setTimeout(() => {
-            this.fileDropRef.nativeElement.type = 'file';
+            if(this.fileDropRef && this.fileDropRef.nativeElement){
+                this.fileDropRef.nativeElement.type = 'file';
+            }
         }, 200);
         this.progress = false;
         this.fileViewer = false;
@@ -2433,7 +2449,7 @@ export class ArchivesComponent
                     elem.DWObject &&
                     elem.DWObject.config.containerID !== 'dwtcontrolContainer'
                 ) {
-                    Dynamsoft.DWT.DeleteDWTObject(
+                    Dynamsoft.WebTwainEnv.DeleteDWTObject(
                         elem.DWObject.config.containerID
                     );
                 }
@@ -2457,7 +2473,7 @@ export class ArchivesComponent
         this.showProgressScan = false;
         this.showScanLoader = false;
         this.fileViewer = false;
-        Dynamsoft.DWT.Unload();
+        Dynamsoft.WebTwainEnv.Unload();
         location.reload();
     }
 
@@ -2497,7 +2513,7 @@ export class ArchivesComponent
         console.log('Dynamsoft_OnReady');
         this.dynamsoftReady = true;
         this.scanerList = [];
-        Dynamsoft.DWT.CreateDWTObjectEx(
+        Dynamsoft.WebTwainEnv.CreateDWTObjectEx(
             {
                 WebTwainId: 'dwtcontrolContainer'
             },
@@ -2622,7 +2638,7 @@ export class ArchivesComponent
                 this.arr[this.index].DWObject.config.containerID !==
                 'dwtcontrolContainer'
             ) {
-                Dynamsoft.DWT.DeleteDWTObject(
+                Dynamsoft.WebTwainEnv.DeleteDWTObject(
                     this.arr[this.index].DWObject.config.containerID
                 );
                 this.arr.splice(this.index, 1);
@@ -2646,7 +2662,7 @@ export class ArchivesComponent
             //base64String, if not empty, it overrides settings and more settings.
             settings: {
                 exception: 'fail', // "ignore" (default) or "fail",
-                pixelType: Dynamsoft.DWT.EnumDWT_PixelType.TWPT_RGB, //rgb, bw, gray, etc
+                pixelType: Dynamsoft.EnumDWT_PixelType.TWPT_RGB, //rgb, bw, gray, etc
                 resolution: 200, // 300
                 bFeeder: true,
                 bDuplex: false //whether to enable duplex
@@ -2654,8 +2670,8 @@ export class ArchivesComponent
             moreSettings: {
                 exception: 'fail', // "ignore" or “fail”
                 // bitDepth: 24, //1,8,24,etc
-                pageSize: Dynamsoft.DWT.EnumDWT_CapSupportedSizes.TWSS_A4, //A4, etc.
-                unit: Dynamsoft.DWT.EnumDWT_UnitType.TWUN_INCHES
+                pageSize: Dynamsoft.EnumDWT_CapSupportedSizes.TWSS_A4, //A4, etc.
+                unit: Dynamsoft.EnumDWT_UnitType.TWUN_INCHES
                 // layout: {
                 //     left: float,
                 //     top: float,
@@ -2789,7 +2805,7 @@ export class ArchivesComponent
                         this.arr[this.index].DWObject.config.containerID !==
                         'dwtcontrolContainer'
                     ) {
-                        Dynamsoft.DWT.DeleteDWTObject(
+                        Dynamsoft.WebTwainEnv.DeleteDWTObject(
                             this.arr[this.index].DWObject.config.containerID
                         );
                         this.arr.splice(this.index, 1);
@@ -2865,7 +2881,7 @@ export class ArchivesComponent
             this.arr.push({
                 DWObject: null
             });
-            Dynamsoft.DWT.CreateDWTObjectEx(
+            Dynamsoft.WebTwainEnv.CreateDWTObjectEx(
                 {
                     WebTwainId: 'dwtcontrolContainer' + this.index
                 },
@@ -2982,7 +2998,9 @@ export class ArchivesComponent
         }
         this.fileDropRef.nativeElement.type = 'text';
         setTimeout(() => {
-            this.fileDropRef.nativeElement.type = 'file';
+            if(this.fileDropRef && this.fileDropRef.nativeElement){
+                this.fileDropRef.nativeElement.type = 'file';
+            }
         }, 200);
         if (!this.files.length) {
             this.fileViewer = false;
@@ -4023,7 +4041,13 @@ export class ArchivesComponent
             );
             const progress = new Subject<number>();
             progress.next(0);
-            this.http.request(req).subscribe(
+            this.http.request(req)
+                .pipe(
+                    retry({
+                        count: 3,
+                        delay: 1500
+                    })
+                ).subscribe(
                 {
                     next: (event) => {
                         if (event.type === HttpEventType.UploadProgress) {
@@ -4139,7 +4163,13 @@ export class ArchivesComponent
             );
             const progress = new Subject<number>();
             progress.next(0);
-            this.http.request(req).subscribe(
+            this.http.request(req)
+                .pipe(
+                    retry({
+                        count: 3,
+                        delay: 1500
+                    })
+                ).subscribe(
                 {
                     next: (event) => {
                         if (event.type === HttpEventType.UploadProgress) {
@@ -5122,13 +5152,13 @@ export class ArchivesComponent
                                     imageBase64.height > imageBase64.width
                                         ? imageBase64.width / imageBase64.height
                                         : imageBase64.height / imageBase64.width;
-                                if (imageBase64.width > width) {
-                                    outputWidth = width;
-                                    outputHeight = width / inputImageAspectRatio;
-                                }
+
                                 if (imageBase64.height > height) {
                                     outputHeight = height;
                                     outputWidth = height * inputImageAspectRatio;
+                                } else if (imageBase64.width > width) {
+                                    outputWidth = width;
+                                    outputHeight = width / inputImageAspectRatio;
                                 }
                             }
 
@@ -5231,13 +5261,14 @@ export class ArchivesComponent
                     imageBase64.height > imageBase64.width
                         ? imageBase64.width / imageBase64.height
                         : imageBase64.height / imageBase64.width;
-                if (imageBase64.width > width) {
-                    outputWidth = width;
-                    outputHeight = width / inputImageAspectRatio;
-                }
+
+
                 if (imageBase64.height > height) {
                     outputHeight = height;
                     outputWidth = height * inputImageAspectRatio;
+                } else if (imageBase64.width > width) {
+                    outputWidth = width;
+                    outputHeight = width / inputImageAspectRatio;
                 }
             }
 
@@ -5434,6 +5465,9 @@ export class ArchivesComponent
         }
         if (this.subscriptionStatus) {
             this.subscriptionStatus.unsubscribe();
+        }
+        if(this.interval$){
+            this.interval$.unsubscribe();
         }
         if (this.interGetFolders) {
             this.interGetFolders.unsubscribe();

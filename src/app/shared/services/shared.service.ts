@@ -142,7 +142,14 @@ export class SharedService implements OnDestroy {
                 isProtected: true,
                 isAuthorization: true
             };
-            return this.httpServices.sendHttp<any>(companiesParam);
+            return this.httpServices.sendHttp<any>(companiesParam)
+                .pipe(
+                    tap(resp => {
+                        if (resp && Array.isArray(resp.body)) {
+                            resp.body.forEach(comp => comp.notAuthorized = !comp.authorized)
+                        }
+                    })
+                );
         }
     }
 
@@ -652,6 +659,7 @@ export class SharedService implements OnDestroy {
         };
         return this.httpServices.sendHttp<any>(params);
     }
+
     recoveryChecks(request: any): any {
         const params: InterfaceParamHttp<any> = {
             method: 'post',
@@ -663,6 +671,7 @@ export class SharedService implements OnDestroy {
         };
         return this.httpServices.sendHttp<any>(params);
     }
+
     aggregateCashFlow(paramsObj: any): any {
         const params: InterfaceParamHttp<any> = {
             method: 'post',
@@ -942,6 +951,16 @@ export class SharedService implements OnDestroy {
         return this.httpServices.sendHttp<any>(accountsParam);
     }
 
+    officeSettings(): any {
+        const accountsParam: InterfaceParamHttp<any> = {
+            path: 'v1/office/settings',
+            method: 'get',
+            isProtected: true,
+            isAuthorization: true
+        };
+        return this.httpServices.sendHttp<any>(accountsParam);
+    }
+
     getOfficeCompanies(params: any): any {
         const accountsParam: InterfaceParamHttp<any> = {
             path: 'v1/companies/get-office-companies',
@@ -1073,10 +1092,14 @@ export class SharedService implements OnDestroy {
         return this.httpServices.sendHttp<any>(accountsParam);
     }
 
-    sendSms(): any {
+    sendSms(gRecaptcha: any): any {
         const accountsParam: InterfaceParamHttp<any> = {
             method: 'post',
             path: 'v1/auth/otp/send-sms',
+            params: {
+                gRecaptcha: gRecaptcha
+            },
+            isJson: true,
             isProtected: true,
             isAuthorization: true
         };
@@ -1573,7 +1596,7 @@ export class SharedService implements OnDestroy {
     }): any {
         // debugger;
         if (request.tokenType === 'solek' && !request.solekNum) {
-            throw new Error('solekNum is not provided.')
+            throw new Error('solekNum is not provided.');
         }
 
         const params: InterfaceParamHttp<any> = {
@@ -2318,11 +2341,12 @@ export class SharedService implements OnDestroy {
         return this.httpServices.sendHttp<any>(request);
     }
 
-    customerServiceUpgrade(userId: string): any {
+    customerServiceUpgrade(userId: string, gRecaptcha: any): any {
         const request: InterfaceParamHttp<any> = {
             method: 'post',
             path: 'v1/companies/customer-service-upgrade',
             params: {
+                gRecaptcha: gRecaptcha,
                 uuid: userId
             },
             isJson: true,
@@ -2626,10 +2650,46 @@ export class SharedService implements OnDestroy {
         return this.httpServices.sendHttp<any>(request);
     }
 
+    addCreditExportItem(params: any): any {
+        const request: InterfaceParamHttp<any> = {
+            method: 'post',
+            path: 'v1/companies/add-credit-export-item',
+            params: params,
+            isJson: true,
+            isProtected: true,
+            isAuthorization: true
+        };
+        return this.httpServices.sendHttp<any>(request);
+    }
+
+    addExchangeRate(params: any): any {
+        const request: InterfaceParamHttp<any> = {
+            method: 'post',
+            path: 'v1/companies/add-exchange-rate',
+            params: params,
+            isJson: true,
+            isProtected: true,
+            isAuthorization: true
+        };
+        return this.httpServices.sendHttp<any>(request);
+    }
+
     connectCust(params: any): any {
         const request: InterfaceParamHttp<any> = {
             method: 'post',
             path: 'v1/export/connect-cust',
+            params: params,
+            isJson: true,
+            isProtected: true,
+            isAuthorization: true
+        };
+        return this.httpServices.sendHttp<any>(request);
+    }
+
+    updateFolderPlusStatus(params: any): any {
+        const request: InterfaceParamHttp<any> = {
+            method: 'post',
+            path: 'v1/companies/update-folder-plus-status',
             params: params,
             isJson: true,
             isProtected: true,
@@ -2732,6 +2792,17 @@ export class SharedService implements OnDestroy {
         return this.httpServices.sendHttp<any>(request);
     }
 
+    exporterFolderStatePost(params: any): any {
+        const request: InterfaceParamHttp<any> = {
+            method: 'post',
+            path: 'v1/users/exporter-folder-state',
+            params: params,
+            isJson: true,
+            isProtected: true,
+            isAuthorization: true
+        };
+        return this.httpServices.sendHttp<any>(request);
+    }
     folderError(params: any): any {
         const request: InterfaceParamHttp<any> = {
             method: 'post',
@@ -3250,13 +3321,11 @@ export class SharedService implements OnDestroy {
         return this.httpServices.sendHttp<any>(request);
     }
 
-    getExportFilesBank(userId: string): any {
+    getExportFilesBank(params: any): any {
         const request: InterfaceParamHttp<any> = {
             method: 'post',
             path: 'v1/bank-process/get-export-files',
-            params: {
-                uuid: userId
-            },
+            params: params,
             isJson: true,
             isProtected: true,
             isAuthorization: true
@@ -3417,11 +3486,25 @@ export class SharedService implements OnDestroy {
                                     banksCards[banksCards.length - 1].isLastHistory = true;
                                 }
 
+
+                                let banksCardsExport = JSON.parse(JSON.stringify(all)).filter(
+                                    (it) => it.cartisCodeId === 1700 || it.cartisCodeId === 1800
+                                );
+                                if (banksCardsExport && banksCardsExport.length) {
+                                    banksCardsExport = banksCardsExport.map((it) => {
+                                        it.isHistory = true;
+                                        return it;
+                                    });
+                                    banksCardsExport[banksCardsExport.length - 1].isLastHistory = true;
+                                }
                                 return [
                                     {
                                         all: all,
                                         banksCards: banksCards.concat(
                                             all.filter((it) => it.cartisCodeId !== 1700)
+                                        ),
+                                        banksCardsExport: banksCardsExport.concat(
+                                            all.filter((it) => it.cartisCodeId !== 1700 && it.cartisCodeId !== 1800)
                                         ),
                                         cupa: all.filter(
                                             (it) => it.cartisCodeId === 1700 || it.cartisCodeId === 1800
@@ -3462,6 +3545,13 @@ export class SharedService implements OnDestroy {
                                                 it.hashCartisCodeId === 41 ||
                                                 it.hashCartisCodeId === 42 ||
                                                 it.hashCartisCodeId === 45
+                                        ),
+                                        supplierTaxDeductionCustIdArr: all.filter(
+                                            (it) =>
+                                                it.hashCartisCodeId === 18 ||
+                                                it.hashCartisCodeId === 19 ||
+                                                it.hashCartisCodeId === 20 ||
+                                                it.hashCartisCodeId === 21
                                         ),
                                         customerTaxDeductionCustIdArr: all.filter(
                                             (it) => it.hashCartisCodeId === 22
@@ -3513,6 +3603,7 @@ export class SharedService implements OnDestroy {
                     ? resp
                     : {
                         all: [],
+                        banksCardsExport: [],
                         cupa: [],
                         cupa_new: [],
                         banksCards: [],
@@ -3521,7 +3612,8 @@ export class SharedService implements OnDestroy {
                         taxDeductionCustIdHova: [],
                         taxDeductionCustIdZhut: [],
                         oppositeCustForChecks: [],
-                        customerTaxDeductionCustIdExpenseArr: []
+                        customerTaxDeductionCustIdExpenseArr: [],
+                        supplierTaxDeductionCustIdArr: []
                     };
 
                 this.userService.appData.userData.maamCustids = respMaam || null;
@@ -3613,11 +3705,23 @@ export class SharedService implements OnDestroy {
                             });
                             banksCards[banksCards.length - 1].isLastHistory = true;
                         }
-
+                        let banksCardsExport = JSON.parse(JSON.stringify(all)).filter(
+                            (it) => it.cartisCodeId === 1700 || it.cartisCodeId === 1800
+                        );
+                        if (banksCardsExport && banksCardsExport.length) {
+                            banksCardsExport = banksCardsExport.map((it) => {
+                                it.isHistory = true;
+                                return it;
+                            });
+                            banksCardsExport[banksCardsExport.length - 1].isLastHistory = true;
+                        }
                         return {
                             all: all,
                             banksCards: banksCards.concat(
                                 all.filter((it) => it.cartisCodeId !== 1700)
+                            ),
+                            banksCardsExport: banksCardsExport.concat(
+                                all.filter((it) => it.cartisCodeId !== 1700 && it.cartisCodeId !== 1800)
                             ),
                             cupa: all.filter(
                                 (it) => it.cartisCodeId === 1700 || it.cartisCodeId === 1800
@@ -3658,6 +3762,13 @@ export class SharedService implements OnDestroy {
                                     it.hashCartisCodeId === 41 ||
                                     it.hashCartisCodeId === 42 ||
                                     it.hashCartisCodeId === 45
+                            ),
+                            supplierTaxDeductionCustIdArr: all.filter(
+                                (it) =>
+                                    it.hashCartisCodeId === 18 ||
+                                    it.hashCartisCodeId === 19 ||
+                                    it.hashCartisCodeId === 20 ||
+                                    it.hashCartisCodeId === 21
                             ),
                             customerTaxDeductionCustIdArr: all.filter(
                                 (it) => it.hashCartisCodeId === 22
@@ -3814,6 +3925,18 @@ export class SharedService implements OnDestroy {
         return this.httpServices.sendHttp<any>(request);
     }
 
+    createNewOffice(params: any): any {
+        const request: InterfaceParamHttp<any> = {
+            method: 'post',
+            path: 'v1/office/create-new-office',
+            params: params,
+            isJson: true,
+            isProtected: true,
+            isAuthorization: true
+        };
+        return this.httpServices.sendHttp<any>(request);
+    }
+
     updateGeneral(params: any): any {
         const request: InterfaceParamHttp<any> = {
             method: 'post',
@@ -3865,7 +3988,20 @@ export class SharedService implements OnDestroy {
     updateIzu(params: any): any {
         const request: InterfaceParamHttp<any> = {
             method: 'post',
-            path: 'v1/users/update-izu',
+            path: 'v1/companies/update-izu',
+            params: params,
+            isJson: true,
+            isProtected: true,
+            isAuthorization: true
+        };
+        return this.httpServices.sendHttp<any>(request);
+    }
+
+
+    updateSettings(params: any): any {
+        const request: InterfaceParamHttp<any> = {
+            method: 'post',
+            path: 'v1/office/update-settings',
             params: params,
             isJson: true,
             isProtected: true,
@@ -3962,6 +4098,53 @@ export class SharedService implements OnDestroy {
         const request: InterfaceParamHttp<any> = {
             method: 'post',
             path: 'v1/companies/send-landing-page-messages',
+            params: params,
+            isJson: true,
+            isProtected: true,
+            isAuthorization: true
+        };
+        return this.httpServices.sendHttp<any>(request);
+    }
+
+    getIzuInfo(params: any): any {
+        const request: InterfaceParamHttp<any> = {
+            method: 'post',
+            path: 'v1/adm/get-izu-info',
+            params: params,
+            isJson: true,
+            isProtected: true,
+            isAuthorization: true
+        };
+        return this.httpServices.sendHttp<any>(request);
+    }
+
+    updateFeedbackDesc(params: any): any {
+        const request: InterfaceParamHttp<any> = {
+            method: 'post',
+            path: 'v1/adm/update-feedback-desc',
+            params: params,
+            isJson: true,
+            isProtected: true,
+            isAuthorization: true
+        };
+        return this.httpServices.sendHttp<any>(request);
+    }
+
+    bankCreditBillingExtrapolation(params: any): any {
+        const request: InterfaceParamHttp<any> = {
+            method: 'post',
+            path: 'v1/companies/bank-credit-billing-extrapolation',
+            params: params,
+            isJson: true,
+            isProtected: true,
+            isAuthorization: true
+        };
+        return this.httpServices.sendHttp<any>(request);
+    }
+    updateFreeBillingMonth(params: any): any {
+        const request: InterfaceParamHttp<any> = {
+            method: 'post',
+            path: 'v1/companies/update-free-billing-month',
             params: params,
             isJson: true,
             isProtected: true,
@@ -4184,10 +4367,10 @@ export class SharedService implements OnDestroy {
         return this.httpServices.sendHttp<any>(request);
     }
 
-    izu(): any {
+    izu(companyId: string): any {
         const request: InterfaceParamHttp<any> = {
             method: 'get',
-            path: 'v1/users/izu',
+            path: `v1/companies/izu/${companyId}`,
             isProtected: true,
             isAuthorization: true
         };
@@ -4258,6 +4441,18 @@ export class SharedService implements OnDestroy {
         const request: InterfaceParamHttp<any> = {
             method: 'post',
             path: 'v1/bank-match/accountant/accounts-bar',
+            params: params,
+            isJson: true,
+            isProtected: true,
+            isAuthorization: true
+        };
+        return this.httpServices.sendHttp<any>(request);
+    }
+
+    updateDataReadyPopup(params: any): any {
+        const request: InterfaceParamHttp<any> = {
+            method: 'post',
+            path: 'v1/bank-process/update-data-ready-popup',
             params: params,
             isJson: true,
             isProtected: true,
@@ -4410,6 +4605,16 @@ export class SharedService implements OnDestroy {
         return this.httpServices.sendHttp<any>(request);
     }
 
+    companiesPage(): any {
+        const request: InterfaceParamHttp<any> = {
+            method: 'get',
+            path: 'v1/companies/companies-page',
+            isProtected: true,
+            isAuthorization: true
+        };
+        return this.httpServices.sendHttp<any>(request);
+    }
+
     suppliersCustomersOv(): any {
         const request: InterfaceParamHttp<any> = {
             method: 'get',
@@ -4444,6 +4649,18 @@ export class SharedService implements OnDestroy {
         const request: InterfaceParamHttp<any> = {
             method: 'get',
             path: 'v1/ocr/get-currency',
+            isProtected: true,
+            isAuthorization: true
+        };
+        return this.httpServices.sendHttp<any>(request);
+    }
+
+    getCompanyDefinedCurrency(params: any): Observable<any> {
+        const request: InterfaceParamHttp<any> = {
+            method: 'post',
+            path: `v1/companies/get-company-defined-currency`,
+            params: params,
+            isJson: true,
             isProtected: true,
             isAuthorization: true
         };
@@ -4566,6 +4783,17 @@ export class SharedService implements OnDestroy {
         return this.httpServices.sendHttp<any>(request);
     }
 
+    updatePaymentCreditData(params: any): any {
+        const request: InterfaceParamHttp<any> = {
+            method: 'post',
+            path: 'v1/bank-process/update-payment-credit-data',
+            params: params,
+            isJson: true,
+            isProtected: true,
+            isAuthorization: true
+        };
+        return this.httpServices.sendHttp<any>(request);
+    }
     updateTransType(params: any): any {
         const request: InterfaceParamHttp<any> = {
             method: 'post',
@@ -4653,17 +4881,17 @@ export class SharedService implements OnDestroy {
         return this.httpServices.sendHttp<any>(request);
     }
 
-    exportFileCreateFolder(ocrExportFileId: string): any {
+    exportFileCreateFolder(ocrExportFileId: string, companyId: string): any {
         const request: InterfaceParamHttp<any> = {
             method: 'post',
             path: 'v1/export-file/create-folder',
             params: {
-                uuid: ocrExportFileId
+                ocrExportFileId: ocrExportFileId,
+                companyId: companyId
             },
             isJson: true,
             isProtected: true,
-            isAuthorization: true,
-            responseType: 'text'
+            isAuthorization: true
         };
         return this.httpServices.sendHttp<any>(request);
     }
@@ -4746,6 +4974,40 @@ export class SharedService implements OnDestroy {
             path: 'v1/station/get-accounts-for-station',
             params: params,
             isJson: true,
+            isProtected: true,
+            isAuthorization: true
+        };
+        return this.httpServices.sendHttp<any>(request);
+    }
+
+    createAccountantCompany(params: any): any {
+        const request: InterfaceParamHttp<any> = {
+            method: 'post',
+            path: 'v1/companies/create-accountant-company',
+            params: params,
+            isJson: true,
+            isProtected: true,
+            isAuthorization: true
+        };
+        return this.httpServices.sendHttp<any>(request);
+    }
+
+    isHpExistsForAccCompany(params: any): Observable<any> {
+        const request: InterfaceParamHttp<any> = {
+            method: 'post',
+            path: 'v1/companies/accountant/hp-exists',
+            params: params,
+            isJson: true,
+            isProtected: true,
+            isAuthorization: true
+        };
+        return this.httpServices.sendHttp<any>(request);
+    }
+
+    ccardTransMatchPeulot(companyAccountId: any) {
+        const request: InterfaceParamHttp<any> = {
+            method: 'get',
+            path: 'v1/account/ccard-trans-match-peulot/' + companyAccountId,
             isProtected: true,
             isAuthorization: true
         };

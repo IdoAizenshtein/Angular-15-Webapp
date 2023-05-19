@@ -5,10 +5,9 @@
 				(changedTrigger)="changeAcc($event)"
 				[accounts]="userService.appData.userData.accounts"
 		></app-acc-select>
-
 		<!--&lt;!&ndash;<app-acc-dates [option]="'DaysTazrim'" (changedTrigger)="filterDates($event)"></app-acc-dates>&ndash;&gt;-->
 		<!--<app-tazrim-dates [option]="'DaysTazrim'" (onChange)="filterDates($event)"></app-tazrim-dates>-->
-		<app-cashflow-dates></app-cashflow-dates>
+		<app-cashflow-dates (sendEvent)="sendEvent($event)"></app-cashflow-dates>
 
 		<ul class="tabs" id="paymentTypesFilter">
 			<li
@@ -45,7 +44,7 @@
 		</div>
 		<div id="groupBtnLeftAddChecks">
 			<button
-					(click)="paymentCreate(400)"
+					(click)="sharedComponent.mixPanelEvent('add income'); paymentCreate(400)"
 					[matTooltip]="'appWalk.customers.tazrim.daily.addIncomeBtn' | translate"
 					id="addIncomeCheck"
 					matTooltipPosition="above"
@@ -53,7 +52,7 @@
 				{{ 'titles.expectedIncome' | translate }}
 			</button>
 			<button
-					(click)="paymentCreate(44)"
+					(click)="sharedComponent.mixPanelEvent('add outcome'); paymentCreate(44)"
 					[matTooltip]="
           'appWalk.customers.tazrim.daily.addOutcomeBtn' | translate
         "
@@ -65,6 +64,8 @@
 		</div>
 		<ul class="tabs navTabs marginFix">
 			<li
+					(click)="sharedComponent.mixPanelEvent('aggregate screen')"
+
 					[matTooltip]="
           'appWalk.customers.tazrim.daily.viewSwitchAggregate' | translate
         "
@@ -79,6 +80,7 @@
 				{{ 'filters.consolidated' | translate }}
 			</li>
 			<li
+					(click)="sharedComponent.mixPanelEvent('detailed screen')"
 					[matTooltip]="
           'appWalk.customers.tazrim.daily.viewSwitchDetails' | translate
         "
@@ -93,6 +95,7 @@
 				{{ 'filters.detailed' | translate }}
 			</li>
 			<li
+					(click)="sharedComponent.mixPanelEvent('graph screen')"
 					[matTooltip]="
           'appWalk.customers.tazrim.daily.viewSwitchChart' | translate
         "
@@ -303,7 +306,7 @@
 						{{ 'sumsTitles.accounts' | translate }}
 					</div>
 					<div class="separatorInsider"></div>
-					<div (click)="tooltipWithNavigation.toggle($event)" class="link">
+					<div (click)="sharedComponent.mixPanelEvent('details button'); tooltipWithNavigation.toggle($event)" class="link">
 						{{ 'sumsTitles.forDetails' | translate }}
 						<p-overlayPanel
 								#tooltipWithNavigation
@@ -516,7 +519,7 @@
 			</div>
 
 			<div
-					(click)="navigateToMovementMatchingAt()"
+					(click)="sharedComponent.mixPanelEvent('general match button'); navigateToMovementMatchingAt()"
 					*ngIf="showMatch()"
 					class="careBtn"
 					style="line-height: 42px; padding: 0 1em"
@@ -534,7 +537,7 @@
 
 			<div class="exports">
 				<button
-						(click)="openImportExcel()"
+						(click)="sharedComponent.mixPanelEvent('export from excel'); openImportExcel()"
 						[matTooltip]="
             'appWalk.customers.tazrim.daily.details.importExcelBtn' | translate
           "
@@ -542,11 +545,11 @@
 				>
 					<img height="17"  ngSrc="/assets/images/importExcel.png" width="17"/>
 				</button>
-				<button (click)="printTransactions()">
+				<button (click)="sharedComponent.mixPanelEvent('print'); printTransactions()">
 					<img height="21" ngSrc="/assets/images/to-printer.png" width="24"/>
 				</button>
 				<button
-						(click)="reportMailSubmitterToggle = true"
+						(click)="sharedComponent.mixPanelEvent('mail'); reportMailSubmitterToggle = true"
 						[matTooltip]="'appWalk.customers.report.mailBtn' | translate"
 						matTooltipPosition="above"
 				>
@@ -557,14 +560,14 @@
 					></app-report-mail-scheduler>
 				</button>
 				<button
-						(click)="exportTransactions('PDF')"
+						(click)="sharedComponent.mixPanelEvent('pdf'); exportTransactions('PDF')"
 						[matTooltip]="'appWalk.customers.report.pdfBtn' | translate"
 						matTooltipPosition="above"
 				>
 					<img height="21"  ngSrc="/assets/images/to-pdf.png" width="24"/>
 				</button>
 				<button
-						(click)="exportTransactions('EXCEL')"
+						(click)="sharedComponent.mixPanelEvent('excel'); exportTransactions('EXCEL')"
 						[matTooltip]="'appWalk.customers.report.excelBtn' | translate"
 						matTooltipPosition="above"
 				>
@@ -597,6 +600,7 @@
 	</ng-template>
 	<ng-template #withAdditionalPaymentTypeDesc let-item>
 		<div
+				(click)="mixPanelEventEvent(item.paymentDesc)"
 				[appTransactionAdditionalTrigger]="item"
 				[innerHTML]="item.paymentDescTranslate | highlight: queryString"
 				[pTooltip]="item.paymentDescTranslate"
@@ -612,7 +616,7 @@
 	>
 		<div #tableHeader class="bank-acc-details-table-header">
 			<div
-					(click)="sortPipeFilter()"
+					(click)="sharedComponent.mixPanelEvent('date order'); sortPipeFilter()"
 					[matTooltip]="'appWalk.customers.sortAvailable' | translate"
 					class="bank-acc-details-column-1"
 					matTooltipPosition="above"
@@ -637,7 +641,7 @@
 					style="overflow: visible"
 			>
 				<app-tooltip-category
-						(changed)="filterCategory($event)"
+						(changed)="sharedComponent.mixPanelEvent('mutav filter', {value:$event.checked});filterCategory($event)"
 						[data]="beneficiaryFilterOptions"
 						[filter]="true"
 						[type]="'biziboxMutavId'"
@@ -651,18 +655,18 @@
 			<div class="bank-acc-details-column-4" style="overflow: visible">
 				<div>
 					<app-tooltip-category
-							(changed)="filterCategory($event)"
-							[data]="paymentTypesArr"
-							[title]="'titles.typeOfPayment' | translate"
+							(changed)="sharedComponent.mixPanelEvent('payment type filter', {value:$event.checked}); filterCategory($event)"
 							[translateEnum]="sharedService.paymentTypesTranslate$"
+							[title]="'titles.typeOfPayment' | translate"
 							[type]="'payment'"
+							[data]="paymentTypesArr"
 					></app-tooltip-category>
 				</div>
 			</div>
 			<div class="bank-acc-details-column-5" style="overflow: visible">
 				<div>
 					<app-tooltip-category
-							(changed)="filterCategory($event)"
+							(changed)="sharedComponent.mixPanelEvent('category filter', {value:$event.checked}); filterCategory($event)"
 							[data]="transTypesArr"
 							[title]="'titles.category' | translate"
 							[type]="'transType'"
@@ -689,7 +693,7 @@
 					style="justify-content: flex-start; text-align: right"
 			>
 				<app-tooltip-category
-						(changed)="filterCategory($event)"
+						(changed)="sharedComponent.mixPanelEvent('note filter', {value:$event.checked}); filterCategory($event)"
 						[data]="editArr"
 						[filter]="false"
 						[type]="'note'"
@@ -728,6 +732,7 @@
 					<div
 							(click)="
               dataTable.past.parent.opened = !dataTable.past.parent.opened;
+              							sharedComponent.mixPanelEvent( (dataTable.past.parent.opened ? 'open' : 'close') + ' past detailed transes');
               rebuildLayoutPlan()
             "
 							[class.opened]="dataTable.past.parent.opened"
@@ -940,9 +945,9 @@
 
 									<input
 											#inputBox
-											(blur)="submitChanges($event, 'transName')"
+											(blur)="sharedComponent.mixPanelEvent('past trans description'); submitChanges($event, 'transName')"
 											(focus)="startDescriptionEditAt(item, inputBox)"
-											(keyup.enter)="submitChanges($event, 'transName')"
+											(keyup.enter)="sharedComponent.mixPanelEvent('past trans description');  submitChanges($event, 'transName')"
 											(keyup.esc)="cancelChanges(); inputBox.blur()"
 											[(ngModel)]="item.transName"
 											[ngStyle]="{
@@ -1060,6 +1065,7 @@
 												#categorySelector
 												(cancelChanges)="cancelChanges()"
 												(changed)="item.selectedTransType = $event.value;
+														sharedComponent.mixPanelEvent( 'category');
                         !!item.biziboxMutavId
                           ? promptForBeneficiaryTransTypeChangeApply(
                               item,
@@ -1173,7 +1179,7 @@
 										style="justify-content: flex-start"
 								>
 									<div
-											(click)="docNote.show(item)"
+											(click)="sharedComponent.mixPanelEvent( 'add note past');docNote.show(item)"
 											(mouseleave)="item.note ? note.hide() : null"
 											(mouseover)="
                       item.note ? openNote(note, $event, item) : null
@@ -1232,6 +1238,8 @@
 							(click)="
               dataTable.nigreret.parent.opened =
                 !dataTable.nigreret.parent.opened;
+           sharedComponent.mixPanelEvent( (dataTable.nigreret.parent.opened ? 'open' : 'close') + ' nigrarot');
+
               rebuildLayoutPlan()
             "
 							[class.opened]="dataTable.nigreret.parent.opened"
@@ -1288,7 +1296,7 @@
 						</div>
 						<div class="care">
 							<button
-									(click)="navigateToMovementMatchingAt()"
+									(click)="sharedComponent.mixPanelEvent( 'nigrarot match button'); navigateToMovementMatchingAt()"
 									*ngIf="showMatch()"
 									[matTooltip]="
                   'appWalk.customers.tazrim.daily.details.navigateToMatch'
@@ -1342,7 +1350,7 @@
 									<p-calendar
 											#inputBoxCalendar
 											(onFocus)="startDescriptionEditAt(item, inputBoxCalendar)"
-											(onSelect)="submitChanges($event, 'transDateFull')"
+											(onSelect)="sharedComponent.mixPanelEvent( 'nigrrot date'); submitChanges($event, 'transDateFull')"
 											*ngIf="
                       item.transDateFullEdit === true && item.dateInput === true
                     "
@@ -1392,7 +1400,7 @@
 									</div>
 									<p-dropdown
 											#dd
-											(onChange)="submitChanges($event, 'account')"
+											(onChange)="sharedComponent.mixPanelEvent( 'nigrrot account'); submitChanges($event, 'account')"
 											(onFocus)="startDescriptionEditAt(item, dd)"
 											*ngIf="item.accountEdit === true"
 											[(ngModel)]="item.account"
@@ -1478,9 +1486,9 @@
 
 									<input
 											#inputBox
-											(blur)="submitChanges($event, 'transName')"
+											(blur)="sharedComponent.mixPanelEvent( 'nigrarot description'); submitChanges($event, 'transName')"
 											(focus)="startDescriptionEditAt(item, inputBox)"
-											(keyup.enter)="submitChanges($event, 'transName')"
+											(keyup.enter)="sharedComponent.mixPanelEvent( 'nigrarot description'); submitChanges($event, 'transName')"
 											(keyup.esc)="cancelChanges(); inputBox.blur()"
 											[(ngModel)]="item.transName"
 											[ngStyle]="{
@@ -1523,7 +1531,7 @@
 									<!--</div>-->
 									<p-dropdown
 											#dd1
-											(onChange)="submitChanges($event, 'paymentDesc')"
+											(onChange)="sharedComponent.mixPanelEvent( 'nigrarot payment type'); submitChanges($event, 'paymentDesc')"
 											(onFocus)="startDescriptionEditAt(item, dd1)"
 											*ngIf="item.paymentDescEdit === true"
 											[(ngModel)]="item.paymentDesc"
@@ -1607,7 +1615,7 @@
 												[showAuto]="true"
 												#categorySelector
 												(cancelChanges)="cancelChanges()"
-												(changed)="item.selectedTransType = $event.value;submitChanges($event, 'selectedTransType')"
+												(changed)="item.selectedTransType = $event.value;sharedComponent.mixPanelEvent( 'nigrarot category'); submitChanges($event, 'selectedTransType')"
 												[ngModelVal]="item.selectedTransType"
 												[categories]="companyTransTypes"
 												[companyId]="companyId"
@@ -1637,9 +1645,9 @@
 
 									<input
 											#inputBoxAsmachta
-											(blur)="submitChanges($event, 'asmachta')"
+											(blur)="sharedComponent.mixPanelEvent( 'nigrarot asmachta'); submitChanges($event, 'asmachta')"
 											(focus)="startDescriptionEditAt(item, inputBoxAsmachta)"
-											(keyup.enter)="submitChanges($event, 'asmachta')"
+											(keyup.enter)="sharedComponent.mixPanelEvent( 'nigrarot asmachta'); submitChanges($event, 'asmachta')"
 											(keyup.esc)="cancelChanges(); inputBoxAsmachta.blur()"
 											*ngIf="item.asmachtaEdit === true"
 											[(ngModel)]="item.asmachta"
@@ -1657,9 +1665,9 @@
 									</app-sum-view>
 									<input
 											#inputBoxTotal
-											(blur)="submitChanges($event, 'total')"
+											(blur)="sharedComponent.mixPanelEvent( 'nigrarot zhut'); submitChanges($event, 'total')"
 											(focus)="startDescriptionEditAt(item, inputBoxTotal)"
-											(keyup.enter)="submitChanges($event, 'total')"
+											(keyup.enter)="sharedComponent.mixPanelEvent( 'nigrarot zhut'); submitChanges($event, 'total')"
 											(keyup.esc)="cancelChanges(); inputBoxTotal.blur()"
 											(change)="item.total = $event.target.value"
 											*ngIf="!item.expence && item.totalEdit === true"
@@ -1678,9 +1686,9 @@
 
 									<input
 											#inputBoxTotal
-											(blur)="submitChanges($event, 'total')"
+											(blur)="sharedComponent.mixPanelEvent( 'nigrarot hova'); submitChanges($event, 'total')"
 											(focus)="startDescriptionEditAt(item, inputBoxTotal)"
-											(keyup.enter)="submitChanges($event, 'total')"
+											(keyup.enter)="sharedComponent.mixPanelEvent( 'nigrarot hova'); submitChanges($event, 'total')"
 											(keyup.esc)="cancelChanges(); inputBoxTotal.blur()"
 											(change)="item.total = $event.target.value"
 											*ngIf="item.expence && item.totalEdit === true"
@@ -1702,7 +1710,7 @@
 										style="justify-content: space-between"
 								>
 									<div
-											(click)="docNote.show(item)"
+											(click)="sharedComponent.mixPanelEvent( 'add note nigrarot'); docNote.show(item)"
 											(mouseleave)="item.note ? note.hide() : null"
 											(mouseover)="
                       item.note ? openNote(note, $event, item) : null
@@ -1774,6 +1782,7 @@
 											</li>
 											<li
 													(click)="
+													sharedComponent.mixPanelEvent( 'delete nigrarot transes');
                           item.unionId && item.targetType === 'SOLEK_TAZRIM'
                             ? onUnionIdClickAt(item)
                             : deleteOperation(item);
@@ -1817,6 +1826,7 @@
 					<div
 							(click)="
               dataTable.future.parent.opened = !dataTable.future.parent.opened;
+                         sharedComponent.mixPanelEvent( (dataTable.future.parent.opened ? 'open' : 'close') + ' future');
               rebuildLayoutPlan()
             "
 							[class.opened]="dataTable.future.parent.opened"
@@ -2602,6 +2612,8 @@
           "
 						[style]="{ width: '25ch' }"
 						formControlName="ddAccountSelect"
+						name="ddAccountSelect"
+
 						optionLabel="accountNickname"
 						placeholder="{{ 'actions.account' | translate }}"
 						required
@@ -2670,6 +2682,8 @@
           "
 						[style]="{'width': '132px'}"
 						formControlName="ddTypePayments"
+						name="ddTypePayments"
+
 						placeholder="{{ 'actions.select' | translate }}"
 						required
 				>
@@ -2782,6 +2796,8 @@
 												appendTo="body"
 												dateFormat="dd/mm/yy"
 												formControlName="dueDate"
+												name="dueDate"
+
 												required
 										>
 										</app-recommendation-calendar-input>
@@ -2799,6 +2815,8 @@
 												appendTo="body"
 												dateFormat="dd/mm/yy"
 												formControlName="dueDate"
+												name="dueDate"
+
 												required
 										>
 										</p-calendar>
@@ -3121,6 +3139,8 @@
         "
 					[style]="{ width: '228px' }"
 					formControlName="account"
+					name="account"
+
 					optionLabel="accountNickname"
 					placeholder="{{ 'actions.account' | translate }}"
 					required
@@ -3353,7 +3373,7 @@
 				</div>
 			</div>
 			<div
-					[appScrollHeight]="tableHeader.getBoundingClientRect().bottom"
+					[appScrollHeight]="'249'"
 					class="scrollbar-dynamic"
 					style="position: relative"
 			>
@@ -3368,7 +3388,7 @@
 					<div class="checkBox">
 						<p-checkbox checkboxIcon="fa fa-check"
 						            (onChange)="updatePopListCreate()"
-						            [ngModel]="adtnlRow.checked"
+						            [(ngModel)]="adtnlRow.checked"
 						            [binary]="true"
 						></p-checkbox>
 					</div>
@@ -3530,68 +3550,75 @@
 	</div>
 </p-overlayPanel>
 
-<p-dialog (visibleChange)="editMovementData.visible = false"
-          #editMovementDataDlg
-          [visible]="(editMovementData.visible)"
-          [modal]="true"
-          [resizable]="false"
-          [styleClass]="'fixed-movement-edit'"
-          appendTo="body"
->
-	<p-header>{{ editMovementData?.title }}</p-header>
-	<form
-			(ngSubmit)="onSubmitEditOperation()"
-			[formGroup]="editMovementData?.form"
-			novalidate
+
+	<p-dialog (visibleChange)="editMovementData.visible = false"
+			  #editMovementDataDlg
+			  [visible]="(editMovementData.visible)"
+			  [modal]="true"
+			  [resizable]="false"
+			  [styleClass]="'fixed-movement-edit'"
+			  appendTo="body"
 	>
-		<app-fixed-movement-settings
-				#editEditor
-				[allowMultimode]="
+		<p-header>{{ editMovementData?.title }}</p-header>
+		<form
+				(ngSubmit)="onSubmitEditOperation()"
+				[formGroup]="editMovementData?.form"
+				novalidate
+		>
+			<ng-container *ngIf="editMovementData && editMovementData.visible">
+				<app-fixed-movement-settings
+						#editEditor
+						[allowMultimode]="
         !editorMultimodeForbiddenTypes.includes(
           editMovementData?.source?.targetType
         )
       "
-				[companyId]="userService.appData?.userData?.companySelect?.companyId"
-				[companyTransTypes]="companyTransTypes"
-				[form]="editMovementData?.form"
-				[seriesSource]="editMovementData.seriesSource"
-				[source]="editMovementData.source"
-		>
-		</app-fixed-movement-settings>
-		<button
-				[disabled]="editMovementData.form.invalid"
-				style="display: none"
-				type="submit"
-		></button>
-		<!--{{createMovementData.form.valid}}-->
-	</form>
-	<p-footer>
-		<div
-				*ngIf="editMovementData?.source"
-				style="width: 100%; display: flex; justify-content: center"
-		>
-			<a
-					(click)="editMovementData.visible = false"
-					class="button-white button-link"
-					href="#"
-					role="button"
-			>
-				{{ 'actions.cancellation' | translate }}
-			</a>
+						[companyId]="userService.appData?.userData?.companySelect?.companyId"
+						[companyTransTypes]="companyTransTypes"
+						[mode]="editMovementData?.mode"
+						[form]="editMovementData?.form"
+
+						[seriesSource]="editMovementData.seriesSource"
+						[source]="editMovementData.source"
+				>
+				</app-fixed-movement-settings>
+			</ng-container>
+
 			<button
-					(click)="onSubmitEditOperation()"
-					[disabled]="editMovementData.loading"
-					class="button-dark"
+					[disabled]="editMovementData.form.invalid"
+					style="display: none"
+					type="submit"
+			></button>
+			<!--{{createMovementData.form.valid}}-->
+		</form>
+		<p-footer>
+			<div
+					*ngIf="editMovementData?.source"
+					style="width: 100%; display: flex; justify-content: center"
 			>
-				<i
-						*ngIf="editMovementData.loading"
-						class="fas fa-fw fa-circle-notch fa-spin"
-				></i>
-				{{ 'actions.saveAndClose' | translate }}
-			</button>
-		</div>
-	</p-footer>
-</p-dialog>
+				<a
+						(click)="editMovementData.visible = false"
+						class="button-white button-link"
+						href="#"
+						role="button"
+				>
+					{{ 'actions.cancellation' | translate }}
+				</a>
+				<button
+						(click)="onSubmitEditOperation()"
+						[disabled]="editMovementData.loading"
+						class="button-dark"
+				>
+					<i
+							*ngIf="editMovementData.loading"
+							class="fas fa-fw fa-circle-notch fa-spin"
+					></i>
+					{{ 'actions.saveAndClose' | translate }}
+				</button>
+			</div>
+		</p-footer>
+	</p-dialog>
+
 
 <p-dialog
 		(visibleChange)="dualMeaningFieldEditPrompt.visible = $event"

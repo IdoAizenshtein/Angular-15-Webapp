@@ -21,7 +21,7 @@ export function normalizeCommonJSImport<T>(
 }
 
 const loadHighcharts = normalizeCommonJSImport(
-    import('highcharts'),
+    import('highcharts')
 );
 
 @Component({
@@ -169,23 +169,21 @@ export class ChartsComponent implements OnInit, OnDestroy {
                 style: {
                     fontFamily: 'Assistant, Arial, Helvetica, sans-serif'
                 }
-            } // ,
-            // xAxis: {
-            //   labels: {
-            //     style: {
-            //       color: '#0f3860',
-            //       fontWeight: 'bold'
-            //     }
-            //   },
-            // },
-            // yAxis: {
-            //   labels: {
-            //     style: {
-            //       color: '#0f3860',
-            //       fontWeight: 'bold'
-            //     }
-            //   }
-            // }
+            },
+            xAxis: {
+                labels: {
+                    style: {
+                        fontFamily: 'Assistant, Arial, Helvetica, sans-serif'
+                    }
+                },
+            },
+            yAxis: {
+                labels: {
+                    style: {
+                        fontFamily: 'Assistant, Arial, Helvetica, sans-serif'
+                    }
+                }
+            }
         });
         (<any>Highcharts.Pointer.prototype).onContainerMouseMove = function (e) {
             const chart = this.chart;
@@ -375,6 +373,8 @@ export class ChartsComponent implements OnInit, OnDestroy {
                     //     xAxiscategoriesAll.push(new Date(fromDate.getFullYear(), fromDate.getMonth(), fromDate.getDate() + i).getTime());
                     // }
                     // // xMin = null;
+                    // console.log(xAxiscategoriesAll)
+                    // debugger
                 } else {
                     const mmntTmp = this.userService.appData
                             .moment(fromDate)
@@ -681,7 +681,7 @@ export class ChartsComponent implements OnInit, OnDestroy {
                                         (ttd) => ttd.x === this.point.x
                                     ).xTime
 
-                                }, type:${this.series.index}"
+                                }, type:${this.series.index}, classSumPoint:${classSumPoint}"
       >
         ${textLink}
       </div>
@@ -868,17 +868,20 @@ ${isDaily ? 'יום ' : 'חודש '}
                     const l = xAxiscategoriesAll.length;
                     for (let i = 0; i < l; i++) {
                         const month = new Date(xAxiscategoriesAll[i]).getMonth();
-                        if (!flags[month]) {
-                            flags[month] = [];
+                        const year = new Date(xAxiscategoriesAll[i]).getFullYear();
+                        if (!flags[year + '_' + month]) {
+                            flags[year + '_' + month] = [];
                         }
-                        flags[month].push(xAxiscategoriesAll[i]);
+                        flags[year + '_' + month].push(xAxiscategoriesAll[i]);
                     }
-                    flags.forEach((monthDate) => {
+                    // console.log(flags)
+                    Object.keys(flags).forEach(key => {
+                        const monthDate = flags[key];
                         const numMidMonth: number = parseInt(
                             (monthDate.length / 2).toString(),
                             10
                         );
-                        const dateMidMonth: number = monthDate[numMidMonth - 1];
+                        const dateMidMonth: number = monthDate[numMidMonth === 0 ? numMidMonth : numMidMonth - 1];
                         isDaily.push(dateMidMonth);
                     });
                 }
@@ -896,13 +899,15 @@ ${isDaily ? 'יום ' : 'חודש '}
                                         this.goToFinancialManagementBankAccountDetailsComponent([
                                             Boolean(Number(paramsClass[1].split(':')[1])),
                                             Number(paramsClass[0].split(':')[1]),
-                                            false
+                                            false,
+                                            paramsClass[2].includes('sum-credit')
                                         ]);
                                     } else if (paramsClass[0].includes('daymonyear')) {
                                         this.goToFinancialManagementBankAccountDetailsComponent([
                                             Boolean(Number(paramsClass[1].split(':')[1])),
                                             Number(paramsClass[0].split(':')[1]),
-                                            true
+                                            true,
+                                            paramsClass[2].includes('sum-credit')
                                         ]);
                                     }
                                 }
@@ -911,7 +916,7 @@ ${isDaily ? 'יום ' : 'חודש '}
                         // defaultSeriesType: 'line',
                         type: 'line',
                         style: {
-                            // fontFamily: 'Assistant, Arial, Helvetica, sans-serif',
+                            fontFamily: 'Assistant, Arial, Helvetica, sans-serif',
                             fontSize: '12px'
                         },
                         plotBorderColor: '#ffffff',
@@ -968,7 +973,7 @@ ${isDaily ? 'יום ' : 'חודש '}
                                 textAlign: 'center',
                                 padding: '0',
                                 margin: '0',
-                                // fontFamily: 'Assistant, Arial, Helvetica, sans-serif',
+                                fontFamily: 'Assistant, Arial, Helvetica, sans-serif',
                                 fontSize: '14px',
                                 color: '#0f3860',
                                 whiteSpace: 'normal'
@@ -1028,7 +1033,7 @@ ${isDaily ? 'יום ' : 'חודש '}
                             reserveSpace: true,
                             staggerLines: 1,
                             style: {
-                                // fontFamily: 'Assistant, Arial',
+                                fontFamily: 'Assistant, Arial, Helvetica, sans-serif',
                                 fontSize: '14px',
                                 color: '#0f3860',
                                 direction: 'ltr'
@@ -1052,6 +1057,7 @@ ${isDaily ? 'יום ' : 'חודש '}
                             // lineWidth: 1, // width of line of graph
                             dataLabels: {
                                 style: {
+                                    fontFamily: 'Assistant, Arial, Helvetica, sans-serif',
                                     textOutline: '0px',
                                     color: '#0f3860',
                                     fontSize: '14px',
@@ -1117,7 +1123,7 @@ ${isDaily ? 'יום ' : 'חודש '}
                         // defaultSeriesType: 'line',
                         type: 'line',
                         style: {
-                            // fontFamily: 'Assistant, Arial, Helvetica, sans-serif',
+                            fontFamily: 'Assistant, Arial, Helvetica, sans-serif',
                             fontSize: '12px'
                         },
                         plotBorderColor: '#ffffff',
@@ -1174,7 +1180,7 @@ ${isDaily ? 'יום ' : 'חודש '}
                                 textAlign: 'center',
                                 padding: '0',
                                 margin: '0',
-                                // fontFamily: 'Assistant, Arial, Helvetica, sans-serif',
+                                fontFamily: 'Assistant, Arial, Helvetica, sans-serif',
                                 fontSize: '14px',
                                 color: '#0f3860',
                                 whiteSpace: 'normal'
@@ -1224,7 +1230,7 @@ ${isDaily ? 'יום ' : 'חודש '}
                             reserveSpace: true,
                             staggerLines: 1,
                             style: {
-                                // fontFamily: 'Assistant, Arial',
+                                fontFamily: 'Assistant, Arial, Helvetica, sans-serif',
                                 fontSize: '14px',
                                 color: '#0f3860',
                                 direction: 'ltr'
@@ -1263,6 +1269,7 @@ ${isDaily ? 'יום ' : 'חודש '}
                             arrowSize: 12,
                             inactiveColor: '#CCC',
                             style: {
+                                fontFamily: 'Assistant, Arial, Helvetica, sans-serif',
                                 fontWeight: 'bold',
                                 color: '#333',
                                 fontSize: '12px'
@@ -1348,6 +1355,7 @@ ${acc.name}
                             lineWidth: 1, // width of line of graph
                             dataLabels: {
                                 style: {
+                                    fontFamily: 'Assistant, Arial, Helvetica, sans-serif',
                                     textOutline: '0px',
                                     color: '#0f3860',
                                     fontSize: '14px',
@@ -1395,7 +1403,7 @@ ${acc.name}
                         // defaultSeriesType: 'column',
                         type: 'column',
                         style: {
-                            // fontFamily: 'Assistant, Arial, Helvetica, sans-serif',
+                            fontFamily: 'Assistant, Arial, Helvetica, sans-serif',
                             fontSize: '14px'
                         },
                         plotBorderColor: '#ffffff',
@@ -1440,7 +1448,7 @@ ${acc.name}
                                 textAlign: 'center',
                                 padding: '0',
                                 margin: '0',
-                                // fontFamily: 'Assistant, Arial, Helvetica, sans-serif',
+                                fontFamily: 'Assistant, Arial, Helvetica, sans-serif',
                                 fontSize: '14px',
                                 color: '#0f3860'
                             }
@@ -1498,7 +1506,7 @@ ${acc.name}
                             reserveSpace: true,
                             staggerLines: 1,
                             style: {
-                                // fontFamily: 'Assistant, Arial',
+                                fontFamily: 'Assistant, Arial, Helvetica, sans-serif',
                                 fontSize: '14px',
                                 color: '#0f3860',
                                 direction: 'ltr'
@@ -1534,7 +1542,7 @@ ${acc.name}
                         type: 'column',
                         // defaultSeriesType: 'column',
                         style: {
-                            // fontFamily: 'Assistant, Arial, Helvetica, sans-serif',
+                            fontFamily: 'Assistant, Arial, Helvetica, sans-serif',
                             fontSize: '12px'
                         },
                         plotBorderColor: '#ffffff',
@@ -1560,6 +1568,7 @@ ${acc.name}
                             click: (event) => {
                                 if (event.target['id'] === 'getData') {
                                     const paramsClass = event.target['className'].split(',');
+                                    debugger
                                     if (paramsClass[0].includes('monyear')) {
                                         this.goToFinancialManagementBankAccountDetailsComponent([
                                             Boolean(Number(paramsClass[1].split(':')[1])),
@@ -1652,6 +1661,7 @@ ${acc.name}
                                 } ${new Date(xAxiscategoriesAll[0]).getFullYear()}</b>`
                                 : '',
                             style: {
+                                fontFamily: 'Assistant, Arial, Helvetica, sans-serif',
                                 fontSize: '16px',
                                 color: '#0f3860'
                             }
@@ -1668,7 +1678,7 @@ ${acc.name}
                                 textAlign: 'center',
                                 padding: '0',
                                 margin: '0',
-                                // fontFamily: 'Assistant, Arial, Helvetica, sans-serif',
+                                fontFamily: 'Assistant, Arial, Helvetica, sans-serif',
                                 fontSize: '15px',
                                 color: '#0f3860',
                                 whiteSpace: 'normal'
@@ -1712,7 +1722,7 @@ ${acc.name}
                             reserveSpace: true,
                             staggerLines: 1,
                             style: {
-                                // fontFamily: 'Assistant, Arial',
+                                fontFamily: 'Assistant, Arial, Helvetica, sans-serif',
                                 fontSize: '15px',
                                 color: '#0f3860',
                                 direction: 'ltr'
@@ -1727,7 +1737,7 @@ ${acc.name}
                             data.dataLabelsEnabled && {
                                 enabled: true,
                                 style: {
-                                    // fontFamily: 'Assistant, Arial',
+                                    fontFamily: 'Assistant, Arial, Helvetica, sans-serif',
                                     fontSize: '14px',
                                     fontWeight: '700',
                                     color: '#0f3860',
@@ -1821,7 +1831,7 @@ ${acc.name}
                                             (isDaily ? 'daymonyear:' : 'monyear:') +
                                             this.series.data.find((ttd) => ttd.x === this.point.x)['xTime']
 
-                                        }, type:${pointSeriesIndex}"
+                                        }, type:${pointSeriesIndex}, classSumPoint:${classSumPoint}"
            
 >
         ${textLink}
@@ -1948,8 +1958,8 @@ class="${
                                                     (isDaily ? 'daymonyear:' : 'monyear:') +
                                                     this.series.data.find((ttd) => ttd.x === this.point.x)['xTime']
 
-                                                }, type:${pointSeriesIndex}"
-      
+                                                }, type:${pointSeriesIndex}, classSumPoint:${classSumPoint}"
+   
       >
         ${textLink}
       </div>
@@ -2094,6 +2104,7 @@ ${isDaily ? 'יום ' : 'חודש '}
 
                             dataLabels: {
                                 style: {
+                                    fontFamily: 'Assistant, Arial, Helvetica, sans-serif',
                                     textOutline: '0px',
                                     color: '#0f3860',
                                     fontSize: '11px',
@@ -2136,9 +2147,20 @@ ${isDaily ? 'יום ' : 'חודש '}
                                 // inside: true
                             },
                             events: {
-                                // legendItemClick: function () {
-                                //     return false;
-                                // }
+                                legendItemClick: function (targ) {
+                                    if (window['mixpanel'] && targ && targ.target && targ.target.name) {
+                                        if (targ.target.name.includes('הפקדות') || targ.target.name.includes('משיכות')) {
+                                            if (targ.target.name.includes('הפקדות')) {
+                                                window['mixpanel'].track('incomes');
+                                            }
+                                            if (targ.target.name.includes('משיכות')) {
+                                                window['mixpanel'].track('outcomes');
+                                            }
+                                        } else {
+                                            window['mixpanel'].track(location.pathname.includes('slika') ? 'one solek view' : 'one card view');
+                                        }
+                                    }
+                                }
                             },
                             states: {
                                 inactive: {
@@ -2451,6 +2473,13 @@ ${isDaily ? 'יום ' : 'חודש '}
     }
 
     goToFinancialManagementBankAccountDetailsComponent(filtersParams: any) {
+        if (window['mixpanel']) {
+            if (filtersParams[3]) {
+                window['mixpanel'].track('all deposits');
+            } else {
+                window['mixpanel'].track('all transes');
+            }
+        }
         console.log(
             'goToFinancialManagementBankAccountDetailsComponent: filtersParams => %o',
             filtersParams

@@ -70,7 +70,7 @@
 				<!--                font-family: 'Font Awesome 5 Free';-->
 				<!--                font-weight: 900;-->
 				<!--                -webkit-text-stroke: 1px white;-->
-				
+
 				<!--                angle-down-->
 				<!--                angle-up-->
 				<ng-template #nonDeletedAccountsOnly let-tokenGroup>
@@ -91,7 +91,7 @@
 						<i *ngIf="!tokenGroup.children.length" class="fas">&nbsp;</i>
 					</div>
 				</ng-template>
-				
+
 				<ng-template #watchDeletedAccounts let-tokenGroup>
 					<ng-container *ngIf="deletedAccounts$ | async as deletedAccounts">
 						<div
@@ -126,7 +126,7 @@
 						</div>
 					</ng-container>
 				</ng-template>
-				
+
 				<div *ngFor="let tokenGroup of byTokenGroups">
 					<div class="rowTitle">
 						<ng-template
@@ -139,11 +139,11 @@
                   : nonDeletedAccountsOnly
               "
 						></ng-template>
-						
+
 						<img
 								style="height: auto; width: auto; position: relative;" fill [ngSrc]="tokenGroup.status.websiteTargetTypeId | toIconSrc: 'bank'"
 						/>&nbsp;
-						
+
 						<!--<input [(ngModel)]="tokenGroup.status.tokenNickname" #tokenNicknameInp-->
 						<!--(focus)="selectedToken = tokenGroup.status;" (blur)="selectedToken = null;"-->
 						<!--(keydown.enter)="tokenNicknameInp.blur();"-->
@@ -151,7 +151,7 @@
 						<!--[readonly]="!tokenGroup.status.hasPrivs || selectedToken !== tokenGroup.status"-->
 						<!--[disabled]="!tokenGroup.status.hasPrivs">-->
 						{{ tokenGroup.status.tokenNickname }}
-						
+
 						<ng-container>
 							<app-token-status-view
 									(creationSuccess)="forceReload$.next()"
@@ -161,7 +161,7 @@
 							</app-token-status-view>
 						</ng-container>
 					</div>
-					
+
 					<ng-container
 							*ngIf="tokenGroup.children.length && groupExpanded[tokenGroup.id]"
 					>
@@ -178,7 +178,7 @@
 							<div class="separator"></div>
 							<div></div>
 							<div class="separator"></div>
-							
+
 							<div>
 								<input
 										#accNicknameInp
@@ -283,9 +283,9 @@
 										[disabled]="accountDeletePrompt.visible"
 										class="button-link"
 								>
-									<img class="showHover" style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/trash.png"/>
+									<img class="showHover" style="height: auto; width: auto; position: relative;" src="/assets/images/trash.png"/>
 								</button>
-								
+
 								<!--                                <i class="fas fa-ellipsis-v"-->
 								<!--                                   (click)="setVarTool(itemChild); panelEdit.toggle($event);"></i>-->
 							</div>
@@ -304,7 +304,7 @@
 								<div class="separator"></div>
 								<div></div>
 								<div class="separator"></div>
-								
+
 								<div>
 									<div class="nickname-with-currency">
 										<div class="text-ellipsis">
@@ -359,7 +359,7 @@
 						</ng-container>
 					</ng-container>
 				</div>
-				
+
 				<!--                <p-overlayPanel-->
 				<!--                        styleClass="tooltip-bottom tooltip-acc-deviation tooltip-daily-edit overlayPanelRightClick"-->
 				<!--                        [style]="{'transform': 'translate(-10px, 10px)', 'width': 'auto'}"-->
@@ -402,7 +402,7 @@
 		styleClass="deleteMovementDialog"
 >
 	<p-header>{{ 'actions.accountRestore.title' | translate }}</p-header>
-	
+
 	<div
 			[innerHTML]="
       'actions.accountRestore.subjectPtrn'
@@ -420,7 +420,7 @@
 			[innerHTML]="'actions.accountRestore.body' | translate"
 			class="mat-h4"
 	></div>
-	
+
 	<p-footer>
 		<div style="justify-content: center">
 			<button
@@ -453,7 +453,7 @@
 		styleClass="deleteMovementDialog accountsOcrTabDeleteMovementDialog"
 >
 	<p-header>מחיקת חשבון</p-header>
-	
+
 	<div>
 		<strong>
 			אתם עומדים למחוק את חשבון
@@ -463,13 +463,13 @@
 					: ''
 			}},
 		</strong>
-		
+
 		<p>
 			בלחיצה על ‘מחיקה’ לא נמשוך יותר נתונים לחשבון זה,
 			<br/>
 			היסטוריית הנתונים לא תוצג במסמכי המערכת.
 		</p>
-		
+
 		<p>
 			מחיקת החשבון תמחק גם את כל כרטיסי האשראי
 			<br/>
@@ -505,18 +505,18 @@
 	<p-dialog
 			(visibleChange)="openCardDDEdit = $event"
 			[visible]="(openCardDDEdit)"
-			
+
 			[modal]="true"
 			[style]="{width: 450 + 'px'}"
 			appendTo="body"
-			
+
 			styleClass="deleteMovementDialog accountsOcrTabDeleteMovementDialog"
 	>
 		<p-header>
 			עדכון כרטיס הנהלת חשבונות לחברת
 			{{ userService.appData?.userData?.companySelect?.companyName }}
 		</p-header>
-		
+
 		<div style="text-align: center">
 			<h2>
 				<strong style="font-size: 24px"> שימו לב! </strong>
@@ -527,15 +527,15 @@
 				</strong>
 			</p>
 			<p style="line-height: 18px">יכול לגרום גם לבעיות בהנהלת חשבונות.</p>
-			
+
 			<p-dropdown
 					#formDropdowns
 					(onFocus)="clearFilter(formDropdowns)"
-					
+
 					[(ngModel)]="tooltipEditFile.izuCustId"
 					[autoDisplayFirst]="false"
 					[filter]="true"
-					
+
 					[options]="
           userService.appData.userData.companyCustomerDetails.banksCards
         "

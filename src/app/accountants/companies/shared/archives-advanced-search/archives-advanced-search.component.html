@@ -101,7 +101,7 @@
 						>
 						</p-calendar>
 						<span style="padding: 0px 12.5px"></span>
-						
+
 						<label class="labelFlex" for="invoiceDateTill"> עד- </label>
 						<p-calendar
 								(onSelect)="changeDatesFrequencyDesc('invoiceDateTill')"
@@ -143,7 +143,7 @@
 								type="text"
 						/>
 						<span style="padding: 0px 12.5px"></span>
-						
+
 						<label class="labelFlex" for="totalbeforeMaamTill"> עד- </label>
 						<input
 								[ngClass]="{
@@ -176,7 +176,7 @@
 								type="text"
 						/>
 						<span style="padding: 0px 12.5px"></span>
-						
+
 						<label class="labelFlex" for="totalIncludeMaamTill"> עד- </label>
 						<input
 								[ngClass]="{
@@ -196,7 +196,7 @@
 					<div class="label">כרטיס</div>
 					<div class="content flexRow">
 						<label class="labelFlex" for="custFrom"> מ- </label>
-						<p-dropdown
+						<app-dropdown-wrap
 								#formDropdowns
 								(onFocus)="clearFilter(formDropdowns)"
 								[autoDisplayFirst]="false"
@@ -215,10 +215,15 @@
 								emptyFilterMessage="לא נמצאו תוצאות"
 								filterBy="lName,custId,hp"
 								formControlName="custFrom"
-								
+								name="custFrom"
+								[scrollHeight]="'228px'"
+								[virtualScroll]="true"
+								[virtualScrollItemSize]="38"
+								appendTo="body"
 								id="custFrom"
 								optionLabel="custId"
-								panelStyleClass="company-customer-dropdown-panel cardsDD"
+								panelStyleClass="company-customer-dropdown-panel cardsDD card275 cardsDD40"
+								styleClass="ddInfoCompanyForm"
 								placeholder=""
 						>
 							<ng-template let-item pTemplate="selectedItem">
@@ -240,32 +245,41 @@
                 >
 							</ng-template>
 							<ng-template let-item pTemplate="item">
-								<div class="p-helper-clearfix" style="flex: 1">
-									<div>
-										<span class="text-ellipsis">{{ item.custId }}</span>
-									</div>
+								<div class="p-helper-clearfix cust-item">
+
 									<div
-											*ngIf="item.lName || item.hp"
-											class="separator"
+											class="p-helper-clearfix"
+											style="flex-flow: column"
 									>
-										<span>-</span>
-									</div>
-									<div>
-                    <span *ngIf="item.lName" class="text-ellipsis">{{
-	                    item.lName
-	                    }}</span>
-										<span *ngIf="item.hp" class="text-ellipsis secondary">
-                      ח.פ./ע.מ. {{ item.hp }}</span
-										>
+										<div>
+                      <span class="text-ellipsis">{{
+						  item.custId
+						  }}</span>
+										</div>
+
+										<div style="font-size: 12px">
+                        <span
+
+								class="text-ellipsis secondary"
+						>
+							<ng-container *ngIf="item.lName">
+								                           {{ item.lName }}
+							</ng-container>
+	<ng-container *ngIf="item.hp">
+								                          ח.פ./ע.מ. {{ item.hp }}
+							</ng-container>
+						</span>
+										</div>
+
 									</div>
 								</div>
 							</ng-template>
-						</p-dropdown>
-						
+						</app-dropdown-wrap>
+
 						<span style="padding: 0px 12.5px"></span>
-						
+
 						<label class="labelFlex" for="custTill"> עד- </label>
-						<p-dropdown
+						<app-dropdown-wrap
 								#formDropdowns1
 								(onFocus)="clearFilter(formDropdowns1)"
 								[autoDisplayFirst]="false"
@@ -285,9 +299,14 @@
 								filterBy="lName,custId,hp"
 								formControlName="custTill"
 								id="custTill"
-								
+								appendTo="body"
+								name="custTill"
+								[scrollHeight]="'228px'"
+								[virtualScroll]="true"
+								[virtualScrollItemSize]="38"
 								optionLabel="custId"
-								panelStyleClass="company-customer-dropdown-panel cardsDD"
+								panelStyleClass="company-customer-dropdown-panel cardsDD card275 cardsDD40"
+								styleClass="ddInfoCompanyForm"
 								placeholder=""
 						>
 							<ng-template let-item pTemplate="selectedItem">
@@ -309,27 +328,36 @@
                 >
 							</ng-template>
 							<ng-template let-item pTemplate="item">
-								<div class="p-helper-clearfix" style="flex: 1">
-									<div>
-										<span class="text-ellipsis">{{ item.custId }}</span>
-									</div>
+								<div class="p-helper-clearfix cust-item">
+
 									<div
-											*ngIf="item.lName || item.hp"
-											class="separator"
+											class="p-helper-clearfix"
+											style="flex-flow: column"
 									>
-										<span>-</span>
-									</div>
-									<div>
-                    <span *ngIf="item.lName" class="text-ellipsis">{{
-	                    item.lName
-	                    }}</span>
-										<span *ngIf="item.hp" class="text-ellipsis secondary">
-                      ח.פ./ע.מ. {{ item.hp }}</span
-										>
+										<div>
+                      <span class="text-ellipsis">{{
+						  item.custId
+						  }}</span>
+										</div>
+
+										<div style="font-size: 12px">
+                        <span
+
+								class="text-ellipsis secondary"
+						>
+							<ng-container *ngIf="item.lName">
+								                           {{ item.lName }}
+							</ng-container>
+	<ng-container *ngIf="item.hp">
+								                          ח.פ./ע.מ. {{ item.hp }}
+							</ng-container>
+						</span>
+										</div>
+
 									</div>
 								</div>
 							</ng-template>
-						</p-dropdown>
+						</app-dropdown-wrap>
 					</div>
 				</div>
 				<div class="row">
@@ -367,7 +395,7 @@
 					</div>
 				</div>
 			</div>
-			
+
 			<div class="btns">
 				<button (click)="togglePanel()" class="button-link" type="button">
 					{{ 'actions.cancellation' | translate }}

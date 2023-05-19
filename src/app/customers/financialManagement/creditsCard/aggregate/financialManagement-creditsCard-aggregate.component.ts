@@ -157,6 +157,9 @@ export class FinancialManagementCreditsCardAggregateComponent
                 .map((card) => card.creditCardId);
             arrCards = arrCards.concat(cards);
         });
+        this.sharedComponent.mixPanelEvent('credits drop', {
+            credits: (this.userService.appData.userData.creditCards.length === arrCards.length) ? 'כל הכרטיסים' : arrCards.map((card) => card.creditCardId)
+        });
         this.range = {
             // dateFrom: new Date(new Date().getFullYear(), new Date().getMonth() - 10, 1),
             // dateTill: new Date(new Date().getFullYear(), new Date().getMonth() + 2, 0)
@@ -521,7 +524,7 @@ export class FinancialManagementCreditsCardAggregateComponent
         //     visibleIndices,
         //     scrollToIndex
         // );
-        if (this.viewPort.measureScrollOffset('right') > 505) {
+        if (this.viewPort.measureScrollOffset('right') >= 505) {
             const idx = this.cardHandlesScrollIndex - 1;
             // const prevIndex:any = idx < 0 ? 0 : idx;
             this.cardHandlesScrollIndex = idx;
@@ -660,6 +663,8 @@ export class FinancialManagementCreditsCardAggregateComponent
         card: any,
         monthSummary: any
     ): void {
+        this.sharedComponent.mixPanelEvent('all transes');
+
         // console.log('Called goToFinancialManagementCreditsCardDetailsComponent with %o, %o', card, monthSummary);
         const anchorDt = new Date(monthSummary.month);
 
@@ -770,6 +775,8 @@ export class FinancialManagementCreditsCardAggregateComponent
     }
 
     setCreditLimitAtCard(item: any, $event: number): void {
+        this.sharedComponent.mixPanelEvent('update');
+
         const oldValue = item.creditLimit;
         item.creditLimit = $event;
 

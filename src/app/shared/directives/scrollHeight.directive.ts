@@ -290,7 +290,8 @@ export class ScrollHeightDirective implements OnInit, OnDestroy, OnChanges {
         if (this.appendTo === 'parent') {
             this.setScrollSize(size);
         } else {
-            this.setScrollSize(
+            this.setScrollSize(typeof size === 'string' ? size
+                :
                 (window.innerHeight ||
                     document.documentElement.clientHeight ||
                     document.body.clientHeight) -

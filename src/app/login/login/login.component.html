@@ -11,7 +11,7 @@
 				}}
 			</h1>
 		</div>
-		
+
 		<div class="Login__card-body">
 			<ng-container *ngIf="state === loginState.OTP_LOGIN; else regLogin">
 				<div class="Login__otp">
@@ -43,7 +43,7 @@
 							<p>{{ 'formLogin.otpInfoText2' | translate: translateParams }}</p>
 							<p>{{ 'formLogin.otpInfoText3' | translate }}</p>
 						</div>
-						
+
 						<form
 								[formGroup]="formLoginOtp"
 								(ngSubmit)="loginOtp(formLoginOtp.value, formLoginOtp.valid)"
@@ -55,11 +55,11 @@
 								<!--<label>{{'formLogin.typeTheCode' | translate}}</label>-->
 								<!--<div [ngClass]="{'Form__group': true, 'Form__group&#45;&#45;err': (!formLoginOtp.get('code')?.valid && !formLoginOtp.get('code')?.pristine || formLoginOtp.errors?.incorrect)}">-->
 								<!--<input type="text" id="code" class="forceLTR" formControlName="code">-->
-								
+
 								<!--<div class="Form__feedback Form__feedback&#45;&#45;warning" *ngIf="!formLoginOtp.errors?.incorrect">-->
 								<!--<i class='fa fa-exclamation-triangle'></i> {{'formLogin.codeContainsNumbersOnly' | translate}}-->
 								<!--</div>-->
-								
+
 								<!--              <div class="Form__feedback" *ngIf="formLoginOtp.errors?.incorrect">-->
 								<!--              {{'validation.codeNotValid' | translate}}-->
 								<!--              </div>-->
@@ -77,7 +77,7 @@
 											formControlName="code"
 											[errorStateMatcher]="matcher"
 									/>
-									
+
 									<mat-hint
 											*ngIf="
                       (!formLoginOtp.hasError('wrongCode') &&
@@ -111,7 +111,52 @@
 									</mat-error>
 								</mat-form-field>
 							</div>
-							
+
+							<div class="Login__options" style="
+    width: 268px;
+    margin: 0 auto;
+    text-align: right;
+    padding-top: 10px;
+"  *ngIf="tokenInfo.smsRemained">
+								<p
+										style="
+    text-align: right;
+    padding: 0;
+">
+									{{ 'formLogin.didNotReceiveTheCode' | translate }}
+								</p>
+
+								<div
+										style="height: 30px;display: flex;"
+								>
+									<p style="
+    padding: 0;
+    color: #3898ec;
+    line-height: 29px;
+    padding-left: 11px;
+">
+										נסו שוב באמצעות
+									</p>
+									<p-radioButton
+											(onClick)="resendSms()"
+											formControlName="vms"
+											[label]="'SMS'"
+											[value]="false"
+											name="vms"
+									>
+									</p-radioButton>
+									<span style="padding: 0px 6px"></span>
+									<p-radioButton
+											(onClick)="resentOtpVms()"
+											formControlName="vms"
+											[label]="'הודעה קולית'"
+											[value]="true"
+											name="vms"
+									>
+									</p-radioButton>
+								</div>
+							</div>
+
 							<div class="Login__submit">
 								<button
 										mat-raised-button
@@ -129,15 +174,6 @@
 										'formLogin.submit' | translate
 										}}</span>
 								</button>
-							</div>
-							
-							<div class="Login__options" *ngIf="tokenInfo.smsRemained">
-								<p>
-									{{ 'formLogin.didNotReceiveTheCode' | translate }}
-									<a id="resendSms" [routerLink]="" (click)="resendSms()">{{
-										'formLogin.tryAgain' | translate
-										}}</a>
-								</p>
 							</div>
 						</form>
 					</ng-template>
@@ -184,12 +220,12 @@
 							<!--<input type="text" id="username" class="forceLTR" formControlName="username"-->
 							<!--(focus)="handleFocusUsername()" tabindex="1"-->
 							<!--[ngStyle]="{'border-color': containsFailedAttemptCredentials ? '#bd2c22' : null}">-->
-							
+
 							<!--<div class="Form__feedback" *ngIf="!formLogin.get('formUser.username').value">{{'formLogin.enterYouEmail' | translate}}</div>-->
 							<!--<div class="Form__feedback" *ngIf="formLogin.get('formUser.username').value">{{'validation.emailError' | translate}}</div>-->
 							<!--</div>-->
 						</div>
-						
+
 						<div class="Login__control" formGroupName="formUser">
 							<mat-form-field hideRequiredMarker="true">
 								<mat-label>{{ 'formLogin.password' | translate }}</mat-label>
@@ -218,11 +254,11 @@
 							<!--<i (click)="hide = !hide" [ngClass]="{'fa': true, 'fa-eye': hide, 'fa-eye-slash': !hide}"></i>-->
 							<!--<input [type]="hide ? 'password' : 'text'" class="forceLTR" id="password" formControlName="password" tabindex="2"-->
 							<!--[ngStyle]="{'border-color': containsFailedAttemptCredentials ? '#bd2c22' : null}">-->
-							
+
 							<div class="Form__feedback">
 								{{ 'validation.enterYouPassword' | translate }}
 							</div>
-							
+
 							<div class="Login__options">
 								<mat-checkbox formControlName="rememberMe" color="primary">{{
 									'formLogin.rememberMe' | translate
@@ -247,7 +283,7 @@
               </span>
 							<!--</div>-->
 						</div>
-						
+
 						<div class="Login__control" *ngIf="isCapsLock || isHebrew">
 							<div
 									class="Form__feedback Form__feedback--warning Form__feedback--warning--block"
@@ -259,7 +295,7 @@
 								}}
 							</div>
 						</div>
-						
+
 						<div class="Login__submit">
 							<div
 									class="Form__feedback Form__feedback--err"
@@ -272,7 +308,7 @@
 									'validation.loginBlocked' | translate: translateParams
 									}}</span>
 							</div>
-							
+
 							<button
 									mat-raised-button
 									color="primary"
@@ -294,7 +330,7 @@
 					</form>
 				</div>
 			</ng-template>
-			
+
 			<div class="Login__footer">
 				<img
 						src="/assets/images/128BIT-gray.png"
@@ -304,7 +340,7 @@
 				<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/ASTARO-gray.png" alt="Fortinet"/>
 				<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/VERISIGN-gray.png" alt="Verisign"/>
 			</div>
-			
+
 			<div class="Login__links">
 				<p *ngIf="state !== loginState.OTP_LOGIN">
 					{{ 'formLogin.notYetRegistered' | translate }}

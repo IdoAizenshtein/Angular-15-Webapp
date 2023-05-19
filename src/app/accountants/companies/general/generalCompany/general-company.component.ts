@@ -18,6 +18,7 @@ import {Dropdown} from 'primeng/dropdown/dropdown';
 import {BrowserService} from '@app/shared/services/browser.service';
 import {ReportService} from '@app/core/report.service';
 import {ReloadServices} from '@app/shared/services/reload.services';
+import {GeneralComponent} from '@app/accountants/companies/general/general.component';
 
 @Component({
     templateUrl: './general-company.component.html',
@@ -52,11 +53,15 @@ export class GeneralCompanyComponent
             value: 'REGULAR'
         }
     ];
-    public show_modal_report856 = true;
+    public show_modal_report856 = false;
     public showModalEsderMaam = false;
     public dbYearHistoryArr: any;
     public bookKeepingCustRes: any = null;
     private readonly destroyed$ = new Subject<void>();
+    public showReceivingFilesModal: any = false;
+    public showReceivingFilesModalInside: boolean = false;
+    public showUpdateFolderPlusModal: any = false;
+    public generalResponseRest: any = {};
 
     constructor(
         public userService: UserService,
@@ -74,7 +79,8 @@ export class GeneralCompanyComponent
         private sumPipe: SumPipe,
         public snackBar: MatSnackBar,
         private domSanitizer: DomSanitizer,
-        public router: Router
+        public router: Router,
+        public generalComponent: GeneralComponent
     ) {
         super(sharedComponent);
 
@@ -136,6 +142,10 @@ export class GeneralCompanyComponent
             assessor: new FormControl({
                 value: '',
                 disabled: false
+            }),
+            folderPlus: new FormControl({
+                value: false,
+                disabled: false
             })
         });
 
@@ -179,6 +189,7 @@ export class GeneralCompanyComponent
                     })
                     .subscribe((response: any) => {
                         const responseRest = response ? response['body'] : response;
+                        this.generalResponseRest = responseRest;
                         // assessor: null
                         // companyId: "909e0702-483b-1d4b-e053-650019accda1"
                         // dbName: "BIGRAF12"
@@ -211,12 +222,15 @@ export class GeneralCompanyComponent
                                 responseRest.report856 === null ? true : responseRest.report856,
                             mikdamotPrc: responseRest.mikdamotPrc,
                             hiring: responseRest.hiring === null ? true : responseRest.hiring,
+                            folderPlus: responseRest.folderPlus === null ? true : responseRest.folderPlus,
                             nikuiMasNum: responseRest.nikuiMasNum,
                             nikuiExpirationDate: responseRest.nikuiExpirationDate
                                 ? new Date(responseRest.nikuiExpirationDate)
                                 : responseRest.nikuiExpirationDate
                         });
-
+                        if (responseRest.folderPlus === null) {
+                            this.info.get('folderPlus').disable();
+                        }
                         if (responseRest.manager) {
                             this.info.get('vatReportType').enable();
                             this.info.get('esderMaam').enable();
@@ -278,6 +292,8 @@ export class GeneralCompanyComponent
                                     this.userService.appData.userData.companyCustomerDetails.customerTaxDeductionCustIdExpenseArr.find(
                                         (it) => it.custId === supplierTaxDeductionCustId
                                     );
+                            } else {
+                                this.show_modal_report856 = true;
                             }
                             this.infoModal.patchValue({
                                 supplierTaxDeductionCustId: supplierTaxDeductionCustId || null
@@ -292,10 +308,18 @@ export class GeneralCompanyComponent
     }
 
     updateValues(param: string, val: any) {
-        const pbj = {};
-        pbj[param] = val;
-        this.info.patchValue(pbj);
-        this.updateCompany(param === 'esderMaam');
+        if (param === 'folderPlus') {
+            if (val) {
+                this.showReceivingFilesModal = true;
+            } else {
+                this.showUpdateFolderPlusModal = true;
+            }
+        } else {
+            const pbj = {};
+            pbj[param] = val;
+            this.info.patchValue(pbj);
+            this.updateCompany(param === 'esderMaam');
+        }
     }
 
     updateValues_report856() {
@@ -393,7 +417,8 @@ export class GeneralCompanyComponent
             mikdamotPrc: this.info.get('mikdamotPrc').value,
             hiring: this.info.get('hiring').value,
             nikuiMasNum: this.info.get('nikuiMasNum').value,
-            nikuiExpirationDate: this.info.get('nikuiExpirationDate').value
+            nikuiExpirationDate: this.info.get('nikuiExpirationDate').value,
+            folderPlus: this.info.get('folderPlus').value
         };
 
         this.assessorArr = this.addPriemerObject_assessor(this.assessorArrSaved);
@@ -411,9 +436,13 @@ export class GeneralCompanyComponent
             timer(3000).subscribe(() => {
                 this.reportService.postponed = null;
             });
-            this.showModalEsderMaam = true;
+            this.generalComponent.startCounter();
+            // this.showModalEsderMaam = true;
         }
         this.sharedService.updateGeneral(params).subscribe(() => {
+            if (showToast) {
+                this.generalComponent.resReceived();
+            }
             this.userService.appData.userData.companies = null;
             this.sharedService.getCompanies().subscribe((companies: any) => {
                 this.userService.appData.userData.companies = companies.body;
@@ -464,6 +493,42 @@ export class GeneralCompanyComponent
             });
         });
     }
+
+
+    hideReceivingFilesModal($event) {
+        if (!$event) {
+            this.info.patchValue({
+                folderPlus: false
+            });
+            this.showReceivingFilesModal = false;
+        }
+    }
+
+    hideUpdateFolderPlusModal($event) {
+        if (!$event) {
+            this.info.patchValue({
+                folderPlus: true
+            });
+            this.showUpdateFolderPlusModal = false;
+        }
+    }
+
+    updateFolderPlusStatus() {
+        this.showReceivingFilesModal = false;
+        const pbj = {};
+        pbj['folderPlus'] = true;
+        this.info.patchValue(pbj);
+        this.updateCompany(false);
+    }
+
+    updateFolderPlusStatusManual() {
+        this.showUpdateFolderPlusModal = false;
+        const pbj = {};
+        pbj['folderPlus'] = false;
+        this.info.patchValue(pbj);
+        this.updateCompany(false);
+    }
+
 
     dbYearHistory() {
         this.sharedService

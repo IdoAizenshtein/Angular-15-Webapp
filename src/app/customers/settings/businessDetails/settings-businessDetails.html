@@ -35,7 +35,7 @@
       >
         <button type="submit" style="display: none" #submitBtn></button>
         <div class="sett-table">
-          <div>
+          <div *ngIf="!userService.appData?.hideCompanyName">
             <div>שם העסק /אחר</div>
             <div>
               <input
@@ -46,7 +46,7 @@
                     personalInfo.dirty
                 }"
                 formControlName="companyName"
-                (blur)="submitBtn.click()"
+              (blur)="sharedComponent.mixPanelEvent('company details', {'field name': 'companyName'});submitBtn.click()"
               />
             </div>
           </div>
@@ -77,7 +77,7 @@
                     personalInfo.dirty
                 }"
                 formControlName="businessCategory"
-                (blur)="submitBtn.click()"
+                (blur)="sharedComponent.mixPanelEvent('company details', {'field name': 'businessCategory'});submitBtn.click()"
               />
             </div>
           </div>
@@ -90,6 +90,8 @@
                 placeholder="בחר עיר"
                 [options]="sharedService.cities$ | async"
                 formControlName="city"
+                name="city"
+
                 [scrollHeight]="'135px'"
                 (onFocus)="clearFilter(dd)"
                 [dropdownIcon]="'p-dropdown-icon'"
@@ -99,7 +101,7 @@
 
                 [style]="{ width: '100%' }"
                 [filter]="true"
-                (onChange)="submitBtn.click()"
+                (onChange)="sharedComponent.mixPanelEvent('company details', {'field name': 'city'}); submitBtn.click()"
               >
               </p-dropdown>
             </div>
@@ -113,7 +115,7 @@
                   err: personalInfo.get('street').invalid && personalInfo.dirty
                 }"
                 formControlName="street"
-                (blur)="submitBtn.click()"
+                (blur)="sharedComponent.mixPanelEvent('company details', {'field name': 'street'}); submitBtn.click()"
               />
             </div>
           </div>
@@ -128,7 +130,7 @@
                     personalInfo.dirty
                 }"
                 formControlName="mainContactName"
-                (blur)="submitBtn.click()"
+                (blur)="sharedComponent.mixPanelEvent('company details', {'field name': 'mainContactName'}); submitBtn.click()"
               />
             </div>
           </div>
@@ -145,7 +147,7 @@
                 formControlName="contactMail"
                 (keypress)="handleKeyPress($event)"
                 autocomplete="mail"
-                (blur)="submitBtn.click()"
+                (blur)="sharedComponent.mixPanelEvent('company details', {'field name': 'contactMail'}); submitBtn.click()"
               />
             </div>
           </div>
@@ -163,7 +165,7 @@
                 formControlName="contactPhone"
                 (keypress)="handleKeyPress($event)"
                 autocomplete="tel-national"
-                (blur)="submitBtn.click()"
+                (blur)="sharedComponent.mixPanelEvent('company details', {'field name': 'contactPhone'}); submitBtn.click()"
               />
             </div>
           </div>

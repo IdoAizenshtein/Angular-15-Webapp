@@ -93,7 +93,7 @@
 				type="text"
 		/>
 		ימים
-		
+
 		<button
 				(click)="openPopEdit()"
 				[disabled]="daysToDelete === '' || daysToDelete < 0"
@@ -113,7 +113,7 @@
 	<div [class.isBorder]="cashflowMatchAll?.length" class="banktransForMatch">
 		<div [class.notUpdate]="accountSelectOneNotUpdate" class="title">
 			תנועות צפויות שטרם קרו / לא הותאמו
-			
+
 			<div *ngIf="accountSelectOneNotUpdate" class="accountSelectOneNotUpdate">
 				<div>
 					<div class="alert-deviation">
@@ -143,7 +143,7 @@
 		</div>
 		<div *ngIf="cashflowMatchAll?.length" class="searchRow">
 			סמנו פריטים להתאמה או בחרו פעולה מהרשימה
-			
+
 			<div *ngIf="!hasRowOfChecked" class="search">
 				<input
 						[formControl]="filterInput"
@@ -203,7 +203,7 @@
               (sortPipeDirDateCash === 'smaller' ? 'asc' : 'desc') +
               '.png'
             "
-						
+
 					/>
 				</div>
 				<div (click)="sortPipeFilterCash(2)">
@@ -215,7 +215,7 @@
                 (sortPipeDirCash === 'smaller' ? 'asc' : 'desc') +
                 '.png'
               "
-						
+
 						/>
 					</div>
 				</div>
@@ -283,7 +283,7 @@
 										>
 										</p-checkbox>
 									</ng-container>
-									
+
 									<div
 											#transDesc
 											[innerHTML]="item.targetName | highlight: queryString"
@@ -298,7 +298,7 @@
 											tooltipPosition="top"
 									></div>
 								</div>
-								
+
 								<!--<div [innerHTML]="item.paymentDescTranslate | highlight: queryString"></div>-->
 								<div style="display: flex">
 									<div
@@ -307,7 +307,7 @@
                     "
 											class="text-ellipsis"
 									></div>
-									
+
 									<div
 											[style.visibility]="
                       (item.targetTypeName | isPeriodicType)
@@ -319,7 +319,7 @@
 										<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/periodic-trans.png"/>
 									</div>
 								</div>
-								
+
 								<div>
 									<div>{{ 'sumsTitles.today' | translate }}</div>
 									<div>
@@ -354,7 +354,7 @@
 						</div>
 					</div>
 				</div>
-				
+
 				<div *ngIf="cashflowMatch?.future?.children.length">
 					<div
 							(click)="
@@ -406,7 +406,7 @@
 										>
 										</p-checkbox>
 									</ng-container>
-									
+
 									<div
 											#transDesc
 											[innerHTML]="item.targetName | highlight: queryString"
@@ -421,7 +421,7 @@
 											tooltipPosition="top"
 									></div>
 								</div>
-								
+
 								<!--<div [innerHTML]="item.paymentDescTranslate | highlight: queryString"></div>-->
 								<div style="display: flex">
 									<div
@@ -430,7 +430,7 @@
                     "
 											class="text-ellipsis"
 									></div>
-									
+
 									<div
 											[style.visibility]="
                       (item.targetTypeName | isPeriodicType)
@@ -442,7 +442,7 @@
 										<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/periodic-trans.png"/>
 									</div>
 								</div>
-								
+
 								<div>
 									<div
 											[innerHTML]="
@@ -480,7 +480,7 @@
 						</div>
 					</div>
 				</div>
-				
+
 				<div
 						*ngIf="
             !loaderCash &&
@@ -504,7 +504,7 @@
 			</p>
 			<p>■ בידקו אם קיימות תנועות שמקורן בטעות מצד הבנק</p>
 			<p>■ שאר התנועות הן כנראה תנועות חד פעמיות לא צפויות</p>
-			
+
 			<div
 					*ngIf="
           userService?.appData?.userData?.bankMatchAccount?.length > 1 &&
@@ -519,7 +519,7 @@
 			</div>
 		</div>
 	</div>
-	
+
 	<div
 			[class.isBorder]="banktransForMatchAll?.length"
 			class="banktransForMatch"
@@ -530,7 +530,7 @@
 		</div>
 		<div *ngIf="banktransForMatchAll?.length" class="searchRow">
 			סמנו פריטים להתאמה או בחרו פעולה מהרשימה
-			
+
 			<!--<div class="btnGroup" *ngIf="hasRowOfDeleted">-->
 			<!--<button class="button-dark">-->
 			<!--לדחות-->
@@ -584,7 +584,7 @@
               (sortPipeDirDate === 'smaller' ? 'asc' : 'desc') +
               '.png'
             "
-							
+
 					/>
 				</div>
 				<div (click)="sortPipeFilter(2)">
@@ -596,13 +596,13 @@
                 (sortPipeDir === 'smaller' ? 'asc' : 'desc') +
                 '.png'
               "
-								
+
 						/>
 					</div>
 				</div>
 			</div>
 			<div
-					
+
 					class="containerList scrollbar-dynamic bank-acc-details-table-body"
 					style="position: relative"
 					[ngStyle]="{'height': (getPageHeightFunc(userService?.appData?.userData?.bankMatchAccountAcc?.countNigrarot >
@@ -617,11 +617,11 @@
 				<ng-scrollbar
 						#scrollbarCompanies
 						(updated)="onScroll(scrollbarCompanies)"
-					
+
 						class="custom-scrollbar"
 						thumbClass="scrollbar-thumb"
 						trackClass="scrollbar">
-					
+
 					<cdk-virtual-scroll-viewport #virtualScroll itemSize="46" scrollViewport>
 						<div *cdkVirtualFor="let item of banktransForMatch; let i = index; trackBy: trackById">
 							<div
@@ -649,7 +649,7 @@
 									            checkboxIcon="fa fa-check"
 									>
 									</p-checkbox>
-									
+
 									<div
 											#transDesc
 											(click)="
@@ -706,8 +706,8 @@
 						</div>
 					</cdk-virtual-scroll-viewport>
 				</ng-scrollbar>
-				
-				
+
+
 				<div
 						*ngIf="
             !loader && banktransForMatchAll?.length && !banktransForMatch.length
@@ -729,7 +729,7 @@
 					tabindex="-1"
 			>
 				<div class="arrow"></div>
-				
+
 				<ng-container
 						*ngIf="
             transactionAdditionalDetails$ | async as additionalDetails;
@@ -922,7 +922,7 @@
 														[isABS]="true"
 														[sum]="additionalDetails[0].transfertotal"
 												></app-sum-view>
-												
+
 												{{
 												(
 														showAdditionalItem?.hova !== undefined
@@ -1305,7 +1305,7 @@
 						</ng-container>
 					</ng-container>
 				</ng-container>
-				
+
 				<ng-template #noAdditionalAvailable>
 					<div
 							style="
@@ -1333,7 +1333,7 @@
 				<!--{{transactionAdditionalDetails$| async | json}}-->
 			</div>
 		</div>
-		
+
 		<div
 				*ngIf="banktransForMatchAll && !banktransForMatchAll?.length"
 				class="notData"
@@ -1341,7 +1341,7 @@
 			<p>לא קיימות תנועות בנק שלא צפיתי / לא הותאמו</p>
 		</div>
 	</div>
-	
+
 	<div
 			*ngIf="hasRowOfChecked && hasRowOfDeleted && !cancelMatch && matchList"
 			class="toast"
@@ -1356,9 +1356,9 @@
 	<div *ngIf="showToastBeforeSend && matchList" class="toast">
 		<div class="toastFlex">
 			<img alt="v" height="15" ngSrc="/assets/images/check.png" width="18"/>
-			
+
 			{{ matchList.array.length }}
-			
+
 			<i *ngIf="matchList.array.length > 1"> תנועות הותאמו </i>
 			<i *ngIf="matchList.array.length === 1"> תנועה הותאמה </i>
 		</div>
@@ -1366,7 +1366,7 @@
 			<span (click)="showToastBeforeSend = false"> שיחזור </span>
 		</div>
 	</div>
-	
+
 	<!--<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/replace.png" alt="replace" id="replace"-->
 	<!--[pTooltip]="'החלפת טבלאות'" [escape]="false" tooltipPosition="bottom" (click)="replace()">-->
 </div>
@@ -1421,11 +1421,11 @@
 		(onHide)="popUpDeleteMatch = false"
 		*ngIf="popUpDeleteMatch"
 		[visible]="(popUpDeleteMatch)"
-		
+
 		[modal]="true"
 		[styleClass]="popUpDeleteMatch.styleClass"
 		[style]="{width: popUpDeleteMatch.width + 'px',height: popUpDeleteMatch.height + 'px'}"
-		
+
 		appendTo="body"
 >
 	<p-header>
@@ -1461,7 +1461,7 @@
 		>
 			מחיקה
 		</a>
-		
+
 		<button
 				(click)="popUpDeleteMatch = false"
 				class="button-dark"
@@ -1476,7 +1476,7 @@
 		(onHide)="userService.appData.popUpShow = false"
 		*ngIf="userService.appData.popUpShow"
 		[visible]="(userService.appData.popUpShow)"
-		
+
 		[modal]="true"
 		[styleClass]="userService.appData.popUpShow.styleClass"
 		[style]="{width: userService.appData.popUpShow.width + 'px',height: userService.appData.popUpShow.height + 'px'}"
@@ -1511,7 +1511,7 @@
 		>
 			כן, מחיקת תנועות
 		</a>
-		
+
 		<button
 				(click)="userService.appData.popUpShow = false"
 				class="button-dark"
@@ -1527,7 +1527,7 @@
 		[modal]="true"
 		[styleClass]="'fixed-movement-edit'"
 		[visible]="(createFromRecommendationData?.visible)"
-		
+
 		appendTo="body"
 >
 	<p-header>{{ createFromRecommendationData?.title }}</p-header>
@@ -1585,12 +1585,12 @@
 		[modal]="true"
 		[style]="{width: 300 + 'px'}"
 		[visible]="(deleteConfirmationPrompt?.visible)"
-		
+
 		appendTo="body"
 		styleClass="deleteMovementDialog"
 >
 	<p-header>{{ deleteConfirmationPrompt?.title }}</p-header>
-	
+
 	<div
 			[innerHTML]="
       'actions.deleteMovement.body.' +
@@ -1615,7 +1615,7 @@
 			<!--{{opt}}-->
 		</li>
 	</ul>
-	
+
 	<p-footer>
 		<div style="width: 100%; display: flex; justify-content: center">
 			<button
@@ -1646,8 +1646,8 @@
 		[resizable]="false"
 		[styleClass]="'fixed-movement-edit'"
 		[visible]="(editMovementData?.visible)"
-		
-		
+
+
 		appendTo="body"
 >
 	<p-header>{{ editMovementData?.title }}</p-header>
@@ -1706,11 +1706,11 @@
 		[modal]="true"
 		[resizable]="false"
 		appendTo="body"
-		
+
 		styleClass="postponeMovementDialog"
 >
 	<p-header>{{ 'דחיית תנועה צפוייה' }}</p-header>
-	
+
 	<div style="display: flex; justify-content: space-between">
 		<button
 				(click)="postponePrompt.onDateShortcutClick('nextWeek')"
@@ -1731,7 +1731,7 @@
 			{{ 'לחודש הבא' }}
 		</button>
 	</div>
-	
+
 	<p-calendar
 			[(ngModel)]="postponePrompt.selectedDate"
 			[disabledDays]="[6]"
@@ -1741,7 +1741,7 @@
 			[showOtherMonths]="false"
 			[style]="{ 'min-width': '320px' }"
 	></p-calendar>
-	
+
 	<p-footer>
 		<div style="width: 100%; display: flex; justify-content: center">
 			<button

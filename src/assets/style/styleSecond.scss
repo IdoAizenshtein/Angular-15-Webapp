@@ -1146,9 +1146,41 @@
       }
     }
 
+    .buttonStatusDD{
+      width: 152px;
+      height: 34px;
+      border: none;
+      outline: none;
+      border-radius: 2px;
+      background: #02225C;
+      font-family: 'Assistant';
+      font-style: normal;
+      font-weight: 600;
+      font-size: 17px;
+      text-align: center;
+      letter-spacing: -0.01em;
+      color: #FFFFFF;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 0px 10px;
+      cursor: pointer;
+      .mat-icon{
+        position: absolute;
+        left: 6px;
+        top: 7px;
+        height: 20px;
+        width: auto;
+      }
+    }
+
     @include panelDD($right, $left, auto, 0, auto, auto, auto, auto);
 
+
     .panelDD.accountsPanel {
+
+
       > ul {
         max-height: 400px;
         overflow-y: scroll;
@@ -1220,6 +1252,162 @@
         .outdated {
           color: $base-red;
           font-size: small;
+        }
+      }
+
+
+      &.cardsPanelCurreny {
+        width: 294px;
+        height: auto;
+        min-height: 248px;
+
+        &.statusesPanelArr {
+          width: 339px;
+          height: 529px;
+          min-height: auto;
+          left: 0;
+          right: unset;
+          box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.25);
+
+          label {
+            font-size: 16px !important;
+            font-weight: 600;
+          }
+
+          ul.scroll-chrome {
+            max-height: unset;
+            padding-right: 26px;
+            padding-top: 5px;
+          }
+
+          .allCreditCards {
+            label {
+              font-weight: 600;
+              font-size: 16px;
+            }
+            &:not(:first-child) {
+              margin-top: 10px;
+            }
+          }
+
+          .currenciesList {
+            min-height: 54px;
+            padding-right: 26px;
+
+            label {
+              font-weight: 600;
+              font-size: 16px;
+              margin-right: 10px;
+            }
+
+            &.active {
+              label {
+                font-weight: 700 !important;
+              }
+            }
+          }
+        }
+
+        li > ul {
+          padding: 0;
+        }
+
+        li label img {
+          margin-left: 10px;
+          margin-right: 0px;
+          width: 17.27px;
+        }
+
+        .currenciesList {
+          display: flex;
+          align-items: center;
+          padding: 0px 5px;
+          border-bottom: 1px solid #EAEAEA;
+          flex-wrap: wrap;
+          justify-content: flex-start;
+          min-height: 60px;
+          overflow: hidden;
+
+          button {
+            border: 1px solid #02225C;
+            border-radius: 2px;
+            padding: 0px 6px;
+            height: 20px;
+            background: #ffffff;
+            text-align: center;
+            color: #02225C;
+            outline: none;
+            font-family: 'Assistant';
+            font-style: normal;
+            font-weight: 400;
+            font-size: 15px;
+            cursor: pointer;
+            line-height: normal;
+            margin: 4px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-sizing: content-box;
+
+            &:hover, &.active {
+              color: #ffffff;
+              background: #02225C;
+            }
+          }
+        }
+
+        ul.scroll-chrome {
+          max-height: 436px;
+
+          > li {
+            margin-bottom: 10px;
+          }
+        }
+
+        .allCreditCards {
+          label {
+            font-weight: 400;
+            font-size: 15px;
+          }
+
+          &.active {
+            label {
+              font-weight: 700;
+            }
+          }
+        }
+
+        .accountNickname {
+          p {
+            font-weight: 600;
+            font-size: 14px;
+          }
+        }
+
+        .card {
+          label {
+            font-weight: 600;
+            font-size: 14px;
+            margin-right: 10px;
+          }
+
+          &.active {
+            label {
+              font-weight: 700;
+            }
+          }
+        }
+
+        &.accPanelCurreny {
+          ul.scroll-chrome {
+            > li {
+              margin-bottom: 0px;
+
+              &.card {
+                margin-right: 27px;
+              }
+            }
+          }
         }
       }
     }
@@ -1690,6 +1878,10 @@
 
   .wrap-aggregate {
     position: relative;
+
+    .cdk-virtual-scrollable {
+      overflow-x: hidden;
+    }
 
     .aggregate-columns {
       white-space: nowrap;
@@ -3413,7 +3605,7 @@
           margin: 0 15px;
         }
 
-        p-dropdown {
+        p-dropdown, app-dropdown-wrap {
           &.ng-pristine.ng-invalid.ng-touched {
             > .p-dropdown {
               border-color: $base-red !important;
@@ -3655,7 +3847,6 @@
   }
 
 }
-
 
 
 body {

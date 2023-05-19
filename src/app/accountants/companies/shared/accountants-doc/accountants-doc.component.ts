@@ -23,6 +23,7 @@ import {
     combineLatest,
     defer,
     EMPTY,
+    interval,
     lastValueFrom,
     Observable,
     of,
@@ -38,6 +39,7 @@ import {
     filter,
     map,
     pairwise,
+    retry,
     shareReplay,
     skip,
     startWith,
@@ -48,27 +50,12 @@ import {
 } from 'rxjs/operators';
 import {HierarchyNode, OcrField} from '../hierarchy-node.model';
 import {FileDetails} from '../file-details.model';
-import {
-    AbstractControl,
-    FormArray,
-    FormBuilder,
-    FormControl,
-    FormGroup,
-    ValidationErrors,
-    Validators
-} from '@angular/forms';
+import {AbstractControl, FormArray, FormBuilder, FormControl, FormGroup, ValidationErrors, Validators} from '@angular/forms';
 // import {defaultOptions, PageRenderedEvent} from 'ngx-extended-pdf-viewer';
 import {Dropdown} from 'primeng/dropdown';
 import {Calendar} from 'primeng/calendar';
 import {UserService} from '@app/core/user.service';
-import {
-    HttpClient,
-    HttpErrorResponse,
-    HttpEventType,
-    HttpHeaders,
-    HttpRequest,
-    HttpResponse
-} from '@angular/common/http';
+import {HttpClient, HttpErrorResponse, HttpEventType, HttpHeaders, HttpRequest, HttpResponse} from '@angular/common/http';
 import {GeometryHelperService} from '../geometry-helper.service';
 import {SelectItemGroup} from 'primeng/api/selectitemgroup';
 import {SelectItem} from 'primeng/api';
@@ -89,7 +76,8 @@ import {SharedComponent} from '@app/shared/component/shared.component';
 import {BrowserService} from '@app/shared/services/browser.service';
 import {SharedService} from '@app/shared/services/shared.service';
 import {publishRef} from '@app/shared/functions/publishRef';
-import {getPageHeight} from "@app/shared/functions/getPageHeight";
+import {getPageHeight} from '@app/shared/functions/getPageHeight';
+import {HttpServices} from '@app/shared/services/http.services';
 
 declare var $: any;
 
@@ -229,6 +217,7 @@ export class AccountantsDocComponent
     public cupaAllTheOptions_custId: boolean = false;
     companyCustomerDetails$: Observable<any>;
     showSplit = false;
+    splitDisabled = false;
     isMatah = false;
     loadTime = true;
     currencySign: any = false;
@@ -266,6 +255,7 @@ export class AccountantsDocComponent
     alerstIdsArr: any = [];
     showDoubleSuspect: any = false;
     activeFieldName: boolean = false;
+    unionResTemp: unknown = null;
     activeField: {
         field: OcrField;
         element: Element | any;
@@ -301,6 +291,9 @@ export class AccountantsDocComponent
         backwardLink: string;
     }>(null);
     public showAlertHideAllFields = false;
+    public splitContentModal: any = false;
+    public changeDegrees: any = false;
+
     cachedContent$: Observable<Array<Observable<null | Blob>>>;
     currentPageCachedContent$: Observable<null | Blob>;
     timeForChangePos: any;
@@ -433,8 +426,16 @@ export class AccountantsDocComponent
         'אחר',
         'חשבונית זיכוי'
     ];
+    splitImagesOuputSrc: any = false;
+    urlsFiles: any;
+    public fileUploadProgress = false;
+    public progress: any;
+    private _window = typeof window === 'object' && window ? window : null;
+    public indexFileTimer = 0;
+    public progressAll = new Subject<number>();
 
     constructor(
+        public httpServices: HttpServices,
         private route: ActivatedRoute,
         private ocrService: OcrService,
         private changeDetectorRef: ChangeDetectorRef,
@@ -735,7 +736,7 @@ export class AccountantsDocComponent
                         }),
                         take(1)
                     )
-                    .subscribe((response:any) => {
+                    .subscribe((response: any) => {
                         const bodyRes = response ? response['body'] : response;
                         const statusRes = response ? response.status : response;
                         if (statusRes === 422) {
@@ -747,7 +748,7 @@ export class AccountantsDocComponent
                                 this.goToRow.emit({
                                     refresh: true,
                                     response: this._fileScanView.fileId
-                                })
+                                });
                             }
                             return;
                         }
@@ -807,7 +808,7 @@ export class AccountantsDocComponent
                                 this.goToRow.emit({
                                     refresh: true,
                                     response: this._fileScanView.fileId
-                                })
+                                });
                             }
                         }
                     });
@@ -847,7 +848,7 @@ export class AccountantsDocComponent
     public _fileScanView: any;
 
     @Input()
-    set fileScanView(file: any) {
+    set zFileScanView(file: any) {
         this.setFile(file);
     }
 
@@ -1046,7 +1047,7 @@ export class AccountantsDocComponent
 
     get isWindows() {
         return (
-            window.navigator['userAgentData']['platform'] === "Windows"
+            window.navigator['userAgentData']['platform'] === 'Windows'
         );
     }
 
@@ -1200,7 +1201,7 @@ export class AccountantsDocComponent
     getPageHeightFunc(value: any) {
         setTimeout(() => {
             return getPageHeight(value);
-        }, 0)
+        }, 0);
     }
 
     setDefOpt_maamCustids() {
@@ -1220,7 +1221,7 @@ export class AccountantsDocComponent
             if (custId2 || custId6 || custId30) {
                 this.userService.appData.userData.maamCustids.forEach(it => {
                     it['disabled'] = (it.value === custId2) || (it.value === custId6) || (it.value === custId30);
-                })
+                });
             }
         }
     }
@@ -1244,7 +1245,7 @@ export class AccountantsDocComponent
             if (custId2 || custId22 || custId30) {
                 arr.forEach(it => {
                     it['disabled'] = (it.custId === custId2) || (it.custId === custId22) || (it.custId === custId30);
-                })
+                });
             }
             if (arr.find(it => it.isHistory)) {
                 arr.unshift({
@@ -1257,7 +1258,7 @@ export class AccountantsDocComponent
                     id: null,
                     hashCartisCodeId: 1,
                     isHistory: true
-                })
+                });
             }
         }
         if (
@@ -1305,7 +1306,7 @@ export class AccountantsDocComponent
             if (custId6 || custId22 || custId30) {
                 arrBuilder.forEach(it => {
                     it['disabled'] = (it.custId === custId6) || (it.custId === custId22) || (it.custId === custId30);
-                })
+                });
             }
         }
         if (numDD === 30) {
@@ -1325,7 +1326,7 @@ export class AccountantsDocComponent
             if (custId6 || custId22 || custId2) {
                 arrBuilder.forEach(it => {
                     it['disabled'] = (it.custId === custId6) || (it.custId === custId22) || (it.custId === custId2);
-                })
+                });
             }
             arrBuilder.unshift({
                 cartisName: null,
@@ -1336,7 +1337,7 @@ export class AccountantsDocComponent
                 hp: null,
                 id: null,
                 isHistory: false
-            })
+            });
         }
 
         return arrBuilder;
@@ -1346,16 +1347,37 @@ export class AccountantsDocComponent
         this.arrOption6Saved = JSON.parse(JSON.stringify(this.arrOption6));
     }
 
+    trackByUniqueId(index: number, val: any): any {
+        return String(val.custId) + '_' + index;
+    }
+
+    filterFuncReset(event: any, ddCategories: any) {
+        if (event.filter) {
+            if (ddCategories.scroller) {
+                setTimeout(() => {
+                    // ddCategories.scroller.contentStyle.transform = 'translate3d(0px, 0px, 0)';
+                    // ddCategories.scroller.contentEl.style.transform = 'translate3d(0px, 0px, 0px)';
+                    // ddCategories.scroller.scrollTo({top: 0});
+                }, 0);
+            }
+        } else {
+            ddCategories.resetFilter();
+            if (ddCategories.scroller) {
+                // ddCategories.scroller.scrollTo({top: 0});
+            }
+        }
+    }
+
     filterFunc(event: any, ddCategories: any) {
         if (event.filter) {
             const categoriesSaved = JSON.parse(JSON.stringify(this.arrOption6Saved));
-            const categoriesFiltered = categoriesSaved.filter(it => it.custId.includes(event.filter) || it.lName.includes(event.filter));
+            const categoriesFiltered = categoriesSaved.filter(it => it.custId && it.custId.includes(event.filter) || (it.lName && it.lName.includes(event.filter)));
             const transTypeRegular = categoriesFiltered.filter((it) => !it.isHistory);
             const transTypeHistory = categoriesFiltered.filter((it) => it.isHistory && !it.title);
             if (transTypeHistory.length) {
                 transTypeHistory.forEach(v => {
                     v.isLastHistory = false;
-                })
+                });
                 transTypeHistory[transTypeHistory.length - 1].isLastHistory = true;
                 transTypeHistory.unshift({
                     disabled: true,
@@ -1367,17 +1389,27 @@ export class AccountantsDocComponent
                     title: true,
                     hashCartisCodeId: 1,
                     isHistory: true
-                })
+                });
                 transTypeRegular.unshift(...transTypeHistory);
             }
             this.arrOption6 = transTypeRegular;
             ddCategories.options = this.arrOption6;
             ddCategories.optionsToDisplay = this.arrOption6;
+            if (ddCategories.scroller) {
+                setTimeout(() => {
+                    // ddCategories.scroller.contentStyle.transform = 'translate3d(0px, 0px, 0)';
+                    // ddCategories.scroller.contentEl.style.transform = 'translate3d(0px, 0px, 0px)';
+                    // ddCategories.scroller.scrollTo({top: 0});
+                }, 10);
+            }
         } else {
             this.arrOption6 = JSON.parse(JSON.stringify(this.arrOption6Saved));
             ddCategories.resetFilter();
             ddCategories.options = this.arrOption6;
             ddCategories.optionsToDisplay = this.arrOption6;
+            if (ddCategories.scroller) {
+                // ddCategories.scroller.scrollTo({top: 0});
+            }
         }
     }
 
@@ -1882,7 +1914,7 @@ export class AccountantsDocComponent
             ]
         ).pipe(
             tap(() => {
-                console.log('navigatorData$')
+                console.log('navigatorData$');
 
                 // for (let i = this.sumsExcludeIncludeAndVat.controls.length - 1; i >= 0; --i) {
                 //     this.sumsExcludeIncludeAndVat.removeAt(i);
@@ -1895,13 +1927,24 @@ export class AccountantsDocComponent
                 this.showDoubleSuspect = false;
                 this.currentPage.next(1);
             }),
-            switchMap(() =>
-
-                this.ocrService['requestFileDetails']({
-                    fileId: this._fileScanView.fileId
-                })
-            ),
+            switchMap(() => {
+                if (
+                    !this.unionResTemp
+                ) {
+                    return this.ocrService['requestFileDetails']({
+                        fileId: this._fileScanView.fileId
+                    });
+                } else {
+                    return of({
+                        body: this.unionResTemp,
+                        status: 200
+                    });
+                }
+            }),
             map((response: any) => {
+                if (this.unionResTemp) {
+                    this.unionResTemp = null;
+                }
                 if (response && !response.error) {
                     const bodyRes = response ? response['body'] : response;
                     const statusRes = response ? response.status : response;
@@ -1913,7 +1956,7 @@ export class AccountantsDocComponent
                             this.goToRow.emit({
                                 refresh: true,
                                 response: this._fileScanView.fileId
-                            })
+                            });
                         }
                         return null;
                     }
@@ -2314,7 +2357,7 @@ export class AccountantsDocComponent
 
         this.fileDetails$.pipe(
             switchMap((fileDetails) => {
-                console.log('fileDetails$')
+                console.log('fileDetails$');
                 this.fileDetails = fileDetails;
                 if (!fileDetails || !Array.isArray(fileDetails.pages)) {
                     return of([]);
@@ -4382,16 +4425,17 @@ export class AccountantsDocComponent
                     if (sidebarImgsDescList.invoices || sidebarImgsDescList.payments) {
                         this.show_approveActiveCopy = true;
                         setTimeout(() => {
-                            const dragme_exist = (<any>$('body')).children('#dragme').length;
+                            const dragme_exist = (<any>$('.containerPage')).children('#dragme').length;
                             if (!dragme_exist) {
-                                document.body.appendChild(
-                                    document.getElementsByClassName('dragme')[0]
-                                );
+                                // document.body.appendChild(
+                                //     document.getElementsByClassName('dragme')[0]
+                                // );
+                                document.getElementsByClassName('containerPage')[0].appendChild(document.getElementsByClassName('dragme')[0]);
                                 document.getElementsByClassName('dragme')[0]['style'].display =
                                     'block';
-                                (<any>$('#dragme')).draggable({
-                                    containment: 'body'
-                                });
+                                // (<any>$('#dragme')).draggable({
+                                //     containment: 'body'
+                                // });
                             }
                         }, 0);
                     }
@@ -5000,7 +5044,7 @@ export class AccountantsDocComponent
                                 this.goToRow.emit({
                                     refresh: true,
                                     response: this._fileScanView.fileId
-                                })
+                                });
                             }
                             return;
                         }
@@ -5925,8 +5969,8 @@ export class AccountantsDocComponent
         optArr.forEach(option => {
             option['disabled'] = !this.isMaamOpen &&
                 option.value === 'OPEN' &&
-                this.arr.controls.length > 1
-        })
+                this.arr.controls.length > 1;
+        });
         return optArr;
     }
 
@@ -5946,8 +5990,8 @@ export class AccountantsDocComponent
                     this.arr.controls[i].get('indexData').value
                         .custId &&
                     this.arr.controls[i].get('indexData').value
-                        .custId === item.custId)
-        })
+                        .custId === item.custId);
+        });
         return optArr;
     }
 
@@ -5968,8 +6012,8 @@ export class AccountantsDocComponent
                     (arr.controls[i].get('orderType').value ===
                     'OPEN'
                         ? item.value
-                        : item.custId)))
-        })
+                        : item.custId)));
+        });
         return optArr;
     }
 
@@ -5985,8 +6029,8 @@ export class AccountantsDocComponent
                     arr.controls[i].get('indexData').value
                         .custId &&
                     arr.controls[i].get('indexData').value
-                        .custId === item.custId))
-        })
+                        .custId === item.custId));
+        });
         return optArr;
     }
 
@@ -6007,8 +6051,8 @@ export class AccountantsDocComponent
                     arr.controls[i].get('custData').value
                         .custId &&
                     arr.controls[i].get('custData').value
-                        .custId === item.custId))
-        })
+                        .custId === item.custId));
+        });
         return optArr;
     }
 
@@ -6034,8 +6078,8 @@ export class AccountantsDocComponent
                     arrReceipt.controls[i].get('taxDeductionCustId')
                         .value.custId &&
                     arrReceipt.controls[i].get('taxDeductionCustId')
-                        .value.custId === item.custId))
-        })
+                        .value.custId === item.custId));
+        });
         return optArr;
     }
 
@@ -6060,8 +6104,8 @@ export class AccountantsDocComponent
                     arrReceipt.controls[i].get('taxDeductionCustId')
                         .value.custId &&
                     arrReceipt.controls[i].get('taxDeductionCustId')
-                        .value.custId === item.custId))
-        })
+                        .value.custId === item.custId));
+        });
         return optArr;
     }
 
@@ -6086,8 +6130,8 @@ export class AccountantsDocComponent
                     arrReceipt.controls[i].get('paymentCustId')
                         .value.custId &&
                     arrReceipt.controls[i].get('paymentCustId')
-                        .value.custId === item.custId))
-        })
+                        .value.custId === item.custId));
+        });
         return optArr;
     }
 
@@ -6188,7 +6232,7 @@ export class AccountantsDocComponent
 
         this.ocrService
             .setFileDataIgnore(this.modalDocumentApproveDouble)
-            .subscribe((response:any) => {
+            .subscribe((response: any) => {
                 const bodyRes = response ? response['body'] : response;
                 const statusRes = response ? response.status : response;
                 if (statusRes === 422) {
@@ -6200,7 +6244,7 @@ export class AccountantsDocComponent
                         this.goToRow.emit({
                             refresh: this.fileChange,
                             response: this._fileScanView.fileId
-                        })
+                        });
                     }
                 }
 
@@ -6295,12 +6339,25 @@ export class AccountantsDocComponent
 
     setActiveField(
         fld: OcrField,
-        htmlElement: HTMLElement,
-        abstractControl: AbstractControl
+        htmlElement: any,
+        abstractControl: AbstractControl,
+        setFocus?: any
     ) {
+        if (setFocus) {
+            this.focusInput[setFocus] = true;
+        }
         this.getSizeAllImgs();
         this.activeWord = null;
-        const file = fld;
+        let fldOver = false;
+        if (abstractControl.value.fieldId === 27) {
+            this.fileDetailsSave.fieldsHierarchy.forEach(cat => {
+                const fldOverF = cat.fields.find(it => it.fieldId === 27);
+                if (fldOverF) {
+                    fldOver = fldOverF;
+                }
+            });
+        }
+        const file = fldOver ? fldOver : fld;
         setTimeout(() => {
             if (
                 !abstractControl ||
@@ -6314,7 +6371,6 @@ export class AccountantsDocComponent
                 fld &&
                 file.fieldId !== 1 &&
                 file.fieldId !== 999 &&
-                file.fieldId !== 25 &&
                 !fld['valueTypeOv']
             ) {
                 if (
@@ -6323,6 +6379,7 @@ export class AccountantsDocComponent
                             file.fieldId === 17 ||
                             file.fieldId === 18) &&
                         !this.fileDetailsSave.matahSums) ||
+                    file.fieldId === 25 ||
                     file.fieldId === 33
                 ) {
                     setTimeout(() => {
@@ -6333,9 +6390,10 @@ export class AccountantsDocComponent
 
                 let fileObj;
                 if (
-                    (file.fieldId === 17 || file.fieldId === 18) &&
+                    (file.fieldId === 17 || file.fieldId === 18 || file.fieldId === 27 || file.fieldId === 16) &&
                     this.fileDetailsSave.matahSums
                 ) {
+
                     // if (this.focusInput['24']) {
                     //     // @ts-ignore
                     //
@@ -6347,24 +6405,33 @@ export class AccountantsDocComponent
                         if (baseElement.length) {
                             const idFocused = document.activeElement.id;
                             if (idFocused) {
-                                const inputEditable =
-                                    baseElement[
-                                        idFocused === (file.fieldId === 17 ? '24' : '29') ? 0 : 1
-                                        ];
-                                const id = inputEditable.getAttribute('id');
-                                if (id === (file.fieldId === 17 ? '24' : '29')) {
-                                    fileObj = Object.assign({}, file);
-                                    fileObj.fieldId = file.fieldId === 17 ? 24 : 29;
+                                if (file.fieldId === 27 || file.fieldId === 16) {
+                                    const inputEditable = document.getElementById(file.fieldId.toString());
+                                    if (inputEditable) {
+                                        inputEditable.focus();
+                                    }
+                                } else {
+                                    const inputEditable =
+                                        baseElement[
+                                            idFocused === (file.fieldId === 17 ? '24' : '29') ? 0 : 1
+                                            ];
+                                    const id = inputEditable.getAttribute('id');
+                                    if (id === (file.fieldId === 17 ? '24' : '29')) {
+                                        fileObj = Object.assign({}, file);
+                                        fileObj.fieldId = file.fieldId === 17 ? 24 : 29;
+                                    }
+                                    inputEditable.focus();
                                 }
-                                inputEditable.focus();
+
                             }
                         }
 
                         this.activeFieldName = false;
 
+
                         this.activeField = {
                             field: fileObj ? fileObj : file,
-                            element: htmlElement,
+                            element: ((file.fieldId === 27 || file.fieldId === 16) && this.fileDetailsSave.matahSums) ? document.getElementById('fieldListItem_16') : htmlElement,
                             formGroup: abstractControl as FormGroup
                         };
 
@@ -6380,6 +6447,14 @@ export class AccountantsDocComponent
                                                 ? 0
                                                 : 1
                                             ];
+                                    inputEditable.focus();
+                                }
+                            }, 600);
+                        }
+                        if (file.fieldId === 27 || file.fieldId === 16) {
+                            setTimeout(() => {
+                                const inputEditable = document.getElementById(file.fieldId.toString());
+                                if (inputEditable) {
                                     inputEditable.focus();
                                 }
                             }, 600);
@@ -6751,41 +6826,55 @@ export class AccountantsDocComponent
 
     zoomBestFit() {
         if (this.pageImages && this.pageImages.length) {
-            const parentRect =
-                this.pageImages.first.nativeElement.parentElement.getBoundingClientRect();
-
-            const wScale =
-                Math.min(parentRect.width, 1200) /
-                this.pageImages.first.nativeElement.width;
-            const hScale =
-                parentRect.height / this.pageImages.first.nativeElement.height;
-            // Math.max(wScale, hScale);
-
-            // this.imageScale = (parentRect.width * 0.95) / invoiceImage.width;
-            this.imageScale = Math.min(wScale, hScale);
-            this.getSizeAllImgs();
+            this.imageScale = 1;
+            this.zoomBestFitBase(true);
+            // const parentRect =
+            //     this.pageImages.first.nativeElement.parentElement.getBoundingClientRect();
+            //
+            // const wScale =
+            //     Math.min(parentRect.width, 1200) /
+            //     this.pageImages.first.nativeElement.width;
+            // const hScale =
+            //     parentRect.height / this.pageImages.first.nativeElement.height;
+            // // Math.max(wScale, hScale);
+            //
+            // // this.imageScale = (parentRect.width * 0.95) / invoiceImage.width;
+            // this.imageScale = Math.min(wScale, hScale);
         }
     }
 
-    zoomBestFitBase() {
+    zoomBestFitBase(reset?: boolean) {
         // console.log('-------------------------------------------------------------zoomBestFitBase');
         if (this.pageImages && this.pageImages.length) {
-            const parentRect =
-                this.pageImages.first.nativeElement.parentElement.getBoundingClientRect();
-            const wScale =
-                Math.min(parentRect.width, 1200) /
-                this.pageImages.first.nativeElement.width;
-            const hScale =
-                parentRect.height / this.pageImages.first.nativeElement.height;
-            const imageScale = Math.min(wScale, hScale);
-            if (this.imageScale === 1) {
+            if (reset) {
+                const wrapImg = document.querySelector('.scroll-chrome-doc-wrap');
+                const wScale =
+                    Math.min(wrapImg.clientWidth, 1200) /
+                    this.pageImages.first.nativeElement.naturalWidth;
+                // const hScale =
+                //     wrapImg.clientHeight / this.pageImages.first.nativeElement.naturalHeight;
+                const imageScale = wScale;
                 const newImageScale = imageScale + 0.1 * Math.sign(-1);
-                if (newImageScale > 1.2 || newImageScale < 0.2) {
-                    this.imageScale = imageScale;
-                } else {
-                    this.imageScale = newImageScale;
+                this.imageScale = newImageScale;
+            } else {
+                const parentRect =
+                    this.pageImages.first.nativeElement.parentElement.getBoundingClientRect();
+                const wScale =
+                    Math.min(parentRect.width, 1200) /
+                    this.pageImages.first.nativeElement.width;
+                const hScale =
+                    parentRect.height / this.pageImages.first.nativeElement.height;
+                const imageScale = Math.min(wScale, hScale);
+                if (this.imageScale === 1) {
+                    const newImageScale = imageScale + 0.1 * Math.sign(-1);
+                    if (newImageScale > 1.2 || newImageScale < 0.2) {
+                        this.imageScale = imageScale;
+                    } else {
+                        this.imageScale = newImageScale;
+                    }
                 }
             }
+
 
             this.getSizeAllImgs();
         }
@@ -7436,17 +7525,17 @@ export class AccountantsDocComponent
                         'yy/MM/D',
                         'yy.MM.D',
                         'yy-MM-D',
-                        "yyyy/DD/MMM'",
-                        "yyyy.DD.MMM'",
-                        "yyyy-DD-MMM'",
-                        "yyyy/MMM/DD'",
-                        "yyyy.MMM.DD'",
-                        "yyyy-MMM-DD'",
-                        "yyyy,MMM,DD'",
-                        "yyyy/D/MMM'",
-                        "yyyy.D.MMM'",
-                        "yyyy-D-MMM'",
-                        "yyyy,D,MMM'",
+                        'yyyy/DD/MMM\'',
+                        'yyyy.DD.MMM\'',
+                        'yyyy-DD-MMM\'',
+                        'yyyy/MMM/DD\'',
+                        'yyyy.MMM.DD\'',
+                        'yyyy-MMM-DD\'',
+                        'yyyy,MMM,DD\'',
+                        'yyyy/D/MMM\'',
+                        'yyyy.D.MMM\'',
+                        'yyyy-D-MMM\'',
+                        'yyyy,D,MMM\'',
                         'yyyy/MMM/D',
                         'yyyy.MMM.D',
                         'yyyy-MMM-D',
@@ -7518,7 +7607,7 @@ export class AccountantsDocComponent
                             .endOf('year')
                             .endOf('day')
                             .toDate());
-                        if(!isLateThanYear){
+                        if (!isLateThanYear) {
                             this.inlineEditorForm.setErrors({
                                 shouldNotLateThanYearDate: true
                             });
@@ -7536,7 +7625,7 @@ export class AccountantsDocComponent
                             .endOf('year')
                             .endOf('day')
                             .toDate());
-                        if(!isLateThanYear){
+                        if (!isLateThanYear) {
                             this.inlineEditorForm.setErrors({
                                 shouldNotLateThanYearDate: true
                             });
@@ -7595,7 +7684,7 @@ export class AccountantsDocComponent
                 }
 
                 this.focusInput[ocrField.fieldId] = ocrField.fieldId !== 33;
-                if ([13, 11, 16, 17, 15, 7, 18].includes(ocrField.fieldId)) {
+                if ([13, 11, 16, 17, 15, 7, 18, 25].includes(ocrField.fieldId)) {
                     const pageIndex = value.fieldPage - 1;
                     const pageWords =
                         Array.isArray(this.visionResultsArr) &&
@@ -7727,6 +7816,7 @@ export class AccountantsDocComponent
 
                     let outputWidth = imageBase64.width;
                     let outputHeight = imageBase64.height;
+
                     if (outputWidth > outputHeight && fileDetails.pages.length === 1) {
                         doc = new jsPDF({
                             orientation: 'l',
@@ -7743,13 +7833,12 @@ export class AccountantsDocComponent
                             imageBase64.height > imageBase64.width
                                 ? imageBase64.width / imageBase64.height
                                 : imageBase64.height / imageBase64.width;
-                        if (imageBase64.width > width) {
-                            outputWidth = width;
-                            outputHeight = width / inputImageAspectRatio;
-                        }
                         if (imageBase64.height > height) {
                             outputHeight = height;
                             outputWidth = height * inputImageAspectRatio;
+                        } else  if (imageBase64.width > width) {
+                            outputWidth = width;
+                            outputHeight = width / inputImageAspectRatio;
                         }
                     }
 
@@ -7833,7 +7922,7 @@ export class AccountantsDocComponent
                 flag: newFlagValue,
                 note: fileDetails.note
             })
-            .subscribe((response:any) => {
+            .subscribe((response: any) => {
                 this.fileChange = true;
                 fileDetails.flag = newFlagValue;
                 // this.docsCenterComponent.companiesSummaryForceReload$.next();
@@ -7849,7 +7938,7 @@ export class AccountantsDocComponent
                         this.goToRow.emit({
                             refresh: this.fileChange,
                             response: this._fileScanView.fileId
-                        })
+                        });
                     }
                 }
             });
@@ -11436,6 +11525,8 @@ export class AccountantsDocComponent
                 },
                 0
             );
+
+
             if (
                 Object.values(this.arr.controls).some((fc) => {
                     const valReq = {
@@ -11448,8 +11539,8 @@ export class AccountantsDocComponent
                             fc.get('totalIncludedMaam').enabled &&
                             (fc.get('totalIncludedMaam').invalid ||
                                 Number(fc.get('totalIncludedMaam').value) <= 0),
-                        totalMaam:
-                            fc.get('orderType').value === 'OPEN' &&
+                        totalMaam: fc.get('orderType').value === 'NONE' ? false
+                            : (fc.get('orderType').value === 'OPEN' &&
                             toFixedNumber(Number(sumsTotals)) ===
                             toFixedNumber(
                                 Number(
@@ -11460,7 +11551,7 @@ export class AccountantsDocComponent
                                 ? false
                                 : fc.get('totalMaam').enabled &&
                                 (fc.get('totalMaam').invalid ||
-                                    Number(fc.get('totalMaam').value) <= 0),
+                                    Number(fc.get('totalMaam').value) <= 0)),
                         totalWithoutMaam:
                             fc.get('totalWithoutMaam').enabled &&
                             (fc.get('totalWithoutMaam').invalid ||
@@ -14556,6 +14647,7 @@ export class AccountantsDocComponent
     }
 
     filesSplit(pages) {
+        this.splitDisabled = true;
         //console.log(pages);
         const pagesContainer = [];
         pages.forEach((page, idx) => {
@@ -14577,8 +14669,9 @@ export class AccountantsDocComponent
                 childrenIdsLists: pagesContainer,
                 fileId: this._fileScanView.fileId
             })
-            .subscribe((response:any) => {
+            .subscribe((response: any) => {
                 this.showSplit = false;
+                this.splitDisabled = false;
                 const bodyRes = response ? response['body'] : response;
                 const statusRes = response ? response.status : response;
                 if (statusRes === 422) {
@@ -14590,7 +14683,7 @@ export class AccountantsDocComponent
                         this.goToRow.emit({
                             refresh: this.fileChange,
                             response: this._fileScanView.fileId
-                        })
+                        });
                     }
                     return;
                 }
@@ -14718,7 +14811,6 @@ export class AccountantsDocComponent
         if (this.rotateFile$) {
             this.rotateFile$.unsubscribe();
         }
-
         const dataURL: string = this.getRotatedImage(page.rotate, {
             degree: page.rotate.degree
         });
@@ -14730,41 +14822,89 @@ export class AccountantsDocComponent
             type: 'image/jpeg',
             lastModified: lastModifiedDate.getTime()
         });
-        this.imageReplaceUrl$ = this.ocrService.imageReplaceUrl(fileName).subscribe((response: any) => {
+        this.imageReplaceUrl$ = this.ocrService[page.rotate.notRotated ? 'imageReplaceUrls' : 'imageReplaceUrl'](fileName).subscribe((response: any) => {
             const urlToUploadFile = response ? response['body'] : response;
-            const req = new HttpRequest('PUT', urlToUploadFile, file, {
-                headers: new HttpHeaders({
-                    'Content-Type': file.type
-                }),
-                reportProgress: true
-            });
-            const progress = new Subject<number>();
-            progress.next(0);
-            this.uploadNewRotate$ = this.http.request(req).subscribe((event) => {
-                if (event.type === HttpEventType.UploadProgress) {
-                    const percentDone = Math.round((100 * event.loaded) / event.total);
-                    progress.next(percentDone);
-                } else if (event instanceof HttpResponse) {
-                    progress.complete();
-                    this.rotateFile$ = this.ocrService.rotateFile({
-                        'angle': page.rotate.degree,
-                        'fileId': fileName
-                    }).subscribe(() => {
-                        this.reload();
+            if (page.rotate.notRotated && urlToUploadFile && Array.isArray(urlToUploadFile) && urlToUploadFile.length) {
+                for (let idx = 0; idx < urlToUploadFile.length; idx++) {
+                    const req = new HttpRequest('PUT', urlToUploadFile[idx], file, {
+                        headers: new HttpHeaders({
+                            'Content-Type': file.type
+                        }),
+                        reportProgress: true
                     });
-                    // const locationsSubscription = this.fileDetails$.subscribe((items) => {
-                    //     if (locationsSubscription) {
-                    //         locationsSubscription.unsubscribe();
-                    //     } else {
-                    //         items.pages[index].contentUrl = dataURL;
-                    //         this.forceReload$.next();
-                    //     }
-                    // });
+                    const progress = new Subject<number>();
+                    progress.next(0);
+                    const uploadNewRotate = this.http.request(req)
+                        .pipe(
+                            retry({
+                                count: 3,
+                                delay: 1500
+                            })
+                        ).subscribe((event) => {
+                            if (event.type === HttpEventType.UploadProgress) {
+                                const percentDone = Math.round((100 * event.loaded) / event.total);
+                                progress.next(percentDone);
+                            } else if (event instanceof HttpResponse) {
+                                progress.complete();
+                                if (idx + 1 === urlToUploadFile.length) {
+                                    this.reload();
+                                }
+                                if (uploadNewRotate) {
+                                    uploadNewRotate.unsubscribe();
+                                }
+                            }
+                        });
+                    progress.subscribe((num) => {
+                        console.log('progress: ', num);
+                    });
                 }
-            });
-            progress.subscribe((num) => {
-                console.log('progress: ', num);
-            });
+            } else {
+                const req = new HttpRequest('PUT', urlToUploadFile, file, {
+                    headers: new HttpHeaders({
+                        'Content-Type': file.type
+                    }),
+                    reportProgress: true
+                });
+                const progress = new Subject<number>();
+                progress.next(0);
+                this.uploadNewRotate$ = this.http.request(req)
+                    .pipe(
+                        retry({
+                            count: 3,
+                            delay: 1500
+                        })
+                    ).subscribe((event) => {
+                        if (event.type === HttpEventType.UploadProgress) {
+                            const percentDone = Math.round((100 * event.loaded) / event.total);
+                            progress.next(percentDone);
+                        } else if (event instanceof HttpResponse) {
+                            progress.complete();
+                            if (!page.rotate.notRotated) {
+                                this.rotateFile$ = this.ocrService.rotateFile({
+                                    'angle': page.rotate.degree,
+                                    'fileId': fileName
+                                }).subscribe(() => {
+                                    this.reload();
+                                });
+                            } else {
+                                this.reload();
+                            }
+
+                            // const locationsSubscription = this.fileDetails$.subscribe((items) => {
+                            //     if (locationsSubscription) {
+                            //         locationsSubscription.unsubscribe();
+                            //     } else {
+                            //         items.pages[index].contentUrl = dataURL;
+                            //         this.forceReload$.next();
+                            //     }
+                            // });
+                        }
+                    });
+                progress.subscribe((num) => {
+                    console.log('progress: ', num);
+                });
+            }
+
         });
         // debugger
         let locationsSubscription = null;
@@ -14792,7 +14932,7 @@ export class AccountantsDocComponent
             .deleteInvoice({
                 uuid: fileId
             })
-            .subscribe((response:any) => {
+            .subscribe((response: any) => {
                 // if (this.deleteInvoiceModal === 'fileId') {
                 //     this.refreshBack.emit(true);
                 //     const navData = this.navigatorData$.getValue();
@@ -14814,7 +14954,7 @@ export class AccountantsDocComponent
                         this.goToRow.emit({
                             refresh: this.fileChange,
                             response: this._fileScanView.fileId
-                        })
+                        });
                     }
                     return;
                 }
@@ -15368,22 +15508,30 @@ export class AccountantsDocComponent
                 const statusRes = res ? res.status : res;
                 if (statusRes === 422 || response) {
                     this.fileChange = true;
-                    if (response.redoFor || response) {
-                        this._fileScanView.fileId = response || response.redoFor;
+                    if (response.redoFor) {
+                        this._fileScanView.fileId = response.redoFor;
                         this.setFile(this._fileScanView);
                     } else {
-                        this.goToRow.emit({
-                            refresh: this.fileChange,
-                            response: this._fileScanView.fileId
-                        })
+                        this._fileScanView.fileId = response.fileId;
+                        if (response.status !== 'WAIT_FOR_CONFIRM') {
+                            // this.returnBack.emit(this.fileChange);
+                            this.goToRow.emit({
+                                refresh: this.fileChange,
+                                response: this._fileScanView.fileId
+                            });
+                        } else {
+                            this.unionResTemp = response;
+                            this.refreshBack.emit(true);
+                            this.forceReload$.next();
+                        }
                     }
                     return;
                 }
 
-                this.goToRow.emit({
-                    refresh: true,
-                    response: response
-                });
+                // this.goToRow.emit({
+                //     refresh: true,
+                //     response: response
+                // });
             });
     }
 
@@ -15500,8 +15648,9 @@ export class AccountantsDocComponent
                     // console.log('details listener called');
                     const eventPath = BrowserService.pathFrom($event);
                     // console.log('Checking if should terminate edit: %o', eventPath);
+
                     const shouldTerminateEdit =
-                        eventPath[0].classList.contains('p-dialog-mask');
+                        eventPath[eventPath.length > 1 ? (eventPath.length - 1) : 0].classList.contains('p-dialog-mask');
                     if (shouldTerminateEdit) {
                         // console.log('Terminating edit (clicked on : %o)', eventPath);
                         this.showDocumentListStorageDataFired = false;
@@ -15586,7 +15735,7 @@ export class AccountantsDocComponent
                         this.goToRow.emit({
                             refresh: this.fileChange,
                             response: this._fileScanView.fileId
-                        })
+                        });
                     }
                     return;
                 }
@@ -16747,6 +16896,305 @@ export class AccountantsDocComponent
         //             this.createFormAfterGetPagesSize(fileDetails);
         //         }
         //     });
+    }
+
+    splitContent() {
+        this.splitContentModal = true;
+
+        this.ocrService.getOriginalDocumentPicture({fileId: this._fileScanView.fileId})
+            .subscribe((response: any) => {
+                const bodyRes = response ? response['body'] : response;
+                let rotate = {
+                    boundaryRad: 0,
+                    image: null
+                };
+                const image = new Image();
+                image.src = bodyRes.contentUrl;
+                image.crossOrigin = 'Anonymous';
+                image.onload = () => {
+                    if (image.height > image.width) {
+                        this.changeDegrees = true;
+                        rotate.boundaryRad = Math.atan(image.width / image.height);
+                        rotate.image = image;
+                        const dataURL: string = this.getRotatedImage(rotate, {
+                            degree: 90
+                        });
+                        this.splitContentModal = dataURL;
+                    } else {
+                        this.changeDegrees = false;
+                        this.splitContentModal = bodyRes.contentUrl;
+                    }
+                };
+            });
+    }
+
+    async splitImagesOuput(arrUrls: any) {
+        // console.log('arrUrls: ', arrUrls);
+        // this.splitContentModal = arrUrls.stageDataURL;
+        this.splitContentModal = false;
+        this.splitImagesOuputSrc = arrUrls.dataURLs;
+        // console.log(arrUrls.stageDataURL);
+        let rotate = {
+            rotate: {
+                boundaryRad: 0,
+                image: null,
+                degree: 0,
+                notRotated: true
+            },
+            fileId: this._fileScanView.fileId
+        };
+        const image = new Image();
+        image.src = arrUrls.stageDataURL;
+        image.crossOrigin = 'Anonymous';
+        image.onload = () => {
+            if (this.changeDegrees) {
+                rotate.rotate.boundaryRad = Math.atan(image.width / image.height);
+                rotate.rotate.image = image;
+                rotate.rotate.degree = 270;
+                // this.buttonClicked.next({
+                //     page: rotate, index: this.currentPage.getValue() - 1
+                // });
+                this.render(rotate, this.currentPage.getValue() - 1);
+            } else {
+                rotate.rotate.boundaryRad = Math.atan(image.width / image.height);
+                rotate.rotate.image = image;
+                this.render(rotate, this.currentPage.getValue() - 1);
+                // this.buttonClicked.next({
+                //     page: rotate, index: this.currentPage.getValue() - 1
+                // });
+            }
+        };
+
+        const files = [];
+        for (let i = 0; i < arrUrls.dataURLs.length; i++) {
+            const fileName = this._fileScanView.fileId + '_' + i;
+            const blob = await this.getFile(arrUrls.dataURLs[i]);
+            const lastModifiedDate = new Date();
+            const file = new File([blob], fileName, {
+                type: 'image/jpeg',
+                lastModified: lastModifiedDate.getTime()
+            });
+            files.push(file);
+        }
+        await this.uploads(files);
+    }
+
+    public uploadToServer(files: any): {
+        [key: string]: { progress: Observable<number> };
+    } {
+        this.progressAll = new Subject<number>();
+        this.progressAll.next(0);
+        const percentDoneTotal = [];
+        const status: { [key: string]: { progress: Observable<number> } } = {};
+        files.forEach((file: any, index) => {
+            file.fileId =
+                this.urlsFiles.links[index].s3UploadUrl.split(
+                    '/'
+                )[4];
+            const req = new HttpRequest(
+                'PUT',
+                this.urlsFiles.links[index].s3UploadUrl,
+                file,
+                {
+                    headers: new HttpHeaders({
+                        'Content-Type': file.type
+                    }),
+                    reportProgress: true
+                }
+            );
+            const progress = new Subject<number>();
+            progress.next(0);
+            this.http.request(req)
+                .pipe(
+                    retry({
+                        count: 3,
+                        delay: 1500
+                    })
+                ).subscribe(
+                {
+                    next: (event) => {
+                        if (event.type === HttpEventType.UploadProgress) {
+                            const percentDone = Math.round((100 * event.loaded) / event.total);
+                            progress.next(percentDone);
+                            percentDoneTotal[index] = percentDone / files.length;
+                            const totalAll = percentDoneTotal.reduce((a, b) => a + b, 0);
+                            // console.log('totalAll: ', totalAll);
+                            this.progressAll.next(Math.round(totalAll));
+                        } else if (event instanceof HttpResponse) {
+                            progress.complete();
+                        }
+                    },
+                    error: (error) => {
+                        const reqServer = new HttpRequest(
+                            'POST',
+                            this.httpServices.mainUrl +
+                            '/v1/ocr/upload-workaround/' +
+                            this.urlsFiles.links[index]
+                                .workaroundUploadUrl,
+                            file,
+                            {
+                                headers: new HttpHeaders({
+                                    'Content-Type': 'application/octet-stream',
+                                    Authorization: this.userService.appData.token
+                                }),
+                                reportProgress: true
+                            }
+                        );
+                        this.http.request(reqServer).subscribe(
+                            (event) => {
+                                if (event.type === HttpEventType.UploadProgress) {
+                                    const percentDone = Math.round(
+                                        (100 * event.loaded) / event.total
+                                    );
+                                    progress.next(percentDone);
+                                    percentDoneTotal[index] = percentDone / files.length;
+                                    const totalAll = percentDoneTotal.reduce((a, b) => a + b, 0);
+                                    // console.log('totalAll: ', totalAll);
+                                    this.progressAll.next(Math.round(totalAll));
+                                } else if (event instanceof HttpResponse) {
+                                    progress.complete();
+                                }
+                            },
+                            (error) => {
+                            }
+                        );
+                    }
+                }
+            );
+
+            status[file.name] = {
+                progress: progress.asObservable()
+            };
+            progress.next(0);
+        });
+        return status;
+    }
+
+    public async uploads(files: any): Promise<any> {
+        this.fileUploadProgress = true;
+        const filesCapture = files;
+        this.urlsFiles = null;
+        // console.log('files', files)
+        this.sharedService
+            .getUploadUrl({
+                companyId: this.userService.appData.userData.companySelect.companyId,
+                files: files.map((item) => {
+                    return {
+                        fileName: item.name,
+                        fileType: item.type,
+                        parent: false
+                    };
+                }),
+                status: 'WAIT_FOR_CARE',
+                originalFileId: this._fileScanView.fileId,
+                folderId: null,
+                expense: null,
+                uploadSource: 'SEPARATED'
+            })
+            .subscribe((response: any) => {
+                this.urlsFiles = response
+                    ? response['body']
+                    : response;
+                console.log('responseFiles', this.urlsFiles);
+                this.progress = this.uploadToServer(filesCapture);
+                // console.log(this.files)
+
+                // const subscriptionTimerGetFilesStatus = interval(5000)
+                //     .pipe(
+                //         startWith(0),
+                //         switchMap(() =>
+                //             this.sharedService.getFilesStatus(
+                //                 files.map((item) => {
+                //                     return item.fileId;
+                //                 })
+                //             )
+                //         )
+                //     )
+                //     .subscribe((responseStatus) => {
+                //         const responseStatusData = responseStatus
+                //             ? responseStatus['body']
+                //             : responseStatus;
+                //         responseStatusData.forEach((item) => {
+                //             const setStatus = files.find(
+                //                 (file) => file.fileId === item.fileId
+                //             );
+                //             if (setStatus && item.status === 'WAIT_FOR_CONFIRM') {
+                //                 setStatus.ready = true;
+                //             }
+                //         });
+                //         // console.log(this.files);
+                //         if (
+                //             files.every((file) => file.ready) ||
+                //             !this.fileUploadProgress
+                //         ) {
+                //             subscriptionTimerGetFilesStatus.unsubscribe();
+                //             if (files.every((file) => file.ready)) {
+                //                 // this.componentRefChild.startChild();
+                //             }
+                //         }
+                //     });
+
+                const preventClose = function (e) {
+                    e.preventDefault();
+                    e.returnValue = '';
+                };
+                this._window.addEventListener('beforeunload', preventClose, true);
+                const subscriptionTimerGetFilesPing = interval(20000)
+                    .pipe(
+                        startWith(0),
+                        switchMap(() =>
+                            this.sharedService.pingProcess(
+                                this.urlsFiles.processId
+                            )
+                        )
+                    )
+                    .subscribe((responseStatus) => {
+                    });
+
+                const allProgressObservables = [];
+                // tslint:disable-next-line:forin
+                for (const key in this.progress) {
+                    // noinspection JSUnfilteredForInLoop
+                    allProgressObservables.push(this.progress[key].progress);
+                }
+
+                this.indexFileTimer = 0;
+                const subscriptionTimer = timer(1000, 1000).subscribe(() => {
+                    if (this.indexFileTimer + 1 >= files.length) {
+                        this.indexFileTimer = 0;
+                    } else {
+                        this.indexFileTimer += 1;
+                    }
+                    // console.log('indexFileTimer: ', this.indexFileTimer);
+                    // console.log('this.files[this.indexFileTimer].name: ', this.files[this.indexFileTimer].name);
+                });
+                // noinspection JSUnusedLocalSymbols
+                zip(...allProgressObservables).subscribe((end) => {
+                    this.progressAll.complete();
+                    subscriptionTimer.unsubscribe();
+                    subscriptionTimerGetFilesPing.unsubscribe();
+                    this._window.removeEventListener('beforeunload', preventClose, true);
+
+                    this.sharedComponent.topNotificationArea.toastTransactionCreationSuccess(
+                        {
+                            duration: 3,
+                            multiple: filesCapture.length > 1,
+                            text:
+                                filesCapture.length +
+                                ' מסמכים הועלו לחברת ' +
+                                this.userService.appData.userData.companySelect.companyName +
+                                ' ועברו לפיענוח'
+                        }
+                    );
+
+                    // afterUpload
+
+                });
+            });
+    }
+
+    splitContentModalClose() {
+        // document.querySelectorAll(".img-pos").forEach(el => el.remove());
     }
 
     private locateUserSearchkeyFrom(

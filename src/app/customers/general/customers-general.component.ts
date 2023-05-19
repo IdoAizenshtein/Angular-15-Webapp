@@ -185,7 +185,7 @@ export class CustomersGeneralComponent implements OnInit, OnDestroy, AfterViewIn
     }
 
     ngOnInit() {
-
+        console.log('')
     }
 
     ngAfterViewInit(): void {
@@ -2560,6 +2560,7 @@ ${acc.accountNickname}
     goToBankMatch() {
         this.userService.appData.userData.bankMatchAccountIdNavigateTo =
             this.userService.appData.userData.accountSelect[0].companyAccountId;
+        this.sharedComponent.mixPanelEvent('match screen');
         this.router.navigate(['/cfl/cash-flow/bankmatch/bank'], {
             queryParamsHandling: 'preserve',
             relativeTo: this.route
@@ -2567,6 +2568,16 @@ ${acc.accountNickname}
     }
 
     goToCheck(val: string) {
+        if(val === 'not_paid'){
+            this.sharedComponent.mixPanelEvent('checks lepiraon');
+        }
+        if(val === 'mishmeret_babank'){
+            this.sharedComponent.mixPanelEvent('checks lemishmeret')
+        }
+        if(val === 'lenicaion'){
+            this.sharedComponent.mixPanelEvent('checks benicayon')
+        }
+
         if (
             val === 'not_paid' &&
             this.userService.appData.userData.companySelect.lite
@@ -2600,6 +2611,9 @@ ${acc.accountNickname}
     }
 
     goToOutCheck(val: string) {
+        if(val === 'mechake_lehafkada'){
+            this.sharedComponent.mixPanelEvent('checks letashlum');
+        }
         if (
             val === 'mechake_lehafkada' &&
             this.userService.appData.userData.companySelect.lite
@@ -2633,6 +2647,7 @@ ${acc.accountNickname}
     }
 
     goToCreditCard() {
+        this.sharedComponent.mixPanelEvent('credits');
         this.storageService.sessionStorageSetter(
             'creditsCard/*-filterCards',
             JSON.stringify(
@@ -2670,6 +2685,7 @@ ${acc.accountNickname}
     }
 
     goToSlika() {
+        this.sharedComponent.mixPanelEvent('slika');
         this.storageService.sessionStorageSetter(
             'slika/*-filterSolkim',
             JSON.stringify(
@@ -2732,7 +2748,7 @@ ${acc.accountNickname}
                 // JSON.stringify({'selectedValue': '0', 'dates': {'selectedValueLast': 30}})
             );
         }
-
+        this.sharedComponent.mixPanelEvent('accounts screen');
         this.applyCurrentAccountsSelectionBeforeNavigation('bankAccount/*');
         this.router.navigate(['/cfl/financialManagement/bankAccount/details'], {
             queryParamsHandling: 'preserve',
@@ -2776,6 +2792,7 @@ ${acc.accountNickname}
     }
 
     exportTransactions(resultFileType: string): void {
+        this.sharedComponent.mixPanelEvent('excel');
         this.reportService
             .getReport(
                 this.filterOperation === 'PAYMENT_DESC'
@@ -2802,11 +2819,13 @@ ${acc.accountNickname}
     }
 
     printPies(contentRoot: HTMLElement): void {
+        this.sharedComponent.mixPanelEvent('print');
         const copyOfElem: any = contentRoot;
         BrowserService.printHtml(copyOfElem, '');
     }
 
     getDetails(item: any, hova: boolean): void {
+        this.sharedComponent.mixPanelEvent((hova ? 'outcomes' : 'incomes') + ' - perut peulot');
         const url = `v1/account/${this.filterOperation}/details`;
         const params = {
             companyAccountIds: this.userService.appData.userData.accountSelect.map(
@@ -2932,6 +2951,7 @@ ${acc.accountNickname}
             'daily/*-filterAcc',
             accountIdToSelect
         );
+        this.sharedComponent.mixPanelEvent('tazrim yomi screen');
         this.router.navigate(['/cfl/cash-flow/daily/details'], {
             queryParamsHandling: 'preserve',
             relativeTo: this.route
@@ -2939,6 +2959,7 @@ ${acc.accountNickname}
     }
 
     loanDetails() {
+        this.sharedComponent.mixPanelEvent('loans');
         this.selectedCompanyAccountIds =
             this.userService.appData.userData.accountSelect.map(
                 (account) => account.companyAccountId
@@ -2995,6 +3016,7 @@ ${acc.accountNickname}
     }
 
     depositDetails() {
+        this.sharedComponent.mixPanelEvent('diposits');
         this.popUpDeposit = {
             styleClass: 'popUpLoansAndDeposit',
             height: 363,
@@ -3331,6 +3353,12 @@ ${acc.accountNickname}
     onUpdateDialogVisibilityChange(state: DialogState) {
         if (state === DialogState.UPDATE_SUCCEEDED) {
             this.tokenStatusPass.tokenStatus = TokenStatus[TokenStatus.InProgress];
+        }
+    }
+
+    sendEvent(isOpened: any) {
+        if (isOpened) {
+            this.sharedComponent.mixPanelEvent('date drop');
         }
     }
 }

@@ -14,7 +14,7 @@
 					[accounts]="userService.appData.userData.accounts"
 			></app-acc-select>
 		</div>
-		
+
 		<!--        <button id="fullScreenToggle-inline" *ngIf="userService?.appData"-->
 		<!--                (click)="userService.appData.inFullScreenMode = !userService.appData.inFullScreenMode;"-->
 		<!--                [ngStyle]="{'top' : userService.appData.inFullScreenMode ? '50px' : '137px'}"-->
@@ -36,7 +36,7 @@
 					class="lite-credentials"
 					matTooltipPosition="below"
 			></app-token-credentials-update-button-lite>
-			
+
 			<ng-container
 					*ngIf="
           !userService?.appData?.userData?.companySelect?.lite &&
@@ -73,7 +73,7 @@
 					<!--</app-token-credentials-update-button>-->
 				</div>
 			</ng-container>
-			
+
 			<ng-template #exceededOrExpectedTo>
 				<ng-container
 						*ngIf="
@@ -141,7 +141,7 @@
                   חשבונות בחריגה&#124;
 
                   <span
-		                  (click)="exceeded_AccountsList.toggle($event)"
+		                  (click)="exceeded_AccountsList.toggle($event); sharedComponent.mixPanelEvent('details button')"
 		                  class="link"
                   >
                     לפרטים
@@ -219,7 +219,7 @@
 	                  }}</strong>
                   חשבונות &#124;
                   <span
-		                  (click)="expectedTo_AccountsList.toggle($event)"
+		                  (click)="expectedTo_AccountsList.toggle($event); sharedComponent.mixPanelEvent('details button')"
 		                  class="link"
                   >
                     לפרטים
@@ -258,7 +258,7 @@
 					</div>
 				</ng-container>
 			</ng-template>
-			
+
 			<ng-template #everythingsFineTmpl>
 				<div
 						*ngIf="!userService?.appData?.userData?.companySelect?.lite"
@@ -278,7 +278,7 @@
 					</div>
 				</div>
 			</ng-template>
-			
+
 			<div
 					*ngIf="!userService?.appData?.userData?.companySelect?.lite"
 					[ngStyle]="{
@@ -291,7 +291,7 @@
 					<img fill ngSrc="/assets/images/statusIcon.png"
 					     style="height: auto; width: auto; position: relative;"/>
 				</div>
-				
+
 				<ng-container
 						*ngIf="
             dataTableAll?.length && nigrarotCount;
@@ -322,7 +322,7 @@
 							}}
 						</div>
 					</ng-container>
-					
+
 					<ng-template #matchAllowed>
 						<div
 								style="
@@ -400,7 +400,7 @@
                   </span>
 								</div>
 							</ng-template>
-							
+
 							<button
 									(click)="goToBankMatch()"
 									[matTooltip]="
@@ -414,12 +414,12 @@
 						</div>
 					</ng-template>
 				</ng-container>
-				
+
 				<ng-template #noNonMatchedTransactionsExist>
 					{{ 'expressions.noNonMatchedTransactionsExist' | translate }}
 				</ng-template>
 			</div>
-			
+
 			<div
 					*ngIf="userService?.appData?.userData?.companySelect?.lite"
 					[ngStyle]="{
@@ -466,7 +466,7 @@
               margin-left: 5px;
             "
 					/>
-					
+
 					<ng-template #passError>
 						<img
 								fill ngSrc="/assets/images/passIconError.png"
@@ -480,9 +480,9 @@
 						/>
 					</ng-template>
 				</div>
-				
+
 				<p>סיסמאות</p>
-				
+
 				<div
 						*ngIf="
             userService.appData.userData.accountSelect.length &&
@@ -618,7 +618,7 @@
 			</div>
 		</ng-container>
 	</div>
-	
+
 	<!--    <div [appScrollHeight]="userService.appData?.userData?.topSideMesagges ? 130 : 85"-->
 	<div
 			[appScrollHeight]="containerHost.getBoundingClientRect().bottom + 40"
@@ -633,7 +633,7 @@
 		>
 			{{ 'expressions.selectAccount' | translate }}
 		</div>
-		
+
 		<div
 				[hidden]="!userService.appData?.userData?.accountSelect?.length"
 				class="itrotAndUpdates"
@@ -693,7 +693,7 @@
 							matTooltipPosition="above"
 					>
 						<li
-								(click)="setGraphItrot(acc)"
+								(click)="sharedComponent.mixPanelEvent('balance summery'); setGraphItrot(acc)"
 								(mouseenter)="scrollAcc($event)"
 								*ngFor="let acc of dataTableAll"
 								[class.active]="acc.active"
@@ -760,7 +760,7 @@
 					>
 						<i class="fa fa-lg fa-angle-right"></i>
 					</div>
-					
+
 					<!--                    <div *ngIf="showCreditLine !== false && dataChart?.locationCreditLimit === 'top' && !creditLimitRenderedByChart" class="showCreditLine"-->
 					<!--                         style="position: relative; z-index: 0;">-->
 					<!--                        <div style="background: #ffffff;position: absolute;top: -17px;left: 0;">מ. אשראי</div>-->
@@ -770,7 +770,7 @@
 					<!--                        </div>-->
 					<!--                        <div class="lineMiddle" style="z-index: 1;"></div>-->
 					<!--                    </div>-->
-					
+
 					<app-charts
 							*ngIf="dataTableAll.length"
 							[chartData]="dataChart"
@@ -779,7 +779,7 @@
 					<!--                    <app-charts *ngIf="dataTableAll.length"-->
 					<!--                                [scrollHeight]="{'height':(showCreditLine === false) ? 245 : 220}"-->
 					<!--                                [chartData]="dataChart"></app-charts>-->
-					
+
 					<!--                    <div *ngIf="showCreditLine !== false && dataChart?.locationCreditLimit === 'bottom' && !creditLimitRenderedByChart" class="showCreditLine"-->
 					<!--                            style="position: relative; z-index: 0;">-->
 					<!--                        <div style="background: #ffffff;position: absolute;top: -17px;left: 0;">מ. אשראי</div>-->
@@ -791,7 +791,7 @@
 					<!--                    </div>-->
 				</div>
 			</div>
-			
+
 			<div>
 				<h3>{{ 'expressions.updatesAndAlerts' | translate }}</h3>
 				<div>
@@ -823,7 +823,7 @@
 					<!--<li class="mat-h3 messages-not-found-container">-->
 					<!--<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/be-happy.png" height="79" width="79"/>-->
 					<!--<span [innerHtml]="'expressions.noUpdatesAndAlerts'| translate"></span>-->
-					
+
 					<!--</li>-->
 					<!--</ng-template>-->
 					<!--</ul>-->
@@ -835,7 +835,7 @@
 				</div>
 			</div>
 		</div>
-		
+
 		<div
 				[hidden]="!userService.appData?.userData?.accountSelect?.length"
 				class="bottomWidgets"
@@ -843,15 +843,18 @@
 			<div>
 				<h3 class="filterRow">
 					{{ 'expressions.revenuesAndExpenses' | translate }}
-					
+
 					<div>
-						<app-overview-dates></app-overview-dates>
+						<app-overview-dates (sendEvent)="sendEvent($event)"></app-overview-dates>
 						<!--<app-acc-dates [option]="'aggregateGeneral'" (changedTrigger)="filterDates($event)"></app-acc-dates>-->
 					</div>
-					
+
 					<ul class="filterOperation tabs">
 						<li
 								(click)="
+								sharedComponent.mixPanelEvent('payment type', {
+            value: 'PAYMENT_DESC'
+        });
                 filterOperation = 'PAYMENT_DESC';
                 filterDates(
                   childDates.selectedPreset.selectedPeriod(userService)
@@ -867,6 +870,9 @@
 						</li>
 						<li
 								(click)="
+								sharedComponent.mixPanelEvent('categories', {
+            value: 'TRANS_TYPE'
+        });
                 filterOperation = 'TRANS_TYPE';
                 filterDates(
                   childDates.selectedPreset.selectedPeriod(userService)
@@ -1293,7 +1299,7 @@
                             ) + '%'
                         }"
 											></div>
-											
+
 											<!--100*(+item.dateTotals[3].total)/((+item.dateTotals[1].total) + (+item.dateTotals[2].total) + (+item.dateTotals[3].total))-->
 											<!--<i class="tooltip-mini-pies-barchart tooltip tooltip-bottom">-->
 											<!--<div class="wrap-pie-inside">-->
@@ -1401,11 +1407,11 @@
 					</p-overlayPanel>
 				</div>
 			</div>
-			
+
 			<div>
 				<div>
 					<h3>{{ 'expressions.concentrationOfFinancialData' | translate }}</h3>
-					
+
 					<div class="items">
 						<button
 								(click)="goToCheck('not_paid')"
@@ -1549,7 +1555,6 @@
 							</div>
 						</button>
 						<div class="separatorLine"></div>
-						
 						<button
 								(click)="loanDetails()"
 								[disabled]="!+financialDataObj?.loans"
@@ -1589,7 +1594,6 @@
 							</div>
 						</button>
 						<div class="separatorLine"></div>
-						
 						<button
 								(click)="goToCreditCard()"
 								[disabled]="!+financialDataObj?.creditCard"
@@ -1640,8 +1644,8 @@
 						>
 							תנועות אחרונות</i
 						>
-						
-						<div (click)="goToBankAccount()">לכל התנועות</div>
+
+						<div (click)="sharedComponent.mixPanelEvent('all transaction'); goToBankAccount()">לכל התנועות</div>
 					</h3>
 					<div>
 						<!--<div class="additional-details-container"-->
@@ -1649,9 +1653,9 @@
 						<!--[ngStyle]="!showAdditionalItem && {'display': 'none'}"-->
 						<!--appClickDocument (closed)="hideAdditional()" #additionalsContainer tabindex="-1"-->
 						<!--(keydown.esc)="hideAdditional()">-->
-						
+
 						<!--<div class="arrow"></div>-->
-						
+
 						<!--<ng-container-->
 						<!--*ngIf="(transactionAdditionalDetails$ | async) as additionalDetails; else noAdditionalAvailable">-->
 						<!--<ng-container *ngIf="additionalDetails.length > 0; else noAdditionalAvailable">-->
@@ -1928,7 +1932,7 @@
 						<!--</ng-container>-->
 						<!--</ng-container>-->
 						<!--</ng-container>-->
-						
+
 						<!--<ng-template #noAdditionalAvailable>-->
 						<!--<div style="display: flex; display: -ms-flexbox; flex-flow: row nowrap; justify-content: flex-end; margin-bottom: 0.4em;">-->
 						<!--<span class="fa fa-times fa-fw button-link" (click)="showAdditionalItem = null;"-->
@@ -1958,7 +1962,7 @@
 							>
 								<div *ngIf="item.title">
 									{{ item.transDateHumanizedStr }}
-									
+
 									<span style="color: #b6b6b6"> לא סופי </span>
 								</div>
 								<div *ngIf="!item.title">
@@ -2089,7 +2093,7 @@
 				<img
 						fill ngSrc="/assets/images/depositDetailsIcon.png"
 						style="height: auto; width: auto; position: relative;vertical-align: text-bottom"
-				
+
 				/>
 			</div>
 			<div *ngIf="depositDetailsData.length" class="list">
@@ -2137,7 +2141,7 @@
 					<div>{{ showItemPop.depositExistStation | date: 'dd/MM/yy' }}</div>
 				</div>
 			</div>
-			
+
 			<div class="removeFromSystem">
 				{{ 'הפיקדון נפרע?' }}
 				<span (click)="removeFromSystem()" class="link"> הסרה מהמערכת </span>
@@ -2410,10 +2414,10 @@
 	<div class="bodyPopUp">
 		<div class="semi">
 			ברוכים הבאים ל
-			
+
 			<img fill ngSrc="/assets/images/logoUpgradePopup.png"
 			     style="height: auto; width: auto; position: relative;"/>
-			
+
 			לעסקים
 		</div>
 		<div class="regular">
@@ -2581,10 +2585,7 @@
 			</div>
 			<div
 					#additionalBodyContainer
-					[appScrollHeight]="
-          tableHeader.getBoundingClientRect().bottom +
-          tableFooter.getBoundingClientRect().height
-        "
+					[appScrollHeight]="'219'"
 					class="scrollbar-dynamic"
 					style="position: relative"
 			>

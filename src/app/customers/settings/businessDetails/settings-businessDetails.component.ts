@@ -189,7 +189,6 @@ export class SettingsBusinessDetailsComponent
 
   // updateCompany(valid?: any) {
   updateCompany() {
-    debugger;
     if (this.personalInfo.valid) {
       let companyId;
       this.settingsComponent.selectedCompany$

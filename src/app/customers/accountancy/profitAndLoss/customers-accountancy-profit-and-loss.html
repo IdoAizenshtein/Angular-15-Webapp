@@ -8,7 +8,7 @@
   ></app-acc-dates>
 </div>
 <div #headerLastRow>
-  <div class="sums sumsProfitAndLoss">
+  <div class="sums sumsProfitAndLoss" *ngIf="revahHefsed && revahHefsed.data && revahHefsed.data.length">
     <div class="sum-data">
       <h3>
         סה״כ
@@ -173,21 +173,21 @@
         <li>
           <p-radioButton
             name="valueRadioPrev"
-            value="yes"
+            [value]="'yes'"
             label="כן"
             [(ngModel)]="valueRadioPrev"
-            (onClick)="resetArr()"
-            inputId="yes"
+            (onChange)="resetArr()"
+            inputId="radio11"
           ></p-radioButton>
         </li>
         <li>
           <p-radioButton
             name="valueRadioPrev"
-            value="no"
+            [value]="'no'"
             label="לא"
             [(ngModel)]="valueRadioPrev"
-            (onClick)="resetArr()"
-            inputId="no"
+            (onChange)="resetArr()"
+            inputId="radio12"
           ></p-radioButton>
         </li>
       </ul>

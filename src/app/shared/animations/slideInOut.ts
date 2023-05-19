@@ -45,3 +45,11 @@ export const slideInUp = trigger('slideInUpDD', [
         )
     ])
 ]);
+
+export const openClose = trigger('openClose', [
+    state('true', style({ height: '*' })),
+    state('false', style({ height: '0px' })),
+    transition('false <=> true', animate(100))
+])
+
+

@@ -104,12 +104,7 @@ export class HelpCenterService {
     return this.httpServices.sendHttp<any>(params);
   }
 
-  public requestOpenTicket(reqData: {
-    closeMailToSend: string;
-    taskDesc: string;
-    taskOpenerName: string;
-    taskTitle: string;
-  }): Observable<any> {
+  public requestOpenTicket(reqData: any): Observable<any> {
     const params: InterfaceParamHttp<any> = {
       method: 'post',
       path: 'v1/help/open-ticket',

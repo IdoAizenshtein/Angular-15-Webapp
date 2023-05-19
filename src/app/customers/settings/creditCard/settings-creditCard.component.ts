@@ -2,7 +2,7 @@ import {AfterViewInit, Component, OnDestroy, OnInit, ViewEncapsulation} from '@a
 import {UserService} from '@app/core/user.service';
 import {SharedComponent} from '@app/shared/component/shared.component'; //import {sharedComponent} from '@app/customers.component';
 import {SharedService} from '@app/shared/services/shared.service'; //import {sharedService} from '@app/customers.service';
-import {BehaviorSubject, combineLatest, forkJoin, merge, Observable, Subject, Subscription, timer} from 'rxjs';
+import {BehaviorSubject, combineLatest, forkJoin, merge, Observable, of, Subject, Subscription, timer} from 'rxjs';
 import {filter, map, shareReplay, switchMap, take, takeUntil, tap, withLatestFrom} from 'rxjs/operators';
 import {TranslateService} from '@ngx-translate/core';
 import {TokenService, TokenStatusResponse, TokenType} from '@app/core/token.service';
@@ -172,7 +172,7 @@ export class SettingsCreditCardComponent
         newAccount: any;
         card: any;
         onApprove: () => void;
-        syncSelection: () => void;
+        syncSelection: (isChanged:any) => void;
     };
     private readonly destroyed$ = new Subject<void>();
 
@@ -230,6 +230,9 @@ export class SettingsCreditCardComponent
             card: null,
             processing: false,
             onApprove: () => {
+                this.sharedComponent.mixPanelEvent('delete credit', {
+                    uuid: this.cardDeletePrompt.card.creditCardId
+                });
                 this.cardDeletePrompt.processing = true;
                 this.sharedService
                     .creditCardDelete(this.cardDeletePrompt.card.creditCardId)
@@ -454,12 +457,15 @@ export class SettingsCreditCardComponent
 
         this.deletedCards$ = this.byTokenGroups$.pipe(
             withLatestFrom(this.settingsComponent.selectedCompany$),
-            switchMap(([groups, selectedCompany]) =>
-                this.sharedService.getDeletedCreditCards({
+            switchMap(([groups, selectedCompany]) => {
+                const tokenIds = Array.isArray(groups) ? groups.filter((grC) => grC.id).map((gr) => gr.id) : [];
+                return tokenIds.length ? this.sharedService.getDeletedCreditCards({
                     companyId: selectedCompany.companyId,
-                    tokens: groups.map((gr) => gr.id)
-                })
-            ),
+                    tokens: tokenIds
+                }) : of({
+                    error: true
+                });
+            }),
             map((response: any) => {
                 if (response.error || !Array.isArray(response.body)) {
                     return {};
@@ -495,11 +501,16 @@ export class SettingsCreditCardComponent
         this.showDeletedCards.patchValue(!storageVal || 'true' === storageVal);
         this.showDeletedCards.valueChanges
             .pipe(takeUntil(this.destroyed$))
-            .subscribe((val: any) =>
-                this.storageService.localStorageSetter(
-                    'settings-creditCard.showDeleted',
-                    val
-                )
+            .subscribe((val: any) =>{
+                    if(!val){
+                        this.sharedComponent.mixPanelEvent('unshow deleted credits');
+                    }
+                    this.storageService.localStorageSetter(
+                        'settings-creditCard.showDeleted',
+                        val
+                    )
+            }
+
             );
     }
 
@@ -613,12 +624,12 @@ export class SettingsCreditCardComponent
             processing: new BehaviorSubject(false),
             card: itemChild,
             oldAccount: this.arrAccounts.find((acc: any) => acc === itemChild.account),
-            newAccount: $event,
+            newAccount: $event.value,
             onApprove: () => {
                 this.changeCardLinkedAccountPrompt.processing.next(true);
                 this.sharedService
                     .changeCreditCardLinkedAccount({
-                        companyAccountId: $event.companyAccountId,
+                        companyAccountId: $event.value.companyAccountId,
                         creditCardId: itemChild.creditCardId
                     })
                     .pipe(
@@ -647,9 +658,12 @@ export class SettingsCreditCardComponent
                         );
                     });
             },
-            syncSelection: () => {
-                accChangeTrigger.updateSelectedOption(
-                    this.changeCardLinkedAccountPrompt.card.account
+            syncSelection: (isChanged:any) => {
+                if(!isChanged){
+                    this.changeCardLinkedAccountPrompt.card.account =this.changeCardLinkedAccountPrompt.card.accountSaved;
+                }
+                accChangeTrigger.updateSelectedOption(isChanged ?
+                    this.changeCardLinkedAccountPrompt.card.account : this.changeCardLinkedAccountPrompt.card.accountSaved
                 );
             }
         };

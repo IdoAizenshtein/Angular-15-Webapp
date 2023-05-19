@@ -198,6 +198,7 @@ export class CategorySelectComponent implements AfterViewInit, OnDestroy, AfterC
     }
 
     showMore(): void {
+        this.resetCategories();
         // console.log('%o', this.el.nativeElement);
         this.display = true;
     }
@@ -292,7 +293,7 @@ export class CategorySelectComponent implements AfterViewInit, OnDestroy, AfterC
             if (transTypeHistory.length) {
                 transTypeHistory.forEach(v => {
                     v.isLastHistory = false;
-                })
+                });
                 transTypeHistory[transTypeHistory.length - 1].isLastHistory = true;
                 transTypeHistory.unshift({
                     isHistory: true,
@@ -301,18 +302,22 @@ export class CategorySelectComponent implements AfterViewInit, OnDestroy, AfterC
                     transTypeName: event.filter,
                     transTypeId: '',
                     shonaScreen: true
-                })
+                });
                 transTypeRegular.unshift(...transTypeHistory);
             }
-            this.categories = transTypeRegular;
-            ddCategories.options = this.categories;
-            ddCategories.optionsToDisplay = this.categories;
+            // this.categories = transTypeRegular;
+            // ddCategories.options = this.categories;
+            ddCategories.optionsToDisplay = transTypeRegular;
         } else {
-            this.categories = JSON.parse(JSON.stringify(this._categoriesSaved));
+            // this.categories = JSON.parse(JSON.stringify(this._categoriesSaved));
             ddCategories.resetFilter();
-            ddCategories.options = this.categories;
-            ddCategories.optionsToDisplay = this.categories;
+            // ddCategories.options = this.categories;
+            ddCategories.optionsToDisplay = JSON.parse(JSON.stringify(this._categoriesSaved));
         }
+    }
+
+    resetCategories() {
+        this.categories = JSON.parse(JSON.stringify(this._categoriesSaved));
     }
 
     categoryDelete(option: any): void {
@@ -368,31 +373,32 @@ export class CategorySelectComponent implements AfterViewInit, OnDestroy, AfterC
             transTypeName: label.replace(/\s\s+/g, ' ').trim(),
             companyId: this.companyId
         };
-        this.transTypesService.transTypeCreate(category).subscribe(
-            {
-                next: (rslt) => {
-                    category.transTypeId = rslt.body;
-                    this.dlgSelectedOption = category;
-                    console.log('Creation of %o succeeded, %o', category, rslt);
-                    this.categories.push(category);
-                    this.newTransTypeName.reset();
-                    this.updateView();
+        this.transTypesService.transTypeCreate(category)
+            .subscribe(
+                {
+                    next: (rslt) => {
+                        category.transTypeId = rslt.body;
+                        this.dlgSelectedOption = category;
+                        console.log('Creation of %o succeeded, %o', category, rslt);
+                        this.categories.push(category);
+                        this.newTransTypeName.reset();
+                        this.updateView();
 
-                    // this.transTypesService.transTypeChangeEvent.next({
-                    //     type: 'create',
-                    //     value: category
-                    // });
+                        // this.transTypesService.transTypeChangeEvent.next({
+                        //     type: 'create',
+                        //     value: category
+                        // });
 
-                    this.scrollActiveIntoViewInList();
-                },
-                error: (error) => {
-                    console.error('Creation of %o failed, %o', category, error);
+                        this.scrollActiveIntoViewInList();
+                    },
+                    error: (error) => {
+                        console.error('Creation of %o failed, %o', category, error);
+                    }
                 }
-            }
-        );
+            );
     }
 
-    categoryCreateThenSelect(label: any, evt: Event): void {
+    categoryCreateThenSelect(label: any, evt: Event, ddCategories: any): void {
         // debugger;
         const category = {
             transTypeId: null,
@@ -405,7 +411,15 @@ export class CategorySelectComponent implements AfterViewInit, OnDestroy, AfterC
                     category.transTypeId = rslt.body;
                     console.log('Creation of %o succeeded, %o', category, rslt);
                     this.categories.push(category);
-                    this.ngModelVal = this.categories.find((opt) => opt.value === category);
+                    this.ngModelVal = category;
+                    ddCategories.resetFilter();
+                    // ddCategories.options = this.categories;
+                    ddCategories.optionsToDisplay = this.categories;
+                    this.changed.emit({
+                        originalEvent: new Event('custom'),
+                        value: category
+                    });
+                    this.hide();
                 },
                 error: (error) => {
                     console.error('Creation of %o failed, %o', category, error);
@@ -472,7 +486,7 @@ export class CategorySelectComponent implements AfterViewInit, OnDestroy, AfterC
                         transTypeName: '',
                         transTypeId: '',
                         shonaScreen: true
-                    })
+                    });
                     this.categories.unshift(...transTypeHistory);
                 }
                 this._categoriesSaved = JSON.parse(JSON.stringify(this.categories));

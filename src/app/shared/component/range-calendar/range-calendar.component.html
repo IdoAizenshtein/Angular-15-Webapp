@@ -12,12 +12,12 @@
 				</ng-container>
 			</ng-container>
 		</div>
-		
+
 		<!--<div>selection ==> {{selection| json}}</div>-->
 		<!--<div>current ==> {{current| json}}</div>-->
 		<!--<div>allowed ==> {{allowed| json}}</div>-->
 		<!--<div>currentDates ==> {{currentDates| json}}</div>-->
-		
+
 		<div class="scrollers">
 			<ng-container [ngSwitch]="selectionType">
 				<ng-container *ngSwitchCase="RangeSelectionType.DAYS">
@@ -44,12 +44,12 @@
 						>
 							<i class="fas fa-angle-right"></i>
 						</button>
-						
+
 						<div>
 							{{ ('langCalendar.monthNames' | translate)[current.from.month] }}
 							{{ current?.from.year }}
 						</div>
-						
+
 						<button
 								[disabled]="
                 !mayNavigateTo(current.from.month + 1, current.from.year) ||
@@ -101,7 +101,7 @@
 							<i class="fas fa-angle-double-left"></i>
 						</button>
 					</div>
-					
+
 					<div class="scroller">
 						<button
 								[disabled]="
@@ -162,12 +162,12 @@
 						>
 							<i class="fas fa-angle-right"></i>
 						</button>
-						
+
 						<div>
 							{{ ('langCalendar.monthNames' | translate)[current.till.month] }}
 							{{ current.till.year }}
 						</div>
-						
+
 						<button
 								[disabled]="
                 !mayNavigateTo(current.till.month + 1, current.till.year)
@@ -192,7 +192,7 @@
 						</button>
 					</div>
 				</ng-container>
-				
+
 				<ng-container *ngSwitchCase="RangeSelectionType.MONTHS">
 					<div class="scroller">
 						<button
@@ -220,7 +220,7 @@
 							<i class="fas fa-angle-left"></i>
 						</button>
 					</div>
-					
+
 					<div class="scroller">
 						<button
 								[disabled]="
@@ -250,7 +250,7 @@
 				</ng-container>
 			</ng-container>
 		</div>
-		
+
 		<div class="bodies">
 			<ng-container [ngSwitch]="selectionType">
 				<ng-container *ngSwitchCase="RangeSelectionType.DAYS">
@@ -354,7 +354,7 @@
 						</ng-container>
 					</div>
 				</ng-container>
-				
+
 				<ng-container *ngSwitchCase="RangeSelectionType.MONTHS">
 					<div class="months">
 						<div

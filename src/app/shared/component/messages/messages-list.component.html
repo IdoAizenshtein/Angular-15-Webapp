@@ -4,6 +4,8 @@
 				[options]="severities"
 				styleClass="severity"
 				formControlName="severity"
+				name="severity"
+
 				dropdownIcon="fas fa-xs fa-filter"
 				[style]="{ width: '13ch' }"
 		>
@@ -89,7 +91,7 @@
 							></ng-template>
 						</ul>
 					</ng-container>
-					
+
 					<ng-container *ngIf="messagesSeparatedOld$ | async as messagesOld">
 						<ul *ngIf="messagesOld.length > 0">
 							<li class="groupName">{{ 'מוקדם יותר' }}</li>
@@ -101,7 +103,7 @@
 						</ul>
 					</ng-container>
 				</ng-container>
-				
+
 				<ng-template #singleList>
 					<ul>
 						<ng-template
@@ -113,7 +115,7 @@
 				</ng-template>
 			</div>
 		</div>
-		
+
 		<app-bank-update-foreign-credentials-dialog
 				*ngIf="
         actionService.showupTokenUpdateDialog$
@@ -124,7 +126,7 @@
 				[companyId]="showupTokenUpdateDialog.companyId"
 		>
 		</app-bank-update-foreign-credentials-dialog>
-		
+
 		<ng-container
 				*ngIf="
         actionService.showupTransactionHistoryDialog$
@@ -144,7 +146,7 @@
 				></app-cyclic-trans-history>
 			</p-dialog>
 		</ng-container>
-		
+
 		<ng-container
 				*ngIf="
         actionService.showupTransactionDeleteDialog$
@@ -159,7 +161,7 @@
 					[modal]="true"
 			>
 				<p-header>{{ showupTransactionDeleteDialog?.title }}</p-header>
-				
+
 				<div
 						class="mat-h3"
 						[innerHTML]="
@@ -168,7 +170,7 @@
               '.content' | translate: showupTransactionDeleteDialog
           "
 				></div>
-				
+
 				<p-footer>
 					<div style="width: 100%; display: flex; justify-content: center">
 						<button
@@ -262,6 +264,11 @@
 		>
 			<ng-container *ngIf="!sharedComponent.isCustomer">
 				<mat-icon
+						*ngIf="msg.uploadSource === 'FOLDER'"
+						svgIcon="folderLine"
+						style="color: #ffffff; height: auto; width: 30px"
+				></mat-icon>
+				<mat-icon
 						*ngIf="msg.uploadSource === 'MOBILE'"
 						svgIcon="uploadSource_MOBILE"
 						style="color: #ffffff; height: auto; width: 30px"
@@ -295,12 +302,12 @@
 				<ng-container *ngIf="!sharedComponent.isCustomer">
 					{{ msg.dateCreated | date: 'HH:mm' }}
 				</ng-container>
-				
+
 				<span *ngIf="!sharedComponent.isCustomer">
           {{ msg.createdBy }}
         </span>
 			</div>
-			
+
 			<ng-container
 					*ngIf="
           msg.linked_action && msg.linked_action === 'showCheckDetails';
@@ -336,14 +343,15 @@
 					<!--{{msg.messageTemplate}}-->
 				</div>
 			</ng-template>
-			<ng-container *ngIf="!sharedComponent.isCustomer && msg.messageTemplate2">
+
+			<ng-container *ngIf="!sharedComponent.isCustomer && msg.messageTemplate2 && msg.uploadSource !== 'FOLDER'">
 				<div
 						class="msg-message"
 						[class.red]="msg.indAlert === 'red'"
 						[innerHTML]="msg.messageTemplate2"
 				></div>
 			</ng-container>
-			
+
 			<div class="msg-actions">
 				<ng-container
 						*ngIf="
@@ -365,14 +373,19 @@
 				</ng-container>
 				<ng-template #actionBtn>
 					<button
+							[pTooltip]="msg.peula1 === 'moreInfo' && msg.uploadSource === 'FOLDER' ? msg.messageTemplate2 : ''"
+							[tooltipDisabled]="!(msg.peula1 === 'moreInfo' && msg.uploadSource === 'FOLDER')"
+							tooltipPosition="top"
 							class="button-link"
 							*ngIf="msg.peulaName1"
 							(click)="
               messageActionClick(msg, 'peula1'); $event.stopPropagation()
             "
 					>
-						{{ msg.peulaName1 }}
+						{{ msg.peulaName1 }}&nbsp;
 					</button>
+
+
 					<button
 							class="button-link"
 							*ngIf="msg.peulaName2"
@@ -380,7 +393,7 @@
               messageActionClick(msg, 'peula2'); $event.stopPropagation()
             "
 					>
-						{{ msg.peulaName2 }}
+						{{ msg.peulaName2 }}&nbsp;
 					</button>
 					<button
 							class="button-link"
@@ -498,7 +511,7 @@
 				מסמכים מ{{ getMessageFiles.msg.createdBy }}
 			</h1>
 		</p-header>
-		
+
 		<div
 				class="progressBarTitles"
 				style="
@@ -533,7 +546,7 @@
 				</ng-container>
 			</div>
 		</div>
-		
+
 		<ng-container *ngIf="!getMessageFiles.messageFiles; else viewFiles">
 			<div class="message-list-container" style="min-height: 280px">
 				<div class="loader">
@@ -644,7 +657,8 @@
                     "
 									>
 										<img
-												style="height: 221px; width: auto; position: relative;" fill [ngSrc]="file.pages[0].contentUrl"
+												style="height: 221px; width: auto; position: relative;"
+												[src]="file.pages[0].contentUrl"
 												[style.visibility]="
                         file.finishedLoaded === true ? 'visible' : 'hidden'
                       "
@@ -695,7 +709,7 @@
 									style="color: #022258; font-size: 15px; text-align: center"
 							>
 								המסמך הועבר
-								
+
 								{{
 								file.companyName ? 'לחברת ' + file.companyName : 'לחברה אחרת'
 								}}
@@ -705,7 +719,7 @@
 									style="color: #022258; font-size: 15px; text-align: center"
 							>
 								{{ file.fileLocation }}
-								
+
 								-
 							</div>
 							<div
@@ -780,8 +794,8 @@
 							*ngIf="pageImg.finishedLoaded !== 'error'"
 							(error)="pageImg.finishedLoaded = 'error'"
 							(load)="pageImg.finishedLoaded = true"
-							style="height: auto; width: 680px; position: relative;display: block; margin: 0 auto" fill
-							[ngSrc]="pageImg.contentUrl"
+							style="height: auto; width: 680px; position: relative;display: block; margin: 0 auto"
+							[src]="pageImg.contentUrl"
 					/>
 					<ng-container *ngIf="pageImg.finishedLoaded === 'error'">
 						<p style="text-align: center">שגיאה בגישה לנתיב הקובץ</p>

@@ -11,7 +11,7 @@
 		      (mouseleave)="tooltipMoreData.hide()"
 		      (mouseover)="eventRightPos($event); tooltipMoreData.show($event)"
       >
-        {{ userService.appData?.userData?.companySelect?.companyName }}
+		{{ userService?.appData?.hideCompanyName ? userService.appData?.userData?.companySelect?.companyHp : userService.appData?.userData?.companySelect?.companyName }}
       </span>
 			<p-overlayPanel
 					#tooltipMoreData
@@ -35,7 +35,7 @@
 									: 'שנתי'
 							}}
 						</p>
-						
+
 						<p
 								*ngIf="companyDataObj && companyDataObj?.dbName"
 								style="margin-right: 20px"
@@ -48,7 +48,7 @@
 					></ng-container>
 					<div>
 						<small> טעינה אחרונה </small>
-						
+
 						<small
 								*ngIf="companyDataObj && companyDataObj?.dataReceiveDate"
 								style="margin-right: 20px"
@@ -60,7 +60,7 @@
 						</small>
 					</div>
 				</ng-container>
-				
+
 				<ng-template #loader>
 					<div class="loaderPercent" style="justify-content: center">
 						<div class="circle"></div>
@@ -86,21 +86,21 @@
 					target="_blank"
 			>{{ companyHpEmail }}</a
 			>
-			
+
 			<br/>
 			<span style="font-size: 15px">
         לשינוי שדות נעולים יש לפנות למנהל מערכת
       </span>
 		</p>
-		
+
 		<button
 				[routerLinkActiveOptions]="{ exact: true }"
 				[routerLink]="['/accountants/companies/companyProducts/addProducts']"
 				class="addCompanyBtn"
 				queryParamsHandling="merge"
 				routerLinkActive="active"
-				style="width: 150px; height: 31px">
-			הוספת חברה/ מוצר
+				style="width: 137px;height: 49.72px;">
+			הוספת מוצר
 		</button>
 	</div>
 </div>
@@ -365,4 +365,50 @@
 <!--            </form>-->
 <!--        </div>-->
 <!--    </div>-->
+<!--</div>-->
+
+
+<ng-container *ngIf="modalPendeingServerRes">
+	<p-dialog (visibleChange)="modalPendeingServerRes = false"
+			  [modal]="true"
+			  [resizable]="false"
+			  [draggable]="false"
+			  [closable]="false"
+			  [closeOnEscape]="false"
+			  [showHeader]="false"
+			  [visible]="modalPendeingServerRes"
+			  appendTo="body"
+			  styleClass="modalPendeingServerRes">
+		<div class="counter">
+			<div class="resReceivedComplete" *ngIf="modalPendeingServerRes.resReceivedComplete"></div>
+			<img *ngIf="!modalPendeingServerRes.resReceived && !modalPendeingServerRes.resReceivedComplete" src="/assets/images/dataReadyLoader.gif"/>
+			<p *ngIf="!modalPendeingServerRes.resReceived">
+				<span id="minutes">{{modalPendeingServerRes.minutesPresent}}</span>:<span id="seconds">{{modalPendeingServerRes.secondsPresent}}</span>
+			</p>
+			<img class="vector" *ngIf="modalPendeingServerRes.resReceived" src="/assets/images/vector-completed.png"/>
+		</div>
+		<div class="text">
+			<h2>
+				{{modalPendeingServerRes.resReceived ? 'הנתונים עודכנו בהצלחה' : 'מעדכנים נתונים'}}
+			</h2>
+			<p *ngIf="!modalPendeingServerRes.resReceived">
+				בעת העדכון, אין לעבוד על המערכת ולא לסגור או לרענן את הדפדפן.
+				<br>
+				התהליך ייקח מספר דקות ובסיומו תוכלו להמשיך לעבוד
+				<br>
+				עם הנתונים העדכניים.
+			</p>
+			<p *ngIf="modalPendeingServerRes.resReceived">
+				המשך עבודה נעימה!
+			</p>
+		</div>
+	</p-dialog>
+</ng-container>
+
+
+
+
+<!--<div class="icon">-->
+<!--	<img *ngIf="(accountsBarRes && accountsBarRes.dataReadyEnd)" src="/assets/images/dataReadyEnd.png"/>-->
+
 <!--</div>-->

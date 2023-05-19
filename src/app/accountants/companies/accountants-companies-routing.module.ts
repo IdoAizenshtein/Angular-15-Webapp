@@ -1,6 +1,7 @@
 import {NgModule} from '@angular/core';
 import {RouterModule, Routes} from '@angular/router';
 import {AuthGuard} from '@app/login/auth-guard.service';
+import {AdminGuard} from '@app/admin/admin-guard.service';
 
 const accountantsCompaniesRoutes: Routes = [
     {
@@ -18,6 +19,10 @@ const accountantsCompaniesRoutes: Routes = [
     {
         path: 'general',
         loadChildren: () => import('@app/accountants/companies/general/general.module').then(m => m.GeneralModule)
+    },
+    {
+        path: 'accountingFirmEstablishment',
+        loadChildren: () => import('@app/accountants/companies/accountingFirmEstablishment/accounting-firm-establishment.module').then(m => m.AccountingFirmEstablishmentModule)
     },
     {
         path: 'supplierCustomersJournal',

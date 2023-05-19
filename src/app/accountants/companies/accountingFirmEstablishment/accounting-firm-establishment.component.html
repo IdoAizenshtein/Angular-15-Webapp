@@ -1,0 +1,305 @@
+<div>
+    <div class="infoCompanyForm detailsForm createNewOfficeForm">
+        <h2 class="titlePage">
+            <i>הקמת משרד רו”ח</i>
+        </h2>
+        <div [appScrollHeight]="185" class="scrollPage scrollbar-dynamic">
+            <form [formGroup]="info" novalidate>
+                <h3>
+                    פרטי משרד
+                </h3>
+                <div class="columns" style="flex-wrap: wrap">
+                    <div class="sett-table">
+                        <div>
+                            <div>שם משרד</div>
+                            <div>
+                                <input
+                                        [class.err]="
+                  info.get('officeName').dirty &&
+                  info.get('officeName').invalid
+                "
+                                        formControlName="officeName"
+                                        type="text"
+                                />
+                            </div>
+                        </div>
+                        <div
+                                *ngIf="info.get('officeName').dirty && !info.get('officeName').value && info.get('officeName').invalid"
+                                class="invalidAlert"
+                        >
+                            שדה חובה
+                        </div>
+                    </div>
+                    <div class="sett-table">
+                        <div>
+                            <div>ח.פ / ת.ז.</div>
+                            <div>
+                                <input
+                                        [class.err]="
+                  info.get('officeHp').dirty &&
+                  (info.get('officeHp').invalid || info.get('officeHp').hasError('hpExists'))
+                "
+                                        appNumbersOnly="positiveInt"
+                                        formControlName="officeHp"
+                                        type="text"
+                                />
+                            </div>
+                        </div>
+                        <div
+                                *ngIf="info.get('officeHp').value && info.get('officeHp').invalid && !info.get('officeHp').hasError('hpExists')"
+                                class="invalidAlert"
+                        >
+                            המספר שהוקלד לא תקין
+                        </div>
+                        <div
+                                *ngIf="
+            info.get('officeHp').dirty &&  !info.get('officeHp').value && info.get('officeHp').invalid
+            "
+                                class="invalidAlert"
+                        >
+                            שדה חובה
+                        </div>
+                        <div
+                                *ngIf="
+              info.get('officeHp').value &&
+              info.get('officeHp').hasError('hpExists') &&
+              info.get('officeHp').invalid
+            "
+                                class="invalidAlert"
+                                style="
+              display: flex;
+              justify-content: space-between;
+              width: 275px;
+              padding-left: 0;
+            "
+                        >
+                            הח.פ כבר קיים במערכת
+                        </div>
+                    </div>
+                </div>
+                <div class="columns" style="flex-wrap: wrap">
+                    <div class="sett-table">
+                        <div>
+                            <div>טלפון</div>
+                            <div>
+                                <input
+                                        [class.err]="
+                  info.get('officePhone').dirty &&
+                  (info.get('officePhone').invalid)
+                "
+                                        appNumbersOnly="positiveInt"
+                                        formControlName="officePhone"
+                                        type="text"
+                                />
+                            </div>
+                        </div>
+                        <div
+                                *ngIf="info.get('officePhone').value && info.get('officePhone').invalid"
+                                class="invalidAlert"
+                        >
+                            המספר שהוקלד לא תקין
+                        </div>
+                        <div
+                                *ngIf="
+           info.get('officePhone').dirty &&   !info.get('officePhone').value && info.get('officePhone').invalid
+            "
+                                class="invalidAlert"
+                        >
+                            שדה חובה
+                        </div>
+                    </div>
+                    <div class="sett-table">
+                        <div>
+                            <div>מייל</div>
+                            <div>
+                                <input
+                                        [class.err]="
+                  info.get('officeMail').dirty &&
+                  (info.get('officeMail').invalid)
+                "
+                                        formControlName="officeMail"
+                                        type="text"
+                                />
+                            </div>
+                        </div>
+                        <div
+                                *ngIf="info.get('officeMail').value && info.get('officeMail').invalid"
+                                class="invalidAlert"
+                        >
+                            כתובת המייל לא תקינה
+                        </div>
+                        <div
+                                *ngIf="
+             info.get('officeMail').dirty &&  !info.get('officeMail').value && info.get('officeMail').invalid
+            "
+                                class="invalidAlert"
+                        >
+                            שדה חובה
+                        </div>
+                    </div>
+                </div>
+                <h3>
+                    פרטי מייצג
+                </h3>
+                <div class="columns" style="flex-wrap: wrap">
+                    <div class="sett-table">
+                        <div>
+                            <div>שם פרטי</div>
+                            <div>
+                                <input
+                                        [class.err]="
+                  info.get('accountantFirstName').dirty &&
+                  info.get('accountantFirstName').invalid
+                "
+                                        formControlName="accountantFirstName"
+                                        type="text"
+                                />
+                            </div>
+                        </div>
+                        <div
+                                *ngIf="info.get('accountantFirstName').dirty &&!info.get('accountantFirstName').value && info.get('accountantFirstName').invalid"
+                                class="invalidAlert"
+                        >
+                            שדה חובה
+                        </div>
+                    </div>
+                    <div class="sett-table">
+                        <div>
+                            <div>שם משפחה</div>
+                            <div>
+                                <input
+                                        [class.err]="
+                  info.get('accountantLastName').dirty &&
+                  info.get('accountantLastName').invalid
+                "
+                                        formControlName="accountantLastName"
+                                        type="text"
+                                />
+                            </div>
+                        </div>
+                        <div
+                                *ngIf="info.get('accountantLastName').dirty &&!info.get('accountantLastName').value && info.get('accountantLastName').invalid"
+                                class="invalidAlert"
+                        >
+                            שדה חובה
+                        </div>
+                    </div>
+                    <div class="sett-table">
+                        <div>
+                            <div>ת.ז</div>
+                            <div>
+                                <input
+                                        [class.err]="
+                  info.get('accountantIdentificationNumber').dirty &&
+                  (info.get('accountantIdentificationNumber').invalid)
+                "
+                                        appNumbersOnly="positiveInt"
+                                        formControlName="accountantIdentificationNumber"
+                                        type="text"
+                                />
+                            </div>
+                        </div>
+                        <div
+                                *ngIf="info.get('accountantIdentificationNumber').value && info.get('accountantIdentificationNumber').invalid"
+                                class="invalidAlert"
+                        >
+                            המספר שהוקלד לא תקין
+                        </div>
+                        <div
+                                *ngIf="
+             info.get('accountantIdentificationNumber').dirty && !info.get('accountantIdentificationNumber').value && info.get('accountantIdentificationNumber').invalid
+            "
+                                class="invalidAlert"
+                        >
+                            שדה חובה
+                        </div>
+                    </div>
+                </div>
+                <div class="columns" style="flex-wrap: wrap">
+                    <div class="sett-table">
+                        <div>
+                            <div>טלפון</div>
+                            <div>
+                                <input
+                                        [class.err]="
+                  info.get('accountantCellPhone').dirty &&
+                  (info.get('accountantCellPhone').invalid)
+                "
+                                        appNumbersOnly="positiveInt"
+                                        formControlName="accountantCellPhone"
+                                        type="text"
+                                />
+                            </div>
+                        </div>
+                        <div
+                                *ngIf="info.get('accountantCellPhone').value && info.get('accountantCellPhone').invalid"
+                                class="invalidAlert"
+                        >
+                            המספר שהוקלד לא תקין
+                        </div>
+                        <div
+                                *ngIf="
+             info.get('accountantCellPhone').dirty && !info.get('accountantCellPhone').value && info.get('accountantCellPhone').invalid
+            "
+                                class="invalidAlert"
+                        >
+                            שדה חובה
+                        </div>
+                    </div>
+                    <div class="sett-table">
+                        <div>
+                            <div>מייל</div>
+                            <div>
+                                <input
+                                        [class.err]="
+                  info.get('accountantMail').dirty &&
+                  (info.get('accountantMail').invalid || info.get('accountantMail').hasError('exist'))
+                "
+                                        formControlName="accountantMail"
+                                        type="email"
+                                />
+                            </div>
+                        </div>
+
+                        <div
+                                *ngIf="info.get('accountantMail').value && info.get('accountantMail').invalid && !info.get('accountantMail').hasError('exist')"
+                                class="invalidAlert"
+                        >
+                            כתובת המייל לא תקינה
+                        </div>
+                        <div
+                                *ngIf="
+             info.get('accountantMail').dirty &&  !info.get('accountantMail').value && info.get('accountantMail').invalid
+            "
+                                class="invalidAlert"
+                        >
+                            שדה חובה
+                        </div>
+                        <div
+                                *ngIf="
+              info.get('accountantMail').value &&
+              info.get('accountantMail').hasError('exist') &&
+              info.get('accountantMail').invalid
+            "
+                                class="invalidAlert"
+                                style="
+              display: flex;
+              justify-content: space-between;
+              width: 275px;
+              padding-left: 0;
+            "
+                        >
+                            היוזר כבר קיים במערכת
+                        </div>
+                    </div>
+                </div>
+                <div class="createNewOfficeBtnWrap">
+                    <button (click)="createNewOffice()" [disabled]="isDisabled()" class="createNewOfficeBtn">
+                        הוספה
+                    </button>
+                </div>
+            </form>
+        </div>
+
+    </div>
+</div>

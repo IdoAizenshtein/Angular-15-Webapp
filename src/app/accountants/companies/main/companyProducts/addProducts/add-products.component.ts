@@ -21,9 +21,7 @@ import {BrowserService} from '@app/shared/services/browser.service';
 import {ReportService} from '@app/core/report.service';
 import {ContactsComponent} from '../../../general/contacts/contacts.component';
 import {AccountingCardsComponent} from '../../../general/accountingCards/accounting-cards.component';
-import {
-    JournalVendorAndCustomerComponent
-} from '../../../general/journalVendorAndCustomer/journal-vendor-and-customer.component';
+import {JournalVendorAndCustomerComponent} from '../../../general/journalVendorAndCustomer/journal-vendor-and-customer.component';
 import {CompanyProductsComponent} from '../company-products.component';
 import {JournalBankAndCreditComponent} from '../../../general/journalBankAndCredit/journal-bank-and-credit.component';
 import {ValidatorsFactory} from '@app/shared/component/foreign-credentials/validators';
@@ -127,7 +125,20 @@ export class AddProductsComponent
             });
         } else {
         }
-
+        const companyId_selectProduct = this.storageService.localStorageGetterItem(
+            'companyId_selectProduct'
+        );
+        if (companyId_selectProduct) {
+            const selectedCompany = this.userService.appData.userData.companies.find((it) => {
+                return it.companyId === companyId_selectProduct;
+            });
+            if (selectedCompany) {
+                this.selectedCompany = selectedCompany;
+            }
+            this.storageService.localStorageRemoveItem(
+                'companyId_selectProduct'
+            );
+        }
         if (this.selectedCompany) {
             this.selectCompany();
         }
@@ -225,7 +236,7 @@ export class AddProductsComponent
 
             this.info = new FormGroup({
                 yearlyProgram: new FormControl({
-                    value: null,
+                    value: false,
                     disabled: true
                 }),
                 vatReportType: new FormControl(
@@ -297,7 +308,7 @@ export class AddProductsComponent
 
                     this.info.patchValue({
                         yearlyProgram: !responseRest.yearlyProgram
-                            ? null
+                            ? false
                             : responseRest.yearlyProgram,
                         vatReportType:
                             responseRest.vatReportType === undefined
@@ -760,7 +771,8 @@ export class AddProductsComponent
                     ? this.infoJournalBankAndCreditComponent.get('oppositeCustForChecks')
                         .value.custId
                     : null,
-                notExportIncomes: notExportIncomes
+                notExportIncomes: notExportIncomes,
+                uniteJournalForPayments: this.infoJournalBankAndCreditComponent.get('uniteJournalForPayments').value
             };
             if (
                 this.infoJournalBankAndCreditComponent &&
@@ -770,7 +782,27 @@ export class AddProductsComponent
                     this.infoJournalBankAndCreditComponent.get(
                         'bankProcessTransType'
                     ).value;
+            } else {
+                if (this.products &&
+                    !this.products.supplierJournal &&
+                    ((this.products.bankJournal &&
+                            !this.products.creditJournal) ||
+                        (!this.products.bankJournal &&
+                            this.products.creditJournal) ||
+                        (this.products.bankJournal &&
+                            this.products.creditJournal))) {
+                    if (
+                        this.info &&
+                        this.info.get('bankProcessTransType')
+                    ) {
+                        params['bankProcessTransType'] =
+                            this.info.get(
+                                'bankProcessTransType'
+                            ).value;
+                    }
+                }
             }
+
             console.log('params: ', params);
             resolve(params);
             // this.sharedService.updateBankJournal(params).subscribe(() => {

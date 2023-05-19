@@ -4,11 +4,11 @@
     "details": [
       {
         "appID": "6H7SGDMT78.com.biziboxapp",
-        "paths": ["NOT /signup/personal-data","NOT /agreement-page", "*"  ]
+        "paths": ["NOT /signup/personal-data","NOT /agreement-page","NOT /accountant-agreement-page", "*"  ]
       },
       {
         "appID": "6H7SGDMT78.com.biziboxapp.dev",
-        "paths": ["NOT /signup/personal-data","NOT /agreement-page", "*"  ]
+        "paths": ["NOT /signup/personal-data","NOT /agreement-page","NOT /accountant-agreement-page", "*"  ]
       }
     ]
   },
@@ -19,7 +19,3 @@
     ]
   }
 }
-
-
-
-

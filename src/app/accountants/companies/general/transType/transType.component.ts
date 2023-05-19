@@ -35,6 +35,9 @@ export class TransTypeComponent
     public transType: any = false;
     public removeItemModal: any = false;
     @Input() isModal: any = false;
+    @Input() showAllTypes: any = true;
+
+
     private readonly destroyed$ = new Subject<void>();
 
     constructor(

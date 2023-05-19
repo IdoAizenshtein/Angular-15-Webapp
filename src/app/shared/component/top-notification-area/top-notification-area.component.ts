@@ -1,6 +1,6 @@
 import {Component, Input, OnDestroy, OnInit} from '@angular/core';
 import {slideInOut} from '../../animations/slideInOut';
-import {Router} from '@angular/router';
+import {ActivatedRoute, Router} from '@angular/router';
 import {UserService} from '@app/core/user.service';
 import {Observable, timer} from 'rxjs';
 import {ReportService} from '@app/core/report.service';
@@ -17,6 +17,7 @@ import {Dropdown} from 'primeng/dropdown/dropdown';
 import {AbstractControl, FormBuilder, FormControl, ValidationErrors, ValidatorFn, Validators} from '@angular/forms';
 import {ValidatorsFactory} from '../foreign-credentials/validators';
 import {publishRef} from '../../functions/publishRef';
+import {SharedComponent} from '@app/shared/component/shared.component';
 
 @Component({
     selector: 'app-top-notification-area',
@@ -59,9 +60,13 @@ export class TopNotificationAreaComponent implements OnInit, OnDestroy {
     selcetAllFiles: any = false;
     public showModalVar: boolean = true;
     public hideModalVar: boolean = false;
+    public addContactModalError: boolean = false;
+
 
     constructor(
+        public sharedComponent: SharedComponent,
         public router: Router,
+        private route: ActivatedRoute,
         public authService: AuthService,
         public userService: UserService,
         public fb: FormBuilder,
@@ -128,7 +133,9 @@ export class TopNotificationAreaComponent implements OnInit, OnDestroy {
             row.companyContacts = row.companyContacts.filter(it => it.value !== 'null');
         }
 
-        dd.options = row.companyContacts;
+        if (dd) {
+            dd.options = row.companyContacts;
+        }
         // dd.optionsToDisplay = row.companyContacts;
         // dd._options = row.companyContacts;
     }
@@ -311,6 +318,7 @@ export class TopNotificationAreaComponent implements OnInit, OnDestroy {
         this.userService.appData.addContactModal = {
             company: row,
             contacts: null,
+            reloadLocalArr: true,
             addContactForm: this.fb.group({
                 firstName: new FormControl(
                     {
@@ -506,7 +514,10 @@ export class TopNotificationAreaComponent implements OnInit, OnDestroy {
         const contact = this.userService.appData.addContactModal.addContactForm;
         const row = this.userService.appData.addContactModal.company;
         const contacts = this.userService.appData.addContactModal.contacts;
-
+        const reload = this.userService.appData.addContactModal.reload;
+        const isBeforeAddProduct = this.userService.appData.addContactModal.isBeforeAddProduct;
+        const updateDD = this.userService.appData.addContactModal.updateDD;
+        const reloadLocalArr = this.userService.appData.addContactModal.reloadLocalArr;
         const params = {
             companyId: this.userService.appData.addContactModal.company.companyId,
             firstName: contact.get('firstName').value,
@@ -528,26 +539,50 @@ export class TopNotificationAreaComponent implements OnInit, OnDestroy {
                         if (it.companyId === row.companyId) {
                             responseRest.label = responseRest.firstName + ' ' + responseRest.lastName;
                             responseRest.value = responseRest.companyContactId;
+                            it.contactSelected = responseRest;
                             it.companyContacts.push(responseRest);
+                            this.updateContactSelected(it, null);
                         }
                     });
                 }
             }
 
-            if (
-                responseRest.companyContactId &&
-                contact.get('authorizedSigner').value &&
-                !this.companiesWithoutAgreement
-            ) {
-                this.sharedService
-                    .sendLandingPageMessages([responseRest.companyContactId])
-                    .subscribe(() => {
-                        this.userService.appData.submitAlertContact = true;
-                        setTimeout(() => {
-                            this.userService.appData.submitAlertContact = false;
-                        }, 3000);
+            if (isBeforeAddProduct) {
+                if (response.status === 400) {
+                    this.addContactModalError = true;
+                } else {
+                    this.router.navigate(['./companies/companyProducts/addProducts'], {
+                        queryParamsHandling: 'merge',
+                        relativeTo: this.route
                     });
+                }
             }
+
+
+            if (updateDD && !isBeforeAddProduct) {
+                responseRest.label = responseRest.firstName + ' ' + responseRest.lastName;
+                responseRest.value = responseRest.companyContactId;
+                updateDD.next({
+                    company: row,
+                    contactAdded: responseRest
+                });
+            } else {
+                if (
+                    responseRest.companyContactId &&
+                    contact.get('authorizedSigner').value &&
+                    !this.companiesWithoutAgreement
+                ) {
+                    this.sharedService
+                        .sendLandingPageMessages([responseRest.companyContactId])
+                        .subscribe(() => {
+                            this.userService.appData.submitAlertContact = true;
+                            setTimeout(() => {
+                                this.userService.appData.submitAlertContact = false;
+                            }, 3000);
+                        });
+                }
+            }
+
             setTimeout(() => {
                 if (responseRest.companyContactId && contact.get('joinApp').value) {
                     this.sharedService
@@ -555,17 +590,26 @@ export class TopNotificationAreaComponent implements OnInit, OnDestroy {
                             uuid: responseRest.companyContactId
                         })
                         .subscribe(() => {
-                            if (contacts) {
-                                this.userService.reloadEvent.next(true);
+                            if (updateDD && !isBeforeAddProduct) {
+
                             } else {
-                                // this.getContactsList(row, true);
+                                if (contacts) {
+                                    this.userService.reloadEvent.next(true);
+                                } else {
+                                    // this.getContactsList(row, true);
+                                }
                             }
+
                         });
                 } else {
-                    if (contacts) {
-                        this.userService.reloadEvent.next(true);
+                    if (updateDD && !isBeforeAddProduct) {
+
                     } else {
-                        // this.getContactsList(row, true);
+                        if (contacts || reload) {
+                            this.userService.reloadEvent.next(true);
+                        } else {
+                            // this.getContactsList(row, true);
+                        }
                     }
                 }
             }, 1000);

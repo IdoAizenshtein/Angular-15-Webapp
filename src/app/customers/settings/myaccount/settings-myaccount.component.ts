@@ -38,6 +38,7 @@ export class SettingsMyaccountComponent
   public popUpAuthenticationShow: any = false;
   public popUpReplaceMailShow: any = false;
   public dataAuth: any;
+  public vms:boolean = false;
   public hide: boolean = true;
   public formMail: any;
   public hideMail: boolean = true;
@@ -54,7 +55,10 @@ export class SettingsMyaccountComponent
   };
 
   private pristineData: any;
-
+  tokenInfo = {
+    maskedPhoneNumber: null,
+    smsRemained: -1
+  };
   constructor(
     private sharedService: SharedService,
     public _fb: FormBuilder,
@@ -135,6 +139,8 @@ export class SettingsMyaccountComponent
       },
       submit: () => {
         this.changePasswordPrompt.processing = true;
+        this.sharedComponent.mixPanelEvent('password change');
+
         this.authService
           .replacePassword({
             oldPassword:
@@ -174,6 +180,8 @@ export class SettingsMyaccountComponent
 
 
   changeApplied(event: any): void {
+    this.sharedComponent.mixPanelEvent('mail change');
+
     if (event) {
       this.popUpReplaceMailShow = false;
       setTimeout(() => {
@@ -215,6 +223,7 @@ export class SettingsMyaccountComponent
     ) {
       return;
     }
+    this.sharedComponent.mixPanelEvent('personal details');
 
     const parameters: any = {
       firstName: this.data.firstName,
@@ -250,10 +259,11 @@ export class SettingsMyaccountComponent
     };
   }
 
-  nextStep() {
+  async nextStep() {
     if (this.popUpAuthenticationShow.step === 1) {
       this.popUpAuthenticationShow.processing$.next(true);
-      this.sharedService.sendSms().subscribe(
+      const gRecaptcha = await this.userService.executeAction('send-sms');
+      this.sharedService.sendSms(gRecaptcha).subscribe(
         (response:any) => {
           this.popUpAuthenticationShow.processing$.next(false);
           this.dataAuth = response ? response['body'] : response;
@@ -273,6 +283,7 @@ export class SettingsMyaccountComponent
     } else if (this.popUpAuthenticationShow.step === 2) {
       this.popUpAuthenticationShow.valid = true;
       this.popUpAuthenticationShow.processing$.next(true);
+      this.sharedComponent.mixPanelEvent(this.popUpAuthenticationShow.type === 'REGULAR' ? 'activate otp' : 'cancel otp');
       this.sharedService[
         this.popUpAuthenticationShow.type === 'REGULAR'
           ? 'turnOnTwoPhaseForUser'
@@ -385,5 +396,17 @@ export class SettingsMyaccountComponent
           }
         );
     }
+  }
+
+  async resendSms(): Promise<void> {
+    const gRecaptcha = await this.userService.executeAction('resend-sms');
+    this.authService.resentOtpSms(this.dataAuth.token, gRecaptcha).subscribe((response: any) => {
+      this.tokenInfo = response.body;
+    });
+  }
+  resentOtpVms(): void {
+    this.authService.resentOtpVms(this.dataAuth.token).subscribe((response: any) => {
+      this.tokenInfo = response.body;
+    });
   }
 }

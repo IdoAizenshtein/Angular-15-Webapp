@@ -4,33 +4,34 @@
 				(changed)="getSlikaSummary()"
 				[solek]="userService.appData.userData.slika"
 		></app-solek-select>
-		
+
 		<div class="exports">
 			<!--<button (click)="printTransactions()"><img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/to-printer.png" height="21" width="24"/></button>-->
 			<button
-					(click)="reportMailSubmitterToggle = true"
+					(click)="sharedComponent.mixPanelEvent('mail'); reportMailSubmitterToggle = true"
 					[matTooltip]="'appWalk.customers.report.mailBtn' | translate"
 					matTooltipPosition="above"
 			>
 				<img height="21" ngSrc="/assets/images/to-mail.png" width="24"/>
 				<app-report-mail-scheduler
 						(recipientApproved)="sendTransactions($event)"
-						
+
 						[visible]="(reportMailSubmitterToggle)"
 				></app-report-mail-scheduler>
 			</button>
 			<!--<button (click)="exportTransactions('PDF')"><img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/to-pdf.png" height="21" width="24"/></button>-->
 			<button
-					(click)="exportTransactions('EXCEL')"
+					(click)="sharedComponent.mixPanelEvent('excel'); exportTransactions('EXCEL')"
 					[matTooltip]="'appWalk.customers.report.excelBtn' | translate"
 					matTooltipPosition="above"
 			>
 				<img height="21" ngSrc="/assets/images/to-excel.png" width="24"/>
 			</button>
 		</div>
-		
+
 		<ul class="tabs navTabs" style="margin: 0">
 			<li
+					(click)="sharedComponent.mixPanelEvent('aggregate screen')"
 					[matTooltip]="
           'appWalk.customers.financialManagement.slika.viewSwitchAggregate'
             | translate
@@ -44,6 +45,7 @@
 				{{ 'filters.consolidated' | translate }}
 			</li>
 			<li
+					(click)="sharedComponent.mixPanelEvent('detailed screen')"
 					[matTooltip]="
           'appWalk.customers.financialManagement.slika.viewSwitchDetails'
             | translate
@@ -57,6 +59,7 @@
 				{{ 'filters.detailed' | translate }}
 			</li>
 			<li
+					(click)="sharedComponent.mixPanelEvent('graph screen')"
 					[matTooltip]="
           'appWalk.customers.financialManagement.slika.viewSwitchChart'
             | translate

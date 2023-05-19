@@ -1778,6 +1778,7 @@ export class TazrimBankmatchCasflowComponent
       this.editMovementEditor.mode === EditingType.Single ||
       !this.editMovementEditor.allowMultimode
     ) {
+
       updateObs = this.sharedService.updateSingleTransactionFromBankMatch(
         this.editMovementData.source.targetType,
         this.prepareSingleForSending(dataToSubmit, this.editMovementData.origin)
@@ -1843,6 +1844,7 @@ export class TazrimBankmatchCasflowComponent
           this.postponePrompt.source.targetType;
 
         this.postponePrompt.processing = true;
+
         this.sharedService
           .updateSingleTransactionFromBankMatch(targetType, dataToSubmit)
           .subscribe((rslt) => {
@@ -2014,7 +2016,7 @@ export class TazrimBankmatchCasflowComponent
                 dataToSubmit.targetOriginalTotal
             );
           }
-          // debugger;
+
           const targetType = item.targetTypeName || item.targetType;
           return this.sharedService.updateSingleTransactionFromBankMatch(
               targetType,

@@ -288,6 +288,28 @@ export class RestCommonService {
         return this.httpServices.sendHttp<any>(accountsParam);
     }
 
+    mailValidationCfl(params: any): Observable<any> {
+        const accountsParam: InterfaceParamHttp<any> = {
+            method: 'post',
+            path: 'v1/cfl/mail-validation',
+            params: params,
+            isJson: true,
+            isProtected: true,
+            isAuthorization: true
+        };
+        return this.httpServices.sendHttp<any>(accountsParam);
+    }
+
+    isExistsHp(officeHp: string): Observable<any> {
+        const params: InterfaceParamHttp<any> = {
+            method: 'get',
+            path: `v1/office/is-exists/${officeHp}`,
+            isProtected: true,
+            isAuthorization: true
+        };
+        return this.httpServices.sendHttp<any>(params);
+    }
+
     updateUserMail(params: any): Observable<any> {
         const accountsParam: InterfaceParamHttp<any> = {
             method: 'post',

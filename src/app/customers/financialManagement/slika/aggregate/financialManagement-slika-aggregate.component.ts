@@ -715,6 +715,8 @@ export class FinancialManagementSlikaAggregateComponent
         solek: any,
         monthSummary: any
     ): void {
+        this.sharedComponent.mixPanelEvent('all transes');
+
         // console.log('Called goToFinancialManagementCreditsCardDetailsComponent with %o, %o', card, monthSummary);
         const anchorDt = new Date(monthSummary.cycleDate);
         this.storageService.sessionStorageSetter(

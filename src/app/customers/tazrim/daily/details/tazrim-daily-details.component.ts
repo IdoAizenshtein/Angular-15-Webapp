@@ -15,7 +15,7 @@ import {SharedComponent} from '@app/shared/component/shared.component';
 import {UserService} from '@app/core/user.service';
 import {SharedService} from '@app/shared/services/shared.service';
 import {HttpErrorResponse} from '@angular/common/http';
-import {combineLatest, defer, EMPTY, Observable, of, Subject, Subscription, timer, zip} from 'rxjs';
+import {combineLatest, defer, Observable, of, Subject, Subscription, timer, zip} from 'rxjs';
 import {debounceTime, distinctUntilChanged, filter, map, switchMap, take, takeUntil, tap} from 'rxjs/operators';
 import {FilterPipe} from '@app/shared/pipes/filter.pipe';
 import {SortPipe} from '@app/shared/pipes/sort.pipe';
@@ -289,13 +289,15 @@ export class TazrimDailyDetailsComponent
     ];
     editMovementData: {
         visible: boolean;
+        mode: any;
         title: string;
         form: any;
         loading: boolean | null;
         source: any;
         seriesSource: any;
     };
-    @ViewChild('editEditor') editEditor: MovementEditorComponent;
+    @ViewChild('editEditor', {read: MovementEditorComponent}) editEditor: MovementEditorComponent;
+
     @ViewChild('editMovementDataDlg') editMovementDataDlg: Dialog;
 
     public dualMeaningFieldEditPrompt: {
@@ -516,6 +518,7 @@ export class TazrimDailyDetailsComponent
                 })
             )
             .subscribe((term) => {
+                this.sharedComponent.mixPanelEvent('search',{value: term});
                 this.queryString = term;
                 this.filtersAll();
             });
@@ -542,6 +545,7 @@ export class TazrimDailyDetailsComponent
         this.editMovementData = {
             visible: false,
             title: '',
+            mode: null,
             form: new FormGroup({}),
             source: null,
             seriesSource: null,
@@ -880,6 +884,17 @@ export class TazrimDailyDetailsComponent
     }
 
     filterTypes(type: any) {
+        if (type !== null) {
+            if (type === 'false') {
+                this.sharedComponent.mixPanelEvent('filter zhut');
+            }
+            if (type === 'true') {
+                this.sharedComponent.mixPanelEvent('filter hova');
+            }
+        } else {
+            this.sharedComponent.mixPanelEvent('filter all');
+        }
+
         this.filterTypesVal = type;
         this.filtersAll();
     }
@@ -899,7 +914,17 @@ export class TazrimDailyDetailsComponent
             this.filtersAll('biziboxMutavId');
         }
     }
-
+    sendEvent(isOpened: any) {
+        if (isOpened && this.childDates) {
+            this.childDates.selectedRange
+                .pipe(take(1))
+                .subscribe((paramDate) => {
+                    this.sharedComponent.mixPanelEvent('days drop', {
+                        value: paramDate.fromDate + '-' + paramDate.toDate
+                    });
+                });
+        }
+    }
     changeAcc(event): void {
         if (event) {
             this.filterTypesVal = null;
@@ -928,6 +953,25 @@ export class TazrimDailyDetailsComponent
         } else {
             this.accountSelectInDeviation = [];
         }
+        // if (this.userService.appData.userData.accountSelect.filter((account) => {
+        //     return account.currency !== 'ILS';
+        // }).length) {
+        //     this.sharedComponent.mixPanelEvent('accounts drop');
+        // }
+        const accountSelectExchange = this.userService.appData.userData.accountSelect.filter((account) => {
+            return account.currency !== 'ILS';
+        })
+        this.sharedComponent.mixPanelEvent('accounts drop', {
+            accounts:(this.userService.appData.userData.accountSelect.length === accountSelectExchange.length) ? 'כל החשבונות מט"ח' :
+                (((this.userService.appData.userData.accounts.length-accountSelectExchange.length) === this.userService.appData.userData.accountSelect.length)? 'כל החשבונות' :
+                    (
+                        this.userService.appData.userData.accountSelect.map(
+                            (account) => {
+                                return account.companyAccountId;
+                            }
+                        )
+                    ))
+        });
         console.log(
             'this.accountSelectInDeviation => %o',
             this.accountSelectInDeviation
@@ -1980,7 +2024,7 @@ export class TazrimDailyDetailsComponent
                         !eventPath[0].classList.contains('p-dialog-mask') &&
                         !eventPath.some(
                             (node) =>
-                                node === this.scrollContainer.nativeElement ||
+                                (this.scrollContainer && (node === this.scrollContainer.nativeElement)) ||
                                 (node.classList && node.classList.contains('p-dialog'))
                         );
                     if (shouldTerminateEdit) {
@@ -2045,9 +2089,12 @@ export class TazrimDailyDetailsComponent
     }
 
     public submitChanges($event: any, fieldName?: string): void {
-        const value = fieldName && fieldName === 'selectedTransType' ? $event.value : $event.target.value;
+        const value = fieldName && fieldName === 'selectedTransType' ? $event.value :
+            fieldName && fieldName === 'transDateFull' ? $event
+                :
+                $event.target.value;
         if (fieldName && fieldName === 'selectedTransType') {
-            this.editingTransaction = Object.assign(this.editingTransaction, value)
+            this.editingTransaction = Object.assign(this.editingTransaction, value);
         }
 
         if (
@@ -2113,7 +2160,7 @@ export class TazrimDailyDetailsComponent
         // }
     }
 
-    private submitChangesInner(changed?:boolean): void {
+    private submitChangesInner(changed?: boolean): void {
         // console.log('submit changes called %o', $event);
         if (!this.hasChanges() && !changed) {
             return;
@@ -2888,6 +2935,21 @@ export class TazrimDailyDetailsComponent
         return new Date((parseFloat(excelDate) - (25568 + 1)) * 86400 * 1000);
     }
 
+    getTimezoneOffsetMS(date) {
+        var fullYear = date.getFullYear();
+        var month = date.getMonth();
+        var day = date.getDate();
+        var hours = date.getHours();
+        var minutes = date.getMinutes();
+        var seconds = date.getSeconds();
+        var ms = date.getMilliseconds();
+
+        var time = date.getTime();
+        var utcTime = Date.UTC(fullYear, month, day, hours, minutes, seconds, ms);
+        var result = time - utcTime;
+        return result;
+    };
+
     onFileChange(evt: any) {
         // debugger;
         const target: DataTransfer = <DataTransfer>evt.target;
@@ -2960,7 +3022,7 @@ export class TazrimDailyDetailsComponent
                                 paymentDesc: any = '',
                                 dueDate: any = null,
                                 payment: 'Checks' | 'BankTransfer' | 'Other';
-                            console.log(o);
+                            // console.log(o);
                             if (o.indexOf('סוג_פעולה') !== -1) {
                                 typePeulaIndex = o.indexOf('סוג_פעולה');
                                 typePaymentIndex = o.indexOf('סוג_תשלום');
@@ -3087,17 +3149,21 @@ export class TazrimDailyDetailsComponent
 
                                 const dateVal: any = o[dateIndex];
                                 if (dateVal) {
+                                    console.log(dateVal);
                                     const isValidDate = this.isValid(dateVal);
                                     const formatDate = dateVal.toString();
                                     if (isValidDate) {
-                                        dueDate = new Date(dateVal).toISOString();
+                                        dueDate = this.userService.appData
+                                            .moment(dateVal);
+                                        // dueDate = new Date(dateVal).toISOString();
                                     } else if (
                                         formatDate.indexOf('/') === -1 &&
                                         formatDate.indexOf('.') === -1 &&
                                         formatDate.indexOf('-') === -1
                                     ) {
                                         const dates: any = this.getJsDateFromExcel(dateVal);
-                                        dueDate = dates.toISOString();
+                                        dueDate = this.userService.appData
+                                            .moment(dates);
                                         // console.log(dueDate)
                                     } else {
                                         try {
@@ -3111,11 +3177,13 @@ export class TazrimDailyDetailsComponent
                                                 if (years.length === 2) {
                                                     yearSend = '20' + years;
                                                 }
-                                                dueDate = new Date(
-                                                    Number(yearSend),
-                                                    Number(dates.split('/')[1]) - 1,
-                                                    Number(dates.split('/')[0])
-                                                ).toISOString();
+                                                dueDate = this.userService.appData
+                                                    .moment(new Date(
+                                                        Number(yearSend),
+                                                        Number(dates.split('/')[1]) - 1,
+                                                        Number(dates.split('/')[0])
+                                                    ));
+
                                             }
                                             if (formatDate.indexOf('.') !== -1) {
                                                 const dates = dateVal.toString().replace(/\s/g, '');
@@ -3127,11 +3195,13 @@ export class TazrimDailyDetailsComponent
                                                 if (years.length === 2) {
                                                     yearSend = '20' + years;
                                                 }
-                                                dueDate = new Date(
-                                                    Number(yearSend),
-                                                    Number(dates.split('.')[1]) - 1,
-                                                    Number(dates.split('.')[0])
-                                                ).toISOString();
+                                                dueDate = this.userService.appData
+                                                    .moment(new Date(
+                                                        Number(yearSend),
+                                                        Number(dates.split('.')[1]) - 1,
+                                                        Number(dates.split('.')[0])
+                                                    ));
+
                                             }
                                             if (formatDate.indexOf('-') !== -1) {
                                                 const dates = dateVal.toString().replace(/\s/g, '');
@@ -3143,11 +3213,13 @@ export class TazrimDailyDetailsComponent
                                                 if (years.length === 2) {
                                                     yearSend = '20' + years;
                                                 }
-                                                dueDate = new Date(
-                                                    Number(yearSend),
-                                                    Number(dates.split('-')[1]) - 1,
-                                                    Number(dates.split('-')[0])
-                                                ).toISOString();
+                                                dueDate = this.userService.appData
+                                                    .moment(new Date(
+                                                        Number(yearSend),
+                                                        Number(dates.split('-')[1]) - 1,
+                                                        Number(dates.split('-')[0])
+                                                    ));
+
                                             }
                                         } catch (e) {
                                             this.popUpExcelImportShow.alertErrorUploadExcel =
@@ -3217,6 +3289,8 @@ export class TazrimDailyDetailsComponent
 
                                 this.popUpExcelImportShow.numberRowsExcel += 1;
 
+                                console.log('dueDate: ', dueDate.format('LL'), dueDate.add(1, 'hours').format('LL'), dueDate.add(1, 'hours').valueOf());
+                                dueDate = dueDate.add(1, 'hours').valueOf();
                                 if (!arrRows[typePeulaNum]) {
                                     arrRows[typePeulaNum] = [];
                                     arrRows[typePeulaNum][payment] = [
@@ -3629,94 +3703,94 @@ export class TazrimDailyDetailsComponent
                 excelIds: []
             };
             // let transId: any = '';
+
             combineLatest(
-                [
+                obsrvbls.length > 1 ? [
                     obsrvbls[0],
-                    obsrvbls.length > 1 ? zip(...obsrvbls.slice(1)) : EMPTY
+                    zip(...obsrvbls.slice(1))
+                ] : [
+                    obsrvbls[0]
                 ]
             )
                 .pipe(take(2))
-                .subscribe({
-                    next(res) {
-                        if (Array.isArray(res)) {
-                            responseArr = responseArr.concat(res);
-                        } else {
-                            responseArr.push(res);
-                        }
-                    },
-                    complete() {
-                        __this.popUpExcelImportShow.pending = false;
-                        __this.popUpExcelImportShow = false;
-                        __this.childDates.selectedRange
-                            .pipe(take(1))
-                            .subscribe(() =>
-                                __this.filterDates(
-                                    __this.childDates.recalculateSelectedRangeIfNecessary()
-                                )
-                            );
-
-                        let numOfSentRows = 0;
-                        let numOfInsertRows = 0;
-                        responseArr.forEach((res) => {
-                            const body = res ? res['body'] : res;
-                            if (body) {
-                                if (body.excelId) {
-                                    req.excelIds.push(body.excelId);
-                                }
-                                numOfSentRows += body.numOfSentRows;
-                                numOfInsertRows += body.numOfInsertRows;
-                            }
-                        });
-                        if (numOfSentRows === numOfInsertRows) {
-                            req = null;
-                        }
-                        if (req) {
-                            __this.sharedService
-                                .excelDuplicateImport(req)
-                                .subscribe((response: any) => {
-                                    const responseList = response ? response['body'] : response;
-                                    __this.popUpExcelImportDuplicateShow = {
-                                        companyAccountId: req.companyAccountId,
-                                        styleClass: 'popUpExcelImportDuplicateShow',
-                                        height: 550,
-                                        width: 775,
-                                        valid: false,
-                                        pending: false,
-                                        list: Array.isArray(responseList)
-                                            ? responseList.map((item) => {
-                                                item.message = __this.formatMessage(item.message);
-                                                return item;
-                                            })
-                                            : responseList,
-                                        numOfSentRows: numOfSentRows,
-                                        numOfInsertRows: numOfInsertRows,
-                                        listToSend: []
-                                    };
-                                });
-                        } else {
-                            if (numOfInsertRows === 1) {
-                                __this.sharedComponent.topNotificationArea.toastTransactionCreationSuccess(
-                                    {
-                                        duration: 3,
-                                        multiple: obsrvbls.length > 1
-                                    }
-                                );
-                            } else {
-                                __this.sharedComponent.topNotificationArea.toastTransactionCreationSuccess(
-                                    {
-                                        duration: 3,
-                                        multiple: obsrvbls.length > 1,
-                                        text: numOfInsertRows + ' תנועות יובאו בהצלחה לתזרים'
-                                    }
-                                );
-                            }
-                        }
-
-                        // __this.togglePaymentCreateSuccessSnack(Object.assign(transLocateDataIfSuccess, {
-                        //     transId: transId as string
-                        // }));
+                .subscribe((res) => {
+                    if (Array.isArray(res)) {
+                        responseArr = responseArr.concat(res);
+                    } else {
+                        responseArr.push(res);
                     }
+
+                    __this.popUpExcelImportShow.pending = false;
+                    __this.popUpExcelImportShow = false;
+                    __this.childDates.selectedRange
+                        .pipe(take(1))
+                        .subscribe(() =>
+                            __this.filterDates(
+                                __this.childDates.recalculateSelectedRangeIfNecessary()
+                            )
+                        );
+                    let numOfSentRows = 0;
+                    let numOfInsertRows = 0;
+                    responseArr.forEach((res) => {
+                        const body = res ? res['body'] : res;
+                        if (body) {
+                            if (body.excelId) {
+                                req.excelIds.push(body.excelId);
+                            }
+                            numOfSentRows += body.numOfSentRows;
+                            numOfInsertRows += body.numOfInsertRows;
+                        }
+                    });
+                    if (numOfSentRows === numOfInsertRows) {
+                        req = null;
+                    }
+                    if (req) {
+                        __this.sharedService
+                            .excelDuplicateImport(req)
+                            .subscribe((response: any) => {
+                                const responseList = response ? response['body'] : response;
+                                __this.popUpExcelImportDuplicateShow = {
+                                    companyAccountId: req.companyAccountId,
+                                    styleClass: 'popUpExcelImportDuplicateShow',
+                                    height: 550,
+                                    width: 775,
+                                    valid: false,
+                                    pending: false,
+                                    list: Array.isArray(responseList)
+                                        ? responseList.map((item) => {
+                                            item.message = __this.formatMessage(item.message);
+                                            return item;
+                                        })
+                                        : responseList,
+                                    numOfSentRows: numOfSentRows,
+                                    numOfInsertRows: numOfInsertRows,
+                                    listToSend: []
+                                };
+                            });
+                    } else {
+                        if (numOfInsertRows === 1) {
+                            __this.sharedComponent.topNotificationArea.toastTransactionCreationSuccess(
+                                {
+                                    duration: 3,
+                                    multiple: obsrvbls.length > 1
+                                }
+                            );
+                        } else {
+                            __this.sharedComponent.topNotificationArea.toastTransactionCreationSuccess(
+                                {
+                                    duration: 3,
+                                    multiple: obsrvbls.length > 1,
+                                    text: numOfInsertRows + ' תנועות יובאו בהצלחה לתזרים'
+                                }
+                            );
+                        }
+                    }
+                    // __this.togglePaymentCreateSuccessSnack(Object.assign(transLocateDataIfSuccess, {
+                    //     transId: transId as string
+                    // }));
                 });
+
+
         } else {
             this.popUpExcelImportShow = false;
         }
@@ -3849,35 +3923,32 @@ export class TazrimDailyDetailsComponent
                 const len = this.popUpExcelImportDuplicateShow.listToSend.length;
                 const __this = this;
                 combineLatest(
-                    [
+                    obsrvbls.length > 1 ? [
                         obsrvbls[0],
-                        obsrvbls.length > 1 ? zip(...obsrvbls.slice(1)) : EMPTY
+                        zip(...obsrvbls.slice(1))
+                    ] : [
+                        obsrvbls[0]
                     ]
                 )
                     .pipe(take(2))
-                    .subscribe({
-                        // next(res) {
-                        //
-                        // },
-                        complete() {
-                            __this.popUpExcelImportDuplicateShow.pending = false;
-                            __this.popUpExcelImportDuplicateShow = false;
-                            __this.childDates.selectedRange
-                                .pipe(take(1))
-                                .subscribe(() =>
-                                    __this.filterDates(
-                                        __this.childDates.recalculateSelectedRangeIfNecessary()
-                                    )
-                                );
-
-                            __this.sharedComponent.topNotificationArea.toastTransactionCreationSuccess(
-                                {
-                                    duration: 3,
-                                    multiple: obsrvbls.length > 1,
-                                    text: len + ' תנועות יובאו בהצלחה לתזרים'
-                                }
+                    .subscribe((res: any) => {
+                        __this.popUpExcelImportDuplicateShow.pending = false;
+                        __this.popUpExcelImportDuplicateShow = false;
+                        __this.childDates.selectedRange
+                            .pipe(take(1))
+                            .subscribe(() =>
+                                __this.filterDates(
+                                    __this.childDates.recalculateSelectedRangeIfNecessary()
+                                )
                             );
-                        }
+
+                        __this.sharedComponent.topNotificationArea.toastTransactionCreationSuccess(
+                            {
+                                duration: 3,
+                                multiple: obsrvbls.length > 1,
+                                text: len + ' תנועות יובאו בהצלחה לתזרים'
+                            }
+                        );
                     });
             } else {
                 this.popUpExcelImportDuplicateShow = false;
@@ -4003,7 +4074,7 @@ export class TazrimDailyDetailsComponent
         companyAccountId: string;
         date: Date;
         transId: string;
-    }, numTrans:any): void {
+    }, numTrans: any): void {
         // const snackRef: MatSnackBarRef<PaymentCreateSuccessComponent> = this.snackBar.openFromComponent(PaymentCreateSuccessComponent,
         //     {
         //     panelClass: 'snack-success',
@@ -4074,7 +4145,6 @@ export class TazrimDailyDetailsComponent
             ' - ' +
             item.paymentDescTranslate; // + this.translate.instant('paymentTypes.' + item.paymentDesc);
         this.editMovementData.form = new FormGroup({});
-
         this.editMovementData.source = JSON.parse(JSON.stringify(item));
         // if (item.transDate) {
         //     this.editMovementData.source.transDate = new Date(item.transDate);
@@ -4082,9 +4152,12 @@ export class TazrimDailyDetailsComponent
         delete this.editMovementData.source.account;
 
         this.editMovementData.seriesSource = null;
-        this.editEditor.mode = editType;
+        this.editMovementData.mode = editType;
         this.editMovementData.visible = true;
         this.editMovementData.loading = false;
+        // setTimeout(()=>{
+        //     this.editEditor.mode = editType;
+        // }, 200)
 
         if (
             this.isPeriodicType.transform(this.editMovementData.source.targetType)
@@ -4141,6 +4214,10 @@ export class TazrimDailyDetailsComponent
     }
 
     onSubmitEditOperation(): void {
+        // console.log(this.editMovementData.form, Object.values(this.editMovementData.form.controls));
+        // Object.values(this.editMovementData.form.controls).forEach((ac:any) => {
+        //     console.log(ac.invalid, ac.value);
+        // });
         if (!this.editMovementData.form.valid) {
             BrowserService.flattenControls(this.editMovementData.form).forEach((ac) =>
                 ac.markAsDirty()
@@ -4365,7 +4442,17 @@ export class TazrimDailyDetailsComponent
         this.itemUnionPrompt.unitedItem = item;
         this.itemUnionPrompt.visible = true;
     }
-
+    mixPanelEventEvent(paymentDesc: unknown) {
+        if (paymentDesc === 'BankTransfer') {
+            this.sharedComponent.mixPanelEvent('perut bank transfer');
+        }
+        if (paymentDesc === 'Checks') {
+            this.sharedComponent.mixPanelEvent('perut check');
+        }
+        if (paymentDesc === 'Loans') {
+            this.sharedComponent.mixPanelEvent('perut loan');
+        }
+    }
     private clearActiveTableRow() {
         this._editingTransaction = null;
         this.editingTransaction = null;

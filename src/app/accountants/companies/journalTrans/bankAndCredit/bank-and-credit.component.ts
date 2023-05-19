@@ -12,7 +12,7 @@ import {
     ViewChildren,
     ViewEncapsulation
 } from '@angular/core';
-import {combineLatest, EMPTY, Observable, of, Subject, Subscription, timer, zip} from 'rxjs';
+import {combineLatest, EMPTY, interval, Observable, of, Subject, Subscription, timer, zip} from 'rxjs';
 import {DomSanitizer, SafeHtml} from '@angular/platform-browser';
 import {UserService} from '@app/core/user.service';
 import {SharedComponent} from '@app/shared/component/shared.component';
@@ -26,7 +26,20 @@ import {JournalTransComponent} from '../journal-trans.component';
 import {SumPipe} from '@app/shared/pipes/sum.pipe';
 import {MatLegacySnackBar as MatSnackBar} from '@angular/material/legacy-snack-bar';
 import {DatePipe} from '@angular/common';
-import {debounceTime, distinctUntilChanged, filter, finalize, first, map, startWith, switchMap, take, takeUntil, tap} from 'rxjs/operators';
+import {
+    debounceTime,
+    distinctUntilChanged,
+    filter,
+    finalize,
+    first,
+    map,
+    retry,
+    startWith,
+    switchMap,
+    take,
+    takeUntil,
+    tap
+} from 'rxjs/operators';
 import {AbstractControl, FormArray, FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
 import {AccountsDateRangeSelectorComponent} from '@app/shared/component/date-range-selectors/accounts-date-range-selector.component';
 import {OverlayPanel} from 'primeng/overlaypanel';
@@ -35,7 +48,7 @@ import {
     CcardsDateRangeSelectorAccountantsComponent
 } from '@app/shared/component/date-range-selectors/ccards-date-range-selector-accountants.component';
 import {CreditCardSelectionSummary2} from './creditCardSelectionSummary';
-import {CardsSelectComponent} from '@app/shared/component/cards-select/cards-select.component';
+import {CardsSelectByCurrencyComponent} from '@app/shared/component/cards-select-by-currency/cards-select-by-currency.component';
 import {OcrService} from '@app/accountants/companies/shared/ocr.service';
 import {ReloadServices} from '@app/shared/services/reload.services';
 import {roundAndAddComma, toFixedNumber, toNumber} from '@app/shared/functions/addCommaToNumbers';
@@ -52,6 +65,10 @@ import {
     MatchDateRangeSelectorAccountantsComponent
 } from '@app/shared/component/date-range-selectors/match-date-range-selector-accountants.component';
 import {getPageHeight} from '@app/shared/functions/getPageHeight';
+import {MessagesService} from '@app/core/messages.service';
+import {ScrollDispatcher} from '@angular/cdk/scrolling';
+import {StatusesComponent} from '@app/shared/component/statuses/statuses.component';
+import {HelpCenterService} from '@app/customers/help-center/help-center.service';
 
 declare var $: any;
 
@@ -61,9 +78,7 @@ declare var $: any;
     preserveWhitespaces: false,
     animations: [slideInOut]
 })
-export class BankAndCreditComponent
-    extends ReloadServices
-    implements OnDestroy, OnInit, AfterViewInit {
+export class BankAndCreditComponent extends ReloadServices implements OnDestroy, OnInit, AfterViewInit {
     public isBankAndCreditComponent = true;
     public documentsDataSave: any = false;
     public showFloatNav: any = false;
@@ -80,6 +95,8 @@ export class BankAndCreditComponent
     public banktransForMatchAll: any;
     public showModalAfterSelected: any = false;
     public matchedTransSaved: any;
+    public showPanelDD = false;
+
 
     public cashflowMatchAll: any;
     public isFutureTransesOpened = false;
@@ -110,7 +127,11 @@ export class BankAndCreditComponent
         'transDateStr',
         'transDateStr_date'
     ];
+    public scrollContainerHasScroll = false;
+    @ViewChild('scrollContainerVirtual') scrollContainerVirtual: ElementRef<HTMLElement>;
+
     public allTransData = [];
+    public indexSelectedJournal: number = 0;
     public sortPipeDirCash: any = null;
     public sortPipeDir: any = null;
     public sortPipeDirDate: any = null;
@@ -123,13 +144,19 @@ export class BankAndCreditComponent
     public advancedSearchParams1Bank: any;
     @ViewChild(AccountsDateRangeSelectorComponent)
     childDates: AccountsDateRangeSelectorComponent;
+
+    @ViewChild(StatusesComponent)
+    childStatuses: StatusesComponent;
+
     public responseRestPath: any = false;
+    public showNotUpToDatePopup: any = false;
+
     cardsListArrivedSub: Subscription;
     @ViewChild(CcardsDateRangeSelectorAccountantsComponent)
     childCardsDates: CcardsDateRangeSelectorAccountantsComponent;
     @ViewChild(MatchDateRangeSelectorAccountantsComponent)
     childMatchDates: MatchDateRangeSelectorAccountantsComponent;
-    @ViewChild(CardsSelectComponent) cardsSelector: CardsSelectComponent;
+    @ViewChild(CardsSelectByCurrencyComponent) cardsSelector: CardsSelectByCurrencyComponent;
     // @ViewChild(TransactionAdditionalTriggerDirective) childTransactionAdditionalTrigger: TransactionAdditionalTriggerDirective;
     public updateTransParam: any = null;
     public activeDD: any = false;
@@ -220,19 +247,23 @@ export class BankAndCreditComponent
     public filterTypesHova: any = null;
     public selcetAllFiles = false;
     public currentPage = 0;
-    public entryLimit = 50;
+    public entryLimit = 20;
     @ViewChild('paginator') paginator: Paginator;
     @ViewChild('scrollContainer') scrollContainer: ElementRef;
     @ViewChild('scrollContainerCashflowMatch')
     scrollContainerCashflowMatch: ElementRef;
     public setHoverOffset: any = false;
     receipt: any;
+    journalPaymentPrompt: any;
     rowToSplit: any = false;
     public companyCustomerDetailsData: any = [];
     public saverValuesReceipt = {
         total: 0,
         paymentNikui: 0,
-        paymentTotal: 0
+        paymentTotal: 0,
+        totalMatah: 0,
+        paymentTotalMatah: 0,
+        paymentNikuiMatah: 0
     };
     public showDocumentListStorageDataFired: any = false;
     public showDocumentListStorageDataFiredRece: any = false;
@@ -253,9 +284,18 @@ export class BankAndCreditComponent
     public accountsBarData: any = false;
     public checkBoxesNear: any = true;
     public accountsBarDataError: any = false;
+    public revaluationCurrCodeArr: any = [];
+    public currCodeArr: any = [];
+    public intervalAcc: any = false;
+    public accountsBarRes: any = false;
+
+    public currencyIdDD;
+    public srcCurrencyId;
+
     public logicTypeShow: any = false;
     public hasTopBar: any = false;
     public accountSelected: any = null;
+    public overlayVisible: boolean = false;
     scrollRobot: any;
     public nav = {
         prev: false,
@@ -268,6 +308,18 @@ export class BankAndCreditComponent
     public cardDetailsSave: any[] | any = false;
     public showScreen: any = null;
     public selectionSummary: CreditCardSelectionSummary2;
+    public exportFileStatusFilter: string = 'IN_PROCESS';
+    public keyup_exportFileStatusFiltersTime: any;
+    public exportFileStatusFilters = {
+        minDate: new Date(new Date().getFullYear() - 1, 0, 1),
+        max: new Date(),
+        date_from: '',
+        date_till: '',
+        mana_num_min: '',
+        mana_num_max: '',
+        orderBy: 'dateLastModified',
+        order: 'DESC'
+    };
     public debounce: any;
     public companyCustomerDetails: any = false;
     public custModal: any = false;
@@ -275,6 +327,7 @@ export class BankAndCreditComponent
     public custIdForMatch: any = false;
     public paramsForUpdateCust: any = false;
     public modalEditCardsBeforeSend: any = false;
+    public custPopUpForPayments: any = false;
     public customerCustList = [];
     public shoeModalSelectType: any = false;
     public rowIdSave: any;
@@ -329,6 +382,7 @@ export class BankAndCreditComponent
     };
     public docsfile: any = null;
     public exportFileFolderCreatePrompt: {
+        alertDownloadedOneFileOnly?: boolean;
         approveSubscription?: Subscription;
         visible: boolean;
         pending: boolean;
@@ -340,6 +394,8 @@ export class BankAndCreditComponent
     };
     public enabledDownloadLink: boolean = true;
     @ViewChild('navBanks') navBanks: ElementRef;
+    @ViewChild('elementDD') _elementDD: ElementRef;
+
     public banktransForMatch: any = [];
     public paymentTypesTranslate: any = [];
     public matchedTrans: any = [];
@@ -349,6 +405,27 @@ export class BankAndCreditComponent
     public fileToRemove: any = false;
     public countStatusData: any = false;
     public bankProcessTransType: any = false;
+    public currencyRate: any = 0;
+    public currencyRate_journalTranses: any = 0;
+    public currencyId_journalTranses;
+
+    @HostListener('document:click', ['$event'])
+    onClickOutside($event: any) {
+        if (this._elementDD && this._elementDD.nativeElement && this.fileStatus === 'CREATE_JOURNAL_TRANS') {
+            // console.log('%o, -- %o', $event, this.parentNode);
+            const elementRefInPath = BrowserService.pathFrom($event).find(
+                (node) => node === this._elementDD.nativeElement
+            );
+            if (!elementRefInPath) {
+                if (this.showPanelDD) {
+                    this.showPanelDD = false;
+                }
+            }
+        }
+    }
+
+    public bankProcessTransTypeSrc: any;
+
     public printData: any = false;
     @ViewChild('elemToPrint') elemToPrint: HTMLElement;
     public showZoomInside = false;
@@ -382,6 +459,7 @@ export class BankAndCreditComponent
     private globalListenerWhenInEdit: () => void | boolean;
 
     constructor(
+        private helpCenterService: HelpCenterService,
         public userService: UserService,
         public reportService: ReportService,
         private dtHumanizePipe: TodayRelativeHumanizePipe,
@@ -391,6 +469,8 @@ export class BankAndCreditComponent
         private ocrService: OcrService,
         public browserDetect: BrowserService,
         private fb: FormBuilder,
+        private messagesService: MessagesService,
+        private scrollDispatcher: ScrollDispatcher,
         public override sharedComponent: SharedComponent,
         private sharedService: SharedService,
         private filterPipe: FilterPipe,
@@ -441,6 +521,7 @@ export class BankAndCreditComponent
         const bankAndCreditScreenTab = this.storageService.sessionStorageGetterItem(
             'bankAndCreditScreenTab'
         );
+
         if (bankAndCreditScreenTab !== null) {
             this.fileStatus = bankAndCreditScreenTab;
         } else {
@@ -464,7 +545,6 @@ export class BankAndCreditComponent
                 if (this.fileStatus === 'CREATE_JOURNAL_TRANS') {
                     this.filtersAllJournalTransData();
                 }
-
                 if (this.scrollContainer && this.scrollContainer.nativeElement) {
                     requestAnimationFrame(() => {
                         this.scrollContainer.nativeElement.scrollTop = 0;
@@ -493,7 +573,6 @@ export class BankAndCreditComponent
             sendDateFrom: new FormControl(null),
             sendDateTill: new FormControl(null)
         });
-
         this.advancedSearchParams1 = new FormGroup({
             // fileName: new FormControl(null),
             // supplierHp: new FormControl(null, [
@@ -556,7 +635,6 @@ export class BankAndCreditComponent
             sendDateFrom: new FormControl(null),
             sendDateTill: new FormControl(null)
         });
-
         this.selectionSummary = new CreditCardSelectionSummary2(this.userService);
 
         this.sharedComponent.getDataEvent
@@ -574,6 +652,7 @@ export class BankAndCreditComponent
             )
             .subscribe(() => {
                 this.showScreen = null;
+                this.accountsBarRes = false;
                 this.sharedService
                     .countStatusBank(
                         this.userService.appData.userData.companySelect.companyId
@@ -712,6 +791,40 @@ export class BankAndCreditComponent
         });
     }
 
+    public iconSupportTooltip(): any {
+        return `<div>
+<div style="display: flex;height: 30px;align-items: center;">
+<p style="font-family: 'Assistant';font-style: normal;font-weight: 400;font-size: 14px;text-align: right;color: #02225C;line-height: 7px;height: 20px;display: block;">
+לצורך פתיחת קריאת שירות יש ללחוץ על הצ’ק בוקס - 
+</p>
+<img  src="/assets/images/iconSupportTooltip1.png"/>
+
+</div>
+<div style="display: flex;height: 30px;align-items: center;">
+<p style="font-family: 'Assistant';font-style: normal;font-weight: 400;font-size: 14px;text-align: right;color: #02225C;line-height: 7px;height: 20px;display: block;">
+ולאחר מכן ללחוץ על הכפתור בתפריט הצף - 
+</p>
+<img  src="/assets/images/iconSupportTooltip2.png"/>
+</div>
+</div>`;
+    }
+
+    public iconSupportTooltip2(): any {
+        return `<div>
+<div style="display: flex;height: 30px;align-items: center;">
+<p style="font-family: 'Assistant';font-style: normal;font-weight: 400;font-size: 14px;text-align: right;color: #02225C;line-height: 7px;height: 20px;display: block;">
+לשינוי תאריך תחילת התאמות,
+</p>
+</div>
+<div style="display: flex;height: 30px;align-items: center;">
+<p style="font-family: 'Assistant';font-style: normal;font-weight: 400;font-size: 14px;text-align: right;color: #02225C;line-height: 7px;height: 20px;display: block;">
+אנא פיתחו קריאת שרות.
+</p>
+<img  src="/assets/images/iconSupportTooltip2.png"/>
+</div>
+</div>`;
+    }
+
     onScroll1(scrollbarRef: any, virtualScroll?: any) {
         if (virtualScroll) {
             this.virtualScrollSaved1 = virtualScroll;
@@ -754,6 +867,11 @@ export class BankAndCreditComponent
         return getPageHeight(value);
     }
 
+    exportFileStatusFilterClick(status: string) {
+        this.exportFileStatusFilter = status;
+        this.getExportFiles(true);
+    }
+
     toggleAccChild(acc: any) {
         acc.show = !acc.show;
         this.accountsBarData.accountsBarDto.forEach(it => {
@@ -763,163 +881,257 @@ export class BankAndCreditComponent
         });
     }
 
+    updateDataReadyPopup() {
+        this.sharedService
+            .updateDataReadyPopup({
+                companyId: this.userService.appData.userData.companySelect.companyId,
+                popupConfirm: true
+            })
+            .subscribe(() => {
+            });
+    }
+
     accountsBar(saveDefAcc?: boolean) {
         const bankAndCreditScreenTab = this.storageService.sessionStorageGetterItem(
             'bankAndCreditScreenTab'
         );
-        this.sharedService
-            .accountsBar({
-                uuid: this.userService.appData.userData.companySelect.companyId
-            })
+
+        if (this.intervalAcc) {
+            this.intervalAcc.unsubscribe();
+        }
+        this.intervalAcc = interval(5000)
+            .pipe(
+                startWith(0),
+                switchMap(() =>
+                    this.sharedService
+                        .accountsBar({
+                            uuid: this.userService.appData.userData.companySelect.companyId
+                        })
+                )
+            )
             .subscribe(
-                (response: any) => {
-                    const responseRest = response ? response['body'] : response;
-                    if (response.status === 200) {
-                        this.accountsBarDataError = false;
-                        if (
-                            responseRest &&
-                            responseRest.logicType &&
-                            responseRest.logicType === 'POPUP'
-                        ) {
-                            this.fileStatus = 'BANK_MATCH';
-                            this.storageService.sessionStorageSetter(
-                                'bankAndCreditScreenTab',
-                                this.fileStatus
-                            );
+                {
+                    next: (response: any) => {
+                        const responseRest = response ? response['body'] : response;
+                        if (response.status !== 200 || responseRest.dataReady || responseRest.dataReady === null) {
+                            this.intervalAcc.unsubscribe();
                         }
-                        if (
-                            responseRest &&
-                            responseRest.accountsBarDto &&
-                            responseRest.accountsBarDto.length
-                        ) {
-                            responseRest.accountsBarDto.forEach((v) => {
-                                v.startWorkDate = v.startWorkDate
-                                    ? new Date(v.startWorkDate)
-                                    : new Date();
-                                v.oldestWorkDate = v.oldestWorkDate
-                                    ? new Date(v.oldestWorkDate)
-                                    : new Date();
-                            });
+                        if (responseRest.dataReady && !responseRest.dataReadyConfirm) {
+                            responseRest.dataReadyEnd = true;
+                        }
 
-                            const groupByCategory = responseRest.accountsBarDto.reduce((group, product) => {
-                                const {bankId} = product;
-                                group[bankId] = group[bankId] ?? [];
-                                group[bankId].push(product);
-                                return group;
-                            }, {});
-                            const arrayAcc = [];
-                            for (const [key, value] of Object.entries(groupByCategory)) {
-                                let values: any = value;
-                                const istransCountZero = values.filter(it => it.transCount === 0);
-                                const istransCountNoneZero = values.filter(it => it.transCount !== 0);
-
-                                if (istransCountZero.length) {
-                                    const istransCountZeroClean = JSON.parse(JSON.stringify(istransCountZero));
-                                    istransCountZeroClean.forEach(it => {
-                                        it.show = false;
-                                        it.title = false;
-                                        it.startWorkDate = new Date(it.startWorkDate);
-                                        it.oldestWorkDate = new Date(it.oldestWorkDate);
-                                    });
-                                    values = [
-                                        Object.assign(istransCountZero[0], {
-                                            show: false,
-                                            title: true,
-                                            accountId: false
-                                        }),
-                                        ...istransCountZeroClean,
-                                        ...istransCountNoneZero
-                                    ];
+                        // if (this.accountsBarRes && (this.accountsBarRes.dataReady !== responseRest.dataReady) && responseRest.dataReady && !responseRest.dataReadyConfirm) {
+                        //     responseRest.dataReadyEnd = true;
+                        //     // setTimeout(() => {
+                        //     //     this.accountsBarRes.dataReadyEnd = false;
+                        //     // }, 5000);
+                        // }
+                        // if (responseRest.dataReady && responseRest.dataReadyConfirm) {
+                        //     responseRest.dataReadyEnd = false;
+                        // }
+                        this.accountsBarRes = responseRest;
+                        if (this.accountsBarRes.dataReady || this.accountsBarRes.dataReady === null) {
+                            if (response.status === 200) {
+                                this.accountsBarDataError = false;
+                                if (
+                                    responseRest &&
+                                    responseRest.logicType &&
+                                    responseRest.logicType === 'POPUP'
+                                ) {
+                                    this.fileStatus = 'BANK_MATCH';
+                                    this.storageService.sessionStorageSetter(
+                                        'bankAndCreditScreenTab',
+                                        this.fileStatus
+                                    );
                                 }
-                                arrayAcc.push(...values);
-                                // console.log(`${key}: ${value}`);
-                            }
-                            responseRest.accountsBarDto = arrayAcc;
-                        }
-                        this.accountsBarData = responseRest;
-                        if (this.accountsBarData.accountsBarDto && this.accountsBarData.accountsBarDto.length) {
-                            const existAcc = this.accountSelected
-                                ? this.accountsBarData.accountsBarDto.find(
-                                    (it) => it.accountId === this.accountSelected.accountId
-                                )
-                                : false;
-                            if (!saveDefAcc || !existAcc) {
-                                const defAccount = this.accountsBarData.accountsBarDto.find(it => it.transCount > 0);
-                                this.accountSelected = defAccount ? defAccount :
-                                    this.accountsBarData.accountsBarDto[0].title ? this.accountsBarData.accountsBarDto[1] : this.accountsBarData.accountsBarDto[0];
-                                // this.accountSelected = this.accountsBarData.accountsBarDto[0];
-                            }
-                            const openClosedTab = this.accountsBarData.accountsBarDto.find(
-                                (it) => it.accountId === this.accountSelected.accountId
-                            );
-                            if (openClosedTab && openClosedTab.show === false) {
-                                this.toggleAccChild(this.accountsBarData.accountsBarDto.find(
-                                    (it) => it.bankId === this.accountSelected.bankId
-                                ));
+                                if (
+                                    responseRest &&
+                                    responseRest.accountsBarDto &&
+                                    responseRest.accountsBarDto.length
+                                ) {
+                                    responseRest.accountsBarDto.forEach((v) => {
+                                        v.startWorkDate = v.startWorkDate
+                                            ? new Date(v.startWorkDate)
+                                            : new Date();
+                                        v.oldestWorkDate = v.oldestWorkDate
+                                            ? new Date(v.oldestWorkDate)
+                                            : new Date();
+                                    });
+                                    const groupByCategory = responseRest.accountsBarDto.reduce((group, product) => {
+                                        const {bankId} = product;
+                                        group[bankId] = group[bankId] ?? [];
+                                        group[bankId].push(product);
+                                        return group;
+                                    }, {});
+                                    const arrayAcc = [];
+                                    for (const [key, value] of Object.entries(groupByCategory)) {
+                                        let values: any = value;
+                                        const istransCountZero = values.filter(it => it.transCount === 0);
+                                        const istransCountNoneZero = values.filter(it => it.transCount !== 0);
+
+                                        if (istransCountZero.length) {
+                                            const istransCountZeroClean = JSON.parse(JSON.stringify(istransCountZero));
+                                            istransCountZeroClean.forEach(it => {
+                                                it.show = false;
+                                                it.title = false;
+                                                it.startWorkDate = new Date(it.startWorkDate);
+                                                it.oldestWorkDate = new Date(it.oldestWorkDate);
+                                            });
+                                            values = [
+                                                Object.assign(istransCountZero[0], {
+                                                    show: false,
+                                                    title: true,
+                                                    accountId: false
+                                                }),
+                                                ...istransCountZeroClean,
+                                                ...istransCountNoneZero
+                                            ];
+                                        }
+                                        arrayAcc.push(...values);
+                                        // console.log(`${key}: ${value}`);
+                                    }
+                                    responseRest.accountsBarDto = arrayAcc;
+                                }
+                                this.accountsBarData = responseRest;
+                                if (this.accountsBarData.accountsBarDto && this.accountsBarData.accountsBarDto.length) {
+                                    const existAcc = this.accountSelected
+                                        ? this.accountsBarData.accountsBarDto.find(
+                                            (it) => it.accountId === this.accountSelected.accountId
+                                        )
+                                        : false;
+                                    if (!saveDefAcc || !existAcc) {
+                                        const defAccount = this.accountsBarData.accountsBarDto.find(it => it.transCount > 0);
+                                        this.accountSelected = defAccount ? defAccount :
+                                            this.accountsBarData.accountsBarDto[0].title ? this.accountsBarData.accountsBarDto[1] : this.accountsBarData.accountsBarDto[0];
+                                        // this.accountSelected = this.accountsBarData.accountsBarDto[0];
+                                    }
+                                    const openClosedTab = this.accountsBarData.accountsBarDto.find(
+                                        (it) => it.accountId === this.accountSelected.accountId
+                                    );
+                                    if (openClosedTab && openClosedTab.show === false) {
+                                        this.toggleAccChild(this.accountsBarData.accountsBarDto.find(
+                                            (it) => it.bankId === this.accountSelected.bankId
+                                        ));
+                                    }
+                                    this.ocrService.getCurrencyList().subscribe((currencies) => {
+                                        const currencyList = currencies;
+                                        this.accountsBarData.accountsBarDto.forEach((v) => {
+                                            const code = currencyList.find(
+                                                (ite) => ite.id === v.currencyId
+                                            );
+                                            v.currencySign = code?.sign;
+                                        });
+                                        // this.currCodeArr = currencies.sort((a, b) => (a['id'] > b['id'] ? 1 : -1));
+                                    });
+
+                                    // this.fileStatus = 'CREDIT';
+                                    // this.setStatus(this.fileStatus);
+                                    if (bankAndCreditScreenTab !== null) {
+                                        if (bankAndCreditScreenTab === 'CREATE_JOURNAL_TRANS' || bankAndCreditScreenTab === 'BANK_MATCH') {
+                                            this.setStatus(bankAndCreditScreenTab);
+                                        } else {
+                                            this.fileStatus = bankAndCreditScreenTab;
+                                        }
+                                    } else {
+                                        if (!this.fileStatus) {
+                                            this.fileStatus = 'BANK_MATCH';
+                                        }
+                                        this.exporterFolderStatePostMethod();
+                                        this.getDataTables();
+                                    }
+
+                                    // this.showScreen = true;
+
+                                } else {
+                                    this.showScreen = true;
+                                    this.loaderBooks = false;
+                                    this.loaderCash = false;
+                                    this.loaderMatchedTrans = false;
+                                    if (bankAndCreditScreenTab !== null) {
+                                        // this.fileStatus = bankAndCreditScreenTab;
+                                        if (bankAndCreditScreenTab === 'CREATE_JOURNAL_TRANS' || bankAndCreditScreenTab === 'BANK_MATCH') {
+                                            this.setStatus(bankAndCreditScreenTab);
+                                        } else {
+                                            this.fileStatus = bankAndCreditScreenTab;
+                                        }
+                                    } else {
+                                        this.fileStatus = 'BANK_MATCH';
+                                        this.exporterFolderStatePostMethod();
+                                    }
+                                }
+                            } else {
+                                this.accountsBarDataError = true;
+                                if (bankAndCreditScreenTab === null) {
+                                    this.fileStatus = 'BANK';
+                                } else {
+                                    this.exporterFolderStatePostMethod();
+                                }
                             }
                             this.ocrService.getCurrencyList().subscribe((currencies) => {
-                                const currencyList = currencies;
-                                this.accountsBarData.accountsBarDto.forEach((v) => {
-                                    const code = currencyList.find(
-                                        (ite) => ite.id === v.currencyId
-                                    );
-                                    v.currencySign = code.sign;
+                                const currenciesArr = currencies;
+                                this.sharedService.getCompanyDefinedCurrency({
+                                    uuid: this.userService.appData.userData.companySelect.companyId
+                                }).subscribe((response) => {
+                                    let currenciesCompany = response ? response['body'] : response;
+                                    if (currenciesCompany.currencyList && currenciesCompany.currencyList.length) {
+                                        currenciesCompany.currencyList = currenciesCompany.currencyList.map(it => {
+                                            const sameCurr = currenciesArr.find(ite => ite.code === it.code);
+                                            if (sameCurr) {
+                                                return Object.assign(it, sameCurr);
+                                            } else {
+                                                it.id = null;
+                                                it.sign = null;
+                                                return it;
+                                            }
+                                        });
+                                        this.revaluationCurrCodeArr = currenciesCompany.currencyList.sort((a, b) => (a['id'] > b['id'] ? 1 : -1));
+                                    }
                                 });
                             });
-                            this.getDataTables();
-                        } else {
-                            this.showScreen = true;
-                            this.loaderBooks = false;
-                            this.loaderCash = false;
-                            this.loaderMatchedTrans = false;
-                            this.fileStatus = 'BANK_MATCH';
-                        }
-                    } else {
-                        this.accountsBarDataError = true;
-                        if (bankAndCreditScreenTab === null) {
-                            this.setStatus('BANK');
-                        }
-                    }
 
-                    // if (!this.accountsBarData.logicType) {
-                    //     // this.logicTypeShow = false;
-                    // } else {
-                    //     if ((<any>$('.example-company-token-tracker')).length ||
-                    //         (<any>$('.top-toast-container')).length ||
-                    //         (<any>$('#top-notification-container')).length
-                    //     ) {
-                    //         this.hasTopBar = true;
-                    //     }
-                    //     this.logicTypeShow = this.accountsBarData.logicType === 'POPUP';
-                    //
-                    //     if (this.accountsBarData.logicType === 'POPUP') {
-                    //         this.getDataTables();
-                    //     }
-                    //     // if (this.accountsBarData.logicType === 'GREEN') {
-                    //     //     this.reportService.cancelToastMatch = {
-                    //     //         class: 'yellow',
-                    //     //         message: this.domSanitizer.bypassSecurityTrustHtml('<p style="cursor: pointer;">בוצעו התאמות לכל פקודות הספרים, ניתן לשנות תאריך וליצור התאמות חדשות</p>'),
-                    //     //         onClose: () => {
-                    //     //             this.reportService.cancelToastMatch = null;
-                    //     //         },
-                    //     //         onClick: () => {
-                    //     //             this.reportService.cancelToastMatch = null;
-                    //     //             this.open_logicType_again();
-                    //     //         }
-                    //     //     };
-                    //     // }
-                    // }
-                    // logicType
-                },
-                (err: HttpErrorResponse) => {
-                    this.accountsBarDataError = true;
-                    this.setStatus('BANK');
-                    if (err.error) {
-                        console.log('An error occurred:', err.error.message);
-                    } else {
-                        console.log(
-                            `Backend returned code ${err.status}, body was: ${err.error}`
-                        );
+
+                            // if (!this.accountsBarData.logicType) {
+                            //     // this.logicTypeShow = false;
+                            // } else {
+                            //     if ((<any>$('.example-company-token-tracker')).length ||
+                            //         (<any>$('.top-toast-container')).length ||
+                            //         (<any>$('#top-notification-container')).length
+                            //     ) {
+                            //         this.hasTopBar = true;
+                            //     }
+                            //     this.logicTypeShow = this.accountsBarData.logicType === 'POPUP';
+                            //
+                            //     if (this.accountsBarData.logicType === 'POPUP') {
+                            //         this.getDataTables();
+                            //     }
+                            //     // if (this.accountsBarData.logicType === 'GREEN') {
+                            //     //     this.reportService.cancelToastMatch = {
+                            //     //         class: 'yellow',
+                            //     //         message: this.domSanitizer.bypassSecurityTrustHtml('<p style="cursor: pointer;">בוצעו התאמות לכל פקודות הספרים, ניתן לשנות תאריך וליצור התאמות חדשות</p>'),
+                            //     //         onClose: () => {
+                            //     //             this.reportService.cancelToastMatch = null;
+                            //     //         },
+                            //     //         onClick: () => {
+                            //     //             this.reportService.cancelToastMatch = null;
+                            //     //             this.open_logicType_again();
+                            //     //         }
+                            //     //     };
+                            //     // }
+                            // }
+                            // logicType
+                        }
+                    },
+                    error: (err: HttpErrorResponse) => {
+                        this.accountsBarDataError = true;
+                        this.fileStatus = 'BANK';
+
+                        if (err.error) {
+                            console.log('An error occurred:', err.error.message);
+                        } else {
+                            console.log(
+                                `Backend returned code ${err.status}, body was: ${err.error}`
+                            );
+                        }
                     }
                 }
             );
@@ -968,6 +1180,224 @@ export class BankAndCreditComponent
             });
             this.filtersAllCash();
         }
+    }
+
+    showOpenTicket(param?: any) {
+        let subjects, params;
+        if (this.fileStatus === 'BANK') {
+            const selcetedFiles = this.showFloatNav.selcetedFiles[0];
+            // console.log(selcetedFiles)
+            params = {
+                'accountId': null,
+                'accountType': null,
+                'accountant': true,
+                'paymentId': selcetedFiles.paymentId ? selcetedFiles.paymentId : null,
+                'paymentType': selcetedFiles.paymentType ? selcetedFiles.paymentType : null,
+                'screenType': 'BANK_TRANS',
+                'taskCategoryId': '1fb9cabf-550b-4263-bead-8d523a146a91',
+                'ocrExportFileId': null
+            };
+            subjects = [
+                {
+                    subject: 'תיאור / פרטים'
+                },
+                {
+                    subject: 'סוג תנועה'
+                },
+                {
+                    subject: 'סוג תשלום'
+                },
+                {
+                    subject: 'כרטיס נגדי'
+                },
+                {
+                    subject: 'סטטוס תנועה'
+                },
+                {
+                    subject: 'עריכת/פיצול פקודה'
+                }
+            ];
+            this.sharedComponent.dataFromBankAndCreditScreen = {
+                subjects: subjects,
+                params: params,
+                count: this.showFloatNav.selcetedFiles.length
+            };
+            this.sharedComponent.showOpenTicket();
+        } else if (this.fileStatus === 'CREDIT') {
+            const selcetedFiles = this.showFloatNav.selcetedFiles[0];
+            // console.log(selcetedFiles)
+            params = {
+                'paymentId': selcetedFiles.paymentId ? selcetedFiles.paymentId : null,
+                'paymentType': selcetedFiles.paymentType ? selcetedFiles.paymentType : null,
+                'screenType': 'CREDIT_TRANS',
+                'taskCategoryId': '1fb9cabf-550b-4263-bead-8d523a146a91',
+                'accountId': null,
+                'accountType': null,
+                'accountant': true,
+                'ocrExportFileId': null
+            };
+            subjects = [
+                {
+                    subject: 'תיאור / פרטים'
+                },
+                {
+                    subject: 'סוג תנועה'
+                },
+                {
+                    subject: 'סוג תשלום'
+                },
+                {
+                    subject: 'כרטיס נגדי'
+                },
+                {
+                    subject: 'סטטוס תנועה'
+                },
+                {
+                    subject: 'עריכת/פיצול פקודה'
+                }
+            ];
+            this.sharedComponent.dataFromBankAndCreditScreen = {
+                subjects: subjects,
+                params: params,
+                count: this.showFloatNav.selcetedFiles.length
+            };
+            this.sharedComponent.showOpenTicket();
+        } else if (this.fileStatus === 'CREATE_JOURNAL_TRANS') {
+            const selcetedFiles = this.showFloatNav.selcetedFiles[0];
+            // console.log(selcetedFiles)
+            params = {
+                'paymentId': selcetedFiles.paymentId ? selcetedFiles.paymentId : null,
+                'paymentType': selcetedFiles.paymentType ? selcetedFiles.paymentType : null,
+                'screenType': 'PKUDAT_YOMAN_CREATE',
+                'taskCategoryId': '1fb9cabf-550b-4263-bead-8d523a146a93',
+                'accountId': null,
+                'accountType': null,
+                'accountant': true,
+                'ocrExportFileId': selcetedFiles.parent.ocrExportFileId
+            };
+            subjects = [
+                {
+                    subject: 'קליטת קובץ'
+                },
+                {
+                    subject: 'סטטוס קובץ'
+                }
+            ];
+            this.sharedComponent.dataFromBankAndCreditScreen = {
+                subjects: subjects,
+                params: params,
+                count: this.showFloatNav.selcetedFiles.length
+            };
+            this.sharedComponent.showOpenTicket();
+        } else if (this.fileStatus === 'BANK_MATCH') {
+            if (this.tabMatched === 1) {
+                const idSelectRowMatched = this.banktransForMatchAll.filter(it => it.deleteRow);
+                const isMatchSelectedId = this.cashflowMatchAll.filter(it => it.checkRow);
+                if (isMatchSelectedId.length) {
+                    const selcetedFiles = isMatchSelectedId[0];
+                    params = {
+                        'paymentId': selcetedFiles.paymentId ? selcetedFiles.paymentId : null,
+                        'paymentType': selcetedFiles.paymentType ? selcetedFiles.paymentType : null,
+                        'screenType': 'BANK_MATCH',
+                        'taskCategoryId': '1fb9cabf-550b-4263-bead-8d523a146a92',
+                        'accountId': this.accountSelected.accountId,
+                        'accountType': this.accountSelected.accountType,
+                        'accountant': true,
+                        'ocrExportFileId': null
+                    };
+                } else {
+                    const selcetedRaw = idSelectRowMatched[0];
+                    params = {
+                        'paymentId': selcetedRaw.journalBankId ? selcetedRaw.journalBankId : null,
+                        'paymentType': selcetedRaw.sourceType ? selcetedRaw.sourceType : null,
+                        'screenType': 'BANK_MATCH',
+                        'taskCategoryId': '1fb9cabf-550b-4263-bead-8d523a146a92',
+                        'accountId': this.accountSelected.accountId,
+                        'accountType': this.accountSelected.accountType,
+                        'accountant': true,
+                        'ocrExportFileId': null
+                    };
+                }
+                subjects = [
+                    {
+                        subject: 'צד בנק'
+                    },
+                    {
+                        subject: 'צד ספרים'
+                    },
+                    {
+                        subject: 'כללי'
+                    }
+                ];
+            }
+            if (this.tabMatched === 2) {
+                const transMatched = this.matchedTransSaved.filter(item => (!item.isFutureTransesTitle && !item.isMadeInBiziboxTitle && !item.isBiziboxMatchedTitle) && item[param]);
+                if (transMatched.length) {
+                    const selcetedFiles = transMatched[0].bank;
+                    params = {
+                        'paymentId': selcetedFiles && selcetedFiles.paymentId ? selcetedFiles.paymentId : null,
+                        'paymentType': selcetedFiles && selcetedFiles.paymentType ? selcetedFiles.paymentType : null,
+                        'screenType': 'ADJUSTED_ACTION',
+                        'taskCategoryId': '1fb9cabf-550b-4263-bead-8d523a146a94',
+                        'accountId': this.accountSelected.accountId,
+                        'accountType': this.accountSelected.accountType,
+                        'accountant': true,
+                        'ocrExportFileId': null
+                    };
+                } else {
+                    params = {
+                        'paymentId': null,
+                        'paymentType': null,
+                        'screenType': 'ADJUSTED_ACTION',
+                        'taskCategoryId': '1fb9cabf-550b-4263-bead-8d523a146a94',
+                        'accountId': this.accountSelected.accountId,
+                        'accountType': this.accountSelected.accountType,
+                        'accountant': true,
+                        'ocrExportFileId': null
+                    };
+                }
+                subjects = [
+                    {
+                        subject: 'ביטול התאמה'
+                    },
+                    {
+                        subject: 'כללי'
+                    }
+                ];
+                // param
+            }
+            this.sharedComponent.dataFromBankAndCreditScreen = {
+                subjects: subjects,
+                params: params
+            };
+            this.sharedComponent.showOpenTicket(false, this.userService.appData.userData.companySelect.companyId, this.accountSelected.accountNickname, this.accountSelected.accountType === 'BANK');
+        }
+
+
+    }
+
+    showOpenTicketDisabled() {
+        let subjects, params;
+        params = {
+            'paymentId': null,
+            'paymentType': null,
+            'screenType': 'BANK_MATCH',
+            'taskCategoryId': '1fb9cabf-550b-4263-bead-8d523a146a95',
+            'accountId': null,
+            'accountType': null,
+            'accountant': true,
+            'ocrExportFileId': null
+        };
+        subjects = [
+            {
+                subject: 'שינוי תאריך תחילת התאמות'
+            }
+        ];
+        this.sharedComponent.dataFromBankAndCreditScreen = {
+            subjects: subjects,
+            params: params
+        };
+        this.sharedComponent.showOpenTicket(false, this.userService.appData.userData.companySelect.companyId, this.accountSelected.accountNickname, this.accountSelected.accountType === 'BANK');
     }
 
     getBanksRecommendation() {
@@ -1170,7 +1600,7 @@ export class BankAndCreditComponent
         }
 
         this.filtersAllBooks();
-        if (itemChecked.deleteRow && itemChecked.idSelectRow === false) {
+        if ((this.banktransForMatchAll.filter(it => it.deleteRow).length < 2) && !(this.cashflowMatchAll.filter(it => it.checkRow).length) && itemChecked.deleteRow && itemChecked.idSelectRow === false) {
             this.getBanksRecommendation();
         }
     }
@@ -1193,7 +1623,6 @@ export class BankAndCreditComponent
                 return;
             }
             if (!itemRow.checkRow) {
-                debugger
                 const idSelectRowMatched = this.cashflowMatchAll.filter(it => !it.checkRow && it.idSelectRow !== false);
                 // console.log(idSelectRowMatched)
                 if (idSelectRowMatched.length) {
@@ -1626,16 +2055,23 @@ export class BankAndCreditComponent
                             ...this.banktransForMatchAll.pastTranses
                         ];
                         this.cashflowMatchAll = response.banks
-                            ? response.banks[
+                            ? (response.banks[
                                 this.accountSelected.accountType === 'BANK'
                                     ? 'banksData'
                                     : 'cardsData'
-                                ]
-                            : response.banks;
+                                ] ? response.banks[
+                                    this.accountSelected.accountType === 'BANK'
+                                        ? 'banksData'
+                                        : 'cardsData'
+                                    ]
+                                :
+                                [])
+                            : [];
                         const dataArr = [];
                         this.cashflowMatchAll.forEach((v) => {
                             if (v.splitArray && v.splitArray.length) {
                                 v.splitArray.forEach(vCh => {
+                                    vCh.transDate = v.transDate;
                                     vCh.totalParent = v.total;
                                     vCh.childenLen = v.splitArray.length;
                                 });
@@ -1647,6 +2083,7 @@ export class BankAndCreditComponent
                         this.cashflowMatchAll = dataArr.map((trns) =>
                             this.setupItemCashView(trns)
                         );
+
                         this.sumsTotal = {};
                         this.sumsTotal.bank = this.cashflowMatchAll.reduce(
                             (total, item, currentIndex) => {
@@ -1673,6 +2110,7 @@ export class BankAndCreditComponent
                         this.sumsTotal.dif = this.sumsTotal.bank + this.sumsTotal.books;
                         this.filtersAllBooks();
                         this.filtersAllCash();
+                        // console.log(this.cashflowMatchAll, this.banktransForMatchAll)
                     },
                     error: (err: HttpErrorResponse) => {
                         if (err.error instanceof Error) {
@@ -1955,6 +2393,7 @@ export class BankAndCreditComponent
     }
 
     cancelMatch(journalBankMatchId: any) {
+        this.sharedComponent.mixPanelEvent('bitul hatama');
         this.sharedService.cancelMatched([journalBankMatchId]).subscribe(() => {
             this.getDataTables();
         });
@@ -2024,6 +2463,12 @@ export class BankAndCreditComponent
         // ) {
         //
         // }
+        this.sharedComponent.mixPanelEvent('hatama', {
+            'count bank': this.banktransForMatch
+                .filter((item) => item.deleteRow).length,
+            'count books': cashflowMatchTmp
+                .filter((item) => item.checkRow).length
+        });
         this.sharedService
             .accountantMatch({
                 accountId: this.accountSelected.accountId,
@@ -2607,7 +3052,41 @@ export class BankAndCreditComponent
             })
             .subscribe(() => {
                 this.accountsBar(true);
+                this.sharedComponent.getAccounts();
             });
+    }
+
+    public selectDate_exportFileStatusFilters(eve: any) {
+        // var aaa = new Date(this.exportFileStatusFilters.date_from).getTime();
+        // var bbb = this.userService.appData.moment(this.exportFileStatusFilters.date_from).valueOf();
+        // debugger
+        // // if (this.exportFileStatusFilters.date_from && this.exportFileStatusFilters.date_till) {
+        // //     if (Number(this.exportFileStatusFilters.mana_num_min) > Number(this.exportFileStatusFilters.mana_num_max)) {
+        // //         this.exportFileStatusFilters.mana_num_min = this.exportFileStatusFilters.mana_num_max;
+        // //     }
+        // // }
+        this.filtersAllJournalTransData();
+    }
+
+    public keyup_exportFileStatusFilters() {
+        // clearTimeout(this.keyup_exportFileStatusFiltersTime);
+        // this.keyup_exportFileStatusFiltersTime = setTimeout(() => {
+        //     if (this.exportFileStatusFilters.mana_num_max && this.exportFileStatusFilters.mana_num_min) {
+        //         if (Number(this.exportFileStatusFilters.mana_num_min) > Number(this.exportFileStatusFilters.mana_num_max)) {
+        //             this.exportFileStatusFilters.mana_num_min = this.exportFileStatusFilters.mana_num_max;
+        //         }
+        //     }
+        //     this.filtersAllJournalTransData();
+        // }, 1000);
+        let filter = true;
+        if (this.exportFileStatusFilters.mana_num_max && this.exportFileStatusFilters.mana_num_min) {
+            if (Number(this.exportFileStatusFilters.mana_num_min) > Number(this.exportFileStatusFilters.mana_num_max)) {
+                filter = false;
+            }
+        }
+        if (filter) {
+            this.filtersAllJournalTransData();
+        }
     }
 
     scrollSelectedAccountIntoView() {
@@ -2669,8 +3148,7 @@ export class BankAndCreditComponent
                 .pipe(
                     filter(
                         () =>
-                            Array.isArray(this.userService.appData.userData.accountSelect) &&
-                            this.userService.appData.userData.accountSelect.length
+                            this.isAccSelected
                     ),
                     take(1)
                 )
@@ -2721,11 +3199,24 @@ export class BankAndCreditComponent
 
 
     setBankAcc(acc: any): void {
+        this.sharedComponent.mixPanelEvent('bar');
         this.accountSelected = acc;
         setTimeout(() => {
             this.checkNavScroll();
         }, 600);
         this.getDataTables();
+    }
+
+    sendEvent(isOpened: any) {
+        if (isOpened && this.childMatchDates) {
+            this.childMatchDates.selectedRange
+                .pipe(take(1))
+                .subscribe((paramDate) => {
+                    this.sharedComponent.mixPanelEvent('days drop', {
+                        value: paramDate.fromDate + '-' + paramDate.toDate
+                    });
+                });
+        }
     }
 
     public thirdDateOpenItem(item, bool) {
@@ -2864,6 +3355,26 @@ export class BankAndCreditComponent
         }
     }
 
+    get isAccSelected() {
+        return (Array.isArray(this.userService.appData.userData.accountSelect)
+            && this.userService.appData.userData.accountSelect.length
+            && this.userService.appData.userData.accountSelect.filter((acc) => acc.checked).length);
+        // ? this.userService.appData.userData.accountSelect.filter((acc) => acc.checked).map(it=> it.companyAccountId)
+        // : false
+    }
+
+    get isCardsSelected() {
+        return (this.cardsSelector &&
+            this.cardsSelector.selectedCards &&
+            this.cardsSelector.selectedCards.length);
+    }
+
+    get cardsSelected() {
+        return (this.cardsSelector &&
+            this.cardsSelector.selectedCards &&
+            this.cardsSelector.selectedCards.length) ? this.cardsSelector.selectedCards : [];
+    }
+
     changeAcc(event): void {
         if (event) {
             // const bankAndCreditStatus = this.storageService.sessionStorageGetterItem('bankAndCreditStatus');
@@ -2901,7 +3412,8 @@ export class BankAndCreditComponent
             this.filterTypesHova = null;
             this.selcetAllFiles = null;
             this.currentPage = 0;
-            this.entryLimit = 50;
+            this.entryLimit = 20;
+            this.customerCustList = [];
         } else {
             // const bankAndCreditStatus = this.storageService.sessionStorageGetterItem('bankAndCreditStatus');
             // if (bankAndCreditStatus !== null) {
@@ -2932,27 +3444,66 @@ export class BankAndCreditComponent
         }
         setTimeout(() => {
             try {
+                if (this.fileStatus === 'BANK' && !event) {
+                    if (Array.isArray(this.userService.appData.userData.accountSelect)
+                        && this.userService.appData.userData.accountSelect.length
+                        && this.userService.appData.userData.accountSelect.filter((acc) => acc.checked).length) {
+                        let isMatah = false;
+                        const checkedIds = this.userService.appData.userData.accountSelect.filter((acc) => acc.checked);
+                        const lenCheckedIds = checkedIds.length;
+                        const lenTotal = this.userService.appData.userData.accountSelect.length;
+                        if (lenCheckedIds) {
+                            isMatah = checkedIds[0].currency !== 'ILS';
+                        }
+                        this.sharedComponent.mixPanelEvent('accounts drop', {
+                            matah: isMatah,
+                            accounts: (isMatah && lenCheckedIds === lenTotal) ? 'כל החשבונות מט"ח' : this.userService.appData.userData.accountSelect.filter(
+                                (acc) => acc.checked
+                            ).map((account) => {
+                                return account.companyAccountId;
+                            })
+                        });
+                    }
+                }
+                if (this.fileStatus === 'CREDIT' && event) {
+                    if (this.cardsSelector &&
+                        this.cardsSelector.selectedCards &&
+                        this.cardsSelector.selectedCards.length) {
+                        this.sharedComponent.mixPanelEvent('credits drop', {
+                            credits: this.cardsSelector.selectedCards.map((it) => {
+                                return {'accountId': it.accountId, 'accountType': it.accountType};
+                            })
+                        });
+                    }
+                }
+
                 if (this.fileStatus === 'BANK' && this.childDates) {
                     this.selectedRangeSub = this.childDates.selectedRange
                         .pipe(
                             filter(
                                 () =>
-                                    Array.isArray(
-                                        this.userService.appData.userData.accountSelect
-                                    ) && this.userService.appData.userData.accountSelect.length
+                                    this.isAccSelected
                             )
                         )
                         .subscribe((rng) => this.filterDates(rng));
                 } else if (this.fileStatus === 'CREDIT' && this.childCardsDates) {
                     this.selectionSummary.reset();
-                    this.selectedCardRangeSub = this.childCardsDates.selectedRange
-                        .pipe(
-                            filter(() => {
-                                const scltdCards = this.cardsSelector.selectedCards;
-                                return Array.isArray(scltdCards) && scltdCards.length > 0;
-                            })
-                        )
-                        .subscribe((rng) => this.filterDates(rng));
+                    if (this.cardsSelector &&
+                        this.cardsSelector.selectedCards &&
+                        this.cardsSelector.selectedCards.length) {
+                        this.selectedCardRangeSub = this.childCardsDates.selectedRange
+                            .pipe(
+                                filter(() => {
+                                    const scltdCards = this.cardsSelector.selectedCards;
+                                    return Array.isArray(scltdCards) && scltdCards.length > 0;
+                                })
+                            )
+                            .subscribe((rng) => this.filterDates(rng));
+                    } else {
+                        this.showScreen = true;
+                        this.cardDetailsSave = [];
+                        this.cardDetails = [];
+                    }
                 } else if (this.fileStatus === 'CREATE_JOURNAL_TRANS') {
                     this.getExportFiles(true);
                 }
@@ -2978,9 +3529,22 @@ export class BankAndCreditComponent
             this.sharedService
                 .exportFileManualDownload(this.ocrExportFileId)
                 .pipe(
-                    map((response: any) =>
-                        response && !response.error ? response.body : null
-                    ),
+                    map((response: any) => {
+                        if (response.status === 206) {
+                            throw response;
+                        }
+                        return response;
+                    }),
+                    retry(3),
+                    map((response: any) => {
+                        if (!!response) {
+                            if (response.status === 500) {
+                                throw response;
+                            }
+                            return response.error || response.body;
+                        }
+                        return null;
+                    }),
                     first()
                 )
                 .subscribe(
@@ -3000,9 +3564,30 @@ export class BankAndCreditComponent
                                 a.parentNode.removeChild(a);
                             }
                         },
-                        error: (err: HttpErrorResponse) => {
+                        error: async (err: HttpErrorResponse) => {
                             this.responseRestPath = true;
                             this.showModalCheckFolderFile = 'ERROR';
+                            const userData = this.userService.appData.isAdmin
+                                ? this.userService.appData.userDataAdmin
+                                : this.userService.appData.userData;
+
+                            this.sharedService.cancelFile(this.ocrExportFileId).subscribe(() => {
+                            });
+
+                            let serviceCallRequest = {
+                                'closeMailToSend': userData.mail,
+                                'companyId': this.userService.appData.userData.companySelect.companyId,
+                                'taskDesc': 'כישלון בתהליך הורדת קובץ',
+                                'taskOpenerName': userData.userName,
+                                'userCellPhone': userData.phone,
+                                'companyName': this.userService.appData.userData.companySelect.companyName,
+                                'taskTitle': 'כישלון בתהליך הורדת קובץ'
+                            };
+                            serviceCallRequest['gRecaptcha'] = await this.userService.executeAction('open-ticket');
+                            this.helpCenterService
+                                .requestOpenTicket(serviceCallRequest)
+                                .subscribe((resp) => {
+                                });
                             if (err.error instanceof Error) {
                                 console.log('An error occurred:', err.error.message);
                             } else {
@@ -3333,13 +3918,23 @@ export class BankAndCreditComponent
     }
 
     setTaxDeductionCustIdReceipt(i: number) {
-        if (i === 0) {
+        if (i === 0 && !this.journalPaymentPrompt) {
             const taxDeductionCustId =
                 this.arrReceipt.controls[i].get('taxDeductionCustId').value;
+            const srcILS = this.srcCurrencyId === 1;
+            const srcMatah = this.srcCurrencyId !== 1;
             if (taxDeductionCustId) {
-                this.arrReceipt.controls[i].get('paymentTotal').enable();
+                if (srcILS) {
+                    this.arrReceipt.controls[i].get('paymentTotal').enable();
+                } else if (srcMatah) {
+                    this.arrReceipt.controls[i].get('paymentTotalMatah').enable();
+                }
             } else {
-                this.arrReceipt.controls[i].get('paymentTotal').disable();
+                if (srcILS) {
+                    this.arrReceipt.controls[i].get('paymentTotal').disable();
+                } else if (srcMatah) {
+                    this.arrReceipt.controls[i].get('paymentTotalMatah').disable();
+                }
             }
         }
     }
@@ -3349,19 +3944,228 @@ export class BankAndCreditComponent
             const row_taxDeductionCustId_Exist =
                 this.arrReceipt.controls[indexRow].get('show_taxDeductionCustId')
                     .value === true;
+            // const onlyILSEditabled = this.onlyILSEditabled;
+            // const onlyMatahEditabled = this.onlyMatahEditabled;
+            const srcILS = this.srcCurrencyId === 1;
+            const srcMatah = this.srcCurrencyId !== 1;
             if (
                 row_taxDeductionCustId_Exist &&
                 this.arrReceipt.controls[indexRow].get('taxDeductionCustId').value
             ) {
-                this.arrReceipt.controls[indexRow].get('paymentTotal').enable();
+                if (srcILS) {
+                    this.arrReceipt.controls[indexRow].get('paymentTotal').enable();
+                } else if (srcMatah) {
+                    this.arrReceipt.controls[indexRow].get('paymentTotalMatah').enable();
+                }
             } else {
-                this.arrReceipt.controls[indexRow].get('paymentTotal').disable();
+                if (srcILS) {
+                    this.arrReceipt.controls[indexRow].get('paymentTotal').disable();
+                } else if (srcMatah) {
+                    this.arrReceipt.controls[indexRow].get('paymentTotalMatah').disable();
+                }
             }
         }
     }
 
     aaa(item: any) {
         console.log(item);
+    }
+
+    getCurrCodeChange() {
+        if (this.currencyIdDD['id'] !== 1) {
+            this.ocrService
+                .currencyGetRates({
+                    companyId:
+                    this.userService.appData.userData.companySelect.companyId,
+                    currencyCode: this.currencyIdDD['code'],
+                    invoiceDate: new Date()
+                })
+                .subscribe((res) => {
+                    const rateObj = res ? res['body'] : res;
+                    if (rateObj) {
+                        this.currencyRate = rateObj.rate;
+                        this.calcSumsByRate();
+                    }
+                });
+        }
+        if (!this.journalPaymentPrompt) {
+            this.updateDisabledEnabledSums();
+        }
+    }
+
+    // get onlyILSEditabled() {
+    //     return (
+    //         (this.srcCurrencyId === 1 && this.currencyIdDD && this.currencyIdDD['id'] === 1)
+    //         ||
+    //         (this.arrReceipt && this.arrReceipt.controls.length > 1 && this.srcCurrencyId === 1 && this.currencyIdDD && this.currencyIdDD['id'] !== 1)
+    //         ||
+    //         (this.arrReceipt && this.arrReceipt.controls.length === 1 && this.srcCurrencyId !== 1)
+    //     );
+    // }
+    //
+    // get onlyMatahEditabled() {
+    //     return (
+    //         (this.arrReceipt && this.arrReceipt.controls.length === 1 && this.srcCurrencyId === 1 && this.currencyIdDD && this.currencyIdDD['id'] !== 1)
+    //         ||
+    //         (this.arrReceipt && this.arrReceipt.controls.length > 1 && this.srcCurrencyId !== 1)
+    //     );
+    // }
+
+    updateDisabledEnabledSums() {
+        setTimeout(() => {
+            const srcILS = this.srcCurrencyId === 1;
+            const srcMatah = this.srcCurrencyId !== 1;
+            const onlyOneRowExist = this.arrReceipt && this.arrReceipt.controls.length === 1;
+
+            // const onlyILSEditabled = this.onlyILSEditabled;
+            // const onlyMatahEditabled = this.onlyMatahEditabled;
+            // console.log('onlyILSEditabled: ', onlyILSEditabled);
+            // console.log('onlyMatahEditabled: ', onlyMatahEditabled);
+
+            this.arrReceipt.controls.forEach((item, index) => {
+                if (index === 0) {
+                    if (srcILS) {
+                        let taxDeductionCustId =
+                            this.arrReceipt.controls[index].get('taxDeductionCustId').value &&
+                            this.userService.appData.userData.companyCustomerDetails.all
+                                ? this.userService.appData.userData.companyCustomerDetails.all.find(
+                                    (custIdxRec) =>
+                                        custIdxRec.custId === this.arrReceipt.controls[index].get('taxDeductionCustId').value
+                                )
+                                : null;
+                        if (!taxDeductionCustId || !this.arrReceipt.controls[index].get('showTaxDeduction').value) {
+                            this.arrReceipt.controls[index].get('paymentTotal').disable();
+                        } else {
+                            this.arrReceipt.controls[index].get('paymentTotal').enable();
+                        }
+                        this.arrReceipt.controls[index].get('total').disable();
+                        this.arrReceipt.controls[index].get('paymentNikui').enable();
+                        if (onlyOneRowExist) {
+                            this.arrReceipt.controls[index].get('totalMatah').enable();
+                            this.arrReceipt.controls[index].get('paymentTotalMatah').enable();
+                            this.arrReceipt.controls[index].get('paymentNikuiMatah').disable();
+                        } else {
+                            this.arrReceipt.controls[index].get('totalMatah').disable();
+                            this.arrReceipt.controls[index].get('paymentTotalMatah').disable();
+                            this.arrReceipt.controls[index].get('paymentNikuiMatah').disable();
+                        }
+                    }
+                    if (srcMatah) {
+                        let taxDeductionCustId =
+                            this.arrReceipt.controls[index].get('taxDeductionCustId').value &&
+                            this.userService.appData.userData.companyCustomerDetails.all
+                                ? this.userService.appData.userData.companyCustomerDetails.all.find(
+                                    (custIdxRec) =>
+                                        custIdxRec.custId === this.arrReceipt.controls[index].get('taxDeductionCustId').value
+                                )
+                                : null;
+                        if (!taxDeductionCustId || !this.arrReceipt.controls[index].get('showTaxDeduction').value) {
+                            this.arrReceipt.controls[index].get('paymentTotalMatah').disable();
+                        } else {
+                            this.arrReceipt.controls[index].get('paymentTotalMatah').enable();
+                        }
+                        this.arrReceipt.controls[index].get('totalMatah').disable();
+                        this.arrReceipt.controls[index].get('paymentNikuiMatah').enable();
+
+                        if (onlyOneRowExist) {
+                            this.arrReceipt.controls[index].get('total').enable();
+                            this.arrReceipt.controls[index].get('paymentTotal').enable();
+                            this.arrReceipt.controls[index].get('paymentNikui').disable();
+                        } else {
+                            this.arrReceipt.controls[index].get('total').disable();
+                            this.arrReceipt.controls[index].get('paymentTotal').disable();
+                            this.arrReceipt.controls[index].get('paymentNikui').disable();
+                        }
+                    }
+                } else {
+                    if (srcILS) {
+                        this.arrReceipt.controls[index].get('total').enable();
+                        this.arrReceipt.controls[index].get('paymentTotal').enable();
+                        this.arrReceipt.controls[index].get('paymentNikui').enable();
+                        this.arrReceipt.controls[index].get('totalMatah').disable();
+                        this.arrReceipt.controls[index].get('paymentTotalMatah').disable();
+                        this.arrReceipt.controls[index].get('paymentNikuiMatah').disable();
+                    }
+                    if (srcMatah) {
+                        this.arrReceipt.controls[index].get('totalMatah').enable();
+                        this.arrReceipt.controls[index].get('paymentTotalMatah').enable();
+                        this.arrReceipt.controls[index].get('paymentNikuiMatah').enable();
+                        this.arrReceipt.controls[index].get('total').disable();
+                        this.arrReceipt.controls[index].get('paymentTotal').disable();
+                        this.arrReceipt.controls[index].get('paymentNikui').disable();
+                    }
+                }
+
+                try {
+                    if (this.rowToSplit && this.rowToSplit.transTypeDefinedArr && this.arrReceipt.controls[index].get('transTypeCode')) {
+                        const transTypeCode =
+                            this.arrReceipt.controls[index].get('transTypeCode').value;
+                        const transTypeDefinedArr = this.addPriemerObject(
+                            JSON.parse(JSON.stringify(this.rowToSplit.transTypeDefinedArr)),
+                            transTypeCode
+                        );
+                        const transTypeCodeObj = transTypeDefinedArr.find(
+                            (it) => it.value === transTypeCode
+                        );
+                        if (transTypeCodeObj) {
+                            if (
+                                transTypeCodeObj.taxDeductionCustId &&
+                                transTypeCodeObj.taxDeductionCustId !== '?' &&
+                                transTypeCodeObj.taxDeductionCustId !== '*'
+                            ) {
+
+                            } else {
+                                if (srcILS) {
+                                    this.arrReceipt.controls[index].get('paymentTotal').enable();
+                                }
+                                if (srcMatah) {
+                                    this.arrReceipt.controls[index].get('paymentTotalMatah').enable();
+                                }
+                            }
+                        }
+                    }
+                } catch (e) {
+                    console.log(e);
+                }
+
+            });
+        }, 300);
+    }
+
+    calcSumsByRate() {
+        this.currencyRate = this.currencyRate ? this.currencyRate : 0.1;
+        const currencyRate = Number(this.currencyRate);
+        if (this.currencyRate === Infinity) {
+            console.log('Let\'s call it Infinity!');
+            this.currencyRate = 0.1;
+        }
+        this.arrReceipt.controls.forEach((item, index) => {
+            if (this.srcCurrencyId === 1) {
+                this.arrReceipt.controls[index].patchValue({
+                    totalMatah: toFixedNumber(
+                        Number(this.arrReceipt.controls[index].get('total').value) / currencyRate
+                    ),
+                    paymentTotalMatah: toFixedNumber(
+                        Number(this.arrReceipt.controls[index].get('paymentTotal').value) / currencyRate
+                    ),
+                    paymentNikuiMatah: toFixedNumber(
+                        Number(this.arrReceipt.controls[index].get('paymentNikui').value) / currencyRate
+                    )
+                });
+            } else {
+                this.arrReceipt.controls[index].patchValue({
+                    total: toFixedNumber(
+                        Number(this.arrReceipt.controls[index].get('totalMatah').value) * currencyRate
+                    ),
+                    paymentTotal: toFixedNumber(
+                        Number(this.arrReceipt.controls[index].get('paymentTotalMatah').value) * currencyRate
+                    ),
+                    paymentNikui: toFixedNumber(
+                        Number(this.arrReceipt.controls[index].get('paymentNikuiMatah').value) * currencyRate
+                    )
+                });
+            }
+        });
     }
 
     editReceipt(row: any): void {
@@ -3506,6 +4310,18 @@ export class BankAndCreditComponent
 
         this.rowToSplit = row;
 
+        if (row.journalPaymentPrompt) {
+            if (this.bankProcessTransType) {
+                this.bankProcessTransTypeSrc = true;
+                this.bankProcessTransType = false;
+            }
+            this.journalPaymentPrompt = true;
+        } else {
+            if (this.bankProcessTransTypeSrc !== undefined) {
+                this.bankProcessTransType = this.bankProcessTransTypeSrc;
+            }
+            this.journalPaymentPrompt = false;
+        }
         if (this.bankProcessTransType) {
             this.rowToSplit.transTypeDefinedArr = JSON.parse(
                 JSON.stringify(row.transTypeDefinedArr)
@@ -3527,6 +4343,13 @@ export class BankAndCreditComponent
         //     taxDeductionCustId = taxDeductionCustId.custId;
         // }
         const taxDeductionCustId = null;
+        const selectedCards = this.fileStatus === 'BANK' ? this.userService.appData.userData.accountSelect.filter(
+            (acc) => acc.checked
+        ) : this.cardsSelector.selectedCards;
+        if (selectedCards.length) {
+            const currencyId = selectedCards[0].currencyId;
+            this.srcCurrencyId = currencyId;
+        }
 
         this.sharedService
             .getJournalTrans({
@@ -3539,6 +4362,61 @@ export class BankAndCreditComponent
                     getJourForFileArr.showTaxDeduction !== undefined
                         ? getJourForFileArr.showTaxDeduction
                         : false;
+
+
+                // 'showTaxDeduction': false,
+                // 'childId': 'b92d7571-28f0-456d-80a4-de1e9a04590e',
+                // 'invoiceDate': 1658869200000,
+                // 'custId': '500009',
+                // 'total': 855.86,
+                // 'dateValue': 1658869200000,
+                // 'paymentCustId': '100001',
+                // 'paymentTotal': 855.86,
+                // 'taxDeductionCustId': null,
+                // 'paymentNikui': null,
+                // 'details': 'TIMEWATCH לסה ויז\'ן בע"מ',
+                // 'asmachta': null,
+                // 'paymentAsmachta': null,
+                // 'companyAccountId': 'e52c4194-0796-5694-e053-0100007f611d',
+                // 'creditCardId': 'e52c4194-0b2b-5694-e053-0100007f611d',
+                // 'ccardIzuCustCurrencyId': null,
+                // 'thirdDate': 1658869200000,
+                // 'asmachta3': null,
+                // 'transTypeCode': null,
+                // 'paymentNikuiMatah': null,
+                // 'totalMatah': 34098.01,
+                // 'paymentTotalMatah': 34098.01,
+                // 'currencyId': 4,
+                // 'currencyRate': 0.0251,
+                // 'thirdDateOpen': true
+
+
+                // 'showTaxDeduction': false,
+                //     'childId': 'e52c4194-0df9-5694-e053-0100007f611d',
+                //     'invoiceDate': 1655845200000,
+                //     'custId': null,
+                //     'total': 11271.06,
+                //     'dateValue': 1655845200000,
+                //     'paymentCustId': '100001',
+                //     'paymentTotal': 11271.06,
+                //     'taxDeductionCustId': null,
+                //     'paymentNikui': null,
+                //     'details': 'נ"ע-פעולה',
+                //     'asmachta': '131738',
+                //     'paymentAsmachta': null,
+                //     'companyAccountId': 'e52c4194-0def-5694-e053-0100007f611d',
+                //     'creditCardId': null,
+                //     'ccardIzuCustCurrencyId': null,
+                //     'thirdDate': null,
+                //     'asmachta3': null,
+                //     'transTypeCode': null,
+                //     'paymentNikuiMatah': null,
+                //     'totalMatah': 3253.77,
+                //     'paymentTotalMatah': 3253.77,
+                //     'currencyId': 2,
+                //     'currencyRate': 3.4640,
+                //     'thirdDateOpen': false
+
                 // "showTaxDeduction": true,
                 //     "rows":[{
                 // const getJourForFileArr = [
@@ -3580,17 +4458,41 @@ export class BankAndCreditComponent
                             return [
                                 total[0] + Number(item.total),
                                 total[1] + Number(item.paymentNikui),
-                                total[2] + Number(item.paymentTotal)
+                                total[2] + Number(item.paymentTotal),
+                                total[3] + Number(item.totalMatah),
+                                total[4] + Number(item.paymentTotalMatah),
+                                total[5] + Number(item.paymentNikuiMatah)
                             ];
                         },
-                        [0, 0, 0]
+                        [0, 0, 0, 0, 0, 0]
                     );
 
                     this.saverValuesReceipt = {
                         total: sumsOfParent[1] + sumsOfParent[2],
                         paymentNikui: sumsOfParent[1],
-                        paymentTotal: sumsOfParent[2]
+                        paymentTotal: sumsOfParent[2],
+                        totalMatah: sumsOfParent[4] + sumsOfParent[5],
+                        paymentTotalMatah: sumsOfParent[4],
+                        paymentNikuiMatah: sumsOfParent[5]
                     };
+                    if (getJourForFileArr.rows.length) {
+                        this.currencyIdDD = this.revaluationCurrCodeArr.find(it => it.id === getJourForFileArr.rows[0].currencyId);
+                        this.currencyRate = getJourForFileArr.rows[0].currencyRate;
+                    }
+                    // const onlyILSEditabled =
+                    //     (
+                    //         (this.srcCurrencyId === 1 && this.currencyIdDD && this.currencyIdDD['id'] === 1)
+                    //         ||
+                    //         (getJourForFileArr.rows.length > 1 && this.srcCurrencyId === 1 && this.currencyIdDD && this.currencyIdDD['id'] !== 1)
+                    //         ||
+                    //         (getJourForFileArr.rows.length === 1 && this.srcCurrencyId !== 1)
+                    //     );
+                    // const onlyMatahEditabled =
+                    //     (
+                    //         (getJourForFileArr.rows.length === 1 && this.srcCurrencyId === 1 && this.currencyIdDD && this.currencyIdDD['id'] !== 1)
+                    //         ||
+                    //         (getJourForFileArr.rows.length > 1 && this.srcCurrencyId !== 1)
+                    //     );
 
                     this.receipt = this.fb.group({
                         name: 'receiptFormGr',
@@ -3782,10 +4684,15 @@ export class BankAndCreditComponent
                                             paymentCustId.hashCartisCodeId === 25)
                                             ? true
                                             : item.showTaxDeduction;
+
+
                                 return this.fb.group({
                                     transTypeDefinedArr: this.fb.array(transTypeDefinedArr),
                                     showTaxDeduction: item.showTaxDeduction,
-                                    show_taxDeductionCustId: show_taxDeductionCustId,
+                                    show_taxDeductionCustId: this.fb.control({
+                                        value: show_taxDeductionCustId,
+                                        disabled: false
+                                    }),
                                     paymentCustIdSaved: paymentCustIdSaved,
                                     taxDeductionCustIdSaved: taxDeductionCustIdSaved,
                                     newRow: false,
@@ -3808,7 +4715,7 @@ export class BankAndCreditComponent
                                         value: item.dateValue
                                             ? this.userService.appData.moment(item.dateValue).toDate()
                                             : null,
-                                        disabled: false
+                                        disabled: this.journalPaymentPrompt && idx !== 0
                                     }),
                                     thirdDate: this.fb.control({
                                         value: item.thirdDate
@@ -3822,30 +4729,55 @@ export class BankAndCreditComponent
                                             value: custId,
                                             disabled: true //idx !== 0
                                         },
-                                        [Validators.required]
+                                        [!this.journalPaymentPrompt ? Validators.required : Validators.nullValidator]
                                     ),
                                     total: this.fb.control(
                                         {
-                                            value: idx === 0 ? item.total : item.paymentTotal,
-                                            disabled: idx === 0
+                                            value: !this.journalPaymentPrompt ? idx === 0 ? item.total : item.paymentTotal :
+                                                item.total,
+                                            disabled: idx === 0 || this.journalPaymentPrompt
                                         },
-                                        [Validators.required]
+                                        [!this.journalPaymentPrompt ? Validators.required : Validators.nullValidator]
                                     ),
                                     paymentTotal: this.fb.control(
                                         {
-                                            value: item.paymentTotal,
+                                            value: this.journalPaymentPrompt && idx > 0 ? item.paymentTotal : item.paymentTotal,
                                             disabled:
-                                                idx === 0 &&
-                                                (!taxDeductionCustId || !item.showTaxDeduction)
+                                                (idx === 0 &&
+                                                    (!taxDeductionCustId || !item.showTaxDeduction)) || this.journalPaymentPrompt
                                         },
-                                        [Validators.required]
+                                        [!this.journalPaymentPrompt ? Validators.required : Validators.nullValidator]
                                     ),
                                     paymentNikui: this.fb.control(
                                         {
                                             value: item.paymentNikui,
-                                            disabled: false
+                                            disabled: this.journalPaymentPrompt
                                         },
-                                        [Validators.required]
+                                        [!this.journalPaymentPrompt ? Validators.required : Validators.nullValidator]
+                                    ),
+                                    totalMatah: this.fb.control(
+                                        {
+                                            value: !this.journalPaymentPrompt ? idx === 0 ? item.totalMatah : item.paymentTotalMatah :
+                                                item.totalMatah,
+                                            disabled: idx === 0 || this.journalPaymentPrompt
+                                        },
+                                        [!this.journalPaymentPrompt ? Validators.required : Validators.nullValidator]
+                                    ),
+                                    paymentTotalMatah: this.fb.control(
+                                        {
+                                            value: this.journalPaymentPrompt && idx > 0 ? item.paymentTotalMatah : item.paymentTotalMatah,
+                                            disabled:
+                                                (idx === 0 &&
+                                                    (!taxDeductionCustId || !item.showTaxDeduction)) || this.journalPaymentPrompt
+                                        },
+                                        [!this.journalPaymentPrompt ? Validators.required : Validators.nullValidator]
+                                    ),
+                                    paymentNikuiMatah: this.fb.control(
+                                        {
+                                            value: item.paymentNikuiMatah,
+                                            disabled: this.journalPaymentPrompt
+                                        },
+                                        [!this.journalPaymentPrompt ? Validators.required : Validators.nullValidator]
                                     ),
                                     paymentCustId: this.fb.control(
                                         {
@@ -3853,7 +4785,7 @@ export class BankAndCreditComponent
                                             value: paymentCustId,
                                             disabled: disabled_paymentCustId
                                         },
-                                        [Validators.required]
+                                        [((this.journalPaymentPrompt && idx === 0) || !this.journalPaymentPrompt) ? Validators.required : Validators.nullValidator]
                                     ),
                                     taxDeductionCustId: this.fb.control(
                                         {
@@ -3899,7 +4831,9 @@ export class BankAndCreditComponent
                     //             console.log('input', input);
                     //         });
                     // });
-
+                    if (!this.journalPaymentPrompt) {
+                        this.updateDisabledEnabledSums();
+                    }
                     this.calcReceipt();
                 } else {
                     this.receipt = this.fb.group({
@@ -4118,7 +5052,10 @@ export class BankAndCreditComponent
                     : []
             ),
             showTaxDeduction: false,
-            show_taxDeductionCustId: false,
+            show_taxDeductionCustId: this.fb.control({
+                value: false,
+                disabled: false
+            }),
             paymentCustIdSaved: null,
             taxDeductionCustIdSaved: null,
             thirdDateOpen: false,
@@ -4173,6 +5110,27 @@ export class BankAndCreditComponent
                 },
                 [Validators.required]
             ),
+            totalMatah: this.fb.control(
+                {
+                    value: 0,
+                    disabled: false
+                },
+                [Validators.required]
+            ),
+            paymentTotalMatah: this.fb.control(
+                {
+                    value: 0,
+                    disabled: false
+                },
+                [Validators.required]
+            ),
+            paymentNikuiMatah: this.fb.control(
+                {
+                    value: null,
+                    disabled: false
+                },
+                [Validators.required]
+            ),
             taxDeductionCustId: this.fb.control(
                 {
                     //כרטיס ניכוי מס
@@ -4199,6 +5157,9 @@ export class BankAndCreditComponent
             })
         };
         this.arrReceipt.push(this.fb.group(obj));
+        if (!this.journalPaymentPrompt) {
+            this.updateDisabledEnabledSums();
+        }
     }
 
     removeReceipt(index: number) {
@@ -4223,6 +5184,27 @@ export class BankAndCreditComponent
                 ) +
                 toFixedNumber(
                     Number(this.arrReceipt.controls[index].get('paymentNikui').value)
+                ),
+            totalMatah:
+                toFixedNumber(
+                    Number(this.arrReceipt.controls[index - 1].get('totalMatah').value)
+                ) +
+                toFixedNumber(
+                    Number(this.arrReceipt.controls[index].get('totalMatah').value)
+                ),
+            paymentTotalMatah:
+                toFixedNumber(
+                    Number(this.arrReceipt.controls[index - 1].get('paymentTotalMatah').value)
+                ) +
+                toFixedNumber(
+                    Number(this.arrReceipt.controls[index].get('paymentTotalMatah').value)
+                ),
+            paymentNikuiMatah:
+                toFixedNumber(
+                    Number(this.arrReceipt.controls[index - 1].get('paymentNikuiMatah').value)
+                ) +
+                toFixedNumber(
+                    Number(this.arrReceipt.controls[index].get('paymentNikuiMatah').value)
                 )
         });
         this.arrReceipt.removeAt(index);
@@ -4233,8 +5215,11 @@ export class BankAndCreditComponent
         // } else {
         //     this.arrReceipt.controls[0].get('custId').enable();
         // }
-
+        if (!this.journalPaymentPrompt) {
+            this.updateDisabledEnabledSums();
+        }
         this.calcReceipt();
+
     }
 
     public calcChildTax() {
@@ -4250,11 +5235,18 @@ export class BankAndCreditComponent
         });
     }
 
+
     selectTransTypeCodeFromModal(i: number) {
+        // const onlyILSEditabled = this.onlyILSEditabled;
+        // const onlyMatahEditabled = this.onlyMatahEditabled;
+
+        const srcILS = this.srcCurrencyId === 1;
+        const srcMatah = this.srcCurrencyId !== 1;
+
         const transTypeCode =
             this.arrReceipt.controls[i].get('transTypeCode').value;
-        const transTypeDefinedArr = this.addPriemerObject(
-            JSON.parse(JSON.stringify(this.rowToSplit.transTypeDefinedArr)),
+        const transTypeDefinedArr = this.addPriemerObject(this.rowToSplit.transTypeDefinedArr ?
+                JSON.parse(JSON.stringify(this.rowToSplit.transTypeDefinedArr)) : [],
             transTypeCode
         );
         const arrForm = this.transTypeDefinedFormArray(i);
@@ -4271,7 +5263,6 @@ export class BankAndCreditComponent
             'transTypeDefinedArr',
             new FormControl(transTypeDefinedArr)
         );
-
         // console.log(this.arrReceipt.controls[i].get('transTypeDefinedArr').value);
 
         const transTypeCodeObj = transTypeDefinedArr.find(
@@ -4282,17 +5273,32 @@ export class BankAndCreditComponent
             if (transTypeCodeObj.precenf === null) {
                 transTypeCodeObj.precenf = 0;
             }
-            const new_paymentTotal = toFixedNumber(
-                Number(this.arrReceipt.controls[i].get('total').value) /
-                (1 - transTypeCodeObj.precenf / 100)
-            );
-            this.arrReceipt.controls[i].patchValue({
-                paymentNikui: toFixedNumber(
-                    new_paymentTotal -
-                    Number(this.arrReceipt.controls[i].get('total').value)
-                ),
-                paymentTotal: new_paymentTotal
-            });
+            if (srcILS) {
+                const new_paymentTotal = toFixedNumber(
+                    Number(this.arrReceipt.controls[i].get('total').value) /
+                    (1 - transTypeCodeObj.precenf / 100)
+                );
+                this.arrReceipt.controls[i].patchValue({
+                    paymentNikui: toFixedNumber(
+                        new_paymentTotal -
+                        Number(this.arrReceipt.controls[i].get('total').value)
+                    ),
+                    paymentTotal: new_paymentTotal
+                });
+            }
+            if (srcMatah) {
+                const new_paymentTotal = toFixedNumber(
+                    Number(this.arrReceipt.controls[i].get('totalMatah').value) /
+                    (1 - transTypeCodeObj.precenf / 100)
+                );
+                this.arrReceipt.controls[i].patchValue({
+                    paymentNikuiMatah: toFixedNumber(
+                        new_paymentTotal -
+                        Number(this.arrReceipt.controls[i].get('totalMatah').value)
+                    ),
+                    paymentTotalMatah: new_paymentTotal
+                });
+            }
             if (
                 transTypeCodeObj.custId &&
                 transTypeCodeObj.custId !== '?' &&
@@ -4369,16 +5375,30 @@ export class BankAndCreditComponent
                 this.arrReceipt.controls[i].get('paymentTotal').enable();
             }
         } else {
-            this.arrReceipt.controls.forEach((v) => {
+            this.arrReceipt.controls[i].get('taxDeductionCustId').enable();
+            this.arrReceipt.controls[i].get('paymentCustId').enable();
+
+            this.arrReceipt.controls.forEach((v, idx) => {
                 // const show_taxDeductionCustId = v.get('show_taxDeductionCustId').value;
                 // if (show_taxDeductionCustId) {
                 //
                 // }
                 const taxDeductionCustIdChild = v.get('taxDeductionCustId').value;
                 if (taxDeductionCustIdChild) {
-                    v.get('taxDeductionCustId').enable();
+                    this.arrReceipt.controls[idx].get('taxDeductionCustId').enable();
+                }
+                const paymentCustIdChild = v.get('paymentCustId').value;
+                if (paymentCustIdChild) {
+                    this.arrReceipt.controls[idx].get('paymentCustId').enable();
                 }
             });
+        }
+
+        if (!this.journalPaymentPrompt) {
+            this.updateDisabledEnabledSums();
+        }
+        if (this.srcCurrencyId !== 1 || (this.srcCurrencyId === 1 && this.currencyIdDD && this.currencyIdDD['id'] !== 1)) {
+            this.calcSumsByRate();
         }
     }
 
@@ -4387,161 +5407,404 @@ export class BankAndCreditComponent
         indexRow?: number,
         isKeyPress?: string
     ): void {
+
         if (indexRow !== undefined) {
+            const srcILS = this.srcCurrencyId === 1;
+            const srcMatah = this.srcCurrencyId !== 1;
+
             const row_taxDeductionCustId_Exist =
                 this.arrReceipt.controls[indexRow].get('show_taxDeductionCustId')
                     .value === true;
-            if (
-                !(
-                    this.arrReceipt.controls[indexRow]
-                        .get('total')
-                        .value.toString()
-                        .slice(-1) === '.' ||
-                    this.arrReceipt.controls[indexRow]
-                        .get('total')
-                        .value.toString()
-                        .slice(-2) === '.0'
-                )
-            ) {
-                this.arrReceipt.controls[indexRow].patchValue({
-                    total: toFixedNumber(
-                        this.arrReceipt.controls[indexRow].get('total').value
+
+            if (srcILS) {
+                if (
+                    !(
+                        this.arrReceipt.controls[indexRow]
+                            .get('total')
+                            .value.toString()
+                            .slice(-1) === '.' ||
+                        this.arrReceipt.controls[indexRow]
+                            .get('total')
+                            .value.toString()
+                            .slice(-2) === '.0'
                     )
-                });
-            }
-            if (
-                !(
-                    this.arrReceipt.controls[indexRow]
-                        .get('paymentTotal')
-                        .value.toString()
-                        .slice(-1) === '.' ||
-                    this.arrReceipt.controls[indexRow]
-                        .get('paymentTotal')
-                        .value.toString()
-                        .slice(-2) === '.0'
-                )
-            ) {
-                this.arrReceipt.controls[indexRow].patchValue({
-                    paymentTotal: toFixedNumber(
-                        this.arrReceipt.controls[indexRow].get('paymentTotal').value
-                    )
-                });
-            }
-            if (!this.arrReceipt.controls[indexRow].get('paymentNikui')) {
-                this.arrReceipt.controls[indexRow].patchValue({
-                    paymentNikui: toFixedNumber(
-                        this.arrReceipt.controls[indexRow].get('paymentNikui').value
-                    )
-                });
-            } else {
-                if (this.arrReceipt.controls[indexRow].get('paymentNikui').value) {
-                    if (
-                        !(
-                            this.arrReceipt.controls[indexRow]
-                                .get('paymentNikui')
-                                .value.toString()
-                                .slice(-1) === '.' ||
-                            this.arrReceipt.controls[indexRow]
-                                .get('paymentNikui')
-                                .value.toString()
-                                .slice(-2) === '.0'
+                ) {
+                    this.arrReceipt.controls[indexRow].patchValue({
+                        total: toFixedNumber(
+                            this.arrReceipt.controls[indexRow].get('total').value
                         )
-                    ) {
+                    });
+                }
+                if (
+                    !(
+                        this.arrReceipt.controls[indexRow]
+                            .get('paymentTotal')
+                            .value.toString()
+                            .slice(-1) === '.' ||
+                        this.arrReceipt.controls[indexRow]
+                            .get('paymentTotal')
+                            .value.toString()
+                            .slice(-2) === '.0'
+                    )
+                ) {
+                    this.arrReceipt.controls[indexRow].patchValue({
+                        paymentTotal: toFixedNumber(
+                            this.arrReceipt.controls[indexRow].get('paymentTotal').value
+                        )
+                    });
+                }
+                if (!this.arrReceipt.controls[indexRow].get('paymentNikui')) {
+                    this.arrReceipt.controls[indexRow].patchValue({
+                        paymentNikui: toFixedNumber(
+                            this.arrReceipt.controls[indexRow].get('paymentNikui').value
+                        )
+                    });
+                } else {
+                    if (this.arrReceipt.controls[indexRow].get('paymentNikui').value) {
+                        if (
+                            !(
+                                this.arrReceipt.controls[indexRow]
+                                    .get('paymentNikui')
+                                    .value.toString()
+                                    .slice(-1) === '.' ||
+                                this.arrReceipt.controls[indexRow]
+                                    .get('paymentNikui')
+                                    .value.toString()
+                                    .slice(-2) === '.0'
+                            )
+                        ) {
+                            this.arrReceipt.controls[indexRow].patchValue({
+                                paymentNikui: toFixedNumber(
+                                    this.arrReceipt.controls[indexRow].get('paymentNikui').value
+                                )
+                            });
+                        }
+                    } else {
                         this.arrReceipt.controls[indexRow].patchValue({
                             paymentNikui: toFixedNumber(
                                 this.arrReceipt.controls[indexRow].get('paymentNikui').value
                             )
                         });
                     }
-                } else {
+                }
+            }
+            if (srcMatah) {
+                if (
+                    !(
+                        this.arrReceipt.controls[indexRow]
+                            .get('totalMatah')
+                            .value.toString()
+                            .slice(-1) === '.' ||
+                        this.arrReceipt.controls[indexRow]
+                            .get('totalMatah')
+                            .value.toString()
+                            .slice(-2) === '.0'
+                    )
+                ) {
                     this.arrReceipt.controls[indexRow].patchValue({
-                        paymentNikui: toFixedNumber(
-                            this.arrReceipt.controls[indexRow].get('paymentNikui').value
+                        totalMatah: toFixedNumber(
+                            this.arrReceipt.controls[indexRow].get('totalMatah').value
                         )
                     });
+                }
+                if (
+                    !(
+                        this.arrReceipt.controls[indexRow]
+                            .get('paymentTotalMatah')
+                            .value.toString()
+                            .slice(-1) === '.' ||
+                        this.arrReceipt.controls[indexRow]
+                            .get('paymentTotalMatah')
+                            .value.toString()
+                            .slice(-2) === '.0'
+                    )
+                ) {
+                    this.arrReceipt.controls[indexRow].patchValue({
+                        paymentTotalMatah: toFixedNumber(
+                            this.arrReceipt.controls[indexRow].get('paymentTotalMatah').value
+                        )
+                    });
+                }
+                if (!this.arrReceipt.controls[indexRow].get('paymentNikuiMatah')) {
+                    this.arrReceipt.controls[indexRow].patchValue({
+                        paymentNikui: toFixedNumber(
+                            this.arrReceipt.controls[indexRow].get('paymentNikuiMatah').value
+                        )
+                    });
+                } else {
+                    if (this.arrReceipt.controls[indexRow].get('paymentNikuiMatah').value) {
+                        if (
+                            !(
+                                this.arrReceipt.controls[indexRow]
+                                    .get('paymentNikuiMatah')
+                                    .value.toString()
+                                    .slice(-1) === '.' ||
+                                this.arrReceipt.controls[indexRow]
+                                    .get('paymentNikuiMatah')
+                                    .value.toString()
+                                    .slice(-2) === '.0'
+                            )
+                        ) {
+                            this.arrReceipt.controls[indexRow].patchValue({
+                                paymentNikuiMatah: toFixedNumber(
+                                    this.arrReceipt.controls[indexRow].get('paymentNikuiMatah').value
+                                )
+                            });
+                        }
+                    } else {
+                        this.arrReceipt.controls[indexRow].patchValue({
+                            paymentNikuiMatah: toFixedNumber(
+                                this.arrReceipt.controls[indexRow].get('paymentNikuiMatah').value
+                            )
+                        });
+                    }
                 }
             }
 
             const fieldSumAll = Number(
                 this.rowToSplit[this.fileStatus === 'BANK' ? 'total' : 'transTotal']
             );
+            this.currencyRate = this.currencyRate ? this.currencyRate : 0.1;
+            const currencyRate = Number(this.currencyRate);
+            const fieldSumAllMatah = srcILS ? Number(
+                fieldSumAll / currencyRate
+            ) : Number(
+                fieldSumAll
+            );
             clearTimeout(this.debounce);
             this.debounce = setTimeout(() => {
                 if (indexRow === 0) {
-                    if (isKeyPress === 'paymentTotal') {
-                        if (
-                            toFixedNumber(
-                                Number(
-                                    this.arrReceipt.controls[indexRow].get('paymentTotal').value
-                                )
-                            ) >
-                            toFixedNumber(
-                                Number(this.arrReceipt.controls[indexRow].get('total').value)
-                            )
-                        ) {
-                            const difBetweenSums =
-                                toFixedNumber(
-                                    Number(this.arrReceipt.controls[indexRow].get('total').value)
-                                ) -
+                    if (srcILS) {
+                        if (isKeyPress === 'paymentTotal') {
+                            if (
                                 toFixedNumber(
                                     Number(
                                         this.arrReceipt.controls[indexRow].get('paymentTotal').value
                                     )
-                                );
-                            this.arrReceipt.controls[indexRow].patchValue({
-                                paymentNikui: toFixedNumber(Number(difBetweenSums))
-                            });
-                        } else {
+                                ) >
+                                toFixedNumber(
+                                    Number(this.arrReceipt.controls[indexRow].get('total').value)
+                                )
+                            ) {
+                                const difBetweenSums =
+                                    toFixedNumber(
+                                        Number(this.arrReceipt.controls[indexRow].get('paymentTotal').value)
+                                    ) -
+                                    toFixedNumber(
+                                        Number(
+                                            this.arrReceipt.controls[indexRow].get('total').value
+                                        )
+                                    );
+                                this.arrReceipt.controls[indexRow].patchValue({
+                                    paymentNikui: toFixedNumber(Number(difBetweenSums))
+                                });
+                            } else {
+                                this.arrReceipt.controls[indexRow].patchValue({
+                                    paymentTotal: toFixedNumber(
+                                        Number(this.arrReceipt.controls[indexRow].get('total').value)
+                                    )
+                                });
+                            }
+                        }
+                        if (isKeyPress === 'paymentNikui') {
                             this.arrReceipt.controls[indexRow].patchValue({
                                 paymentTotal: toFixedNumber(
-                                    Number(this.arrReceipt.controls[indexRow].get('total').value)
+                                    Number(this.arrReceipt.controls[indexRow].get('total').value) +
+                                    Number(
+                                        this.arrReceipt.controls[indexRow].get('paymentNikui').value
+                                    )
                                 )
                             });
                         }
+                        if (isKeyPress === 'totalMatah') {
+                            this.currencyRate = (
+                                Number(this.arrReceipt.controls[indexRow].get('total').value) / Number(this.arrReceipt.controls[indexRow].get('totalMatah').value)
+                            );
+                        }
+                        if (isKeyPress === 'paymentTotalMatah') {
+                            this.currencyRate = (
+                                Number(this.arrReceipt.controls[indexRow].get('paymentTotal').value) / Number(this.arrReceipt.controls[indexRow].get('paymentTotalMatah').value)
+                            );
+                        }
+                        if (this.currencyRate === Infinity) {
+                            console.log('Let\'s call it Infinity!');
+                            this.currencyRate = 0.1;
+                        }
                     }
-                    if (isKeyPress === 'paymentNikui') {
-                        this.arrReceipt.controls[indexRow].patchValue({
-                            paymentTotal: toFixedNumber(
-                                Number(this.arrReceipt.controls[indexRow].get('total').value) +
-                                Number(
-                                    this.arrReceipt.controls[indexRow].get('paymentNikui').value
+                    if (srcMatah) {
+                        if (isKeyPress === 'paymentTotalMatah') {
+                            if (
+                                toFixedNumber(
+                                    Number(
+                                        this.arrReceipt.controls[indexRow].get('paymentTotalMatah').value
+                                    )
+                                ) >
+                                toFixedNumber(
+                                    Number(this.arrReceipt.controls[indexRow].get('totalMatah').value)
                                 )
-                            )
-                        });
+                            ) {
+                                const difBetweenSums =
+                                    toFixedNumber(
+                                        Number(this.arrReceipt.controls[indexRow].get('paymentTotalMatah').value)
+                                    ) -
+                                    toFixedNumber(
+                                        Number(
+                                            this.arrReceipt.controls[indexRow].get('totalMatah').value
+                                        )
+                                    );
+                                this.arrReceipt.controls[indexRow].patchValue({
+                                    paymentNikuiMatah: toFixedNumber(Number(difBetweenSums))
+                                });
+                            } else {
+                                this.arrReceipt.controls[indexRow].patchValue({
+                                    paymentTotalMatah: toFixedNumber(
+                                        Number(this.arrReceipt.controls[indexRow].get('totalMatah').value)
+                                    )
+                                });
+                            }
+                        }
+                        if (isKeyPress === 'paymentNikuiMatah') {
+                            this.arrReceipt.controls[indexRow].patchValue({
+                                paymentTotalMatah: toFixedNumber(
+                                    Number(this.arrReceipt.controls[indexRow].get('totalMatah').value) +
+                                    Number(
+                                        this.arrReceipt.controls[indexRow].get('paymentNikuiMatah').value
+                                    )
+                                )
+                            });
+                        }
+                        if (isKeyPress === 'total') {
+                            this.currencyRate = (
+                                Number(this.arrReceipt.controls[indexRow].get('total').value) / Number(this.arrReceipt.controls[indexRow].get('totalMatah').value)
+                            );
+                        }
+                        if (isKeyPress === 'paymentTotal') {
+                            this.currencyRate = (
+                                Number(this.arrReceipt.controls[indexRow].get('paymentTotal').value) / Number(this.arrReceipt.controls[indexRow].get('paymentTotalMatah').value)
+                            );
+                        }
+                        if (this.currencyRate === Infinity) {
+                            console.log('Let\'s call it Infinity!');
+                            this.currencyRate = 0.1;
+                        }
                     }
                 } else {
                     if (this.arrReceipt.controls.length === 2) {
-                        if (isKeyPress === 'total') {
-                            const maxTotal = toFixedNumber(Number(fieldSumAll) - 0.1);
-                            if (
-                                toFixedNumber(
-                                    Number(this.arrReceipt.controls[indexRow].get('total').value)
-                                ) > maxTotal
-                            ) {
-                                this.arrReceipt.controls[indexRow].patchValue({
-                                    total: maxTotal,
-                                    paymentTotal: toFixedNumber(
-                                        maxTotal +
-                                        Number(
-                                            this.arrReceipt.controls[indexRow].get('paymentNikui')
-                                                .value
+                        if (srcILS) {
+                            if (isKeyPress === 'total') {
+                                const maxTotal = toFixedNumber(Number(fieldSumAll) - 0.1);
+                                if (
+                                    toFixedNumber(
+                                        Number(this.arrReceipt.controls[indexRow].get('total').value)
+                                    ) > maxTotal
+                                ) {
+                                    this.arrReceipt.controls[indexRow].patchValue({
+                                        total: maxTotal,
+                                        paymentTotal: toFixedNumber(
+                                            maxTotal +
+                                            Number(
+                                                this.arrReceipt.controls[indexRow].get('paymentNikui')
+                                                    .value
+                                            )
                                         )
+                                    });
+                                    this.arrReceipt.controls[0].patchValue({
+                                        total: 0.1,
+                                        paymentTotal: toFixedNumber(
+                                            Number(0.1) +
+                                            Number(
+                                                this.arrReceipt.controls[0].get('paymentNikui').value
+                                            )
+                                        )
+                                    });
+                                } else {
+                                    this.arrReceipt.controls[indexRow].patchValue({
+                                        total: toFixedNumber(
+                                            Number(
+                                                this.arrReceipt.controls[indexRow].get('total').value
+                                            )
+                                        ),
+                                        paymentTotal: toFixedNumber(
+                                            Number(
+                                                this.arrReceipt.controls[indexRow].get('total').value
+                                            ) +
+                                            Number(
+                                                this.arrReceipt.controls[indexRow].get('paymentNikui')
+                                                    .value
+                                            )
+                                        )
+                                    });
+                                    const mainTotal = toFixedNumber(
+                                        Number(fieldSumAll) -
+                                        Number(
+                                            this.arrReceipt.controls[indexRow].get('total').value
+                                        )
+                                    );
+                                    this.arrReceipt.controls[0].patchValue({
+                                        total: mainTotal,
+                                        paymentTotal: toFixedNumber(
+                                            Number(mainTotal) +
+                                            Number(
+                                                this.arrReceipt.controls[0].get('paymentNikui').value
+                                            )
+                                        )
+                                    });
+                                }
+                            }
+                            if (isKeyPress === 'paymentTotal') {
+                                const taxDeductionCustId =
+                                    this.arrReceipt.controls[indexRow].get(
+                                        'taxDeductionCustId'
+                                    ).value;
+                                const maxTotal = toFixedNumber(Number(fieldSumAll) - 0.1);
+                                let paymentTotal = toFixedNumber(
+                                    Number(
+                                        this.arrReceipt.controls[indexRow].get('paymentTotal').value
                                     )
+                                );
+                                if (
+                                    (!taxDeductionCustId || !row_taxDeductionCustId_Exist) &&
+                                    paymentTotal > maxTotal
+                                ) {
+                                    paymentTotal = maxTotal;
+                                } else if (
+                                    taxDeductionCustId &&
+                                    row_taxDeductionCustId_Exist &&
+                                    paymentTotal > fieldSumAll
+                                ) {
+                                    this.arrReceipt.controls[indexRow].patchValue({
+                                        paymentNikui: toFixedNumber(paymentTotal - fieldSumAll)
+                                    });
+                                }
+                                const currentTotal =
+                                    paymentTotal -
+                                    toFixedNumber(
+                                        Number(
+                                            this.arrReceipt.controls[indexRow].get('paymentNikui').value
+                                        )
+                                    );
+                                this.arrReceipt.controls[indexRow].patchValue({
+                                    total: currentTotal,
+                                    paymentTotal: paymentTotal
                                 });
+                                const mainTotal = toFixedNumber(
+                                    Number(fieldSumAll) - currentTotal
+                                );
                                 this.arrReceipt.controls[0].patchValue({
-                                    total: 0.1,
+                                    total: mainTotal,
                                     paymentTotal: toFixedNumber(
-                                        Number(0.1) +
+                                        Number(mainTotal) +
                                         Number(
                                             this.arrReceipt.controls[0].get('paymentNikui').value
                                         )
                                     )
                                 });
-                            } else {
+                            }
+                            if (isKeyPress === 'paymentNikui') {
                                 this.arrReceipt.controls[indexRow].patchValue({
-                                    total: toFixedNumber(
+                                    paymentNikui: toFixedNumber(
                                         Number(
-                                            this.arrReceipt.controls[indexRow].get('total').value
+                                            this.arrReceipt.controls[indexRow].get('paymentNikui').value
                                         )
                                     ),
                                     paymentTotal: toFixedNumber(
@@ -4554,135 +5817,271 @@ export class BankAndCreditComponent
                                         )
                                     )
                                 });
-                                const mainTotal = toFixedNumber(
-                                    Number(fieldSumAll) -
+                            }
+                        } else {
+                            if (isKeyPress === 'totalMatah') {
+                                const maxTotal = toFixedNumber(Number(fieldSumAllMatah) - 0.1);
+                                if (
+                                    toFixedNumber(
+                                        Number(this.arrReceipt.controls[indexRow].get('totalMatah').value)
+                                    ) > maxTotal
+                                ) {
+                                    this.arrReceipt.controls[indexRow].patchValue({
+                                        totalMatah: maxTotal,
+                                        paymentTotalMatah: toFixedNumber(
+                                            maxTotal +
+                                            Number(
+                                                this.arrReceipt.controls[indexRow].get('paymentNikuiMatah')
+                                                    .value
+                                            )
+                                        )
+                                    });
+                                    this.arrReceipt.controls[0].patchValue({
+                                        totalMatah: 0.1,
+                                        paymentTotalMatah: toFixedNumber(
+                                            Number(0.1) +
+                                            Number(
+                                                this.arrReceipt.controls[0].get('paymentNikuiMatah').value
+                                            )
+                                        )
+                                    });
+                                } else {
+                                    this.arrReceipt.controls[indexRow].patchValue({
+                                        totalMatah: toFixedNumber(
+                                            Number(
+                                                this.arrReceipt.controls[indexRow].get('totalMatah').value
+                                            )
+                                        ),
+                                        paymentTotalMatah: toFixedNumber(
+                                            Number(
+                                                this.arrReceipt.controls[indexRow].get('totalMatah').value
+                                            ) +
+                                            Number(
+                                                this.arrReceipt.controls[indexRow].get('paymentNikuiMatah')
+                                                    .value
+                                            )
+                                        )
+                                    });
+                                    const mainTotal = toFixedNumber(
+                                        Number(fieldSumAllMatah) -
+                                        Number(
+                                            this.arrReceipt.controls[indexRow].get('totalMatah').value
+                                        )
+                                    );
+                                    this.arrReceipt.controls[0].patchValue({
+                                        totalMatah: mainTotal,
+                                        paymentTotalMatah: toFixedNumber(
+                                            Number(mainTotal) +
+                                            Number(
+                                                this.arrReceipt.controls[0].get('paymentNikuiMatah').value
+                                            )
+                                        )
+                                    });
+                                }
+                            }
+                            if (isKeyPress === 'paymentTotalMatah') {
+                                const taxDeductionCustId =
+                                    this.arrReceipt.controls[indexRow].get(
+                                        'taxDeductionCustId'
+                                    ).value;
+                                const maxTotal = toFixedNumber(Number(fieldSumAllMatah) - 0.1);
+                                let paymentTotal = toFixedNumber(
                                     Number(
-                                        this.arrReceipt.controls[indexRow].get('total').value
+                                        this.arrReceipt.controls[indexRow].get('paymentTotalMatah').value
                                     )
                                 );
+                                if (
+                                    (!taxDeductionCustId || !row_taxDeductionCustId_Exist) &&
+                                    paymentTotal > maxTotal
+                                ) {
+                                    paymentTotal = maxTotal;
+                                } else if (
+                                    taxDeductionCustId &&
+                                    row_taxDeductionCustId_Exist &&
+                                    paymentTotal > fieldSumAllMatah
+                                ) {
+                                    this.arrReceipt.controls[indexRow].patchValue({
+                                        paymentNikuiMatah: toFixedNumber(paymentTotal - fieldSumAllMatah)
+                                    });
+                                }
+                                const currentTotal =
+                                    paymentTotal -
+                                    toFixedNumber(
+                                        Number(
+                                            this.arrReceipt.controls[indexRow].get('paymentNikuiMatah').value
+                                        )
+                                    );
+                                this.arrReceipt.controls[indexRow].patchValue({
+                                    totalMatah: currentTotal,
+                                    paymentTotalMatah: paymentTotal
+                                });
+                                const mainTotal = toFixedNumber(
+                                    Number(fieldSumAllMatah) - currentTotal
+                                );
                                 this.arrReceipt.controls[0].patchValue({
-                                    total: mainTotal,
-                                    paymentTotal: toFixedNumber(
+                                    totalMatah: mainTotal,
+                                    paymentTotalMatah: toFixedNumber(
                                         Number(mainTotal) +
                                         Number(
-                                            this.arrReceipt.controls[0].get('paymentNikui').value
+                                            this.arrReceipt.controls[0].get('paymentNikuiMatah').value
                                         )
                                     )
                                 });
                             }
-                        }
-                        if (isKeyPress === 'paymentTotal') {
-                            const taxDeductionCustId =
-                                this.arrReceipt.controls[indexRow].get(
-                                    'taxDeductionCustId'
-                                ).value;
-                            const maxTotal = toFixedNumber(Number(fieldSumAll) - 0.1);
-                            let paymentTotal = toFixedNumber(
-                                Number(
-                                    this.arrReceipt.controls[indexRow].get('paymentTotal').value
-                                )
-                            );
-                            if (
-                                (!taxDeductionCustId || !row_taxDeductionCustId_Exist) &&
-                                paymentTotal > maxTotal
-                            ) {
-                                paymentTotal = maxTotal;
-                            } else if (
-                                taxDeductionCustId &&
-                                row_taxDeductionCustId_Exist &&
-                                paymentTotal > fieldSumAll
-                            ) {
+                            if (isKeyPress === 'paymentNikuiMatah') {
                                 this.arrReceipt.controls[indexRow].patchValue({
-                                    paymentNikui: toFixedNumber(paymentTotal - fieldSumAll)
+                                    paymentNikuiMatah: toFixedNumber(
+                                        Number(
+                                            this.arrReceipt.controls[indexRow].get('paymentNikuiMatah').value
+                                        )
+                                    ),
+                                    paymentTotalMatah: toFixedNumber(
+                                        Number(
+                                            this.arrReceipt.controls[indexRow].get('totalMatah').value
+                                        ) +
+                                        Number(
+                                            this.arrReceipt.controls[indexRow].get('paymentNikuiMatah')
+                                                .value
+                                        )
+                                    )
                                 });
                             }
-                            const currentTotal =
-                                paymentTotal -
-                                toFixedNumber(
-                                    Number(
-                                        this.arrReceipt.controls[indexRow].get('paymentNikui').value
-                                    )
-                                );
-                            this.arrReceipt.controls[indexRow].patchValue({
-                                total: currentTotal,
-                                paymentTotal: paymentTotal
-                            });
-                            const mainTotal = toFixedNumber(
-                                Number(fieldSumAll) - currentTotal
-                            );
-                            this.arrReceipt.controls[0].patchValue({
-                                total: mainTotal,
-                                paymentTotal: toFixedNumber(
-                                    Number(mainTotal) +
-                                    Number(
-                                        this.arrReceipt.controls[0].get('paymentNikui').value
-                                    )
-                                )
-                            });
-                        }
-                        if (isKeyPress === 'paymentNikui') {
-                            this.arrReceipt.controls[indexRow].patchValue({
-                                paymentNikui: toFixedNumber(
-                                    Number(
-                                        this.arrReceipt.controls[indexRow].get('paymentNikui').value
-                                    )
-                                ),
-                                paymentTotal: toFixedNumber(
-                                    Number(
-                                        this.arrReceipt.controls[indexRow].get('total').value
-                                    ) +
-                                    Number(
-                                        this.arrReceipt.controls[indexRow].get('paymentNikui')
-                                            .value
-                                    )
-                                )
-                            });
                         }
                     }
                     if (this.arrReceipt.controls.length > 2) {
-                        if (isKeyPress === 'total') {
-                            const sumsTotalsAllNotFirstNotCurrent = this.arrReceipt.controls
-                                .filter((it, idx) => idx !== 0 && idx !== indexRow)
-                                .reduce((total, item, currentIndex) => {
-                                    return total + Number(item.get('total').value);
-                                }, 0);
-                            if (
-                                toFixedNumber(
-                                    Number(
-                                        this.arrReceipt.controls[indexRow].get('total').value
-                                    ) + 0.1
-                                ) >
-                                toFixedNumber(
-                                    Number(this.arrReceipt.controls[0].get('total').value)
-                                )
-                            ) {
-                                const newTotal = toFixedNumber(
-                                    Number(this.arrReceipt.controls[0].get('total').value) - 0.1
-                                );
-                                this.arrReceipt.controls[indexRow].patchValue({
-                                    total: newTotal,
-                                    paymentTotal: toFixedNumber(
-                                        newTotal +
+                        if (srcILS) {
+                            if (isKeyPress === 'total') {
+                                const sumsTotalsAllNotFirstNotCurrent = this.arrReceipt.controls
+                                    .filter((it, idx) => idx !== 0 && idx !== indexRow)
+                                    .reduce((total, item, currentIndex) => {
+                                        return total + Number(item.get('total').value);
+                                    }, 0);
+                                if (
+                                    toFixedNumber(
                                         Number(
-                                            this.arrReceipt.controls[indexRow].get('paymentNikui')
-                                                .value
-                                        )
+                                            this.arrReceipt.controls[indexRow].get('total').value
+                                        ) + 0.1
+                                    ) >
+                                    toFixedNumber(
+                                        Number(this.arrReceipt.controls[0].get('total').value)
                                     )
+                                ) {
+                                    const newTotal = toFixedNumber(
+                                        Number(this.arrReceipt.controls[0].get('total').value) - 0.1
+                                    );
+                                    this.arrReceipt.controls[indexRow].patchValue({
+                                        total: newTotal,
+                                        paymentTotal: toFixedNumber(
+                                            newTotal +
+                                            Number(
+                                                this.arrReceipt.controls[indexRow].get('paymentNikui')
+                                                    .value
+                                            )
+                                        )
+                                    });
+                                    this.arrReceipt.controls[0].patchValue({
+                                        total: 0.1,
+                                        paymentTotal: toFixedNumber(
+                                            Number(0.1) +
+                                            Number(
+                                                this.arrReceipt.controls[0].get('paymentNikui').value
+                                            )
+                                        )
+                                    });
+                                } else {
+                                    this.arrReceipt.controls[indexRow].patchValue({
+                                        total: toFixedNumber(
+                                            Number(
+                                                this.arrReceipt.controls[indexRow].get('total').value
+                                            )
+                                        ),
+                                        paymentTotal: toFixedNumber(
+                                            Number(
+                                                this.arrReceipt.controls[indexRow].get('total').value
+                                            ) +
+                                            Number(
+                                                this.arrReceipt.controls[indexRow].get('paymentNikui')
+                                                    .value
+                                            )
+                                        )
+                                    });
+                                    const mainTotal = toFixedNumber(
+                                        Number(fieldSumAll) -
+                                        sumsTotalsAllNotFirstNotCurrent -
+                                        Number(
+                                            this.arrReceipt.controls[indexRow].get('total').value
+                                        )
+                                    );
+                                    this.arrReceipt.controls[0].patchValue({
+                                        total: mainTotal,
+                                        paymentTotal: toFixedNumber(
+                                            Number(mainTotal) +
+                                            Number(
+                                                this.arrReceipt.controls[0].get('paymentNikui').value
+                                            )
+                                        )
+                                    });
+                                }
+                            }
+                            if (isKeyPress === 'paymentTotal') {
+                                const sumsTotalsAllNotFirstNotCurrent = this.arrReceipt.controls
+                                    .filter((it, idx) => idx !== 0 && idx !== indexRow)
+                                    .reduce((total, item, currentIndex) => {
+                                        return total + Number(item.get('total').value);
+                                    }, 0);
+                                const currentMainTotal =
+                                    Number(fieldSumAll) - sumsTotalsAllNotFirstNotCurrent;
+                                const taxDeductionCustId =
+                                    this.arrReceipt.controls[indexRow].get(
+                                        'taxDeductionCustId'
+                                    ).value;
+                                const maxTotal = toFixedNumber(currentMainTotal - 0.1);
+                                let paymentTotal = toFixedNumber(
+                                    Number(
+                                        this.arrReceipt.controls[indexRow].get('paymentTotal').value
+                                    )
+                                );
+                                if (
+                                    (!taxDeductionCustId || !row_taxDeductionCustId_Exist) &&
+                                    paymentTotal > maxTotal
+                                ) {
+                                    paymentTotal = maxTotal;
+                                } else if (
+                                    taxDeductionCustId &&
+                                    row_taxDeductionCustId_Exist &&
+                                    paymentTotal > currentMainTotal
+                                ) {
+                                    this.arrReceipt.controls[indexRow].patchValue({
+                                        paymentNikui: toFixedNumber(currentMainTotal - paymentTotal)
+                                    });
+                                }
+                                const currentTotal =
+                                    paymentTotal -
+                                    toFixedNumber(
+                                        Number(
+                                            this.arrReceipt.controls[indexRow].get('paymentNikui').value
+                                        )
+                                    );
+                                this.arrReceipt.controls[indexRow].patchValue({
+                                    total: currentTotal,
+                                    paymentTotal: paymentTotal
                                 });
+                                const mainTotal = toFixedNumber(currentMainTotal - currentTotal);
                                 this.arrReceipt.controls[0].patchValue({
-                                    total: 0.1,
+                                    total: mainTotal,
                                     paymentTotal: toFixedNumber(
-                                        Number(0.1) +
+                                        Number(mainTotal) +
                                         Number(
                                             this.arrReceipt.controls[0].get('paymentNikui').value
                                         )
                                     )
                                 });
-                            } else {
+                            }
+                            if (isKeyPress === 'paymentNikui') {
                                 this.arrReceipt.controls[indexRow].patchValue({
-                                    total: toFixedNumber(
+                                    paymentNikui: toFixedNumber(
                                         Number(
-                                            this.arrReceipt.controls[indexRow].get('total').value
+                                            this.arrReceipt.controls[indexRow].get('paymentNikui').value
                                         )
                                     ),
                                     paymentTotal: toFixedNumber(
@@ -4695,95 +6094,153 @@ export class BankAndCreditComponent
                                         )
                                     )
                                 });
-                                const mainTotal = toFixedNumber(
-                                    Number(fieldSumAll) -
-                                    sumsTotalsAllNotFirstNotCurrent -
+                            }
+                        } else {
+                            if (isKeyPress === 'totalMatah') {
+                                const sumsTotalsAllNotFirstNotCurrent = this.arrReceipt.controls
+                                    .filter((it, idx) => idx !== 0 && idx !== indexRow)
+                                    .reduce((total, item, currentIndex) => {
+                                        return total + Number(item.get('totalMatah').value);
+                                    }, 0);
+                                if (
+                                    toFixedNumber(
+                                        Number(
+                                            this.arrReceipt.controls[indexRow].get('totalMatah').value
+                                        ) + 0.1
+                                    ) >
+                                    toFixedNumber(
+                                        Number(this.arrReceipt.controls[0].get('totalMatah').value)
+                                    )
+                                ) {
+                                    const newTotal = toFixedNumber(
+                                        Number(this.arrReceipt.controls[0].get('totalMatah').value) - 0.1
+                                    );
+                                    this.arrReceipt.controls[indexRow].patchValue({
+                                        totalMatah: newTotal,
+                                        paymentTotalMatah: toFixedNumber(
+                                            newTotal +
+                                            Number(
+                                                this.arrReceipt.controls[indexRow].get('paymentNikuiMatah')
+                                                    .value
+                                            )
+                                        )
+                                    });
+                                    this.arrReceipt.controls[0].patchValue({
+                                        totalMatah: 0.1,
+                                        paymentTotalMatah: toFixedNumber(
+                                            Number(0.1) +
+                                            Number(
+                                                this.arrReceipt.controls[0].get('paymentNikuiMatah').value
+                                            )
+                                        )
+                                    });
+                                } else {
+                                    this.arrReceipt.controls[indexRow].patchValue({
+                                        totalMatah: toFixedNumber(
+                                            Number(
+                                                this.arrReceipt.controls[indexRow].get('totalMatah').value
+                                            )
+                                        ),
+                                        paymentTotalMatah: toFixedNumber(
+                                            Number(
+                                                this.arrReceipt.controls[indexRow].get('totalMatah').value
+                                            ) +
+                                            Number(
+                                                this.arrReceipt.controls[indexRow].get('paymentNikuiMatah')
+                                                    .value
+                                            )
+                                        )
+                                    });
+                                    const mainTotal = toFixedNumber(
+                                        Number(fieldSumAllMatah) -
+                                        sumsTotalsAllNotFirstNotCurrent -
+                                        Number(
+                                            this.arrReceipt.controls[indexRow].get('totalMatah').value
+                                        )
+                                    );
+                                    this.arrReceipt.controls[0].patchValue({
+                                        totalMatah: mainTotal,
+                                        paymentTotalMatah: toFixedNumber(
+                                            Number(mainTotal) +
+                                            Number(
+                                                this.arrReceipt.controls[0].get('paymentNikuiMatah').value
+                                            )
+                                        )
+                                    });
+                                }
+                            }
+                            if (isKeyPress === 'paymentTotalMatah') {
+                                const sumsTotalsAllNotFirstNotCurrent = this.arrReceipt.controls
+                                    .filter((it, idx) => idx !== 0 && idx !== indexRow)
+                                    .reduce((total, item, currentIndex) => {
+                                        return total + Number(item.get('totalMatah').value);
+                                    }, 0);
+                                const currentMainTotal =
+                                    Number(fieldSumAllMatah) - sumsTotalsAllNotFirstNotCurrent;
+                                const taxDeductionCustId =
+                                    this.arrReceipt.controls[indexRow].get(
+                                        'taxDeductionCustId'
+                                    ).value;
+                                const maxTotal = toFixedNumber(currentMainTotal - 0.1);
+                                let paymentTotal = toFixedNumber(
                                     Number(
-                                        this.arrReceipt.controls[indexRow].get('total').value
+                                        this.arrReceipt.controls[indexRow].get('paymentTotalMatah').value
                                     )
                                 );
+                                if (
+                                    (!taxDeductionCustId || !row_taxDeductionCustId_Exist) &&
+                                    paymentTotal > maxTotal
+                                ) {
+                                    paymentTotal = maxTotal;
+                                } else if (
+                                    taxDeductionCustId &&
+                                    row_taxDeductionCustId_Exist &&
+                                    paymentTotal > currentMainTotal
+                                ) {
+                                    this.arrReceipt.controls[indexRow].patchValue({
+                                        paymentNikuiMatah: toFixedNumber(currentMainTotal - paymentTotal)
+                                    });
+                                }
+                                const currentTotal =
+                                    paymentTotal -
+                                    toFixedNumber(
+                                        Number(
+                                            this.arrReceipt.controls[indexRow].get('paymentNikuiMatah').value
+                                        )
+                                    );
+                                this.arrReceipt.controls[indexRow].patchValue({
+                                    totalMatah: currentTotal,
+                                    paymentTotalMatah: paymentTotal
+                                });
+                                const mainTotal = toFixedNumber(currentMainTotal - currentTotal);
                                 this.arrReceipt.controls[0].patchValue({
-                                    total: mainTotal,
-                                    paymentTotal: toFixedNumber(
+                                    totalMatah: mainTotal,
+                                    paymentTotalMatah: toFixedNumber(
                                         Number(mainTotal) +
                                         Number(
-                                            this.arrReceipt.controls[0].get('paymentNikui').value
+                                            this.arrReceipt.controls[0].get('paymentNikuiMatah').value
                                         )
                                     )
                                 });
                             }
-                        }
-                        if (isKeyPress === 'paymentTotal') {
-                            const sumsTotalsAllNotFirstNotCurrent = this.arrReceipt.controls
-                                .filter((it, idx) => idx !== 0 && idx !== indexRow)
-                                .reduce((total, item, currentIndex) => {
-                                    return total + Number(item.get('total').value);
-                                }, 0);
-                            const currentMainTotal =
-                                Number(fieldSumAll) - sumsTotalsAllNotFirstNotCurrent;
-                            const taxDeductionCustId =
-                                this.arrReceipt.controls[indexRow].get(
-                                    'taxDeductionCustId'
-                                ).value;
-                            const maxTotal = toFixedNumber(currentMainTotal - 0.1);
-                            let paymentTotal = toFixedNumber(
-                                Number(
-                                    this.arrReceipt.controls[indexRow].get('paymentTotal').value
-                                )
-                            );
-                            if (
-                                (!taxDeductionCustId || !row_taxDeductionCustId_Exist) &&
-                                paymentTotal > maxTotal
-                            ) {
-                                paymentTotal = maxTotal;
-                            } else if (
-                                taxDeductionCustId &&
-                                row_taxDeductionCustId_Exist &&
-                                paymentTotal > currentMainTotal
-                            ) {
+                            if (isKeyPress === 'paymentNikuiMatah') {
                                 this.arrReceipt.controls[indexRow].patchValue({
-                                    paymentNikui: toFixedNumber(paymentTotal - currentMainTotal)
+                                    paymentNikuiMatah: toFixedNumber(
+                                        Number(
+                                            this.arrReceipt.controls[indexRow].get('paymentNikuiMatah').value
+                                        )
+                                    ),
+                                    paymentTotalMatah: toFixedNumber(
+                                        Number(
+                                            this.arrReceipt.controls[indexRow].get('totalMatah').value
+                                        ) +
+                                        Number(
+                                            this.arrReceipt.controls[indexRow].get('paymentNikuiMatah')
+                                                .value
+                                        )
+                                    )
                                 });
                             }
-                            const currentTotal =
-                                paymentTotal -
-                                toFixedNumber(
-                                    Number(
-                                        this.arrReceipt.controls[indexRow].get('paymentNikui').value
-                                    )
-                                );
-                            this.arrReceipt.controls[indexRow].patchValue({
-                                total: currentTotal,
-                                paymentTotal: paymentTotal
-                            });
-                            const mainTotal = toFixedNumber(currentMainTotal - currentTotal);
-                            this.arrReceipt.controls[0].patchValue({
-                                total: mainTotal,
-                                paymentTotal: toFixedNumber(
-                                    Number(mainTotal) +
-                                    Number(
-                                        this.arrReceipt.controls[0].get('paymentNikui').value
-                                    )
-                                )
-                            });
-                        }
-                        if (isKeyPress === 'paymentNikui') {
-                            this.arrReceipt.controls[indexRow].patchValue({
-                                paymentNikui: toFixedNumber(
-                                    Number(
-                                        this.arrReceipt.controls[indexRow].get('paymentNikui').value
-                                    )
-                                ),
-                                paymentTotal: toFixedNumber(
-                                    Number(
-                                        this.arrReceipt.controls[indexRow].get('total').value
-                                    ) +
-                                    Number(
-                                        this.arrReceipt.controls[indexRow].get('paymentNikui')
-                                            .value
-                                    )
-                                )
-                            });
                         }
                     }
                 }
@@ -4950,9 +6407,15 @@ export class BankAndCreditComponent
                 // }
 
                 if (
+                    this.rowToSplit.transTypeDefinedArr &&
                     this.arrReceipt.controls[indexRow].get('newRow').value === true &&
-                    this.arrReceipt.controls[indexRow].get('paymentNikui').value === 0 &&
-                    (isKeyPress === 'paymentTotal' || isKeyPress === 'total')
+                    (
+                        (this.arrReceipt.controls[indexRow].get('paymentNikui').value === 0 &&
+                            (isKeyPress === 'paymentTotal' || isKeyPress === 'total'))
+                        ||
+                        (this.arrReceipt.controls[indexRow].get('paymentNikuiMatah').value === 0 &&
+                            (isKeyPress === 'paymentTotalMatah' || isKeyPress === 'totalMatah'))
+                    )
                 ) {
                     const transTypeCode =
                         this.arrReceipt.controls[indexRow].get('transTypeCode').value;
@@ -4964,13 +6427,21 @@ export class BankAndCreditComponent
                     );
                     if (transTypeCodeObj && transTypeCodeObj.precenf) {
                         this.selectTransTypeCodeFromModal(indexRow);
+                    } else {
+                        if (this.srcCurrencyId !== 1 || (this.srcCurrencyId === 1 && this.currencyIdDD && this.currencyIdDD['id'] !== 1)) {
+                            this.calcSumsByRate();
+                        }
+                    }
+                } else {
+                    if (this.srcCurrencyId !== 1 || (this.srcCurrencyId === 1 && this.currencyIdDD && this.currencyIdDD['id'] !== 1)) {
+                        this.calcSumsByRate();
                     }
                 }
             }, 500);
         }
     }
 
-    splitReceiptJournalTrans() {
+    splitReceiptJournalTrans(deleteChilds?: boolean) {
         this.editReceiptModalShow = false;
         this.selectedTransaction = this.rowToSplit;
         // const custId = this.arrReceipt.controls[0].get('custId').value;
@@ -5062,13 +6533,15 @@ export class BankAndCreditComponent
         } else {
             this.rowToSplit.splitMultiPayment = true;
         }
+
         const paramsToSplit = {
             companyId: this.userService.appData.userData.companySelect.companyId,
             companyAccountId: this.rowToSplit.companyAccountId,
-            currencyId: this.rowToSplit.currencyId,
+            currencyId: this.srcCurrencyId !== 1 ? this.srcCurrencyId : (this.srcCurrencyId === 1 && this.currencyIdDD && this.currencyIdDD['id'] !== 1) ? this.currencyIdDD['id'] : 1,
             paymentId: this.rowToSplit.paymentId,
             paymentType: this.rowToSplit.paymentType,
-            splitArray: this.arrReceipt.controls.map((item) => ({
+            currencyRate: Number(this.currencyRate),
+            splitArray: deleteChilds !== undefined ? [] : this.arrReceipt.controls.map((item) => ({
                 transTypeCode: this.bankProcessTransType
                     ? item.get('transTypeCode').value
                     : null,
@@ -5082,7 +6555,7 @@ export class BankAndCreditComponent
                         .moment(item.get('thirdDate').value)
                         .toDate()
                     : null,
-                paymentCustId: item.get('paymentCustId').value.custId,
+                paymentCustId: item.get('paymentCustId').value ? item.get('paymentCustId').value.custId : item.get('paymentCustId').value,
                 taxDeductionCustId:
                     item.get('show_taxDeductionCustId').value === true
                         ? !item.get('taxDeductionCustId').value
@@ -5097,6 +6570,14 @@ export class BankAndCreditComponent
                             : null
                         : null,
                 paymentTotal: item.get('paymentTotal').value,
+                totalMatah: item.get('totalMatah').value,
+                paymentNikuiMatah:
+                    item.get('show_taxDeductionCustId').value === true
+                        ? item.get('paymentNikuiMatah').value !== null
+                            ? item.get('paymentNikuiMatah').value
+                            : null
+                        : null,
+                paymentTotalMatah: item.get('paymentTotalMatah').value,
                 paymentAsmachta: item.get('paymentAsmachta').value,
                 asmachta3: item.get('asmachta3').value,
                 details: item.get('details').value,
@@ -5108,9 +6589,13 @@ export class BankAndCreditComponent
             }))
         };
         if (this.fileStatus === 'CREDIT') {
+            paramsToSplit['ccardIzuCustCurrencyId'] = this.rowToSplit.ccardIzuCustCurrencyId;
             paramsToSplit['creditCardId'] = this.rowToSplit.creditCardId;
         }
-        if (paramsToSplit.splitArray.every((it) => it.custId !== null)) {
+        if (paramsToSplit.splitArray.every((it) => it.custId !== null) || this.journalPaymentPrompt) {
+            // console.log(paramsToSplit);
+            this.sharedComponent.mixPanelEvent('pizul pkuda');
+
             this.sharedService.splitJournalTrans(paramsToSplit).subscribe(() => {
                 if (this.receipt) {
                     let control: AbstractControl = null;
@@ -5129,44 +6614,89 @@ export class BankAndCreditComponent
 
     isDisabledSplitReceiptJournalTrans(): boolean {
         if (this.receipt && this.arrReceipt) {
-            if (
-                Object.values(this.arrReceipt.controls).some((fc) => {
-                    const row_taxDeductionCustId_Exist =
-                        fc.get('show_taxDeductionCustId').value === true;
-                    const valReq = {
-                        dateValue:
-                            fc.get('dateValue').enabled && fc.get('dateValue').invalid,
-                        custId: fc.get('custId').enabled && fc.get('custId').invalid,
-                        paymentCustId:
-                            fc.get('paymentCustId').enabled &&
-                            fc.get('paymentCustId').invalid,
-                        taxDeductionCustId:
-                            row_taxDeductionCustId_Exist &&
-                            fc.get('taxDeductionCustId').enabled &&
-                            fc.get('taxDeductionCustId').invalid,
-                        total: fc.get('total').enabled && fc.get('total').invalid,
-                        paymentTotal:
-                            fc.get('paymentTotal').enabled &&
-                            (fc.get('paymentTotal').invalid ||
-                                this.getNum(fc.get('paymentTotal').value) === 0),
-                        paymentNikui:
-                            row_taxDeductionCustId_Exist &&
-                            fc.get('paymentNikui').enabled &&
-                            fc.get('paymentNikui').invalid &&
-                            this.getNum(fc.get('paymentNikui').value) !== 0,
-                        equalDropDowns:
-                            fc.get('custId').value &&
-                            fc.get('paymentCustId').value &&
-                            fc.get('custId').value.custId ===
-                            fc.get('paymentCustId').value.custId
-                    };
+            if (this.journalPaymentPrompt) {
+                if (
+                    Object.values(this.arrReceipt.controls).some((fc) => {
+                        const valReq = {
+                            paymentCustId:
+                                fc.get('paymentCustId').enabled &&
+                                fc.get('paymentCustId').invalid
+                        };
+                        const someIsInvalid = Object.values(valReq).some((val) => val);
+                        return someIsInvalid;
+                    })
+                ) {
+                    return true;
+                }
+            } else {
+                const isMatah = this.srcCurrencyId !== 1 || (this.srcCurrencyId === 1 && this.currencyIdDD && this.currencyIdDD['id'] !== 1);
+                if (
+                    Object.values(this.arrReceipt.controls).some((fc) => {
+                        const row_taxDeductionCustId_Exist =
+                            fc.get('show_taxDeductionCustId').value === true;
 
-                    const someIsInvalid = Object.values(valReq).some((val) => val);
-                    // console.log('----someIsInvalid----', someIsInvalid, valReq, fc.get('totalIncludedMaam').value, fc.get('totalMaam').value, fc.get('totalWithoutMaam').value);
-                    return someIsInvalid;
-                })
-            ) {
-                return true;
+                        const arr_taxDeductionCustId = this.userService.appData.userData.companyCustomerDetails
+                            ? fc.get('taxDeductionCustId').disabled
+                                ? this.userService.appData.userData
+                                    .companyCustomerDetails.all
+                                : this.rowToSplit.hova
+                                    ? this.userService.appData.userData
+                                        .companyCustomerDetails
+                                        .customerTaxDeductionCustIdExpenseArr
+                                    : this.userService.appData.userData
+                                        .companyCustomerDetails.taxDeductionArr
+                            : [];
+                        let taxDeductionCustIdErr = fc.get('show_taxDeductionCustId').value === true;
+                        if (row_taxDeductionCustId_Exist && arr_taxDeductionCustId && arr_taxDeductionCustId.length && fc.get('taxDeductionCustId').value && fc.get('taxDeductionCustId').value.custId) {
+                            if (arr_taxDeductionCustId.find(it => it.custId === fc.get('taxDeductionCustId').value.custId)) {
+                                taxDeductionCustIdErr = false;
+                            }
+                        }
+                        const valReq = {
+                            dateValue:
+                                fc.get('dateValue').enabled && fc.get('dateValue').invalid,
+                            custId: fc.get('custId').enabled && fc.get('custId').invalid,
+                            paymentCustId:
+                                fc.get('paymentCustId').enabled &&
+                                fc.get('paymentCustId').invalid,
+                            taxDeductionCustId:
+                                row_taxDeductionCustId_Exist &&
+                                fc.get('taxDeductionCustId').enabled &&
+                                (fc.get('taxDeductionCustId').invalid || taxDeductionCustIdErr),
+                            total: fc.get('total').enabled && fc.get('total').invalid,
+                            paymentTotal:
+                                fc.get('paymentTotal').enabled &&
+                                (fc.get('paymentTotal').invalid ||
+                                    this.getNum(fc.get('paymentTotal').value) === 0),
+                            paymentNikui:
+                                row_taxDeductionCustId_Exist &&
+                                fc.get('paymentNikui').enabled &&
+                                fc.get('paymentNikui').invalid &&
+                                this.getNum(fc.get('paymentNikui').value) !== 0,
+                            totalMatah: isMatah && fc.get('totalMatah').enabled && fc.get('totalMatah').invalid,
+                            paymentTotalMatah: isMatah &&
+                                fc.get('paymentTotalMatah').enabled &&
+                                (fc.get('paymentTotalMatah').invalid ||
+                                    this.getNum(fc.get('paymentTotalMatah').value) === 0),
+                            paymentNikuiMatah: isMatah &&
+                                row_taxDeductionCustId_Exist &&
+                                fc.get('paymentNikuiMatah').enabled &&
+                                fc.get('paymentNikuiMatah').invalid &&
+                                this.getNum(fc.get('paymentNikuiMatah').value) !== 0,
+                            equalDropDowns:
+                                fc.get('custId').value &&
+                                fc.get('paymentCustId').value &&
+                                fc.get('custId').value.custId ===
+                                fc.get('paymentCustId').value.custId
+                        };
+
+                        const someIsInvalid = Object.values(valReq).some((val) => val);
+                        // console.log('----someIsInvalid----', someIsInvalid, valReq);
+                        return someIsInvalid;
+                    })
+                ) {
+                    return true;
+                }
             }
         }
 
@@ -5177,6 +6707,18 @@ export class BankAndCreditComponent
         return this.arrReceipt.controls[indexRow].get(
             'transTypeDefinedArr'
         ) as FormArray;
+    }
+
+    changeStatus(eve: any) {
+        if (this.fileStatus === 'BANK') {
+            this.filterDates(
+                this.childDates.selectedPreset.selectedPeriod(this.userService)
+            );
+        } else if (this.fileStatus === 'CREDIT') {
+            this.filterDates(
+                this.childCardsDates.selectedPreset.selectedPeriod(this.userService)
+            );
+        }
     }
 
     public getCompanyCustomerDetails() {
@@ -5265,7 +6807,9 @@ export class BankAndCreditComponent
     onHideEditReceipt() {
         this.imageScaleNewInvoice = 1;
         this.degRotateImg = 0;
-
+        if (this.bankProcessTransTypeSrc !== undefined) {
+            this.bankProcessTransType = this.bankProcessTransTypeSrc;
+        }
         this.selectedTransaction = this.rowToSplit;
         this.showDocumentListStorageDataFiredRece = false;
         this.sidebarImgs = false;
@@ -5751,7 +7295,25 @@ export class BankAndCreditComponent
             });
     }
 
+    exporterFolderStatePostMethod() {
+        this.sharedService
+            .exporterFolderStatePost({
+                companyId: this.userService.appData.userData.companySelect.companyId,
+                productType: 'BANK_JOURNAL'
+            })
+            .subscribe((value) => {
+                const exporterFolderStatePostRes = value ? value['body'] : value;
+                if (exporterFolderStatePostRes && exporterFolderStatePostRes.showNotUpToDatePopup) {
+                    setTimeout(() => {
+                        this.showNotUpToDatePopup = exporterFolderStatePostRes;
+                    }, 500);
+                }
+            });
+    }
+
     setStatus(fileStatus: string): void {
+        this.exporterFolderStatePostMethod();
+
         if (this.fileStatus === 'BANK_MATCH' && fileStatus === 'BANK_MATCH') {
             this.getDataTables();
             return;
@@ -5777,6 +7339,7 @@ export class BankAndCreditComponent
             orderBy: null,
             order: 'DESC'
         });
+        this.customerCustList = [];
         this.loaderBooks = true;
         this.loaderCash = true;
         this.checkAllRows = false;
@@ -5823,7 +7386,7 @@ export class BankAndCreditComponent
         this.filterTypesHova = null;
         this.selcetAllFiles = null;
         this.currentPage = 0;
-        this.entryLimit = 50;
+        this.entryLimit = 20;
         if (this.paginator && this.paginator.changePage) {
             this.paginator.changePage(0);
         }
@@ -5972,6 +7535,7 @@ export class BankAndCreditComponent
                 take(1)
             )
             .subscribe(() => {
+                this.sharedComponent.mixPanelEvent('delete');
                 this.sharedService
                     .countStatusBank(
                         this.userService.appData.userData.companySelect.companyId
@@ -6023,335 +7587,6 @@ export class BankAndCreditComponent
         };
     }
 
-    createExportFileFor(parent: any) {
-        if (!this.userService.appData || !this.userService.appData.folderState) {
-            return;
-        }
-
-        this.ocrExportFileId = parent.ocrExportFileId;
-        if (this.userService.appData.folderState === 'OK') {
-            if (parent.createExportFileSub) {
-                return;
-            }
-            parent.createExportFileSub = this.sharedService
-                .exportFileCreateFolder(parent.ocrExportFileId)
-                .pipe(
-                    first(),
-                    finalize(() => (parent.createExportFileSub = null))
-                )
-                .subscribe((value) => {
-                    this.responseRestPath = value ? value['body'] : value;
-                    if (!this.responseRestPath) {
-                        this.startChild();
-                    } else {
-                        this.showModalCheckFolderFile = true;
-                        const checkFolderFile = setInterval(() => {
-                            if (this.showModalCheckFolderFile !== true) {
-                                clearInterval(checkFolderFile);
-                            } else {
-                                this.sharedService
-                                    .checkFolderFile(parent.ocrExportFileId)
-                                    .subscribe((res) => {
-                                        if (res && res.body && res.body !== 'NOT_DONE') {
-                                            this.showModalCheckFolderFile = res.body;
-                                            clearInterval(checkFolderFile);
-                                            if (
-                                                res.body === 'ERROR' &&
-                                                !this.userService.appData.isAdmin
-                                            ) {
-                                                this.sharedService
-                                                    .folderError({
-                                                        companyId:
-                                                        this.userService.appData.userData.companySelect
-                                                            .companyId,
-                                                        ocrExportFileId: parent.ocrExportFileId
-                                                    })
-                                                    .subscribe((value) => {
-                                                    });
-                                            }
-                                        }
-                                    });
-                            }
-                        }, 5000);
-                    }
-                });
-
-            this.docsfile = null;
-
-            this.exportFileFolderCreatePrompt = {
-                onAnchorClick(): void {
-                },
-                onHide(): void {
-                },
-                pending: false,
-                prompt: '',
-                visible: false,
-                cancelFile: () => {
-                    this.showModalCheckFolderFile = false;
-                    this.sharedService
-                        .cancelFile(parent.ocrExportFileId)
-                        .subscribe((res) => {
-                        });
-                },
-                manualDownloadLink: () => {
-                    this.enabledDownloadLink = false;
-                    // if (docsfile) {
-                    //     this.saveFileToDisk(docsfile.docfile, docsfile.paramsfile).then((resData) => {
-                    //         this.exportFileFolderCreatePrompt.visible = false;
-                    //         this.startChild();
-                    //     });
-                    // }
-                }
-            };
-        } else if (this.userService.appData.folderState === 'NOT_OK') {
-            if (!this.userService.appData.isAdmin) {
-                this.sharedService
-                    .folderError({
-                        companyId: this.userService.appData.userData.companySelect.companyId
-                    })
-                    .subscribe((value) => {
-                    });
-            }
-            this.docsfile = null;
-
-            this.exportFileFolderCreatePrompt = {
-                visible: true,
-                pending: false,
-                onAnchorClick: () => {
-                    let counter = 0;
-                    this.exportFileFolderCreatePrompt.pending = true;
-                    this.exportFileFolderCreatePrompt.approveSubscription = timer(
-                        500,
-                        30 * 1000
-                    )
-                        .pipe(
-                            tap(() => counter++),
-                            switchMap(() =>
-                                this.sharedService
-                                    .exporterFolderState()
-                                    .pipe(
-                                        map((response: any) =>
-                                            response && !response.error ? response.body : response
-                                        )
-                                    )
-                            ),
-                            takeWhileInclusive(
-                                (response: any) =>
-                                    response != null &&
-                                    !response.error &&
-                                    response.folderState !== 'OK' &&
-                                    counter < 10 &&
-                                    this.exportFileFolderCreatePrompt &&
-                                    this.exportFileFolderCreatePrompt.visible
-                            ),
-                            finalize(
-                                () => (this.exportFileFolderCreatePrompt.pending = false)
-                            )
-                        )
-                        .subscribe((response: any) => {
-                            this.userService.appData.countStatusData =
-                                response && !!response.exporterState
-                                    ? response.exporterState
-                                    : null;
-                            this.userService.appData.folderState =
-                                response && !!response.folderState
-                                    ? response.folderState
-                                    : null;
-                        });
-                },
-                onHide: () => {
-                    if (
-                        this.userService.appData.folderState === 'OK' &&
-                        this.exportFileFolderCreatePrompt.approveSubscription &&
-                        this.exportFileFolderCreatePrompt.approveSubscription.closed
-                    ) {
-                        parent.createExportFileSub = this.sharedService
-                            .exportFileCreateFolder(parent.ocrExportFileId)
-                            .pipe(
-                                first(),
-                                finalize(() => (parent.createExportFileSub = null))
-                            )
-                            .subscribe((value) => {
-                                this.responseRestPath = value ? value['body'] : value;
-                                if (!this.responseRestPath) {
-                                    this.startChild();
-                                } else {
-                                    this.showModalCheckFolderFile = true;
-                                    const checkFolderFile = setInterval(() => {
-                                        if (this.showModalCheckFolderFile !== true) {
-                                            clearInterval(checkFolderFile);
-                                        } else {
-                                            this.sharedService
-                                                .checkFolderFile(parent.ocrExportFileId)
-                                                .subscribe((res) => {
-                                                    if (res && res.body && res.body !== 'NOT_DONE') {
-                                                        this.showModalCheckFolderFile = res.body;
-                                                        clearInterval(checkFolderFile);
-                                                        if (
-                                                            res.body === 'ERROR' &&
-                                                            !this.userService.appData.isAdmin
-                                                        ) {
-                                                            this.sharedService
-                                                                .folderError({
-                                                                    companyId:
-                                                                    this.userService.appData.userData
-                                                                        .companySelect.companyId,
-                                                                    ocrExportFileId: parent.ocrExportFileId
-                                                                })
-                                                                .subscribe((value) => {
-                                                                });
-                                                        }
-                                                    }
-                                                });
-                                        }
-                                    }, 5000);
-                                }
-                            });
-                    }
-                },
-                prompt: null,
-                cancelFile: () => {
-                    this.showModalCheckFolderFile = false;
-                    this.sharedService
-                        .cancelFile(parent.ocrExportFileId)
-                        .subscribe((res) => {
-                        });
-                },
-                manualDownloadLink: () => {
-                    this.enabledDownloadLink = false;
-                    // if (docsfile) {
-                    //     this.saveFileToDisk(docsfile.docfile, docsfile.paramsfile).then((resData) => {
-                    //         this.exportFileFolderCreatePrompt.visible = false;
-                    //         this.startChild();
-                    //     });
-                    // }
-                }
-            };
-        } else if (this.userService.appData.folderState === 'NOT_EXIST') {
-            this.docsfile = null;
-
-            this.exportFileFolderCreatePrompt = {
-                visible: true,
-                pending: false,
-                onAnchorClick: () => {
-                    let counter = 0;
-                    this.exportFileFolderCreatePrompt.pending = true;
-                    this.exportFileFolderCreatePrompt.approveSubscription = timer(
-                        500,
-                        30 * 1000
-                    )
-                        .pipe(
-                            tap(() => counter++),
-                            switchMap(() =>
-                                this.sharedService
-                                    .exporterFolderState()
-                                    .pipe(
-                                        map((response: any) =>
-                                            response && !response.error ? response.body : response
-                                        )
-                                    )
-                            ),
-                            takeWhileInclusive(
-                                (response: any) =>
-                                    response != null &&
-                                    !response.error &&
-                                    response.folderState !== 'OK' &&
-                                    counter < 10 &&
-                                    this.exportFileFolderCreatePrompt &&
-                                    this.exportFileFolderCreatePrompt.visible
-                            ),
-                            finalize(() => {
-                                this.exportFileFolderCreatePrompt.pending = false;
-                                if (
-                                    this.userService.appData.folderState === 'OK' &&
-                                    this.exportFileFolderCreatePrompt.visible
-                                ) {
-                                    this.exportFileFolderCreatePrompt.visible = false;
-                                }
-                            })
-                        )
-                        .subscribe((response: any) => {
-                            this.userService.appData.countStatusData =
-                                response && !!response.exporterState
-                                    ? response.exporterState
-                                    : null;
-                            this.userService.appData.folderState =
-                                response && !!response.folderState
-                                    ? response.folderState
-                                    : null;
-                        });
-                },
-                onHide: () => {
-                    if (
-                        this.userService.appData.folderState === 'OK' &&
-                        this.exportFileFolderCreatePrompt.approveSubscription &&
-                        this.exportFileFolderCreatePrompt.approveSubscription.closed
-                    ) {
-                        parent.createExportFileSub = this.sharedService
-                            .exportFileCreateFolder(parent.ocrExportFileId)
-                            .pipe(
-                                first(),
-                                finalize(() => (parent.createExportFileSub = null))
-                            )
-                            .subscribe((value) => {
-                                this.responseRestPath = value ? value['body'] : value;
-                                if (!this.responseRestPath) {
-                                    this.startChild();
-                                } else {
-                                    this.showModalCheckFolderFile = true;
-                                    const checkFolderFile = setInterval(() => {
-                                        if (this.showModalCheckFolderFile !== true) {
-                                            clearInterval(checkFolderFile);
-                                        } else {
-                                            this.sharedService
-                                                .checkFolderFile(parent.ocrExportFileId)
-                                                .subscribe((res) => {
-                                                    if (res && res.body && res.body !== 'NOT_DONE') {
-                                                        this.showModalCheckFolderFile = res.body;
-                                                        clearInterval(checkFolderFile);
-                                                        if (
-                                                            res.body === 'ERROR' &&
-                                                            !this.userService.appData.isAdmin
-                                                        ) {
-                                                            this.sharedService
-                                                                .folderError({
-                                                                    companyId:
-                                                                    this.userService.appData.userData
-                                                                        .companySelect.companyId,
-                                                                    ocrExportFileId: parent.ocrExportFileId
-                                                                })
-                                                                .subscribe((value) => {
-                                                                });
-                                                        }
-                                                    }
-                                                });
-                                        }
-                                    }, 5000);
-                                }
-                            });
-                    }
-                },
-                prompt: null,
-                cancelFile: () => {
-                    this.showModalCheckFolderFile = false;
-                    this.sharedService
-                        .cancelFile(parent.ocrExportFileId)
-                        .subscribe((res) => {
-                        });
-                },
-                manualDownloadLink: () => {
-                    this.enabledDownloadLink = false;
-                    // if (docsfile) {
-                    //     this.saveFileToDisk(docsfile.docfile, docsfile.paramsfile).then((resData) => {
-                    //         this.exportFileFolderCreatePrompt.visible = false;
-                    //         this.startChild();
-                    //     });
-                    // }
-                }
-            };
-        }
-    }
-
     getExportFiles(isReset?: boolean, showChildren?: any): void {
         // if (!isReset) {
         //     this.resetVars();
@@ -6366,9 +7601,10 @@ export class BankAndCreditComponent
             this.userService.appData.userData.creditCards
         ) {
             this.sharedService
-                .getExportFilesBank(
-                    this.userService.appData.userData.companySelect.companyId
-                )
+                .getExportFilesBank({
+                    'companyId': this.userService.appData.userData.companySelect.companyId,
+                    'exportFileStatusFilter': this.exportFileStatusFilter
+                })
                 .subscribe(
                     (response: any) => {
                         // const aaa = [{
@@ -6426,6 +7662,13 @@ export class BankAndCreditComponent
                                         transData: null
                                     });
                                     fd.status = gr.status;
+                                    const currencyIdSign = this.revaluationCurrCodeArr.find(it => it.id === fd.currencyId);
+                                    if (currencyIdSign) {
+                                        fd.currencyIdSign = currencyIdSign.sign ? currencyIdSign.sign : '₪';
+                                    } else {
+                                        fd.currencyIdSign = '₪';
+                                    }
+
                                     fd.sugTnuaTooltip = fd.sugTnua
                                         ? this.getTooltipName(fd.sugTnua)
                                         : null;
@@ -6577,6 +7820,8 @@ export class BankAndCreditComponent
                             fdChild.details,
                             fdChild.total,
                             this.sumPipe.transform(fdChild.total),
+                            fdChild.totalMatah,
+                            this.sumPipe.transform(fdChild.totalMatah),
                             fdChild.izuCustId,
                             fdChild.cardAccName,
                             this.dtPipe.transform(fdChild.invoiceDate, 'dd/MM/y')
@@ -6595,12 +7840,14 @@ export class BankAndCreditComponent
                         fd.showChildren = true;
                         return fd;
                     }
+                    // return fd;
                 });
 
             if (this.journalTransData.length) {
                 switch (this.companyFilesSortControl.value.orderBy) {
                     case 'invoiceDate':
                     case 'total':
+                    case 'totalMatah':
                         // noinspection DuplicatedCode
                         this.journalTransData = this.journalTransData.filter((item) => {
                             const notNumber = item.transData.filter(
@@ -6671,6 +7918,82 @@ export class BankAndCreditComponent
                         break;
                 }
 
+                if (this.exportFileStatusFilter === 'DONE_PROCESS') {
+                    if (this.exportFileStatusFilters.date_from || this.exportFileStatusFilters.date_till || this.exportFileStatusFilters.mana_num_min || this.exportFileStatusFilters.mana_num_max) {
+                        this.journalTransData = this.journalTransData.filter((fd) => {
+                            if (this.exportFileStatusFilters.date_from) {
+                                if (!fd.dateLastModified) {
+                                    return false;
+                                }
+
+                                if (this.userService.appData
+                                    .moment(fd.dateLastModified)
+                                    .isBefore(
+                                        this.userService.appData.moment(this.exportFileStatusFilters.date_from),
+                                        'date'
+                                    )) {
+                                    return false;
+                                }
+                            }
+                            if (this.exportFileStatusFilters.date_till) {
+                                if (!fd.dateLastModified) {
+                                    return false;
+                                }
+                                if (this.userService.appData
+                                    .moment(fd.dateLastModified)
+                                    .isAfter(
+                                        this.userService.appData.moment(this.exportFileStatusFilters.date_till),
+                                        'date'
+                                    )) {
+                                    return false;
+                                }
+                            }
+                            if (this.exportFileStatusFilters.mana_num_min) {
+                                if (!fd.batchNumber) {
+                                    return false;
+                                }
+                                if (Number(fd.batchNumber) < Number(this.exportFileStatusFilters.mana_num_min)) {
+                                    return false;
+                                }
+                            }
+                            if (this.exportFileStatusFilters.mana_num_max) {
+                                if (!fd.batchNumber) {
+                                    return false;
+                                }
+                                if (Number(fd.batchNumber) > Number(this.exportFileStatusFilters.mana_num_max)) {
+                                    return false;
+                                }
+                            }
+                            return true;
+                        });
+                    }
+
+
+                    if (this.journalTransData.length) {
+                        const notNumber = this.journalTransData.filter(
+                            (fd) => typeof fd[this.exportFileStatusFilters.orderBy] !== 'number'
+                        );
+                        this.journalTransData = this.journalTransData
+                            .filter(
+                                (fd) => typeof fd[this.exportFileStatusFilters.orderBy] === 'number'
+                            )
+                            .sort((a, b) => {
+                                const lblA = a[this.exportFileStatusFilters.orderBy],
+                                    lblB = b[this.exportFileStatusFilters.orderBy];
+                                return lblA || lblB
+                                    ? !lblA
+                                        ? 1
+                                        : !lblB
+                                            ? -1
+                                            : this.exportFileStatusFilters.order === 'ASC'
+                                                ? lblA - lblB
+                                                : lblB - lblA
+                                    : 0;
+                            })
+                            .concat(notNumber);
+                    }
+                }
+
                 if (this.fileIdToScroll) {
                     const fileIdToScroll = this.fileIdToScroll;
                     this.fileIdToScroll = null;
@@ -6685,7 +8008,7 @@ export class BankAndCreditComponent
             const selcetedFiles = this.journalTransData
                 .flatMap((fd) => fd.transData)
                 .filter((it) => it.selcetFile);
-            if (selcetedFiles.length > 1) {
+            if (selcetedFiles.length) {
                 this.showFloatNav = {
                     selcetedFiles,
                     selcetedFilesEnabled: selcetedFiles.every(
@@ -6705,30 +8028,55 @@ export class BankAndCreditComponent
         } else {
             this.journalTransData = [];
         }
-        let allTransData = [];
-        this.journalTransData.forEach((it, idxs) => {
-            const parentObj = JSON.parse(JSON.stringify(it));
-            parentObj.idx = idxs;
-            allTransData.push(
-                Object.assign(JSON.parse(JSON.stringify(parentObj)), {
-                    transData: null
-                })
-            );
-
-            if (!parentObj.showChildren) {
-                parentObj.transData = [];
-            } else {
-                parentObj.transData.forEach((it1, idx1) => {
-                    it1.idxParent = idxs;
-                    it1.idx = idx1;
-                });
-            }
-            allTransData = allTransData.concat(parentObj.transData);
-        });
-        this.allTransData = allTransData;
+        // let allTransData = [];
+        // this.journalTransData.forEach((it, idxs) => {
+        //     const parentObj = JSON.parse(JSON.stringify(it));
+        //     parentObj.idx = idxs;
+        //     allTransData.push(
+        //         Object.assign(JSON.parse(JSON.stringify(parentObj)), {
+        //             transData: null
+        //         })
+        //     );
+        //
+        //     if (!parentObj.showChildren) {
+        //         parentObj.transData = [];
+        //     } else {
+        //         parentObj.transData.forEach((it1, idx1) => {
+        //             it1.idxParent = idxs;
+        //             it1.idx = idx1;
+        //         });
+        //     }
+        //     allTransData = allTransData.concat(parentObj.transData);
+        // });
+        // allTransData.forEach(fdChild => {
+        //     fdChild['idRow'] = crypto['randomUUID']();
+        // });
+        // this.allTransData = allTransData;
+        // this.allTransData = this.journalTransData[this.indexSelectedJournal];
         // console.log(allTransData);
-
+        if (this.indexSelectedJournal > (this.journalTransData.length - 1)) {
+            this.indexSelectedJournal = 0;
+        }
+        this.validateScrollPresence();
         this.loader = false;
+    }
+
+    private validateScrollPresence(): void {
+        setTimeout(() => {
+            if (this.scrollContainerHasScroll && this.scrollContainerVirtual) {
+                console.log(this.scrollContainerVirtual);
+                const scrollContainerHasScrollNow =
+                    this.scrollContainerVirtual &&
+                    this.scrollContainerVirtual !== null &&
+                    this.scrollContainerVirtual['elementRef'] &&
+                    this.scrollContainerVirtual['elementRef'].nativeElement.scrollHeight >
+                    this.scrollContainerVirtual['elementRef'].nativeElement.clientHeight;
+                if (this.scrollContainerHasScroll !== scrollContainerHasScrollNow) {
+                    // console.log('validateScrollPresence: scrollContainerHasScroll > %o', scrollContainerHasScrollNow);
+                    this.scrollContainerHasScroll = scrollContainerHasScrollNow;
+                }
+            }
+        });
     }
 
     colsAct(parent, idx): void {
@@ -6761,6 +8109,7 @@ export class BankAndCreditComponent
         this.allTransData = allTransData;
         // console.log(allTransData);
         // }, 0);
+        this.validateScrollPresence();
     }
 
     checkAllChildSelectedJournalTransData(parent: any): void {
@@ -6830,7 +8179,7 @@ export class BankAndCreditComponent
         const selcetedFiles = this.journalTransData
             .flatMap((fd) => fd.transData)
             .filter((it) => it.selcetFile);
-        if (selcetedFiles.length > 1) {
+        if (selcetedFiles.length) {
             this.showFloatNav = {
                 selcetedFiles,
                 selcetedFilesEnabled: selcetedFiles.every(
@@ -6850,18 +8199,24 @@ export class BankAndCreditComponent
     }
 
     trackByIdJournalTransData(index: number, row: any): number {
-        return row.idx;
+        // return row.idx;
+        return row.idRow;
     }
 
     getCompanyDocumentsData(): void {
     }
 
-    filterDates(paramDate: any, saveFilter?: boolean): void {
+    filterDates(paramDate: any, saveFilter?: boolean, refreshFilterArray?: boolean): void {
+        this.sharedComponent.mixPanelEvent('days drop', {
+            value: paramDate.fromDate + '-' + paramDate.toDate
+        });
         this.selcetAllFiles = false;
         this.loader = true;
 
         this.showFloatNav = false;
-        this.queryString = '';
+        if (!saveFilter) {
+            this.queryString = '';
+        }
         // this.bankDetails = false;
         this.bankDetailsSave = false;
         // this.filterLink = 'all';
@@ -6993,10 +8348,9 @@ export class BankAndCreditComponent
                         // }).subscribe(() => {
                         //
                         // });
-
                         this.companyGetCustomerList(true, paramDate, saveFilter);
                     } else {
-                        this.getData(paramDate, saveFilter);
+                        this.getData(paramDate, saveFilter, refreshFilterArray);
                     }
                 });
         }
@@ -7374,20 +8728,25 @@ export class BankAndCreditComponent
         // }
     }
 
-    getData(paramDate: any, saveFilter?: boolean) {
+    getData(paramDate: any, saveFilter?: boolean, refreshFilterArray?: boolean) {
         // this.showScreen = true;
         if (this.fileStatus === 'BANK') {
-            if (this.userService.appData.userData.accountSelect.length) {
+            if (this.userService.appData.userData.accountSelect.filter(
+                (acc) => acc.checked
+            ).length) {
                 this.loader = true;
                 // this.advancedSearchParams.get('description').value,
                 zip(
                     this.sharedService.bankDetails({
                         companyAccountIds:
-                            this.userService.appData.userData.accountSelect.map((account) => {
+                            this.userService.appData.userData.accountSelect.filter(
+                                (acc) => acc.checked
+                            ).map((account) => {
                                 return account.companyAccountId;
                             }),
                         dateFrom: paramDate.fromDate,
-                        dateTill: paramDate.toDate
+                        dateTill: paramDate.toDate,
+                        statuses: this.childStatuses.statusArr
                     }),
                     this.sharedService.paymentTypesTranslate$
                 ).subscribe(
@@ -7397,6 +8756,9 @@ export class BankAndCreditComponent
                         bankDetailsSave = bankDetailsSave.rows;
                         const bankDetailsBuilder = [];
                         if (Array.isArray(bankDetailsSave)) {
+                            // if (this.customerCustList && !this.customerCustList.length) {
+                            //     debugger
+                            // }
                             let idxRows = 0;
                             for (const fd of bankDetailsSave) {
                                 if (!fd.splitArray) {
@@ -7422,6 +8784,12 @@ export class BankAndCreditComponent
                                     }
                                     fd.cust = custId;
                                     fd.custName = custId ? custId.cartisName : 'בחירה';
+                                    if (fd.status === 'NOT_HASH_BANK_MATCHED') {
+                                        fd.nonMatchedTrans = true;
+                                    }
+                                    if (fd.nonMatchedTrans) {
+                                        fd.status = 'BIZIBOX_MATCH_IGNORE_nonMatchedTrans';
+                                    }
 
                                     // if (this.customerCustList.length && fd.custId) {
                                     //     const custFromList = this.customerCustList.find(cust => cust.custId === fd.custId);
@@ -7459,14 +8827,19 @@ export class BankAndCreditComponent
                                         ? paymentTypesTranslate[fd['paymentDesc']]
                                         : fd['paymentDesc'];
                                     fd.asmachta =
-                                        fd.asmachta !== null ? String(fd.asmachta) : fd.asmachta;
+                                        fd.asmachta !== null ? Number(fd.asmachta) : fd.asmachta;
                                     fd.totalFull = fd.hova
                                         ? -Math.abs(fd.total)
                                         : Math.abs(fd.total);
-                                    fd.status_desc =
-                                        this.translate.translations[this.translate.currentLang][
-                                            'bankDetails-status'
-                                            ][fd.status];
+                                    if (fd.nonMatchedTrans) {
+                                        fd.status_desc = 'תנועה לא נמצאה בחשבשבת';
+                                    } else {
+                                        fd.status_desc =
+                                            this.translate.translations[this.translate.currentLang][
+                                                'bankDetails-status'
+                                                ][fd.status];
+                                    }
+
                                     if (
                                         fd.pictureLink &&
                                         (fd.pictureLink === 'x' || fd.pictureLink === 'X')
@@ -7506,7 +8879,12 @@ export class BankAndCreditComponent
                                         }
                                         fdChild.cust = custId;
                                         fdChild.custName = custId ? custId.cartisName : 'בחירה';
-
+                                        if (fdChild.status === 'NOT_HASH_BANK_MATCHED') {
+                                            fdChild.nonMatchedTrans = true;
+                                        }
+                                        if (fdChild.nonMatchedTrans) {
+                                            fdChild.status = 'BIZIBOX_MATCH_IGNORE_nonMatchedTrans';
+                                        }
                                         // if (this.customerCustList.length && fdChild.custId) {
                                         //     const custFromList = this.customerCustList.find(cust => cust.custId === fdChild.custId);
                                         //     fdChild.cust = custFromList ? custFromList : null;
@@ -7545,15 +8923,20 @@ export class BankAndCreditComponent
                                             : fdChild['paymentDesc'];
                                         fdChild.asmachta =
                                             fdChild.asmachta !== null
-                                                ? String(fdChild.asmachta)
+                                                ? Number(fdChild.asmachta)
                                                 : fdChild.asmachta;
                                         fdChild.totalFull = fd.hova
                                             ? -Math.abs(fd.total)
                                             : Math.abs(fd.total);
-                                        fdChild.status_desc =
-                                            this.translate.translations[this.translate.currentLang][
-                                                'bankDetails-status'
-                                                ][fdChild.status];
+                                        if (fdChild.nonMatchedTrans) {
+                                            fdChild.status_desc = 'תנועה לא נמצאה בחשבשבת';
+                                        } else {
+                                            fdChild.status_desc =
+                                                this.translate.translations[this.translate.currentLang][
+                                                    'bankDetails-status'
+                                                    ][fdChild.status];
+                                        }
+
                                         if (
                                             fdChild.pictureLink &&
                                             (fdChild.pictureLink === 'x' ||
@@ -7586,7 +8969,7 @@ export class BankAndCreditComponent
                         if (!saveFilter) {
                             this.filtersAll();
                         } else {
-                            this.filtersAll(undefined, true, true);
+                            this.filtersAll(undefined, true, refreshFilterArray);
                         }
                     }
                 );
@@ -7595,20 +8978,25 @@ export class BankAndCreditComponent
             this.loader = true;
             this.selectionSummary.sumForSelectedPeriod = null;
             const selectedCards = this.cardsSelector.selectedCards;
-            const arrCards = selectedCards.map((card) => card.creditCardId);
-            if (arrCards.length) {
-                let obj = {
-                    creditCardIds: arrCards
+            console.log(selectedCards);
+            if (selectedCards.length) {
+                let obj: any = {
+                    accountTypes: selectedCards.map((it) => {
+                        return {'accountId': it.accountId, 'accountType': it.accountType};
+                    }),
+                    currencyId: selectedCards[0].currencyId
                 };
-
+                console.log(obj);
                 if (
                     this.childCardsDates.selectedPreset.name === 'customMonths' ||
-                    this.childCardsDates.selectedPreset.name === 'customDates'
+                    this.childCardsDates.selectedPreset.name === 'customDates' ||
+                    this.childCardsDates.selectedPreset.name === 'all'
                 ) {
                     obj = Object.assign(obj, {
                         dateFrom: paramDate.fromDate,
                         dateTill: paramDate.toDate,
-                        filterType: null
+                        filterType: null,
+                        statuses: this.childStatuses.statusArr
                     });
                 } else {
                     obj = Object.assign(obj, {
@@ -7616,9 +9004,37 @@ export class BankAndCreditComponent
                         dateTill: null,
                         filterType: Math.abs(
                             this.childCardsDates.selectedPreset['monthsDelta']
-                        )
+                        ),
+                        statuses: this.childStatuses.statusArr
                     });
                 }
+
+                // obj = {
+                //     'accountTypes': [{
+                //         'accountId': 'e52c4194-0b2b-5694-e053-0100007f611d',
+                //         'accountType': 'CCARD'
+                //     }, {
+                //         'accountId': 'f392f560-c7b9-7bfa-e053-0100007f8aa9',
+                //         'accountType': 'CCARD'
+                //     }, {
+                //         'accountId': 'f392f560-c7b8-7bfa-e053-0100007f8aa9',
+                //         'accountType': 'CCARD'
+                //     }, {
+                //         'accountId': 'f392f560-c7bb-7bfa-e053-0100007f8aa9',
+                //         'accountType': 'CCARD'
+                //     }, {
+                //         'accountId': 'f392f560-c7ba-7bfa-e053-0100007f8aa9',
+                //         'accountType': 'CCARD'
+                //     }, {
+                //         'accountId': 'f392f560-c7bc-7bfa-e053-0100007f8aa9',
+                //         'accountType': 'CCARD'
+                //     }, {'accountId': 'f392f560-c7bd-7bfa-e053-0100007f8aa9', 'accountType': 'CCARD'}],
+                //     'currencyId': 1,
+                //     'dateFrom': 1640988000000,
+                //     'dateTill': 1680296399999,
+                //     'filterType': null
+                // };
+
                 // this.advancedSearchParams.get('description').value,
                 this.sharedService.cardDetails(obj).subscribe(
                     (response: any) => {
@@ -7662,6 +9078,13 @@ export class BankAndCreditComponent
                                 }
                                 fd.cust = custId;
                                 fd.custName = custId ? custId.cartisName : 'בחירה';
+                                if (fd.status === 'NOT_HASH_BANK_MATCHED') {
+                                    fd.nonMatchedTrans = true;
+                                }
+                                if (fd.nonMatchedTrans) {
+                                    fd.status = 'BIZIBOX_MATCH_IGNORE_nonMatchedTrans';
+                                }
+
 
                                 // if (this.customerCustList.length && fd.custId) {
                                 //     const custFromList = this.customerCustList.find(cust => cust.custId === fd.custId);
@@ -7673,10 +9096,15 @@ export class BankAndCreditComponent
                                 // }
                                 fd.custIdCards =
                                     fd.custId && fd.custId.toString().includes('כרטיסים מרובים');
-                                fd.status_desc =
-                                    this.translate.translations[this.translate.currentLang][
-                                        'bankDetails-status'
-                                        ][fd.status];
+
+                                if (fd.nonMatchedTrans) {
+                                    fd.status_desc = 'תנועה לא נמצאה בחשבשבת';
+                                } else {
+                                    fd.status_desc =
+                                        this.translate.translations[this.translate.currentLang][
+                                            'bankDetails-status'
+                                            ][fd.status];
+                                }
                                 const card = this.cardsSelector.selectedCards.find(
                                     (it) => it.creditCardId === fd.creditCardId
                                 );
@@ -7715,7 +9143,7 @@ export class BankAndCreditComponent
                         if (!saveFilter) {
                             this.filtersAll();
                         } else {
-                            this.filtersAll(undefined, true, true);
+                            this.filtersAll(undefined, true, refreshFilterArray);
                         }
                     },
                     (err: HttpErrorResponse) => {
@@ -7777,6 +9205,40 @@ export class BankAndCreditComponent
         this.filtersAllJournalTransData();
     }
 
+    toggleFilesOrderToJOURNALTop(field: any) {
+        if (this.exportFileStatusFilters.orderBy === field) {
+            this.exportFileStatusFilters.order = this.exportFileStatusFilters.order === 'ASC' ? 'DESC' : 'ASC';
+        } else {
+            this.exportFileStatusFilters.orderBy = field;
+            this.exportFileStatusFilters.order = 'DESC';
+        }
+        if (this.exportFileStatusFilter === 'DONE_PROCESS') {
+            if (this.journalTransData.length) {
+                const notNumber = this.journalTransData.filter(
+                    (fd) => typeof fd[this.exportFileStatusFilters.orderBy] !== 'number'
+                );
+                this.journalTransData = this.journalTransData
+                    .filter(
+                        (fd) => typeof fd[this.exportFileStatusFilters.orderBy] === 'number'
+                    )
+                    .sort((a, b) => {
+                        const lblA = a[this.exportFileStatusFilters.orderBy],
+                            lblB = b[this.exportFileStatusFilters.orderBy];
+                        return lblA || lblB
+                            ? !lblA
+                                ? 1
+                                : !lblB
+                                    ? -1
+                                    : this.exportFileStatusFilters.order === 'ASC'
+                                        ? lblA - lblB
+                                        : lblB - lblA
+                            : 0;
+                    })
+                    .concat(notNumber);
+            }
+        }
+    }
+
     filterCategory(type: any) {
         console.log('----------------type-------', type);
         if (type.type === 'hova') {
@@ -7804,7 +9266,7 @@ export class BankAndCreditComponent
     filtersAll(
         priority?: any,
         isSorted?: boolean,
-        stayInSamePage?: boolean
+        refreshFilterArray?: boolean
     ): void {
         if (this.fileStatus === 'BANK') {
             if (
@@ -7841,6 +9303,7 @@ export class BankAndCreditComponent
                             const valuesForSearch = [
                                 fd.mainDesc,
                                 fd.secDesc,
+                                fd.custName,
                                 fd.account.bankAccountId,
                                 this.dtPipe.transform(fd.transDate, 'dd/MM/yy'),
                                 fd.paymentDescTranslate,
@@ -7905,13 +9368,13 @@ export class BankAndCreditComponent
                 // if (priority === 'hova' && this.filterTypesHova && !this.filterTypesHova.length) {
                 //     this.bankDetails = [];
                 // }
-                if (
-                    priority === 'status' &&
-                    this.filterTypesStatus &&
-                    !this.filterTypesStatus.length
-                ) {
-                    this.bankDetails = [];
-                }
+                // if (
+                //     priority === 'status' &&
+                //     this.filterTypesStatus &&
+                //     !this.filterTypesStatus.length
+                // ) {
+                //     this.bankDetails = [];
+                // }
                 if (
                     priority === 'paymentDesc' &&
                     this.filterTypesPaymentDesc &&
@@ -7951,20 +9414,20 @@ export class BankAndCreditComponent
                         });
                     });
                 }
-                if (this.filterTypesStatus && this.filterTypesStatus.length) {
-                    this.bankDetails = this.bankDetails.filter((item) => {
-                        if (item.status) {
-                            const statusDone =
-                                item.status.toString() === 'CHECKED' ||
-                                item.status.toString() === 'DONE';
-                            return this.filterTypesStatus.some((it) =>
-                                statusDone
-                                    ? it === 'CHECKED' || it === 'DONE'
-                                    : it === item.status.toString()
-                            );
-                        }
-                    });
-                }
+                // if (this.filterTypesStatus && this.filterTypesStatus.length) {
+                //     this.bankDetails = this.bankDetails.filter((item) => {
+                //         if (item.status) {
+                //             const statusDone =
+                //                 item.status.toString() === 'CHECKED' ||
+                //                 item.status.toString() === 'DONE';
+                //             return this.filterTypesStatus.some((it) =>
+                //                 statusDone
+                //                     ? it === 'CHECKED' || it === 'DONE'
+                //                     : it === item.status.toString()
+                //             );
+                //         }
+                //     });
+                // }
                 if (this.filterTypesPaymentDesc && this.filterTypesPaymentDesc.length) {
                     this.bankDetails = this.bankDetails.filter((item) => {
                         if (item.paymentDesc) {
@@ -7998,9 +9461,9 @@ export class BankAndCreditComponent
                     //     }
                     // }
                     if (priority !== 'status') {
-                        if (!this.filterTypesStatus || !this.filterTypesStatus.length) {
-                            this.rebuildStatusMap(this.bankDetails);
-                        }
+                        // if (!this.filterTypesStatus || !this.filterTypesStatus.length) {
+                        //     this.rebuildStatusMap(this.bankDetails);
+                        // }
                     }
                     if (priority !== 'paymentDesc') {
                         if (
@@ -8022,9 +9485,57 @@ export class BankAndCreditComponent
                     }
                 }
 
+                if (refreshFilterArray) {
+                    // if (priority !== 'status') {
+                    //     const withOtherFiltersApplied = JSON.parse(JSON.stringify(this.bankDetails));
+                    //     const statusArrMap: { [key: string]: any } = withOtherFiltersApplied.reduce(
+                    //         (acmltr, dtRow) => {
+                    //             if (
+                    //                 dtRow.status_desc &&
+                    //                 dtRow.status_desc.toString() &&
+                    //                 !acmltr[dtRow.status_desc.toString()]
+                    //             ) {
+                    //                 acmltr[dtRow.status_desc.toString()] = {
+                    //                     val: dtRow.status_desc.toString(),
+                    //                     id: dtRow.status.toString(),
+                    //                     checked: true
+                    //                 };
+                    //
+                    //                 if (
+                    //                     acmltr['all'].checked &&
+                    //                     !acmltr[dtRow.status_desc.toString()].checked
+                    //                 ) {
+                    //                     acmltr['all'].checked = false;
+                    //                 }
+                    //             }
+                    //             return acmltr;
+                    //         },
+                    //         {
+                    //             all: {
+                    //                 val: this.translate.translations[this.translate.currentLang].filters
+                    //                     .all,
+                    //                 id: 'all',
+                    //                 checked: true
+                    //             }
+                    //         }
+                    //     );
+                    //     const statusArr = Object.values(statusArrMap);
+                    //     if (statusArr.length) {
+                    //         statusArr.forEach(it => {
+                    //             const isExist = this.statusArr.find(itMain => itMain.id === it.id);
+                    //             if (isExist) {
+                    //                 it.checked = isExist.checked;
+                    //             }
+                    //         });
+                    //     }
+                    //     this.statusArr = statusArr;
+                    // }
+                }
+
                 if (this.bankDetails.length > 1) {
                     switch (this.companyFilesSortControl.value.orderBy) {
                         case 'transDate':
+                        case 'asmachta':
                         case 'totalFull':
                             // noinspection DuplicatedCode
                             const notNumber = this.bankDetails.filter(
@@ -8054,7 +9565,6 @@ export class BankAndCreditComponent
                                 .concat(notNumber);
                             break;
                         case 'mainDesc':
-                        case 'asmachta':
                         case 'custId':
                             // noinspection DuplicatedCode
                             const notString = this.bankDetails.filter(
@@ -8089,7 +9599,7 @@ export class BankAndCreditComponent
                     }
                 }
                 const selcetedFiles = this.bankDetails.filter((it) => it.selcetFile);
-                if (selcetedFiles.length > 1) {
+                if (selcetedFiles.length) {
                     this.showFloatNav = {
                         selcetedFiles,
                         isNotDisabled: selcetedFiles.every(
@@ -8211,6 +9721,7 @@ export class BankAndCreditComponent
                             const valuesForSearch = [
                                 fd.mainDesc,
                                 fd.secDesc,
+                                fd.custName,
                                 fd.creditCardNickname,
                                 this.dtPipe.transform(fd.transDate, 'dd/MM/yy'),
                                 this.dtPipe.transform(fd.nextCycleDate, 'dd/MM/yy'),
@@ -8249,13 +9760,13 @@ export class BankAndCreditComponent
                 if (priority === 'note' && this.filterNote && !this.filterNote.length) {
                     this.cardDetails = [];
                 }
-                if (
-                    priority === 'status' &&
-                    this.filterTypesStatus &&
-                    !this.filterTypesStatus.length
-                ) {
-                    this.cardDetails = [];
-                }
+                // if (
+                //     priority === 'status' &&
+                //     this.filterTypesStatus &&
+                //     !this.filterTypesStatus.length
+                // ) {
+                //     this.cardDetails = [];
+                // }
                 if (this.bankProcessTransType) {
                     if (
                         priority === 'transTypeCode' &&
@@ -8265,20 +9776,20 @@ export class BankAndCreditComponent
                         this.cardDetails = [];
                     }
                 }
-                if (this.filterTypesStatus && this.filterTypesStatus.length) {
-                    this.cardDetails = this.cardDetails.filter((item) => {
-                        if (item.status) {
-                            const statusDone =
-                                item.status.toString() === 'CHECKED' ||
-                                item.status.toString() === 'DONE';
-                            return this.filterTypesStatus.some((it) =>
-                                statusDone
-                                    ? it === 'CHECKED' || it === 'DONE'
-                                    : it === item.status.toString()
-                            );
-                        }
-                    });
-                }
+                // if (this.filterTypesStatus && this.filterTypesStatus.length) {
+                //     this.cardDetails = this.cardDetails.filter((item) => {
+                //         if (item.status) {
+                //             const statusDone =
+                //                 item.status.toString() === 'CHECKED' ||
+                //                 item.status.toString() === 'DONE';
+                //             return this.filterTypesStatus.some((it) =>
+                //                 statusDone
+                //                     ? it === 'CHECKED' || it === 'DONE'
+                //                     : it === item.status.toString()
+                //             );
+                //         }
+                //     });
+                // }
                 if (this.filterNote && this.filterNote.length) {
                     this.cardDetails = this.cardDetails.filter((item) => {
                         return this.filterNote.some((it) => {
@@ -8313,9 +9824,9 @@ export class BankAndCreditComponent
                         }
                     }
                     if (priority !== 'status') {
-                        if (!this.filterTypesStatus || !this.filterTypesStatus.length) {
-                            this.rebuildStatusMap(this.cardDetails);
-                        }
+                        // if (!this.filterTypesStatus || !this.filterTypesStatus.length) {
+                        //     this.rebuildStatusMap(this.cardDetails);
+                        // }
                     }
                     if (this.bankProcessTransType) {
                         if (priority !== 'transTypeCode') {
@@ -8327,6 +9838,53 @@ export class BankAndCreditComponent
                             }
                         }
                     }
+                }
+
+                if (refreshFilterArray) {
+                    // if (priority !== 'status') {
+                    //     const withOtherFiltersApplied = JSON.parse(JSON.stringify(this.cardDetails));
+                    //     const statusArrMap: { [key: string]: any } = withOtherFiltersApplied.reduce(
+                    //         (acmltr, dtRow) => {
+                    //             if (
+                    //                 dtRow.status_desc &&
+                    //                 dtRow.status_desc.toString() &&
+                    //                 !acmltr[dtRow.status_desc.toString()]
+                    //             ) {
+                    //                 acmltr[dtRow.status_desc.toString()] = {
+                    //                     val: dtRow.status_desc.toString(),
+                    //                     id: dtRow.status.toString(),
+                    //                     checked: true
+                    //                 };
+                    //
+                    //                 if (
+                    //                     acmltr['all'].checked &&
+                    //                     !acmltr[dtRow.status_desc.toString()].checked
+                    //                 ) {
+                    //                     acmltr['all'].checked = false;
+                    //                 }
+                    //             }
+                    //             return acmltr;
+                    //         },
+                    //         {
+                    //             all: {
+                    //                 val: this.translate.translations[this.translate.currentLang].filters
+                    //                     .all,
+                    //                 id: 'all',
+                    //                 checked: true
+                    //             }
+                    //         }
+                    //     );
+                    //     const statusArr = Object.values(statusArrMap);
+                    //     if (statusArr.length) {
+                    //         statusArr.forEach(it => {
+                    //             const isExist = this.statusArr.find(itMain => itMain.id === it.id);
+                    //             if (isExist) {
+                    //                 it.checked = isExist.checked;
+                    //             }
+                    //         });
+                    //     }
+                    //     this.statusArr = statusArr;
+                    // }
                 }
 
                 if (this.cardDetails.length > 1) {
@@ -8395,7 +9953,7 @@ export class BankAndCreditComponent
                 }
 
                 const selcetedFiles = this.cardDetails.filter((it) => it.selcetFile);
-                if (selcetedFiles.length > 1) {
+                if (selcetedFiles.length) {
                     this.showFloatNav = {
                         selcetedFiles,
                         isNotDisabled: selcetedFiles.every(
@@ -8682,9 +10240,9 @@ export class BankAndCreditComponent
     selecteAllFilesEvent(): void {
         if (this.fileStatus === 'BANK') {
             if (
-                this.filterTypesStatus &&
-                this.filterTypesStatus.length === 1 &&
-                this.filterTypesStatus[0] === 'ADD_ITEM_IGNORE'
+                this.childStatuses.statusArrCopy &&
+                this.childStatuses.statusArrCopy.length === 1 &&
+                this.childStatuses.statusArrCopy[0] === 'ADD_ITEM_IGNORE'
             ) {
                 this.bankDetailsSlice.forEach((row) => {
                     if (row.status === 'ADD_ITEM_IGNORE') {
@@ -8692,9 +10250,9 @@ export class BankAndCreditComponent
                     }
                 });
             } else if (
-                this.filterTypesStatus &&
-                this.filterTypesStatus.length === 1 &&
-                this.filterTypesStatus[0] === 'HASH_MATCH_IGNORE'
+                this.childStatuses.statusArrCopy &&
+                this.childStatuses.statusArrCopy.length === 1 &&
+                this.childStatuses.statusArrCopy[0] === 'HASH_MATCH_IGNORE'
             ) {
                 this.bankDetailsSlice.forEach((row) => {
                     if (row.status === 'HASH_MATCH_IGNORE') {
@@ -8702,9 +10260,9 @@ export class BankAndCreditComponent
                     }
                 });
             } else if (
-                this.filterTypesStatus &&
-                this.filterTypesStatus.length === 1 &&
-                this.filterTypesStatus[0] === 'BIZIBOX_MATCH_IGNORE'
+                this.childStatuses.statusArrCopy &&
+                this.childStatuses.statusArrCopy.length === 1 &&
+                this.childStatuses.statusArrCopy[0] === 'BIZIBOX_MATCH_IGNORE'
             ) {
                 this.bankDetailsSlice.forEach((row) => {
                     if (row.status === 'BIZIBOX_MATCH_IGNORE') {
@@ -8712,9 +10270,19 @@ export class BankAndCreditComponent
                     }
                 });
             } else if (
-                this.filterTypesStatus &&
-                this.filterTypesStatus.length === 1 &&
-                this.filterTypesStatus[0] === 'CUSTOMER_IGNORE'
+                this.childStatuses.statusArrCopy &&
+                this.childStatuses.statusArrCopy.length === 1 &&
+                this.childStatuses.statusArrCopy[0] === 'BIZIBOX_MATCH_IGNORE_nonMatchedTrans'
+            ) {
+                this.bankDetailsSlice.forEach((row) => {
+                    if (row.status === 'BIZIBOX_MATCH_IGNORE_nonMatchedTrans') {
+                        row.selcetFile = this.selcetAllFiles;
+                    }
+                });
+            } else if (
+                this.childStatuses.statusArrCopy &&
+                this.childStatuses.statusArrCopy.length === 1 &&
+                this.childStatuses.statusArrCopy[0] === 'CUSTOMER_IGNORE'
             ) {
                 this.bankDetailsSlice.forEach((row) => {
                     if (row.status === 'CUSTOMER_IGNORE') {
@@ -8722,10 +10290,10 @@ export class BankAndCreditComponent
                     }
                 });
             } else if (
-                this.filterTypesStatus &&
-                this.filterTypesStatus.length === 2 &&
-                this.filterTypesStatus[0].includes('_IGNORE') &&
-                this.filterTypesStatus[1].includes('_IGNORE')
+                this.childStatuses.statusArrCopy &&
+                this.childStatuses.statusArrCopy.length === 2 &&
+                this.childStatuses.statusArrCopy[0].includes('_IGNORE') &&
+                this.childStatuses.statusArrCopy[1].includes('_IGNORE')
             ) {
                 this.bankDetailsSlice.forEach((row) => {
                     if (row.status.includes('_IGNORE')) {
@@ -8738,7 +10306,8 @@ export class BankAndCreditComponent
                         row.status === 'CUSTOMER_IGNORE' ||
                         row.status === 'ADD_ITEM_IGNORE' ||
                         row.status === 'HASH_MATCH_IGNORE' ||
-                        row.status === 'BIZIBOX_MATCH_IGNORE'
+                        row.status === 'BIZIBOX_MATCH_IGNORE' ||
+                        row.status === 'BIZIBOX_MATCH_IGNORE_nonMatchedTrans'
                 );
                 if (all_is_ignore) {
                     this.bankDetailsSlice.forEach((row) => {
@@ -8781,7 +10350,7 @@ export class BankAndCreditComponent
                     it.disabled = false;
                 });
             }
-            if (selcetedFiles.length > 1) {
+            if (selcetedFiles.length) {
                 this.showFloatNav = {
                     selcetedFiles,
                     isNotDisabled: selcetedFiles.every(
@@ -8806,9 +10375,9 @@ export class BankAndCreditComponent
                 this.currentPage * this.entryLimit + this.entryLimit
             );
             if (
-                this.filterTypesStatus &&
-                this.filterTypesStatus.length === 1 &&
-                this.filterTypesStatus[0] === 'ADD_ITEM_IGNORE'
+                this.childStatuses.statusArrCopy &&
+                this.childStatuses.statusArrCopy.length === 1 &&
+                this.childStatuses.statusArrCopy[0] === 'ADD_ITEM_IGNORE'
             ) {
                 cardDetailsSlice.forEach((row) => {
                     if (row.status === 'ADD_ITEM_IGNORE') {
@@ -8816,9 +10385,9 @@ export class BankAndCreditComponent
                     }
                 });
             } else if (
-                this.filterTypesStatus &&
-                this.filterTypesStatus.length === 1 &&
-                this.filterTypesStatus[0] === 'HASH_MATCH_IGNORE'
+                this.childStatuses.statusArrCopy &&
+                this.childStatuses.statusArrCopy.length === 1 &&
+                this.childStatuses.statusArrCopy[0] === 'HASH_MATCH_IGNORE'
             ) {
                 cardDetailsSlice.forEach((row) => {
                     if (row.status === 'HASH_MATCH_IGNORE') {
@@ -8826,9 +10395,9 @@ export class BankAndCreditComponent
                     }
                 });
             } else if (
-                this.filterTypesStatus &&
-                this.filterTypesStatus.length === 1 &&
-                this.filterTypesStatus[0] === 'BIZIBOX_MATCH_IGNORE'
+                this.childStatuses.statusArrCopy &&
+                this.childStatuses.statusArrCopy.length === 1 &&
+                this.childStatuses.statusArrCopy[0] === 'BIZIBOX_MATCH_IGNORE'
             ) {
                 cardDetailsSlice.forEach((row) => {
                     if (row.status === 'BIZIBOX_MATCH_IGNORE') {
@@ -8836,9 +10405,19 @@ export class BankAndCreditComponent
                     }
                 });
             } else if (
-                this.filterTypesStatus &&
-                this.filterTypesStatus.length === 1 &&
-                this.filterTypesStatus[0] === 'CUSTOMER_IGNORE'
+                this.childStatuses.statusArrCopy &&
+                this.childStatuses.statusArrCopy.length === 1 &&
+                this.childStatuses.statusArrCopy[0] === 'BIZIBOX_MATCH_IGNORE_nonMatchedTrans'
+            ) {
+                cardDetailsSlice.forEach((row) => {
+                    if (row.status === 'BIZIBOX_MATCH_IGNORE_nonMatchedTrans') {
+                        row.selcetFile = this.selcetAllFiles;
+                    }
+                });
+            } else if (
+                this.childStatuses.statusArrCopy &&
+                this.childStatuses.statusArrCopy.length === 1 &&
+                this.childStatuses.statusArrCopy[0] === 'CUSTOMER_IGNORE'
             ) {
                 cardDetailsSlice.forEach((row) => {
                     if (row.status === 'CUSTOMER_IGNORE') {
@@ -8846,10 +10425,10 @@ export class BankAndCreditComponent
                     }
                 });
             } else if (
-                this.filterTypesStatus &&
-                this.filterTypesStatus.length === 2 &&
-                this.filterTypesStatus[0].includes('_IGNORE') &&
-                this.filterTypesStatus[1].includes('_IGNORE')
+                this.childStatuses.statusArrCopy &&
+                this.childStatuses.statusArrCopy.length === 2 &&
+                this.childStatuses.statusArrCopy[0].includes('_IGNORE') &&
+                this.childStatuses.statusArrCopy[1].includes('_IGNORE')
             ) {
                 cardDetailsSlice.forEach((row) => {
                     if (row.status.includes('_IGNORE')) {
@@ -8864,7 +10443,8 @@ export class BankAndCreditComponent
                             row.status === 'CUSTOMER_IGNORE' ||
                             row.status === 'ADD_ITEM_IGNORE' ||
                             row.status === 'HASH_MATCH_IGNORE' ||
-                            row.status === 'BIZIBOX_MATCH_IGNORE'
+                            row.status === 'BIZIBOX_MATCH_IGNORE' ||
+                            row.status === 'BIZIBOX_MATCH_IGNORE_nonMatchedTrans'
                     );
                 if (all_is_ignore) {
                     cardDetailsSlice.forEach((row) => {
@@ -8909,7 +10489,7 @@ export class BankAndCreditComponent
                     it.disabled = false;
                 });
             }
-            if (selcetedFiles.length > 1) {
+            if (selcetedFiles.length) {
                 this.showFloatNav = {
                     selcetedFiles,
                     isNotDisabled: selcetedFiles.every(
@@ -8932,16 +10512,19 @@ export class BankAndCreditComponent
     }
 
     isSelecteAllDisabled() {
-        if (this.filterTypesStatus) {
+        if (this.childStatuses.statusArrCopy) {
             if (
-                (this.filterTypesStatus.length === 1 &&
-                    (this.filterTypesStatus[0] === 'ADD_ITEM_IGNORE' ||
-                        this.filterTypesStatus[0] === 'CUSTOMER_IGNORE' ||
-                        this.filterTypesStatus[0] === 'HASH_MATCH_IGNORE' ||
-                        this.filterTypesStatus[0] === 'BIZIBOX_MATCH_IGNORE')) ||
-                (this.filterTypesStatus.length === 2 &&
-                    this.filterTypesStatus[0].includes('_IGNORE') &&
-                    this.filterTypesStatus[1].includes('_IGNORE'))
+                (this.childStatuses.statusArrCopy.length === 1 &&
+                    (this.childStatuses.statusArrCopy[0] === 'ADD_ITEM_IGNORE' ||
+                        this.childStatuses.statusArrCopy[0] === 'CUSTOMER_IGNORE' ||
+                        this.childStatuses.statusArrCopy[0] === 'HASH_MATCH_IGNORE' ||
+                        this.childStatuses.statusArrCopy[0] === 'BIZIBOX_MATCH_IGNORE' ||
+                        this.childStatuses.statusArrCopy[0] === 'BIZIBOX_MATCH_IGNORE_nonMatchedTrans'
+                    )
+                ) ||
+                (this.childStatuses.statusArrCopy.length === 2 &&
+                    this.childStatuses.statusArrCopy[0].includes('_IGNORE') &&
+                    this.childStatuses.statusArrCopy[1].includes('_IGNORE'))
             ) {
                 return false;
             } else {
@@ -8968,7 +10551,8 @@ export class BankAndCreditComponent
                         row.status === 'CUSTOMER_IGNORE' ||
                         row.status === 'ADD_ITEM_IGNORE' ||
                         row.status === 'HASH_MATCH_IGNORE' ||
-                        row.status === 'BIZIBOX_MATCH_IGNORE'
+                        row.status === 'BIZIBOX_MATCH_IGNORE' ||
+                        row.status === 'BIZIBOX_MATCH_IGNORE_nonMatchedTrans'
                 );
                 if (all_is_ignore) {
                     return false;
@@ -8990,7 +10574,8 @@ export class BankAndCreditComponent
                                 row.status === 'CUSTOMER_IGNORE' ||
                                 row.status === 'ADD_ITEM_IGNORE' ||
                                 row.status === 'HASH_MATCH_IGNORE' ||
-                                row.status === 'BIZIBOX_MATCH_IGNORE'
+                                row.status === 'BIZIBOX_MATCH_IGNORE' ||
+                                row.status === 'BIZIBOX_MATCH_IGNORE_nonMatchedTrans'
                         );
                     if (all_is_ignore) {
                         return false;
@@ -9039,7 +10624,7 @@ export class BankAndCreditComponent
                 )
                 .every((row) => row.selcetFile);
 
-            if (selcetedFiles.length > 1) {
+            if (selcetedFiles.length) {
                 this.showFloatNav = {
                     selcetedFiles,
                     isNotDisabled: selcetedFiles.every(
@@ -9090,7 +10675,7 @@ export class BankAndCreditComponent
                         row.status !== 'TEMP_COMMAND'
                 )
                 .every((row) => row.selcetFile);
-            if (selcetedFiles.length > 1) {
+            if (selcetedFiles.length) {
                 this.showFloatNav = {
                     selcetedFiles,
                     isNotDisabled: selcetedFiles.every(
@@ -9119,6 +10704,10 @@ export class BankAndCreditComponent
 
     trackByIdBooks(index: number, val: any): any {
         return val.journalBankId;
+    }
+
+    trackByOcrExportFileId(index: number, val: any): any {
+        return val.ocrExportFileId;
     }
 
     trackByIdBank(index: number, val: any): any {
@@ -9420,6 +11009,15 @@ export class BankAndCreditComponent
             .subscribe(
                 async (response: any) => {
                     const responseRest = response ? response['body'] : response;
+                    if (
+                        responseRest.journalTranses &&
+                        responseRest.journalTranses.rows
+                    ) {
+                        this.currencyId_journalTranses = responseRest.journalTranses.rows[0].totalMatah ? this.revaluationCurrCodeArr.find(it => it.id === responseRest.journalTranses.rows[0].currencyId) : null;
+                        this.currencyRate_journalTranses = responseRest.journalTranses.rows[0].currencyRate;
+                    } else {
+                        this.currencyId_journalTranses = null;
+                    }
                     // const responseRest: any = {
                     //     'transDetails': {
                     //         'fromTable': 'BANK_TRANS',
@@ -9665,6 +11263,7 @@ export class BankAndCreditComponent
                                 );
                             }
                         }
+                        debugger
                         this.fileData = Object.assign(this.fileData, responseRest);
                     });
                 },
@@ -9720,21 +11319,30 @@ export class BankAndCreditComponent
             this.fileStatus === 'BANK' || this.fileStatus === 'CREATE_JOURNAL_TRANS'
                 ? 'paymentId'
                 : 'ccardTransId';
+        const transactions = tooltipEditFile
+            ? [
+                {
+                    paymentId: tooltipEditFile[idName],
+                    paymentType: tooltipEditFile.paymentType
+                }
+            ]
+            : this.showFloatNav.selcetedFiles.map((file) => {
+                return {
+                    paymentId: file[idName],
+                    paymentType: file.paymentType
+                };
+            });
+        if (this.fileStatus === 'CREATE_JOURNAL_TRANS') {
+            this.sharedComponent.mixPanelEvent('nikui cust');
+        } else {
+            this.sharedComponent.mixPanelEvent('hazara letipul', {
+                count: transactions.length
+            });
+        }
+
         this.sharedService
             .backToCare({
-                transactions: tooltipEditFile
-                    ? [
-                        {
-                            paymentId: tooltipEditFile[idName],
-                            paymentType: tooltipEditFile.paymentType
-                        }
-                    ]
-                    : this.showFloatNav.selcetedFiles.map((file) => {
-                        return {
-                            paymentId: file[idName],
-                            paymentType: file.paymentType
-                        };
-                    })
+                transactions: transactions
             })
             .subscribe(
                 (response: any) => {
@@ -9846,7 +11454,7 @@ export class BankAndCreditComponent
                                     this.cardDetails = false;
                                 }
                                 // this.filtersAll();
-                                this.filtersAll(undefined, true, true);
+                                this.filtersAll(undefined, true, false);
                             }
                         } else {
                             // if (this.fileStatus === 'BANK') {
@@ -9947,25 +11555,28 @@ export class BankAndCreditComponent
     public updateIgnore(tooltipEditFile: any): void {
         this.loader = true;
         const idName = this.fileStatus === 'BANK' ? 'paymentId' : 'ccardTransId';
+        const transactions = tooltipEditFile &&
+        tooltipEditFile.selcetedFiles &&
+        tooltipEditFile.selcetedFiles.length
+            ? tooltipEditFile.selcetedFiles.map((file) => {
+                return {
+                    paymentId: file[idName],
+                    paymentType: file.paymentType
+                };
+            })
+            : [
+                {
+                    paymentId: tooltipEditFile[idName],
+                    paymentType: tooltipEditFile.paymentType
+                }
+            ];
+        this.sharedComponent.mixPanelEvent('lo letipul', {
+            count: transactions.length
+        });
 
         this.sharedService
             .updateIgnore({
-                transactions:
-                    tooltipEditFile &&
-                    tooltipEditFile.selcetedFiles &&
-                    tooltipEditFile.selcetedFiles.length
-                        ? tooltipEditFile.selcetedFiles.map((file) => {
-                            return {
-                                paymentId: file[idName],
-                                paymentType: file.paymentType
-                            };
-                        })
-                        : [
-                            {
-                                paymentId: tooltipEditFile[idName],
-                                paymentType: tooltipEditFile.paymentType
-                            }
-                        ]
+                transactions: transactions
             })
             .subscribe(
                 (response: any) => {
@@ -10036,7 +11647,7 @@ export class BankAndCreditComponent
                         this.cardDetails = false;
                     }
                     this.selcetAllFiles = false;
-                    this.filtersAll(undefined, true, true);
+                    this.filtersAll(undefined, true, false);
                     // this.loader = false;
 
                     // if (this.fileStatus === 'BANK') {
@@ -10070,6 +11681,10 @@ export class BankAndCreditComponent
     }
 
     loanDetails(loanId: string, companyAccountId: string) {
+        this.sharedComponent.mixPanelEvent('payment type', {
+            'type': 'Loan'
+        });
+        this.sharedComponent.mixPanelEvent('perut loan');
         this.selectedCompanyAccountIds = [companyAccountId];
         this.loanId = loanId;
         this.toggleLoanDetails = true;
@@ -10094,7 +11709,7 @@ export class BankAndCreditComponent
         } else {
             this.cardDetails = false;
         }
-        this.filtersAll(undefined, true, true);
+        this.filtersAll(undefined, true, false);
 
         const obj = {
             fileId: null,
@@ -10137,6 +11752,9 @@ export class BankAndCreditComponent
                 })
                 : [this.showArchiveModal]
         };
+        this.sharedComponent.mixPanelEvent('kishur heshbonit', {
+            count: obj.transactions.length
+        });
         this.showArchiveModal = false;
         this.sharedService.imageLink(obj).subscribe(
             () => {
@@ -10277,7 +11895,7 @@ export class BankAndCreditComponent
                     fd.transTypeCode
                 );
             }
-            this.filtersAll(undefined, true, true);
+            this.filtersAll(undefined, true, false);
 
             let dataText = 'ביטול בחירה';
             if (fd.transTypeCode) {
@@ -10349,7 +11967,7 @@ export class BankAndCreditComponent
             row.transTypeCode = fd.transTypeCode;
             row.transTypeDefinedArr = fd.transTypeDefinedArr;
 
-            this.filtersAll(undefined, true, true);
+            this.filtersAll(undefined, true, false);
 
             let dataText = 'ביטול בחירה';
             if (fd.transTypeCode) {
@@ -10454,7 +12072,15 @@ export class BankAndCreditComponent
             }
         );
     }
-
+    openDDCards(row:any, formDropdownsCustomerCustList:any){
+        this.activeDDOpen = row.paymentId;
+        setTimeout(() => {
+            this.oppositeCustHistory(
+                row,
+                formDropdownsCustomerCustList
+            );
+        }, 200);
+    }
     clickLink(clickParentLink: any, show: any) {
         const isAddOpen = document.getElementsByClassName('additional-details-container');
         const element_find = clickParentLink.getElementsByClassName('nicknameInpLink');
@@ -10477,9 +12103,10 @@ export class BankAndCreditComponent
         }
     }
 
-    selectCust(custModal, isSetNewCard?: boolean) {
+    selectCust(custModal, isSetNewCard?: boolean, setUpdateAllFalse?: boolean) {
         this.custIdForMatch = custModal;
         this.custModal = false;
+
         if (isSetNewCard) {
             // this.customerCustList.push({
             //     cartisName: this.custIdForMatch.custId,
@@ -10520,12 +12147,23 @@ export class BankAndCreditComponent
                 this.selectedTransaction.cust = row.cust;
                 this.selectedTransaction.custName = row.custName;
             }
-            this.filtersAll(undefined, true, true);
+            this.filtersAll(undefined, true, false);
         } else {
             console.log(this.custIdForMatch, this.showFloatNav.selcetedFiles);
         }
-        const idName = this.fileStatus === 'BANK' ? 'paymentId' : 'ccardTransId';
 
+        if (this.fileStatus === 'CREDIT' && custModal && this.rowForMatchCust.custPopUpForPayments === true && this.custIdForMatch.custId) {
+            this.custPopUpForPayments = {
+                ngModelOpt: '1',
+                ddOpt: [
+                    {title: 'לתשלום זה בלבד', value: '1'},
+                    {title: 'לכל התשלומים', value: '2'}
+                ],
+                selectedDD: '1'
+            };
+            return;
+        }
+        const idName = this.fileStatus === 'BANK' ? 'paymentId' : 'ccardTransId';
         this.paramsForUpdateCust = {
             companyId: this.userService.appData.userData.companySelect.companyId,
             sourceProgramId:
@@ -10556,7 +12194,7 @@ export class BankAndCreditComponent
                         // 'transId': it[idName] ? it[idName] : null
                     };
                 }),
-            updateAll: false
+            updateAll: (this.rowForMatchCust && this.rowForMatchCust.custPopUp === null)
         };
         if (this.rowForMatchCust) {
             this.updateTransParam = {
@@ -10572,15 +12210,16 @@ export class BankAndCreditComponent
                         : null
             };
         }
-        if (
-            !isSetNewCard &&
-            ((this.rowForMatchCust && this.rowForMatchCust.custPopUp) ||
-                (!this.rowForMatchCust &&
-                    this.showFloatNav.selcetedFiles.length &&
-                    this.showFloatNav.selcetedFiles.every((file) => file.custPopUp)))
+        if (!setUpdateAllFalse &&
+            (
+                !isSetNewCard &&
+                ((this.rowForMatchCust && this.rowForMatchCust.custPopUp) ||
+                    (!this.rowForMatchCust &&
+                        this.showFloatNav.selcetedFiles.length &&
+                        this.showFloatNav.selcetedFiles.every((file) => file.custPopUp)) || (this.paramsForUpdateCust.custId === null && (this.rowForMatchCust && this.rowForMatchCust.custPopUp) || !this.rowForMatchCust))
+            )
         ) {
             let old_custId = true;
-
             if (this.rowForMatchCust) {
                 if (this.fileStatus === 'BANK') {
                     const row = this.bankDetailsSave.find(
@@ -10594,6 +12233,7 @@ export class BankAndCreditComponent
                     old_custId = row.cust ? row.cust.custId : ' ';
                 }
             }
+            this.paramsForUpdateCust.updateAll = true;
             this.modalEditCardsBeforeSend = old_custId;
         } else {
             if (this.rowForMatchCust) {
@@ -10620,8 +12260,15 @@ export class BankAndCreditComponent
                         row.custName = 'בחירה';
                     }
                 }
-                this.filtersAll(undefined, true, true);
+                this.filtersAll(undefined, true, false);
             }
+            const paramMix = {
+                value: this.paramsForUpdateCust.custId,
+                count: this.paramsForUpdateCust.paymentsArray.length + ''
+            };
+            setTimeout(() => {
+                this.sharedComponent.mixPanelEvent('cartis negdi', paramMix);
+            }, 1000);
             this.sharedService.updateCust(this.paramsForUpdateCust).subscribe(
                 () => {
                     this.sharedService
@@ -10672,6 +12319,68 @@ export class BankAndCreditComponent
         }
     }
 
+    updatePaymentCreditData() {
+        // this.selectedTransaction
+        // this.rowForMatchCust = row;
+        let params: any = {
+            companyId: this.userService.appData.userData.companySelect.companyId,
+            paymentId: this.rowForMatchCust.paymentId,
+            paymentType: this.rowForMatchCust.paymentType,
+            custId: this.custIdForMatch.custId === '' ? null : this.custIdForMatch.custId,
+        };
+        if (this.custPopUpForPayments.ngModelOpt === '1') {
+            params.markIgnore = false;
+            params.updateAll = true;
+        } else if (this.custPopUpForPayments.ngModelOpt === '1') {
+            params.markIgnore = false;
+            params.updateAll = false;
+        } else if (this.custPopUpForPayments.ngModelOpt === '3') {
+            if (this.custPopUpForPayments.selectedDD === '1') {
+                params.markIgnore = true;
+                params.updateAll = false;
+            } else if (this.custPopUpForPayments.selectedDD === '2') {
+                params.markIgnore = true;
+                params.updateAll = true;
+            }
+        }
+        this.custPopUpForPayments = false;
+        this.sharedService.updatePaymentCreditData(params).subscribe(
+            () => {
+                this.sharedService
+                    .countStatusBank(
+                        this.userService.appData.userData.companySelect.companyId
+                    )
+                    .subscribe((res) => {
+                        this.countStatusData =
+                            res.body && res.body.length ? res.body[0] : null;
+                    });
+                this.childCardsDates.selectedRange
+                    .pipe(take(1))
+                    .subscribe((rng) => this.filterDates(rng, true, true));
+            },
+            (err: HttpErrorResponse) => {
+                this.sharedService
+                    .countStatusBank(
+                        this.userService.appData.userData.companySelect.companyId
+                    )
+                    .subscribe((res) => {
+                        this.countStatusData =
+                            res.body && res.body.length ? res.body[0] : null;
+                    });
+                this.childCardsDates.selectedRange
+                    .pipe(take(1))
+                    .subscribe((rng) => this.filterDates(rng, true));
+                if (err.error) {
+                    console.log('An error occurred:', err.error.message);
+                } else {
+                    console.log(
+                        `Backend returned code ${err.status}, body was: ${err.error}`
+                    );
+                }
+            }
+        );
+    }
+
     updateCust() {
         if (this.rowForMatchCust) {
             if (this.fileStatus === 'BANK') {
@@ -10697,9 +12406,17 @@ export class BankAndCreditComponent
                     row.custName = 'בחירה';
                 }
             }
-            this.filtersAll(undefined, true, true);
+            this.filtersAll(undefined, true, false);
         }
         this.modalEditCardsBeforeSend = false;
+        const paramMix = {
+            value: this.paramsForUpdateCust.custId,
+            count: this.paramsForUpdateCust.paymentsArray.length + ''
+        };
+        setTimeout(() => {
+            this.sharedComponent.mixPanelEvent('cartis negdi', paramMix);
+        }, 1000);
+
         this.sharedService.updateCust(this.paramsForUpdateCust).subscribe(
             () => {
                 this.sharedService
@@ -10713,11 +12430,11 @@ export class BankAndCreditComponent
                 if (this.fileStatus === 'BANK') {
                     this.childDates.selectedRange
                         .pipe(take(1))
-                        .subscribe((rng) => this.filterDates(rng, true));
+                        .subscribe((rng) => this.filterDates(rng, true, true));
                 } else {
                     this.childCardsDates.selectedRange
                         .pipe(take(1))
-                        .subscribe((rng) => this.filterDates(rng, true));
+                        .subscribe((rng) => this.filterDates(rng, true, true));
                 }
             },
             (err: HttpErrorResponse) => {
@@ -10829,7 +12546,7 @@ export class BankAndCreditComponent
         // if (total === 101 || total === 19.8) {
         //     trns.recommendationId = 234;
         // }
-        const acc1 = this.accountsBarData.accountsBarDto.find(
+        const acc1 = JSON.parse(JSON.stringify(this.accountsBarData.accountsBarDto)).find(
             (it) => it.accountId === trns.companyAccountId
         );
         const acc2 = this.userService.appData.userData.accounts.find(
@@ -10842,7 +12559,7 @@ export class BankAndCreditComponent
             checkRow: trns.recommendationId !== undefined && trns.recommendationId !== null,
             idSelectRow: trns.recommendationId !== undefined && trns.recommendationId !== null ? trns.recommendationId : false,
             asmachta:
-                trns.asmachta !== null && trns.asmachta !== undefined
+                trns.asmachta !== null && trns.asmachta !== 'null' && trns.asmachta !== undefined
                     ? Number(trns.asmachta)
                     : null,
             totalPlusMinus: trns.hova ? -Number(total) : Math.abs(Number(total)),
@@ -10876,7 +12593,7 @@ export class BankAndCreditComponent
             deleteRow: trns.recommendationId !== undefined && trns.recommendationId !== null,
             idSelectRow: trns.recommendationId !== undefined && trns.recommendationId !== null ? trns.recommendationId : false,
             asmachta:
-                trns.asmachta !== null && trns.asmachta !== undefined
+                trns.asmachta !== null && trns.asmachta !== 'null' && trns.asmachta !== undefined
                     ? Number(trns.asmachta)
                     : null,
             totalPlusMinus: trns.hova
@@ -11239,5 +12956,629 @@ export class BankAndCreditComponent
     private hasChanges(trns: any, originRow: any): boolean {
         // console.log('Checking if changed...');
         return trns.mainDesc !== originRow.mainDesc;
+    }
+
+    toggleOverlay() {
+        this.overlayVisible = !this.overlayVisible;
+    }
+
+    leftShow = false;
+    rightShow = false;
+    rightPosScroll = 0;
+    allowMove = false;
+    pointerEventsNone = false;
+    mouseleave = false;
+    pos = {top: 0, left: 0, x: 0, y: 0};
+    isMouseDownHandler: boolean = false;
+
+    mouseDownHandler(e, ele) {
+        if (ele.scrollWidth > ele.offsetWidth) {
+            ele.style.cursor = 'grabbing';
+            ele.style.userSelect = 'none';
+            this.isMouseDownHandler = true;
+            this.allowMove = true;
+            this.pos = {
+                left: ele.scrollLeft,
+                top: ele.scrollTop,
+                x: e.clientX,
+                y: e.clientY,
+            };
+            // console.log('start', pos)
+        }
+    };
+
+    mouseMoveHandler(e, ele) {
+        if (ele.scrollWidth > ele.offsetWidth) {
+            const dx = e.clientX - this.pos.x;
+            const dy = e.clientY - this.pos.y;
+            // console.log('---dx---', dx)
+            // if (this.allowMove && dx !== 0) {
+            //     if (dx < 0) {
+            //         // console.log('move to right')
+            //         this.rightPosScroll = this.rightPosScroll + 1200;
+            //         // console.log('right', rightPosScroll)
+            //         if (this.rightPosScroll > 0) {
+            //             // console.log('right too much')
+            //             this.rightPosScroll = 0;
+            //         }
+            //     } else if (dx > 0) {
+            //         // console.log('move to left')
+            //         this.rightPosScroll = this.rightPosScroll - 1200;
+            //         // console.log('left', rightPosScroll)
+            //         if (Math.abs(this.rightPosScroll) > (ele.scrollWidth - ele.offsetWidth)) {
+            //             // console.log('left too much')
+            //             this.rightPosScroll = -(ele.scrollWidth - ele.offsetWidth);
+            //         }
+            //     }
+            //
+            //     // Scroll the element
+            //     ele.scrollTo({
+            //         top: this.pos.top - dy,
+            //         // left: pos.left - dx,
+            //         left: this.rightPosScroll,
+            //         behavior: 'smooth'
+            //     });
+            //     this.allowMove = false;
+            //     this.pointerEventsNone = true;
+            // }
+            // Scroll the element
+            ele.scrollTop = this.pos.top - dy;
+            ele.scrollLeft = this.pos.left - dx;
+            // this.allowMove = false;
+            this.pointerEventsNone = true;
+            // console.log('move', pos)
+        }
+    };
+
+    mouseUpHandler(e, ele) {
+        if (ele.scrollWidth > ele.offsetWidth) {
+            ele.style.cursor = 'grab';
+            ele.style.removeProperty('user-select');
+            this.isMouseDownHandler = false;
+            this.pointerEventsNone = false;
+            this.allowMove = false;
+            // console.log('end', pos)
+            setTimeout(() => {
+                this.rightPosScroll = ele.scrollLeft;
+                this.calcNav(ele);
+            }, 1000);
+        }
+    };
+
+    calcNav(ele) {
+        if (!this.mouseleave) {
+            if (ele.scrollWidth > ele.offsetWidth) {
+                ele.style.cursor = 'grab';
+                // console.log('scroll exist')
+                const rightPos = ele.offsetWidth + Math.abs(ele.scrollLeft);
+                this.leftShow = ele.scrollWidth !== rightPos;
+                this.rightShow = ele.scrollLeft !== 0;
+            } else {
+                ele.style.cursor = 'default';
+                // console.log('scroll not exist - hide all arrows')
+                this.leftShow = false;
+                this.rightShow = false;
+            }
+        }
+    }
+
+    mouseOverHandler(ele) {
+        this.mouseleave = false;
+        this.calcNav(ele);
+        // console.log('end', ele.scrollLeft, ele.scrollWidth, ele.offsetLeft, ele.offsetWidth, ele.offsetWidth + Math.abs(ele.scrollLeft), ele.scrollWidth - ele.offsetWidth)
+    }
+
+    mouseLeaveHandler() {
+        this.leftShow = false;
+        this.rightShow = false;
+        this.mouseleave = true;
+    }
+
+    rightClick(ele) {
+        this.rightPosScroll = this.rightPosScroll + 1200;
+        // console.log('right', rightPosScroll)
+        if (this.rightPosScroll > 0) {
+            // console.log('right too much')
+            this.rightPosScroll = 0;
+        }
+        ele.scrollTo({
+            top: 0,
+            left: this.rightPosScroll,
+            behavior: 'smooth'
+        });
+        setTimeout(() => {
+            this.calcNav(ele);
+        }, 1000);
+    }
+
+    leftClick(ele) {
+        this.rightPosScroll = this.rightPosScroll - 1200;
+        if (Math.abs(this.rightPosScroll) > (ele.scrollWidth - ele.offsetWidth)) {
+            // console.log('left too much')
+            this.rightPosScroll = -(ele.scrollWidth - ele.offsetWidth);
+        }
+        // console.log('left', rightPosScroll)
+        ele.scrollTo({
+            top: 0,
+            left: this.rightPosScroll,
+            behavior: 'smooth'
+        });
+        setTimeout(() => {
+            this.calcNav(ele);
+        }, 1000);
+    }
+
+    pressItem() {
+        this.allowMove = false;
+        console.log('pressItem');
+    }
+
+    createExportFileForFolder(parent: any) {
+        const folderPlus = this.userService.appData.userData.companySelect.folderPlus;
+        // if (!this.userService.appData || !this.userService.appData.folderState) {
+        //     return;
+        // }
+        this.ocrExportFileId = parent.ocrExportFileId;
+        this.sharedService
+            .exportFileCreateFolder(parent.ocrExportFileId,
+                this.userService.appData.userData.companySelect.companyId)
+            .pipe(
+                first(),
+                finalize(() => (parent.createExportFileSub = null))
+            )
+            .subscribe({
+                next: (value) => {
+                    // {
+                    //     "filePath": "string",
+                    //     "folderState": "string"
+                    // }
+                    this.responseRestPath = value ? value['body'] : value;
+                    if (folderPlus && this.responseRestPath.folderState === 'OK') {
+                        this.sharedComponent.messagesSideShow = true;
+                        const subscriptionTimerGetFilesStatus = interval(10000)
+                            .pipe(
+                                startWith(0),
+                                tap(() => {
+                                    if (!this.userService.appData.userData.companySelect) {
+                                        subscriptionTimerGetFilesStatus.unsubscribe();
+                                    }
+                                }),
+                                filter(() => this.userService.appData.userData.companySelect),
+                                tap(() => {
+                                    this.messagesService.messageStateChanged$.next();
+                                })
+                            )
+                            .subscribe(() => {
+                                // if (this.sharedComponent.openMessagesAgain) {
+                                //     this.sharedComponent.messagesSideShow = true;
+                                // }
+                                this.userService.appData.reloadMessagesEvent
+                                    .pipe(take(1))
+                                    .subscribe((reload: any) => {
+                                        if (this.sharedComponent.messagesSideShow && reload) {
+                                            this.sharedComponent.reloadMessagesEve.next();
+                                        }
+                                    });
+                                // const stopInterval = this.sharedComponent.reloadMessagesSavedData && this.sharedComponent.reloadMessagesSavedData.find(it => it.indNew === true && it.uploadSource === 'FOLDER' && (it.indAlert === 'bizibox' || it.indAlert === 'red'));
+                                if (!this.userService.appData.userData.companySelect) {
+                                    subscriptionTimerGetFilesStatus.unsubscribe();
+                                }
+                            });
+
+                        this.startChild();
+                    } else {
+                        if (parent.manualCustIdsArray && parent.manualCustIdsArray.length && this.responseRestPath.folderState === 'OK') {
+                            this.createExportFileForPrevModal(
+                                parent
+                            );
+                        } else {
+                            this.createExportFileFor(
+                                parent
+                            );
+                        }
+                    }
+
+                },
+                error: (err: HttpErrorResponse) => {
+                    if (err.error instanceof Error) {
+                        console.log('An error occurred:', err.error.message);
+                    } else {
+                        console.log(
+                            `Backend returned code ${err.status}, body was: ${err.error}`
+                        );
+                    }
+                }
+            });
+    }
+
+    createExportFileForPrevModal(parent: any) {
+        this.parentManualCustIdsArray = parent;
+    }
+
+    createExportFileFor(parent: any) {
+        this.ocrExportFileId = parent.ocrExportFileId;
+        if (this.responseRestPath.folderState === 'OK') {
+            this.showModalCheckFolderFile = true;
+            const checkFolderFile = setInterval(() => {
+                if (this.showModalCheckFolderFile !== true) {
+                    clearInterval(checkFolderFile);
+                } else {
+                    this.sharedService
+                        .checkFolderFile(parent.ocrExportFileId)
+                        .subscribe((res) => {
+                            if (res && res.body && res.body !== 'NOT_DONE') {
+                                this.showModalCheckFolderFile = res.body;
+                                clearInterval(checkFolderFile);
+                                if (
+                                    res.body === 'ERROR' &&
+                                    !this.userService.appData.isAdmin
+                                ) {
+                                    this.sharedService
+                                        .folderError({
+                                            companyId:
+                                            this.userService.appData.userData.companySelect
+                                                .companyId,
+                                            ocrExportFileId: parent.ocrExportFileId
+                                        })
+                                        .subscribe((value) => {
+                                        });
+                                }
+                            }
+                        });
+                }
+            }, 5000);
+            this.docsfile = null;
+            this.exportFileFolderCreatePrompt = {
+                onAnchorClick(): void {
+                },
+                onHide(): void {
+                },
+                pending: false,
+                prompt: '',
+                visible: false,
+                cancelFile: () => {
+                    this.showModalCheckFolderFile = false;
+                    this.sharedService
+                        .cancelFile(parent.ocrExportFileId)
+                        .subscribe((res) => {
+                        });
+                },
+                manualDownloadLink: () => {
+                    this.enabledDownloadLink = false;
+                    // if (docsfile) {
+                    //
+                    //     this.saveFileToDisk(docsfile.docfile, docsfile.paramsfile).then((resData) => {
+                    //         this.exportFileFolderCreatePrompt.visible = false;
+                    //         this.startChild();
+                    //     });
+                    // }
+                }
+            };
+        } else if (this.responseRestPath.folderState === 'NOT_OK') {
+            // if (!this.userService.appData.isAdmin) {
+            //     this.sharedService
+            //         .folderError({
+            //             companyId: this.userService.appData.userData.companySelect.companyId
+            //         })
+            //         .subscribe((value) => {
+            //         });
+            // }
+            this.docsfile = null;
+            this.exportFileFolderCreatePrompt = {
+                visible: true,
+                pending: false,
+                onAnchorClick: () => {
+
+                },
+                onHide: () => {
+                    // if (
+                    //     this.responseRestPath.folderState === 'OK' &&
+                    //     this.exportFileFolderCreatePrompt.approveSubscription &&
+                    //     this.exportFileFolderCreatePrompt.approveSubscription.closed
+                    // ) {
+                    //     parent.createExportFileSub = this.sharedService
+                    //         .exportFileCreateFolder(parent.ocrExportFileId,
+                    //             this.userService.appData.userData.companySelect.companyId)
+                    //         .pipe(
+                    //             first(),
+                    //             finalize(() => (parent.createExportFileSub = null))
+                    //         )
+                    //         .subscribe((value) => {
+                    //             this.responseRestPath = value ? value['body'] : value;
+                    //             if (!this.responseRestPath) {
+                    //                 this.startChild();
+                    //             } else {
+                    //                 this.showModalCheckFolderFile = true;
+                    //                 const checkFolderFile = setInterval(() => {
+                    //                     if (this.showModalCheckFolderFile !== true) {
+                    //                         clearInterval(checkFolderFile);
+                    //                     } else {
+                    //                         this.sharedService
+                    //                             .checkFolderFile(parent.ocrExportFileId)
+                    //                             .subscribe((res) => {
+                    //                                 if (res && res.body && res.body !== 'NOT_DONE') {
+                    //                                     this.showModalCheckFolderFile = res.body;
+                    //                                     clearInterval(checkFolderFile);
+                    //                                     if (
+                    //                                         res.body === 'ERROR' &&
+                    //                                         !this.userService.appData.isAdmin
+                    //                                     ) {
+                    //                                         this.sharedService
+                    //                                             .folderError({
+                    //                                                 companyId:
+                    //                                                 this.userService.appData.userData
+                    //                                                     .companySelect.companyId,
+                    //                                                 ocrExportFileId: parent.ocrExportFileId
+                    //                                             })
+                    //                                             .subscribe((value) => {
+                    //                                             });
+                    //                                     }
+                    //                                 }
+                    //                             });
+                    //                     }
+                    //                 }, 5000);
+                    //             }
+                    //         });
+                    // }
+                },
+                prompt: null,
+                cancelFile: () => {
+                    this.showModalCheckFolderFile = false;
+                    this.sharedService
+                        .cancelFile(parent.ocrExportFileId)
+                        .subscribe((res) => {
+                        });
+                },
+                manualDownloadLink: () => {
+                    this.enabledDownloadLink = false;
+                    // if (docsfile) {
+                    //     this.saveFileToDisk(docsfile.docfile, docsfile.paramsfile).then((resData) => {
+                    //         this.exportFileFolderCreatePrompt.visible = false;
+                    //         this.startChild();
+                    //     });
+                    // }
+                    // this.sharedService.exportFileManualDownload(parent.ocrExportFileId)
+                    //     .pipe(
+                    //         map(response => response && !response.error ? response.body : null),
+                    //         first()
+                    //     )
+                    //     .subscribe(docfile => {
+                    //             if (docfile) {
+                    //
+                    //                 // requestAnimationFrame(() => {
+                    //                 //     this.saveFileToDisk(docfile.docfile, docfile.paramsfile).then((resData) => {
+                    //                 //         this.exportFileFolderCreatePrompt.visible = false;
+                    //                 //         this.startChild();
+                    //                 //     });
+                    //                 //
+                    //                 //     // const a = document.createElement('a');
+                    //                 //     // a.target = '_parent';
+                    //                 //     // a.href = docfile.paramsfile;
+                    //                 //     // (document.body || document.documentElement).appendChild(a);
+                    //                 //     // a.click();
+                    //                 //     // a.parentNode.removeChild(a);
+                    //                 //     //
+                    //                 //     // setTimeout(function () {
+                    //                 //     //     const a2 = document.createElement('a');
+                    //                 //     //     a2.target = '_parent';
+                    //                 //     //     a2.href = docfile.docfile;
+                    //                 //     //     (document.body || document.documentElement).appendChild(a2);
+                    //                 //     //     a2.click();
+                    //                 //     //     a2.parentNode.removeChild(a2);
+                    //                 //     // }, 2000);
+                    //                 // });
+                    //             }
+                    //         }, (err: HttpErrorResponse) => {
+                    //             this.responseRestPath = true;
+                    //             this.showModalCheckFolderFile = 'ERROR';
+                    //             if (err.error instanceof Error) {
+                    //                 console.log('An error occurred:', err.error.message);
+                    //             } else {
+                    //                 console.log(`Backend returned code ${err.status}, body was: ${err.error}`);
+                    //             }
+                    //         }
+                    //     );
+                }
+            };
+        } else if (this.responseRestPath.folderState === 'NOT_EXIST') {
+            this.docsfile = null;
+            this.exportFileFolderCreatePrompt = {
+                alertDownloadedOneFileOnly: false,
+                visible: true,
+                pending: false,
+                onAnchorClick: () => {
+                    let counter = 0;
+                    this.exportFileFolderCreatePrompt.pending = true;
+                    this.exportFileFolderCreatePrompt.approveSubscription = timer(
+                        500,
+                        30 * 1000
+                    )
+                        .pipe(
+                            tap(() => counter++),
+                            switchMap(() =>
+                                this.sharedService
+                                    .exportFileCreateFolder(this.ocrExportFileId, this.userService.appData.userData.companySelect.companyId)
+                                    .pipe(
+                                        map((response: any) =>
+                                            response && !response.error ? response.body : response
+                                        )
+                                    )
+                            ),
+                            takeWhileInclusive(
+                                (response: any) =>
+                                    response != null &&
+                                    !response.error &&
+                                    response.folderState !== 'OK' &&
+                                    counter < 10 &&
+                                    this.exportFileFolderCreatePrompt &&
+                                    this.exportFileFolderCreatePrompt.visible
+                            ),
+                            finalize(() => {
+                                this.exportFileFolderCreatePrompt.pending = false;
+                                if (
+                                    this.responseRestPath.folderState === 'OK' &&
+                                    this.exportFileFolderCreatePrompt.visible
+                                ) {
+                                    this.exportFileFolderCreatePrompt.visible = false;
+                                }
+                            })
+                        )
+                        .subscribe((response: any) => {
+                            this.responseRestPath = response;
+                            // this.userService.appData.countStatusData =
+                            //     response && !!response.exporterState
+                            //         ? response.exporterState
+                            //         : null;
+                        });
+                },
+                onHide: () => {
+                    if (
+                        this.responseRestPath.folderState === 'OK' &&
+                        this.exportFileFolderCreatePrompt.approveSubscription &&
+                        this.exportFileFolderCreatePrompt.approveSubscription.closed
+                    ) {
+                        this.showModalCheckFolderFile = true;
+                        const checkFolderFile = setInterval(() => {
+                            if (this.showModalCheckFolderFile !== true) {
+                                clearInterval(checkFolderFile);
+                            } else {
+                                this.sharedService
+                                    .checkFolderFile(parent.ocrExportFileId)
+                                    .subscribe((res) => {
+                                        if (res && res.body && res.body !== 'NOT_DONE') {
+                                            this.showModalCheckFolderFile = res.body;
+                                            clearInterval(checkFolderFile);
+                                            if (
+                                                res.body === 'ERROR' &&
+                                                !this.userService.appData.isAdmin
+                                            ) {
+                                                this.sharedService
+                                                    .folderError({
+                                                        companyId:
+                                                        this.userService.appData.userData
+                                                            .companySelect.companyId,
+                                                        ocrExportFileId: parent.ocrExportFileId
+                                                    })
+                                                    .subscribe((value) => {
+                                                    });
+                                            }
+                                        }
+                                    });
+                            }
+                        }, 5000);
+
+                        // parent.createExportFileSub = this.sharedService
+                        //     .exportFileCreateFolder(parent.ocrExportFileId,
+                        //         this.userService.appData.userData.companySelect.companyId)
+                        //     .pipe(
+                        //         first(),
+                        //         finalize(() => (parent.createExportFileSub = null))
+                        //     )
+                        //     .subscribe((value) => {
+                        //         this.responseRestPath = value ? value['body'] : value;
+                        //         if (!this.responseRestPath) {
+                        //             this.startChild();
+                        //         } else {
+                        //             this.showModalCheckFolderFile = true;
+                        //             const checkFolderFile = setInterval(() => {
+                        //                 if (this.showModalCheckFolderFile !== true) {
+                        //                     clearInterval(checkFolderFile);
+                        //                 } else {
+                        //                     this.sharedService
+                        //                         .checkFolderFile(parent.ocrExportFileId)
+                        //                         .subscribe((res) => {
+                        //                             if (res && res.body && res.body !== 'NOT_DONE') {
+                        //                                 this.showModalCheckFolderFile = res.body;
+                        //                                 clearInterval(checkFolderFile);
+                        //                                 if (
+                        //                                     res.body === 'ERROR' &&
+                        //                                     !this.userService.appData.isAdmin
+                        //                                 ) {
+                        //                                     this.sharedService
+                        //                                         .folderError({
+                        //                                             companyId:
+                        //                                             this.userService.appData.userData
+                        //                                                 .companySelect.companyId,
+                        //                                             ocrExportFileId: parent.ocrExportFileId
+                        //                                         })
+                        //                                         .subscribe((value) => {
+                        //                                         });
+                        //                                 }
+                        //                             }
+                        //                         });
+                        //                 }
+                        //             }, 5000);
+                        //         }
+                        //     });
+                    }
+                },
+                prompt: null,
+                cancelFile: () => {
+                    this.showModalCheckFolderFile = false;
+                    this.sharedService
+                        .cancelFile(parent.ocrExportFileId)
+                        .subscribe((res) => {
+                        });
+                },
+                manualDownloadLink: () => {
+                    this.enabledDownloadLink = false;
+                    // if (docsfile) {
+                    //     this.saveFileToDisk(docsfile.docfile, docsfile.paramsfile).then((resData) => {
+                    //         this.exportFileFolderCreatePrompt.visible = false;
+                    //         this.startChild();
+                    //     });
+                    // }
+                }
+            };
+        }
+    }
+
+    onHide_exportFileFolderCreatePrompt(hideVisible?: any, cancelFile?: any) {
+        if (
+            (
+                (this.exportFileFolderCreatePrompt.approveSubscription && this.exportFileFolderCreatePrompt.approveSubscription.closed && this.responseRestPath.folderState === 'NOT_EXIST')
+                ||
+                (!this.exportFileFolderCreatePrompt.approveSubscription && this.responseRestPath.folderState === 'NOT_OK')
+            )
+            && ((this.enabledDownloadLink_paramsfile && !this.enabledDownloadLink_docfile) || (this.enabledDownloadLink_docfile && !this.enabledDownloadLink_paramsfile))) {
+            if (cancelFile) {
+                this.sharedService
+                    .cancelFile(this.ocrExportFileId)
+                    .subscribe((res) => {
+                    });
+                if (hideVisible) {
+                    this.exportFileFolderCreatePrompt.visible = false;
+                }
+                this.exportFileFolderCreatePrompt.onHide();
+                this.startChild();
+                this.enabledDownloadLink = true;
+                this.enabledDownloadLink_docfile = true;
+                this.enabledDownloadLink_paramsfile = true;
+                this.exportFileFolderCreatePrompt.alertDownloadedOneFileOnly = false;
+            } else {
+                this.exportFileFolderCreatePrompt.alertDownloadedOneFileOnly = true;
+            }
+        } else {
+            // if ((
+            //         (this.exportFileFolderCreatePrompt.approveSubscription && this.exportFileFolderCreatePrompt.approveSubscription.closed && this.responseRestPath.folderState === 'NOT_EXIST')
+            //         ||
+            //         (!this.exportFileFolderCreatePrompt.approveSubscription && this.responseRestPath.folderState === 'NOT_OK')
+            //     )
+            //     && ((!this.enabledDownloadLink_paramsfile && !this.enabledDownloadLink_docfile))) {
+            //     this.sharedService
+            //         .cancelFile(this.ocrExportFileId)
+            //         .subscribe((res) => {
+            //         });
+            // }
+            if (hideVisible) {
+                this.exportFileFolderCreatePrompt.visible = false;
+            }
+            this.exportFileFolderCreatePrompt.onHide();
+            this.startChild();
+            this.enabledDownloadLink = true;
+            this.enabledDownloadLink_docfile = true;
+            this.enabledDownloadLink_paramsfile = true;
+            this.exportFileFolderCreatePrompt.alertDownloadedOneFileOnly = false;
+        }
     }
 }

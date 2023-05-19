@@ -1,4 +1,4 @@
-<p-dropdown
+<app-dropdown-wrap
 		#ddCategories
 		(keyup.esc)="cancelChanges.emit($event)"
 		(onChange)="changed.emit($event)"
@@ -146,7 +146,7 @@
 			<i class="fas fa-fw fa-plus-circle" style="margin-left: 5px;"></i>{{ 'מוטב חדש' | translate }}
 		</button>
 	</ng-template>
-</p-dropdown>
+</app-dropdown-wrap>
 
 
 <ng-container *ngIf="beneficiaryCreateOrEditPrompt.visible">

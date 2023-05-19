@@ -3,12 +3,10 @@
 		appendTo="body"
 		[modal]="true"
 		[resizable]="false"
-		
-		[styleClass]="'otp-credentials-update'"
->
+		[styleClass]="'otp-credentials-update'">
 	<ng-container *ngIf="step === OtpUpdateDialogStep.PROMPT">
 		<h2>טעינת פועלים בעסקים</h2>
-		
+
 		<p class="prompt">
 			<span>שימו לב,</span><br/>
 			יש להתנתק מאתר הבנק לפני הפעלת הטעינה.<br/>
@@ -29,7 +27,7 @@
 			</button>
 	-->
 	</ng-container>
-	
+
 	<ng-container *ngIf="step === OtpUpdateDialogStep.AWAIT_CONN">
 		<div class="await-conn">
 			<img ngSrc="/assets/images/bizb-loading.gif" height="74" width="107"/>
@@ -37,10 +35,10 @@
 			<ng-container *ngIf="awaitConnection$ | async"></ng-container>
 		</div>
 	</ng-container>
-	
+
 	<ng-container *ngIf="step === OtpUpdateDialogStep.CODE_PROMPT">
 		<h2>טעינת פועלים בעסקים</h2>
-		
+
 		<form
 				class="Signup__control"
 				[formGroup]="otpForm"
@@ -86,8 +84,10 @@
 			</button>
 		</form>
 		<ng-container *ngIf="otpCodeApply$ | async"></ng-container>
+		<ng-container *ngIf="awaitConnection$ | async"></ng-container>
+
 	</ng-container>
-	
+
 	<ng-container *ngIf="step === OtpUpdateDialogStep.MONITORING">
 		<div
 				class="monitoring"

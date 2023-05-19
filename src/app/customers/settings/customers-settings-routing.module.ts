@@ -15,6 +15,7 @@ import { SettingsUsersComponent } from './users/settings-users.component';
 import { SettingsUserDetailsComponent } from './users/user-details/settings-user-details.component';
 import { SettingsUserListComponent } from './users/user-list/settings-user-list.component';
 import { SettingsOfficeUsersComponent } from './officeUsers/settings-officeUsers.component';
+import {ProductSettingsComponent} from '@app/customers/settings/productSettings/product-settings.component';
 
 const customersAccountancyRoutes: Routes = [
   {
@@ -49,6 +50,11 @@ const customersAccountancyRoutes: Routes = [
           {
             path: 'officeUsers',
             component: SettingsOfficeUsersComponent,
+            canActivate: [AuthGuard]
+          },
+          {
+            path: 'productSettings',
+            component: ProductSettingsComponent,
             canActivate: [AuthGuard]
           },
           {

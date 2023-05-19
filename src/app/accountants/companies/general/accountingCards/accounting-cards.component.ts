@@ -30,6 +30,10 @@ export class AccountingCardsComponent
     public info: any;
     companyCustomerDetails: any;
     maamCustIds: any;
+    maamCustIds12: any;
+    maamCustIds13: any;
+    maamCustIds14: any;
+
     public loader: boolean = true;
     @Input() isModal: any = false;
     @Input() infoAccountingCards: any;
@@ -229,33 +233,51 @@ export class AccountingCardsComponent
                                             cartisName: cartisName,
                                             custId: it.custId,
                                             lName: it.custLastName,
+                                            hashCartisCodeId: it.hashCartisCodeId,
                                             hp: null,
                                             id: it.custId
                                         };
                                     });
+                                    this.maamCustIds12 = this.maamCustIds.filter(it => it.hashCartisCodeId === '12');
+                                    this.maamCustIds13 = this.maamCustIds.filter(it => it.hashCartisCodeId === '13');
+                                    this.maamCustIds14 = this.maamCustIds.filter(it => it.hashCartisCodeId === '14');
+
                                     let custMaamTsumot = responseRest.custMaamTsumot;
                                     if (custMaamTsumot) {
                                         custMaamTsumot = this.maamCustIds.find(
                                             (it) => it.custId === responseRest.custMaamTsumot
                                         );
+                                        if (custMaamTsumot && !this.maamCustIds13.some(it => it.custId === responseRest.custMaamTsumot)) {
+                                            this.maamCustIds13.push(custMaamTsumot);
+                                        }
                                     }
                                     let custMaamNechasim = responseRest.custMaamNechasim;
                                     if (custMaamNechasim) {
                                         custMaamNechasim = this.maamCustIds.find(
                                             (it) => it.custId === responseRest.custMaamNechasim
                                         );
+                                        if (custMaamNechasim && !this.maamCustIds14.some(it => it.custId === responseRest.custMaamNechasim)) {
+                                            this.maamCustIds14.push(custMaamNechasim);
+                                        }
                                     }
                                     let custMaamIska = responseRest.custMaamIska;
                                     if (custMaamIska) {
                                         custMaamIska = this.maamCustIds.find(
                                             (it) => it.custId === responseRest.custMaamIska
                                         );
+                                        if (custMaamIska && !this.maamCustIds12.some(it => it.custId === responseRest.custMaamIska)) {
+                                            this.maamCustIds12.push(custMaamIska);
+                                        }
                                     }
+
                                     let custMaamYevu = responseRest.custMaamYevu;
                                     if (custMaamYevu) {
                                         custMaamYevu = this.maamCustIds.find(
                                             (it) => it.custId === responseRest.custMaamYevu
                                         );
+                                        if (custMaamYevu && !this.maamCustIds13.some(it => it.custId === responseRest.custMaamYevu)) {
+                                            this.maamCustIds13.push(custMaamYevu);
+                                        }
                                     }
                                     this.info.patchValue({
                                         custMaamTsumot: custMaamTsumot || null,
@@ -360,17 +382,16 @@ export class AccountingCardsComponent
                                         this.info.get('pettyCashCustId').value &&
                                         this.info.get('pettyCashCustId').value.custId
                                     );
-                                    this.supplierTaxDeductionCustIdArr = this
-                                        .supplierTaxDeductionCustIdReq
+                                    this.supplierTaxDeductionCustIdArr = this.supplierTaxDeductionCustIdReq
                                         ? this.userService.appData.userData.companyCustomerDetails
                                             ? this.userService.appData.userData.companyCustomerDetails
-                                                .customerTaxDeductionCustIdExpenseArr
+                                                .supplierTaxDeductionCustIdArr
                                             : []
                                         : this.addPriemerObject(
                                             this.userService.appData.userData.companyCustomerDetails
                                                 ? this.userService.appData.userData
                                                     .companyCustomerDetails
-                                                    .customerTaxDeductionCustIdExpenseArr
+                                                    .supplierTaxDeductionCustIdArr
                                                 : [],
                                             this.info.get('supplierTaxDeductionCustId').value &&
                                             this.info.get('supplierTaxDeductionCustId').value
@@ -456,6 +477,9 @@ export class AccountingCardsComponent
                                     id: it.custId
                                 };
                             });
+                            this.maamCustIds12 = this.maamCustIds.filter(it => it.hashCartisCodeId === '12');
+                            this.maamCustIds13 = this.maamCustIds.filter(it => it.hashCartisCodeId === '13');
+                            this.maamCustIds14 = this.maamCustIds.filter(it => it.hashCartisCodeId === '14');
 
                             if (!this.infoAccountingCards) {
                                 let custMaamTsumot = responseRest.custMaamTsumot;
@@ -463,24 +487,36 @@ export class AccountingCardsComponent
                                     custMaamTsumot = this.maamCustIds.find(
                                         (it) => it.custId === responseRest.custMaamTsumot
                                     );
+                                    if (custMaamTsumot && !this.maamCustIds13.some(it => it.custId === responseRest.custMaamTsumot)) {
+                                        this.maamCustIds13.push(custMaamTsumot);
+                                    }
                                 }
                                 let custMaamNechasim = responseRest.custMaamNechasim;
                                 if (custMaamNechasim) {
                                     custMaamNechasim = this.maamCustIds.find(
                                         (it) => it.custId === responseRest.custMaamNechasim
                                     );
+                                    if (custMaamNechasim && !this.maamCustIds14.some(it => it.custId === responseRest.custMaamNechasim)) {
+                                        this.maamCustIds14.push(custMaamNechasim);
+                                    }
                                 }
                                 let custMaamIska = responseRest.custMaamIska;
                                 if (custMaamIska) {
                                     custMaamIska = this.maamCustIds.find(
                                         (it) => it.custId === responseRest.custMaamIska
                                     );
+                                    if (custMaamIska && !this.maamCustIds12.some(it => it.custId === responseRest.custMaamIska)) {
+                                        this.maamCustIds12.push(custMaamIska);
+                                    }
                                 }
                                 let custMaamYevu = responseRest.custMaamYevu;
                                 if (custMaamYevu) {
                                     custMaamYevu = this.maamCustIds.find(
                                         (it) => it.custId === responseRest.custMaamYevu
                                     );
+                                    if (custMaamYevu && !this.maamCustIds13.some(it => it.custId === responseRest.custMaamYevu)) {
+                                        this.maamCustIds13.push(custMaamYevu);
+                                    }
                                 }
                                 this.info.patchValue({
                                     custMaamTsumot: null,
@@ -658,12 +694,12 @@ export class AccountingCardsComponent
                                 .supplierTaxDeductionCustIdReq
                                 ? this.userService.appData.userData.companyCustomerDetails
                                     ? this.userService.appData.userData.companyCustomerDetails
-                                        .customerTaxDeductionCustIdExpenseArr
+                                        .supplierTaxDeductionCustIdArr
                                     : []
                                 : this.addPriemerObject(
                                     this.userService.appData.userData.companyCustomerDetails
                                         ? this.userService.appData.userData.companyCustomerDetails
-                                            .customerTaxDeductionCustIdExpenseArr
+                                            .supplierTaxDeductionCustIdArr
                                         : [],
                                     this.info.get('supplierTaxDeductionCustId').value &&
                                     this.info.get('supplierTaxDeductionCustId').value.custId
@@ -719,12 +755,12 @@ export class AccountingCardsComponent
         this.supplierTaxDeductionCustIdArr = this.supplierTaxDeductionCustIdReq
             ? this.userService.appData.userData.companyCustomerDetails
                 ? this.userService.appData.userData.companyCustomerDetails
-                    .customerTaxDeductionCustIdExpenseArr
+                    .supplierTaxDeductionCustIdArr
                 : []
             : this.addPriemerObject(
                 this.userService.appData.userData.companyCustomerDetails
                     ? this.userService.appData.userData.companyCustomerDetails
-                        .customerTaxDeductionCustIdExpenseArr
+                        .supplierTaxDeductionCustIdArr
                     : [],
                 this.info.get('supplierTaxDeductionCustId').value &&
                 this.info.get('supplierTaxDeductionCustId').value.custId

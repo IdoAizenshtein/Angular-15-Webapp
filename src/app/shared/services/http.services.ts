@@ -62,6 +62,7 @@ export class HttpServices implements OnDestroy {
             //  this.mainUrl = 'https://qa-adm1.bizibox.biz/rest/api';
             //   this.mainUrl = 'https://aws-stg-adm1.bizibox.biz/rest/api';
             //   this.mainUrl = 'https://aws-stg-bsecure.bizibox.biz/rest/api';
+            //  this.mainUrl = 'https://stg-adm1.bizibox.biz/rest/api';
         }
     }
 
@@ -168,14 +169,12 @@ export class HttpServices implements OnDestroy {
                 this.userService.appData.userOnBehalf.id
             );
         }
-
         let idx = 0;
         return this.http
             .request<any>(parameters.method, parameters.url, parameters.options)
             .pipe(
                 tap((event: any) => {
                     this.log(event);
-
                     if (
                         (event.url.includes('create-doc-file') ||
                             event.url.includes('manual-download')) &&
@@ -184,11 +183,11 @@ export class HttpServices implements OnDestroy {
                         throw event;
                     }
                 }),
-                retry({
-                    count: url.includes('change-password') ? 0 :  2,
-                    delay: url.includes('create-doc-file') || url.includes('manual-download') ? 10000 : 1500
-                }),
-                catchError(this.handleError<any>(url, interfaceParamHttp.isHeaderAuth))
+                // retry({
+                //     count: url.includes('change-password') || url.includes('add-contact') ? 0 :  2,
+                //     delay: url.includes('create-doc-file') || url.includes('manual-download') ? 10000 : 1500
+                // }),
+                catchError(this.handleError<any>(url, (interfaceParamHttp.isHeaderAuth || interfaceParamHttp.stopRedInError)))
             );
     }
 
@@ -205,6 +204,8 @@ export class HttpServices implements OnDestroy {
                 if (
                     err.status === 404 ||
                     (err.status === 400 && err.url.includes('change-password')) ||
+                    (err.status === 400 && err.url.includes('add-contact')) ||
+                    (err.status === 400 && err.url.includes('auth/otp/code')) ||
                     err.status === 409 ||
                     err.status === 500 ||
                     this.router.url === '/reset-password' ||
@@ -233,7 +234,9 @@ export class HttpServices implements OnDestroy {
                         return of(err);
                     }
                 }
-
+                if(err.status === 403 && otpApproveRequired){
+                    return of(err);
+                }
                 if (
                     (![400, 401, 403, 409, 200].includes(err.status)) || ((operation.includes('create-doc-file') || (operation.includes('manual-download')) && err.status === 206))
                 ) {

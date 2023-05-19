@@ -46,6 +46,7 @@
 					[options]="userService.appData.userData.accounts"
 					[formControlName]="fld.name"
 					dataKey="companyAccountId"
+					[name]="fld.name"
 					optionLabel="accountNickname"
 					[inputId]="fld.name"
 					[placeholder]="('actions.select' | translate) + '...'"
@@ -91,7 +92,7 @@
 			</p-dropdown>
 			<!--<pre>{{form.get(fld.name).value| json}}</pre>-->
 		</ng-container>
-		
+
 		<ng-container *ngSwitchCase="'transName'">
 			<label [for]="fld.name">{{
 				'formFixedMovement.field.' + fld.name | translate
@@ -105,7 +106,7 @@
 					autocomplete="off"
 			/>
 		</ng-container>
-		
+
 		<ng-container *ngSwitchCase="'transTypeId'">
 			<label [for]="fld.name">{{
 				'formFixedMovement.field.' + fld.name | translate
@@ -124,13 +125,14 @@
 			>
 			</app-category-select>
 		</ng-container>
-		
+
 		<ng-container *ngSwitchCase="'paymentDesc'">
 			<label [for]="fld.name">{{
 				'formFixedMovement.field.' + fld.name | translate
 				}}</label>
 			<p-dropdown
 					[options]="fld.options"
+					[name]="fld.name"
 					[formControlName]="fld.name"
 					[inputId]="fld.name"
 					[dropdownIcon]="'p-dropdown-icon'"
@@ -140,12 +142,13 @@
 			</p-dropdown>
 			<!--<pre>{{form.get(fld.name).value| json}}</pre>-->
 		</ng-container>
-		
+
 		<ng-container *ngSwitchCase="'transDate'">
 			<ng-container *ngIf="mode === EditingType.Single">
 				<label [for]="fld.name">{{ 'titles.date' | translate }}</label>
 				<p-calendar
 						[formControlName]="fld.name"
+						[name]="fld.name"
 						[inputId]="fld.name"
 						[inputStyle]="{ 'max-width': '121px' }"
 						[locale]="'langCalendar' | translate"
@@ -158,7 +161,7 @@
 				<!--<pre>{{form.get(fld.name).value}}</pre>-->
 			</ng-container>
 		</ng-container>
-		
+
 		<ng-container *ngSwitchCase="'total'">
 			<label [for]="fld.name">{{
 				'formFixedMovement.field.' + fld.name | translate
@@ -173,7 +176,7 @@
 					autocomplete="off"
 			/>
 		</ng-container>
-		
+
 		<ng-container *ngSwitchCase="'transFrequencyName'">
 			<label [for]="fld.name" style="align-self: flex-start">{{
 				'formFixedMovement.field.' + fld.name | translate
@@ -200,8 +203,10 @@
             "
 					>
 						<p-dropdown
+								(onChange)="setDateOpt($event)"
 								[options]="fld.options"
 								[formControlName]="fld.name"
+								[name]="fld.name"
 								[inputId]="fld.name"
 								[dropdownIcon]="'p-dropdown-icon'"
 								[autoDisplayFirst]="false"
@@ -211,7 +216,6 @@
 						>
 						</p-dropdown>
 					</div>
-					
 					<ng-container *ngIf="form.get('transFrequencyName').enabled">
 						<div
 								style="
@@ -231,6 +235,7 @@
 							<p-dropdown
 									[options]="frequencyDayOfMonth.options"
 									[formControl]="frequencyDayOfMonth.control"
+									[name]="frequencyDayOfMonth.name"
 									[inputId]="frequencyDayOfMonth.name"
 									[dropdownIcon]="'p-dropdown-icon'"
 									[autoDisplayFirst]="true"
@@ -239,7 +244,7 @@
 							>
 							</p-dropdown>
 						</div>
-						
+
 						<div
 								style="
                 display: flex;
@@ -256,6 +261,7 @@
 						>
 							<div style="min-width: 10ch">{{ 'יום בשבוע:' }}</div>
 							<p-dropdown
+									[name]="frequencyDayOfWeek.name"
 									[options]="frequencyDayOfWeek.options"
 									[formControl]="frequencyDayOfWeek.control"
 									[inputId]="frequencyDayOfWeek.name"
@@ -271,7 +277,7 @@
 			</ng-template>
 			<!--<pre>{{form.get(fld.name).value}}</pre>-->
 		</ng-container>
-		
+
 		<ng-container *ngSwitchCase="'autoUpdateTypeName'">
 			<label [for]="fld.name">{{
 				'formFixedMovement.field.' + fld.name | translate
@@ -297,7 +303,7 @@
                 display: flex;
                 display: -ms-flexbox;
                 flex-flow: row wrap;
-                align-items: baseline;
+                align-items: center;
                 align-content: baseline;
               "
 						>
@@ -308,7 +314,7 @@
 							<!--[inputId]="opt.value"-->
 							<!--[style]="{'font-weight': 'bold'}"></p-radioButton>-->
 							<!--</ng-container>-->
-							
+
 							<!--<ng-template #noSpecialTreatmentNeeded>-->
 							<p-radioButton
 									[name]="fld.name"
@@ -344,7 +350,7 @@
 								</div>
 							</ng-container>
 							<!--</ng-template>-->
-							
+
 							<!--<ng-container [ngSwitch]="opt.value">-->
 							<!--<ng-container *ngSwitchCase="'USER_DEFINED_TOTAL$MONTH'">-->
 							<!--<div style="display: flex; display: -ms-flexbox; align-content: baseline; align-items: baseline;">-->

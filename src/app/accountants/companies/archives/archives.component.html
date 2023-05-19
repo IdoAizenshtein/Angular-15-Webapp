@@ -15,12 +15,14 @@
 
 		<ng-container *ngIf="userService.appData?.userData?.companySelect">
 			|
-			{{ userService.appData?.userData?.companySelect?.companyName }}
+			{{ userService.appData?.userData?.companySelect?.viewCompanyName }}
 			|
 			<span style="font-size: 16px;margin-right: 2px;font-weight: 400;height: 26px;">
-			 ח.פ
-				{{ userService.appData?.userData?.companySelect?.companyHp }}
-				|
+				      <ng-container *ngIf="!userService.appData?.hideCompanyName">
+                  	 ח.פ
+						  {{ userService.appData?.userData?.companySelect?.companyHp }}
+						  |
+                    </ng-container>
 				{{
 				userService.appData?.userData?.companySelect?.sourceProgramId
 						? ('sourcePrograms.' +
@@ -1348,7 +1350,7 @@
 													[pTooltip]="file.name"
 													class="text-ellipsis"
 													style="padding-left: 40px"
-													tooltipPosition="bottom"
+											tooltipPosition="right"
 													tooltipStyleClass="oneLineTooltip"
 											></div>
 										</div>
@@ -1889,12 +1891,12 @@
 															<img
 																	(load)="file.finishedLoaded = true"
 																	(loadstart)="file.finishedLoaded = false"
-																	[ngSrc]="file.urlImg"
+																	[src]="file.urlImg"
 																	[style.visibility]="
                                 file.finishedLoaded && file.urlImg ? 'visible' : 'hidden'
                               "
 
-																	fill
+
 																	style="height: 221px; width: auto; position: relative;"
 
 															/>
@@ -1916,7 +1918,7 @@
                                 "
 																	[pTooltip]="file.name"
 																	[tooltipPosition]="
-                                  element.offsetLeft <= 25 ? 'right' : 'bottom'
+                                 'right'
                                 "
 																	class="text-ellipsis"
 																	tooltipStyleClass="oneLineTooltip"
@@ -3085,7 +3087,7 @@
                     folderSelect = otherUpload
                       ? docFolders.folderSelect
                       : { folderId: '00000000-0000-0000-0000-000000000000' };
-                    fileViewerOpen('WAIT_FOR_CARE')
+                    fileViewerOpen(!!otherUpload ? 'ARCHIVE' : 'WAIT_FOR_CARE')
                   "
 										[disabled]="!files.length || !finishedPrepareFiles"
 								>
@@ -4785,10 +4787,10 @@
 					(load)="finishedLoadedImgView = true"
 					(loadstart)="finishedLoadedImgView = false"
 					[hidden]="!finishedLoadedImgView"
-					[ngSrc]="sidebarImgs[0]?.contentUrl"
+					[src]="sidebarImgs[0]?.contentUrl"
 					[ngStyle]="{ transform: 'rotate(' + degRotateImg + 'deg)' }"
 					[style.zoom.%]="imageScaleNewInvoice * 100"
-					fill style="height: auto; width: 680px; position: relative;display: block; margin: 0 auto"
+					style="height: auto; width: 680px; position: relative;display: block; margin: 0 auto"
 			/>
 			<ng-container *ngIf="sidebarImgs.length > 1">
 				<ng-container *ngFor="let pageImg of sidebarImgs.slice(1)">
@@ -4861,6 +4863,7 @@
 			[resizable]="false"
 			[visible]="(scanFilesOcrPopUp?.visible)"
 			appendTo="body"
+			maskStyleClass="scanFilesOcrPopUpMask"
 			styleClass="scanFilesOcrPopUp"
 	>
 		<div [appScrollHeight]="55" class="scroll-chrome flexCenter">

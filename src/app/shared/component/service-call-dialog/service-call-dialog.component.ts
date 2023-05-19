@@ -1,4 +1,4 @@
-import {Component, Input, OnInit, Optional, ViewEncapsulation} from '@angular/core';
+import {Component, Input, OnDestroy, OnInit, Optional, ViewEncapsulation} from '@angular/core';
 import {FormControl, FormGroup, Validators} from '@angular/forms';
 // import {ValidatorsFactory} from '@app/shared/component/foreign-credentials/validators';
 // import {DialogComponent} from '@app/shared/component/dialog/dialog.component';
@@ -11,16 +11,20 @@ import {UserService} from '@app/core/user.service';
 import {Router} from '@angular/router';
 import {StorageService} from '@app/shared/services/storage.service';
 import {Dialog} from 'primeng/dialog';
+import {SharedComponent} from '@app/shared/component/shared.component';
 
 @Component({
     selector: 'app-service-call-dialog',
     templateUrl: './service-call-dialog.component.html',
     encapsulation: ViewEncapsulation.None
 })
-export class ServiceCallDialogComponent implements OnInit {
+export class ServiceCallDialogComponent implements OnInit, OnDestroy {
     readonly serviceCallForm: any = new FormGroup({
         companyId: new FormControl(null),
         companyName: new FormControl(null),
+        companyHp: this.sharedComponent.isNoCompaniesFound ? new FormControl('', Validators.compose([Validators.required,
+            ValidatorsFactory.idValidatorIL, Validators.maxLength(9),
+            Validators.pattern('\\d+')])) : new FormControl(null),
         accountNickname: new FormControl(null),
         taskTitle: new FormControl('', [Validators.required]),
         closeMailToSend: new FormControl('', [
@@ -32,7 +36,7 @@ export class ServiceCallDialogComponent implements OnInit {
         taskDesc: new FormControl('', [Validators.required]),
         userCellPhone: new FormControl('', [
             Validators.required,
-            ValidatorsFactory.cellNumberValidatorIL
+            ValidatorsFactory.cellNumberValidatorILWithInternationalFormats
         ])
     });
 
@@ -42,11 +46,16 @@ export class ServiceCallDialogComponent implements OnInit {
         hintClick?: () => void;
     }>;
 
-    public saveData = new FormControl(false);
+    public saveData = new FormControl(!!(this.storageService.localStorageGetterItem('userCellPhone') ||
+        this.storageService.localStorageGetterItem('closeMailToSend') ||
+        this.storageService.localStorageGetterItem('taskOpenerName')));
 
     @Input() data: any;
+    @Input() dialogCall: any;
+
     @Input() companyId: any = false;
     @Input() accountNickname: any = false;
+    @Input() dataFromBankAndCreditScreen: any = false;
     @Input() isHashavshevet: boolean = false;
     @Input() companiesFromBank: any = [];
     @Input() isBank: any = true;
@@ -57,26 +66,28 @@ export class ServiceCallDialogComponent implements OnInit {
         private storageService: StorageService,
         private helpCenterService: HelpCenterService,
         public userService: UserService,
-        private router: Router
+        private router: Router,
+        @Optional() public sharedComponent: SharedComponent
     ) {
     }
 
     ngOnInit() {
-        if (this.dialog) {
-            this.dialog.draggable = false;
-            this.dialog.resizable = false;
-            this.dialog.responsive = false;
-            this.dialog.minX = 0;
-            this.dialog.minY = 0;
+        if (this.dialogCall) {
+            this.dialogCall.draggable = false;
+            this.dialogCall.resizable = false;
+            this.dialogCall.responsive = true;
+            this.dialogCall.minX = 0;
+            this.dialogCall.minY = 0;
             // this.dialog.minHeight = 492;
             // this.dialog.autoAlign = true;
-            this.dialog.showHeader = true;
-            this.dialog.styleClass = 'service-call-dialog';
+            this.dialogCall.showHeader = true;
+            this.dialogCall.styleClass = 'service-call-dialog';
         }
+
 
         let companySelect = false;
         let appServiceCallDialogSaved: any = false;
-        if (this.userService.appData.userData.companies && this.companyId) {
+        if (this.userService.appData.userData.companies && this.companyId && !this.dataFromBankAndCreditScreen) {
             companySelect = this.userService.appData.userData.companies.find(
                 (co) => co.companyId === this.companyId
             );
@@ -87,6 +98,19 @@ export class ServiceCallDialogComponent implements OnInit {
                 appServiceCallDialogSaved = JSON.parse(appServiceCallDialogSaved);
             }
         }
+        if (this.userService.appData.userData.companies && this.dataFromBankAndCreditScreen && this.userService.appData.userData.companySelect) {
+            companySelect = this.userService.appData.userData.companies.find(
+                (co) => co.companyId === this.userService.appData.userData.companySelect.companyId
+            );
+            appServiceCallDialogSaved = this.storageService.localStorageGetterItem(
+                this.userService.appData.userData.companySelect.companyId + '-' + this.dataFromBankAndCreditScreen.params.screenType + '-app-service-call-dialog'
+            );
+            if (appServiceCallDialogSaved) {
+                appServiceCallDialogSaved = JSON.parse(appServiceCallDialogSaved);
+            }
+        }
+
+
         if (this.isHashavshevet) {
             this.subjects = [
                 {
@@ -109,6 +133,21 @@ export class ServiceCallDialogComponent implements OnInit {
                 },
                 {
                     subject: 'אחר'
+                }
+            ];
+        } else if (!!this.sharedComponent && !!this.sharedComponent.isNoCompaniesFound) {
+            this.subjects = [
+                {
+                    subject: 'הוספת חברה מרווחית אונליין'
+                },
+                {
+                    subject: 'הוספת חברה ממשרדית'
+                },
+                {
+                    subject: 'הוספת חברה מפריוריטי'
+                },
+                {
+                    subject: 'לא מצאתי את החברה שרציתי'
                 }
             ];
         } else {
@@ -166,7 +205,7 @@ export class ServiceCallDialogComponent implements OnInit {
                             }
                         },
                         {
-                            subject: "צ'קים",
+                            subject: 'צ\'קים',
                             hint: 'לחצו לצפיה בשאלות ותשובות וסרטוני הדרכה בנושא',
                             hintClick: () => {
                                 this.router.navigate(
@@ -223,7 +262,7 @@ export class ServiceCallDialogComponent implements OnInit {
                             }
                         },
                         {
-                            subject: "צ'קים",
+                            subject: 'צ\'קים',
                             hint: 'לחצו לצפיה בשאלות ותשובות וסרטוני הדרכה בנושא',
                             hintClick: () => {
                                 this.router.navigate(
@@ -372,23 +411,31 @@ export class ServiceCallDialogComponent implements OnInit {
                             : null,
                     taskOpenerName: appServiceCallDialogSaved
                         ? appServiceCallDialogSaved.taskOpenerName
-                        : '',
+                        : this.storageService.localStorageGetterItem('taskOpenerName') ?
+                            this.storageService.localStorageGetterItem('taskOpenerName') :
+                            '',
                     taskDesc: appServiceCallDialogSaved
                         ? appServiceCallDialogSaved.taskDesc
                         : ''
                 });
             }
         }
+
+        if (this.dataFromBankAndCreditScreen) {
+            this.subjects = this.dataFromBankAndCreditScreen.subjects;
+            this.serviceCallForm.get('accountNickname').disable();
+        }
     }
 
-    submitServiceCall(): void {
+    async submitServiceCall(): Promise<any> {
         console.log('submit service call -> %o', this.serviceCallForm.value);
         if (!this.isHashavshevet) {
             if (
                 this.serviceCallForm.invalid ||
                 (this.userService.appData.userData &&
                     this.userService.appData.userData.accountant &&
-                    !this.serviceCallForm.value.companyId)
+                    !this.serviceCallForm.value.companyId &&
+                    (!this.sharedComponent || !this.sharedComponent.isNoCompaniesFound))
             ) {
                 BrowserService.flattenControls(this.serviceCallForm).forEach((ac) =>
                     ac.markAsDirty()
@@ -405,22 +452,33 @@ export class ServiceCallDialogComponent implements OnInit {
             paramServiceCallForm.companyId = paramServiceCallForm.companyId
                 ? paramServiceCallForm.companyId.companyId
                 : null;
-            const serviceCallRequest = Object.assign(
+            let serviceCallRequest = Object.assign(
                 Object.create(null),
                 paramServiceCallForm,
                 {
                     taskTitle: this.serviceCallForm.value.taskTitle.subject
                 }
             );
-            this.storageService.localStorageSetter(
-                'userCellPhone',
-                String(this.serviceCallForm.value.userCellPhone)
-            );
-            this.storageService.localStorageSetter(
-                'closeMailToSend',
-                String(this.serviceCallForm.value.closeMailToSend)
-            );
-            if (this.saveData.value && this.companyId) {
+            if (!this.dataFromBankAndCreditScreen || (this.saveData.value && this.dataFromBankAndCreditScreen)) {
+                this.storageService.localStorageSetter(
+                    'userCellPhone',
+                    String(this.serviceCallForm.value.userCellPhone)
+                );
+                this.storageService.localStorageSetter(
+                    'closeMailToSend',
+                    String(this.serviceCallForm.value.closeMailToSend)
+                );
+                this.storageService.localStorageSetter(
+                    'taskOpenerName',
+                    String(this.serviceCallForm.value.taskOpenerName)
+                )
+            }
+            if (!this.saveData.value) {
+                this.storageService.localStorageRemoveItem('userCellPhone');
+                this.storageService.localStorageRemoveItem('closeMailToSend');
+                this.storageService.localStorageRemoveItem('taskOpenerName');
+            }
+            if (this.saveData.value && this.companyId && !this.dataFromBankAndCreditScreen) {
                 this.storageService.localStorageSetter(
                     this.companyId +
                     '-' +
@@ -429,18 +487,44 @@ export class ServiceCallDialogComponent implements OnInit {
                     JSON.stringify(this.serviceCallForm.value)
                 );
             }
+            if (this.saveData.value && (this.dataFromBankAndCreditScreen)) {
+                this.storageService.localStorageSetter(
+                    this.userService.appData.userData.companySelect.companyId +
+                    '-' +
+                    this.dataFromBankAndCreditScreen.params.screenType +
+                    '-app-service-call-dialog',
+                    JSON.stringify(this.serviceCallForm.value)
+                );
+            }
+            if (this.dataFromBankAndCreditScreen) {
+                if(this.dataFromBankAndCreditScreen.count){
+                    this.sharedComponent.mixPanelEvent('kriat sherut', {
+                        count: this.dataFromBankAndCreditScreen.count
+                    });
+                }
+                serviceCallRequest = Object.assign(serviceCallRequest, this.dataFromBankAndCreditScreen.params);
+            }
+            if (!!this.sharedComponent && !!this.sharedComponent.isNoCompaniesFound) {
+                serviceCallRequest.accountant = true;
+                serviceCallRequest.taskCategoryId = 'F30005F9-2E7F-31C4-E053-0100007FAE18';
+            }
             this.serviceCallForm.markAsPending();
+            serviceCallRequest.gRecaptcha = await this.userService.executeAction('open-ticket');
             this.helpCenterService
                 .requestOpenTicket(serviceCallRequest)
                 .pipe(tap(() => this.serviceCallForm.markAsDirty()))
                 .subscribe((resp) => {
                     if (resp && !resp.error) {
+                        if(this.router.url.includes('help-center')){
+                            this.sharedComponent.mixPanelEvent('open service call');
+                        }
                         this.serviceCallForm.disable();
-                        if (this.dialog) {
+                        if (this.dialogCall) {
                             // this.dialog.closable = false;
-                            this.dialog.showHeader = false;
-                            this.dialog.styleClass =
+                            this.dialogCall.styleClass =
                                 'service-call-dialog ticketAlreadyIssued';
+                            this.dialogCall.container.classList.add('ticketAlreadyIssued');
+                            this.dialogCall.headerViewChild.nativeElement.remove();
                         }
                     }
                 });
@@ -458,12 +542,15 @@ export class ServiceCallDialogComponent implements OnInit {
             }
 
             const paramServiceCallForm = this.serviceCallForm.value;
-            const serviceCallRequest = {
+            let serviceCallRequest = {
                 accountNickName: paramServiceCallForm.accountNickname
                     ? paramServiceCallForm.accountNickname.accountNickname
                     : null,
                 companyName: paramServiceCallForm.companyName
                     ? paramServiceCallForm.companyName.companyName
+                    : null,
+                companyHp: paramServiceCallForm.companyHp
+                    ? paramServiceCallForm.companyHp.companyHp
                     : null,
                 closeMailToSend: paramServiceCallForm.closeMailToSend,
                 stationId: this.userService.appData.station_id,
@@ -473,28 +560,49 @@ export class ServiceCallDialogComponent implements OnInit {
                 userCellPhone: paramServiceCallForm.userCellPhone,
                 accountant: null
             };
-            this.storageService.localStorageSetter(
-                'userCellPhone',
-                String(this.serviceCallForm.value.userCellPhone)
-            );
-            this.storageService.localStorageSetter(
-                'closeMailToSend',
-                String(this.serviceCallForm.value.closeMailToSend)
-            );
+            if (this.dataFromBankAndCreditScreen) {
+                serviceCallRequest = Object.assign(serviceCallRequest, this.dataFromBankAndCreditScreen.params);
+            }
+            if (!this.dataFromBankAndCreditScreen || (this.saveData.value && this.dataFromBankAndCreditScreen)) {
+                this.storageService.localStorageSetter(
+                    'userCellPhone',
+                    String(this.serviceCallForm.value.userCellPhone)
+                );
+                this.storageService.localStorageSetter(
+                    'closeMailToSend',
+                    String(this.serviceCallForm.value.closeMailToSend)
+                );
+                this.storageService.localStorageSetter(
+                    'taskOpenerName',
+                    String(this.serviceCallForm.value.taskOpenerName)
+                );
+            }
+
             this.serviceCallForm.markAsPending();
             this.helpCenterService
                 .apiOpenTicket(serviceCallRequest)
                 .pipe(tap(() => this.serviceCallForm.markAsDirty()))
                 .subscribe((resp) => {
                     if (resp && !resp.error) {
-                        if (this.dialog) {
+                        if(this.router.url.includes('help-center')){
+                            this.sharedComponent.mixPanelEvent('open service call');
+                        }
+                        if (this.dialogCall) {
                             // this.dialog.closable = false;
-                            this.dialog.showHeader = false;
-                            this.dialog.styleClass = 'service-call-dialog ticketAlreadyIssued';
+                            this.dialogCall.styleClass =
+                                'service-call-dialog ticketAlreadyIssued';
+                            this.dialogCall.container.classList.add('ticketAlreadyIssued');
+                            this.dialogCall.headerViewChild.nativeElement.remove();
                         }
                         this.serviceCallForm.disable();
                     }
                 });
+        }
+    }
+
+    ngOnDestroy(): void {
+        if (!!this.sharedComponent) {
+            this.sharedComponent.isNoCompaniesFound = false;
         }
     }
 }

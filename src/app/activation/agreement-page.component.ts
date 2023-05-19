@@ -143,7 +143,9 @@ export class AgreementPageComponent implements OnInit {
       ]
     });
   }
-
+  reload(){
+    window.location.reload();
+  }
   updateContactInfo(model?: any, isValid?: boolean, isOtpModal?: boolean, isEmail?:boolean) {
     if (isOtpModal) {
       if (!isValid || this.formInProgress) {

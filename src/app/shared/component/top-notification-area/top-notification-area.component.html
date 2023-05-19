@@ -19,11 +19,9 @@
     isViewingSettings: router.url.includes('cfl/settings'),
     companiesWithoutAgreement: userService.appData?.companiesWithoutAgreement && isCompaniesScreen(),
     companySelectedBillingStatusWarn:
-      userService.appData?.userData?.companySelectedBillingStatus === 'WARN',
+      userService.appData?.userData?.companySelectedBillingStatus === 'WARN' && !userService.appData?.userData?.accountant,
     backendFailedResponse: backendFailedResponse$ | async,
-    alertTokens:
-      userService.appData?.userData?.companySelect?.alertTokens &&
-      userService.appData?.userData?.companySelect?.alertTokens.length
+    alertTokens: userService.appData?.userData?.companySelect?.alertTokens &&  userService.appData?.userData?.companySelect?.alertTokens.length && !(userService.appData?.userData?.companySelect?.alertTokensMotyEyalPoalimAsakim)
   } as tracer"
 >
 	<div
@@ -313,7 +311,7 @@
 									class="fa fa-times fa-fw"
 							></i>
 						</ng-container>
-						<ng-container *ngIf="userService.appData.userData.companySelect.alertTokensMotyEyalPoalimAsakim">
+						<ng-container *ngIf="userService.appData.userData.companySelect.alertTokensMotyEyalPoalimAsakim && userService.appData.userData.companySelect.alertTokensOthers.length">
 							<div class="content">
 								<div>
 									קיימת בעיה בטעינת הנתונים, אנו מטפלים בזה
@@ -650,7 +648,7 @@
           !this.userService.appData.userData.accountant
             ? '/cfl/billing'
             : '/accountants/companies/billing',
-          userService.appData.userData.companySelect.billingAccountId
+          userService.appData?.userData?.companySelect?.billingAccountId
         ]"
 					class="button-dark"
 					queryParamsHandling="preserve"
@@ -684,7 +682,7 @@
             !this.userService.appData.userData.accountant
               ? '/cfl/billing'
               : '/accountants/companies/billing',
-            userService.appData.userData.companySelect.billingAccountId
+            userService.appData?.userData?.companySelect?.billingAccountId
           ]"
 						class="button-link"
 						queryParamsHandling="preserve"
@@ -704,7 +702,7 @@
             !this.userService.appData.userData.accountant
               ? '/cfl/billing'
               : '/accountants/companies/billing',
-            userService.appData.userData.companySelect.billingAccountId
+            userService.appData?.userData?.companySelect?.billingAccountId
           ]"
 						class="button-link"
 						queryParamsHandling="preserve"
@@ -813,8 +811,6 @@
 	          [draggable]="false"
 	          [modal]="true"
 	          (onHide)="submitAlert = false"
-	          position="top"
-	          [style]="{'margin-top':'198px'}"
 	          [resizable]="false"
 	          [visible]="(companiesWithoutAgreement)"
 	          appendTo="body"
@@ -950,32 +946,51 @@
 							</div>
 							<div>
 								<ng-container *ngIf="row.contactSelected">
+									<p *ngIf="!row.contactSelected.agreementConfirmationDate && !row.contactSelected.agreementSendDate"
+									   class="SENT_SIGNED">
+										-
+									</p>
 									<p *ngIf="row.contactSelected.agreementConfirmationDate"
-									   class="agreementConfirmationDate">
-										<mat-icon
-												[svgIcon]="'tick'"
-												style="height: 100%;color: #ffffff;width: 14px;margin-left: 6px;">
-										</mat-icon>
+									   class="SENT_SIGNED">
+										<img
+												[src]="'/assets/images/SIGNED.png'"
+												style="margin-left: 6px"
+										/>
+										<span
+												class="text-ellipsis SIGNED">
 										נחתם
-										{{withinTwentyFourHours(row.contactSelected.agreementConfirmationDate) <= 24 ? (
-											'לפני '
-											+
-											withinTwentyFourHours(row.contactSelected.agreementConfirmationDate) +
-											' שעות'
-									) : 'ב-' + (row.contactSelected.agreementConfirmationDate | date: 'dd/MM/yy')}}
+									</span>
+										<small>
+											{{withinTwentyFourHours(row.contactSelected.agreementConfirmationDate) <= 24 ? (
+												'לפני '
+												+
+												withinTwentyFourHoursMin(row.contactSelected.agreementConfirmationDate) +
+
+												(withinTwentyFourHours(row.contactSelected.agreementConfirmationDate) >= 1 ? ' שעות' :
+														' דקות')
+										) : '' + (row.contactSelected.agreementConfirmationDate | date: 'dd/MM/yy')}}
+										</small>
 									</p>
 									<p *ngIf="row.contactSelected.agreementSendDate && !row.contactSelected.agreementConfirmationDate"
-									   class="agreementSendDate">
-										<i class="fas fa-history" style="margin-left: 4px"></i>
-										נשלח לאחרונה
-										{{withinTwentyFourHours(row.contactSelected.agreementSendDate) <= 24 ? (
-											'לפני '
-											+
-											withinTwentyFourHoursMin(row.contactSelected.agreementSendDate) +
+									   class="SENT_SIGNED">
+										<img
+												[src]="'/assets/images/SENT.png'"
+												style="margin-left: 6px"
+										/>
+										<span
+												class="text-ellipsis SENT">
+										נשלח
+									</span>
+										<small>
+											{{withinTwentyFourHours(row.contactSelected.agreementSendDate) <= 24 ? (
+												'לפני '
+												+
+												withinTwentyFourHoursMin(row.contactSelected.agreementSendDate) +
 
-											(withinTwentyFourHours(row.contactSelected.agreementSendDate) >= 1 ? ' שעות' :
-													' דקות')
-									) : 'ב-' + (row.contactSelected.agreementSendDate | date: 'dd/MM/yy')}}
+												(withinTwentyFourHours(row.contactSelected.agreementSendDate) >= 1 ? ' שעות' :
+														' דקות')
+										) : '' + (row.contactSelected.agreementSendDate | date: 'dd/MM/yy')}}
+										</small>
 									</p>
 								</ng-container>
 							</div>
@@ -1032,6 +1047,15 @@
 				[formGroup]="userService.appData.addContactModal.addContactForm"
 				novalidate
 		>
+			<h3 *ngIf="userService.appData.addContactModal.isBeforeAddProduct" style="
+    padding-right: 11px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+">
+				אנא הגדירו מורשה חתימה לחברה זו
+				<br>
+				על מנת להמשיך בתהליך הוספת המוצר
+			</h3>
 			<div class="rows-advancedSearchParams">
 				<div class="row text-ellipsis">
 					<input
@@ -1269,7 +1293,7 @@
 					</div>
 				</div>
 
-				<div class="joinApp">
+				<div class="joinApp" *ngIf="!userService.appData.addContactModal.isBeforeAddProduct">
 					<p-checkbox (onChange)="
               joinAppContact(userService.appData.addContactModal.addContactForm)
             "
@@ -1304,21 +1328,48 @@
 		<p-footer>
 			<button
 					(click)="userService.appData.addContactModal = false"
-					class="button-link"
-			>
+					class="button-link">
 				{{ 'actions.cancellation' | translate }}
 			</button>
 			<button
 					(click)="addContactSave()"
-					[disabled]="userService.appData.addContactModal.addContactForm.invalid"
+					[disabled]="userService.appData.addContactModal.addContactForm.invalid || (userService.appData.addContactModal.disabledFalseAuthorizedSigner && !userService.appData.addContactModal.addContactForm.get('authorizedSigner').value)"
 					class="button-dark"
-					style="width: 171px; height: 35px !important; padding: 0"
-			>
-				הוספה
+					style="width: 171px; height: 35px !important; padding: 0">
+				{{userService.appData.addContactModal.isBeforeAddProduct ? 'אישור' : 'הוספה'}}
 			</button>
 		</p-footer>
 	</p-dialog>
 </ng-container>
+
+
+<ng-container *ngIf="addContactModalError">
+	<p-dialog (visibleChange)="addContactModalError = false"
+			  [modal]="true"
+			  [resizable]="false"
+			  [visible]="(addContactModalError)"
+			  appendTo="body"
+			  styleClass="addContactModalError">
+		<p-header>
+			הוספת חברה
+		</p-header>
+
+		<p style="padding: 17px 0px 6px 10px;font-size: 20px;font-weight: 700;">
+	קיימת בעיה בתהליך הוספת חברה
+		</p>
+
+		<p-footer style="justify-content: center">
+			<button
+					(click)="sharedComponent.showOpenTicket()"
+					class="button-dark"
+					style="width: 170px; height: 40px !important; padding: 0"
+			>
+				פתחו לנו קריאת שירות
+			</button>
+		</p-footer>
+	</p-dialog>
+</ng-container>
+
 
 <ng-container *ngIf="joinAppContactModal">
 	<p-dialog (visibleChange)=" joinAppContactModalClose(contactSaved.contact)"
@@ -1508,8 +1559,6 @@
 	          [draggable]="false"
 	          [modal]="true"
 	          (onHide)="userService.appData.submitAlertContact = false"
-	          position="top"
-	          [style]="{'margin-top':'198px'}"
 	          [resizable]="false"
 	          [visible]="(userService.appData.submitAlertContact)"
 	          appendTo="body"
@@ -1530,3 +1579,35 @@
 		</div>
 	</p-dialog>
 </ng-container>
+
+
+
+
+<ng-container *ngIf="userService.appData.userData && userService.appData.userData?.companySelect?.alertTokensMotyEyalPoalimAsakim">
+	<p-dialog (visibleChange)="closePoalimAlert()"
+			  [closeOnEscape]="true"
+			  [draggable]="false"
+			  [modal]="true"
+			  (onHide)="closePoalimAlert()"
+			  [resizable]="false"
+			  [visible]="(userService.appData.userData.companySelect.alertTokensMotyEyalPoalimAsakim)"
+			  appendTo="body"
+			  styleClass="alertTokensMotyEyalPoalimAsakim">
+		<div>
+			<p style="text-align: center; margin-top: 15px; margin-bottom: 30px;
+			 font-family: 'Assistant';
+font-style: normal;
+font-weight: 400;
+font-size: 18px;
+line-height: 24px;
+text-align: center;
+color: #02225C;">
+				קיימת בעיה בטעינת הנתונים.
+				<br>
+				אנו מטפלים בנושא
+			</p>
+		</div>
+	</p-dialog>
+</ng-container>
+
+

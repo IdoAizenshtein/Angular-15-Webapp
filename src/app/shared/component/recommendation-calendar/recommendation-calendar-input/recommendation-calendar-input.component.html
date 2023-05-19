@@ -72,7 +72,7 @@
                                     <span class="fa fa-angle-left"></span>
                                 </button>
                                 <div class="p-datepicker-title">
-	                               
+
 <!--                                     <button (click)="switchToMonthView($event)" (keydown)="onContainerButtonKeydown($event)" -->
 	                                <!--                                             *ngIf="currentView === 'date'" [disabled]="switchViewButtonDisabled()" -->
 	                                <!--                                             class="p-datepicker-month p-link" type="button"> -->
@@ -89,9 +89,9 @@
 	                                <!--                                         <ng-container -->
 	                                <!-- 		                                        *ngTemplateOutlet="decadeTemplate; context: { $implicit: yearPickerValues }"></ng-container> -->
 	                                <!--                                     </span> -->
-	                                
-	                                
-	                                
+
+
+
 	                                    <span *ngIf="!monthNavigator" class="p-datepicker-month">{{
 		                                    config.translation.monthNames[currentMonth]
 		                                    }}</span>
@@ -124,8 +124,8 @@
         <span *ngIf="!yearNavigator" class="p-datepicker-year">{{
 	        currentYear
 	        }}</span>
-	                               
-	                               
+
+
                                 </div>
                                 <button
 		                                (click)="onNextButtonClick($event)"
@@ -466,7 +466,7 @@
 						[required]="true"
 						[scrollHeight]="'135px'"
 						[style]="{ width: '228px' }"
-						
+						name="account"
 						formControlName="account"
 						optionLabel="accountNickname"
 						placeholder="{{ 'actions.account' | translate }}"
@@ -508,12 +508,12 @@
 				</p-dropdown>
 			</form>
 		</div>
-		
+
 		<app-recommendation-calendar-inline
 				#recCal
 				[presetData]="rcmndtnInput$ | async"
 		></app-recommendation-calendar-inline>
-		
+
 		<div class="buttons-row">
 			<a
 					(click)="toggleRecommendationView()"

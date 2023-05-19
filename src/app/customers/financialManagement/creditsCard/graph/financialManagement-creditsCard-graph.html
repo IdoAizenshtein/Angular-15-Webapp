@@ -5,7 +5,7 @@
       [cards]="userService.appData.userData.creditCards"
       (changedTrigger)="getCreditCardTazrimGraph(cardsDD)"></app-cards-select>
 
-    <app-ccard-dates></app-ccard-dates>
+    <app-ccard-dates (sendEvent)="sendEvent($event)"></app-ccard-dates>
 
     <div class="search">
       <input
@@ -24,7 +24,8 @@
 
     <ul class="tabs navTabs">
       <li
-        routerLink="../aggregate"
+              (click)="sharedComponent.mixPanelEvent('aggregate screen')"
+              routerLink="../aggregate"
         queryParamsHandling="preserve"
         routerLinkActive="active"
         [routerLinkActiveOptions]="{ exact: false }"
@@ -37,7 +38,8 @@
         {{ 'filters.consolidated' | translate }}
       </li>
       <li
-        routerLink="../details"
+              (click)="sharedComponent.mixPanelEvent('detailed screen')"
+              routerLink="../details"
         queryParamsHandling="preserve"
 
         routerLinkActive="active"
@@ -51,7 +53,8 @@
         {{ 'filters.detailed' | translate }}
       </li>
       <li
-        routerLink="../graph"
+              (click)="sharedComponent.mixPanelEvent('graph screen')"
+              routerLink="../graph"
         queryParamsHandling="preserve"
         routerLinkActive="active"
         [routerLinkActiveOptions]="{ exact: false }"
@@ -127,7 +130,7 @@
           {{ 'expressions.cardsDataOutdated1' | translate }}
         </div>
         <div class="separatorInsider"></div>
-        <div class="link" (click)="tooltipWithNavigation.toggle($event)">
+        <div class="link" (click)="sharedComponent.mixPanelEvent('detailed button'); tooltipWithNavigation.toggle($event)">
           {{ 'sumsTitles.forDetails' | translate }}
           <p-overlayPanel
             styleClass="tooltip-bottom tooltip-acc-deviation"

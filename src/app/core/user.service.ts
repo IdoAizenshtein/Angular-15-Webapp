@@ -1,5 +1,6 @@
 import {Injectable, OnDestroy, Optional} from '@angular/core';
-import {Subject} from 'rxjs';
+import {Subject, Subscription} from 'rxjs';
+import {ReCaptchaV3Service} from 'ng-recaptcha';
 
 export class UserServiceConfig {
     public appData: object = {};
@@ -8,20 +9,23 @@ export class UserServiceConfig {
 @Injectable()
 export class UserService implements OnDestroy {
     public appData: any = {
-        'overlay':[],
+        'overlay': [],
         'dir': 'rtl',
         'showModalVar': true,
-        'hideModalVar': false
+        'hideModalVar': false,
+        'hideCompanyName': false,
+        'reloadMessagesEvent': new Subject<any>()
     };
     public showModalVar: boolean = true;
     public hideModalVar: boolean = false;
+    private singleExecutionSubscription: Subscription;
 
     visibleChange(event: any) {
         if (event === false) {
             this.showModalVar = false;
             setTimeout(() => {
                 this.showModalVar = true;
-            }, 3500)
+            }, 3500);
         }
     }
 
@@ -29,10 +33,28 @@ export class UserService implements OnDestroy {
     public reqDataEvent: Subject<any> = new Subject<any>();
     public reloadEvent: Subject<any> = new Subject<any>();
 
-    constructor(@Optional() config: UserServiceConfig) {
+    constructor(@Optional() config: UserServiceConfig, private recaptchaV3Service: ReCaptchaV3Service) {
         if (config) {
             this.appData = config.appData;
         }
+    }
+
+    public executeAction(action: string): Promise<any> {
+        if (this.singleExecutionSubscription) {
+            this.singleExecutionSubscription.unsubscribe();
+        }
+        return new Promise((resolve, reject) => {
+            this.singleExecutionSubscription = this.recaptchaV3Service.execute(action.replace(/-/g, '_'))
+                .subscribe({
+                        next: (token) => {
+                            resolve(token);
+                        },
+                        error: (err) => {
+                            resolve(null);
+                        }
+                    }
+                );
+        });
     }
 
     public minOldestTransDateInSelectedAccounts(): number | null {
@@ -52,6 +74,27 @@ export class UserService implements OnDestroy {
         }, null);
     }
 
+    public minStartWorkDateInSelectedAccounts(byChecked?: any): number | null {
+        const checkedIds = this.appData.userData.accountSelect.filter((acc) => acc.checked);
+        if (
+            !this.appData ||
+            !this.appData.userData ||
+            !this.appData.userData.accountSelect ||
+            !this.appData.userData.accountSelect.length
+        ) {
+            return null;
+        }
+        if (byChecked && !checkedIds.length) {
+            return null;
+        }
+        return (byChecked ? checkedIds : this.appData.userData.accountSelect).reduce((accmltr, acc) => {
+            return Number.isFinite(acc.startWorkDate) &&
+            (accmltr === null || acc.startWorkDate < accmltr)
+                ? acc.startWorkDate
+                : accmltr;
+        }, null);
+    }
+
     public minBalanceLastUpdateDateInSelectedAccounts(): number | null {
         if (
             !this.appData ||
@@ -64,7 +107,7 @@ export class UserService implements OnDestroy {
 
         return Math.min(
             ...this.appData.userData.accountSelect.map(
-                (acc:any) => acc.balanceLastUpdatedDate
+                (acc: any) => acc.balanceLastUpdatedDate
             )
         );
     }
@@ -74,6 +117,15 @@ export class UserService implements OnDestroy {
             return Number.isFinite(cc.oldestCycleDate) &&
             (accmltr === null || cc.oldestCycleDate < accmltr)
                 ? cc.oldestCycleDate
+                : accmltr;
+        }, null);
+    }
+
+    public minStartWorkDateInSelectedCreditCards(cards:any): number | null {
+        return cards.reduce((accmltr, cc) => {
+            return Number.isFinite(cc.startWorkDate) &&
+            (accmltr === null || cc.startWorkDate < accmltr)
+                ? cc.startWorkDate
                 : accmltr;
         }, null);
     }
@@ -97,7 +149,6 @@ export class UserService implements OnDestroy {
                 result.push(...selectedInAcc);
             }
         });
-
         return result;
     }
 
@@ -154,6 +205,9 @@ export class UserService implements OnDestroy {
             this.reloadEvent.next(true);
             this.reloadEvent.unsubscribe();
         }
+        if (this.singleExecutionSubscription) {
+            this.singleExecutionSubscription.unsubscribe();
+        }
     }
 
     rebuildSelectedCompanyCreditCards(cardsData: Array<any>): void {
@@ -184,13 +238,48 @@ export class UserService implements OnDestroy {
                 }
                 return 1;
             });
-
         this.appData.userData.creditCards = accountsSorted
-            .map((acc:any) => {
+            .map((acc: any) => {
+                if (acc.currency) {
+                    const sign = this.appData.userData.currencyList.find(
+                        (curr) => curr.code === acc.currency
+                    );
+                    if (sign) {
+                        acc.sign = sign.sign;
+                        acc.currencyId = sign.id;
+                    } else {
+                        acc.sign = '';
+                        acc.currencyId = 99;
+                    }
+                } else {
+                    acc.sign = 'ש"ח';
+                    acc.currencyId = 1;
+                }
+
                 const matchCards = cardsData.filter((card) => {
                     if (card.companyAccountId === acc.companyAccountId) {
                         // card.check = true;
-                        card.currency = acc.currency;
+                        if (card.currencyId) {
+                            const sign = this.appData.userData.currencyList.find(
+                                (curr) => curr.id === card.currencyId
+                            );
+                            if (sign) {
+                                card.sign = sign.sign;
+                                card.currencyString = sign ? sign.sign : null;
+                                card.currency = sign.code;
+                            } else {
+                                card.sign = '';
+                                card.currencyString = null;
+                                card.currency = card.currencyId;
+                            }
+                        } else {
+                            card.sign = 'ש"ח';
+                            card.currency = 'ILS';
+                        }
+                        // a.currency =
+                        //     trnsAccA && trnsAccA.currency !== 'ILS'
+                        //         ? getCurrencySymbol(trnsAccA.currency, 'narrow')
+                        //         : '';
                         // const lastUpdateAt = card.balanceLastUpdatedDate ? new Date(card.balanceLastUpdatedDate) : null;
                         card.balanceOutdatedDays =
                             card.balanceLastUpdatedDate &&
@@ -204,6 +293,7 @@ export class UserService implements OnDestroy {
                     }
                 });
                 if (matchCards.length) {
+                    // console.log(matchCards)
                     matchCards.sort((a, b) => a.dateCreated - b.dateCreated);
                     return Object.assign(
                         {

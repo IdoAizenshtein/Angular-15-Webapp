@@ -1,103 +1,116 @@
 <div [formGroup]="form" class="inline-form">
-	<label style="font-weight: bolder">חפש:</label>
-	<p-dropdown
-			[options]="searchTypesDD"
-			
-			[style]="{ width: '20ch' }"
-			[formControl]="form.get('type')"
-			[dropdownIcon]="'p-dropdown-icon'"
-	>
-	</p-dropdown>
-	
-	<div class="search" [class.validation-error]="form.get('value').invalid">
-		<input
-				type="text"
-				placeholder="{{ 'filters.search' | translate }}"
-				autocomplete="off"
-				[formControl]="form.get('value')"
-		/>
-	</div>
+    <label style="font-weight: bolder">חפש:</label>
+    <p-dropdown
+            [dropdownIcon]="'p-dropdown-icon'"
+
+            [formControl]="form.get('type')"
+            [options]="searchTypesDD"
+            [style]="{ width: '20ch' }"
+    >
+    </p-dropdown>
+
+    <div [class.validation-error]="form.get('value').invalid" class="search">
+        <input
+                [formControl]="form.get('value')"
+                autocomplete="off"
+                placeholder="{{ 'filters.search' | translate }}"
+                type="text"
+        />
+    </div>
 </div>
 
 <!--<pre>{{form.value| json}}</pre>-->
 <!--<pre>{{usersAdmin| json}}</pre>-->
-<div class="user-on-behalf table-container" [formGroup]="form">
-	<div class="table-header">
-		<div>
-			<span>{{ 'שם משתמש' }}</span>
-		</div>
-		<div>{{ 'שם חברה' }}</div>
-		<div>{{ 'ח.פ.' }}</div>
-		<div>{{ "מס' חברות" }}</div>
-	</div>
-	<div
-			class="table-body scrollbar-dynamic"
-			[appScrollHeight]="360 + (paginator ? 0 : 46)"
-			[appendTo]="'parent'"
-	>
-		<ng-container *ngIf="adminService.usersToAdmin">
-			<ng-container
-					*ngIf="adminService.usersToAdmin | async as usersToAdmin; else loading"
-			>
-				<div
-						class="row"
-						*ngFor="
-            let r of usersToAdmin
-              | slice
-                : currentPage * entryLimit
-                : currentPage * entryLimit + entryLimit;
-            trackBy: recordTrack
-          "
-						(click)="
-            form.patchValue({
-              user: r.userId + '|' + r.companyHp + '|' + r.userName
-            })
-          "
-				>
-					<!--<div>{{r.userName}}</div>-->
-					<div>
-						<p-radioButton
-								name="users"
-								[value]="r.userId + '|' + r.companyHp + '|' + r.userName"
-								[label]="r.userName"
-								[inputId]="'row' + (r.userId + '|' + r.companyHp)"
-								[formControl]="form.get('user')"
-						></p-radioButton>
-						<mat-icon
-								*ngIf="!r.activation"
-								style="
-                height: auto;
-                width: 16px;
-                margin-right: 6px;
-                margin-top: 0;
-                padding: 0;
+<div [formGroup]="form" class="user-on-behalf table-container">
+    <div class="table-header">
+        <div>
+            <span>{{ 'שם משתמש' }}</span>
+        </div>
+        <div>{{ 'שם חברה' }}</div>
+        <div>{{ 'ח.פ.' }}</div>
+        <div>{{ "מס' חברות" }}</div>
+    </div>
+    <div
+            [appScrollHeight]="360 + (paginator ? 0 : 46)"
+            [appendTo]="'parent'"
+            class="table-body scrollbar-dynamic"
+    >
+        <ng-container *ngIf="adminService.usersToAdmin">
+            <ng-container
+                    *ngIf="adminService.usersToAdmin | async as usersToAdmin; else loading"
+            >
+                <ng-container *ngIf="!(usersToAdmin.length === 1 && (usersToAdmin[0].activation=== null &&usersToAdmin[0].companyHp===null&&usersToAdmin[0].companyName===null&&usersToAdmin[0].hasPriv===false&&usersToAdmin[0].totalCompanies===null&&usersToAdmin[0].userId===null&&usersToAdmin[0].userName===null))">
+                    <div
+                            (click)="
+                form.patchValue({
+                  user: r.userId + '|' + r.companyHp + '|' + r.userName
+                })
               "
-								[svgIcon]="'activation_false'"
-						></mat-icon>
-					</div>
-					<div>{{ r.companyName }}</div>
-					<div>{{ r.companyHp }}</div>
-					<div>
-						<span>{{ r.totalCompanies }}</span>
-					</div>
-				</div>
-			</ng-container>
-		</ng-container>
-	</div>
+                            *ngFor="
+                let r of usersToAdmin
+                  | slice
+                    : currentPage * entryLimit
+                    : currentPage * entryLimit + entryLimit;
+                trackBy: recordTrack
+              "
+                            class="row"
+                    >
+                        <!--<div>{{r.userName}}</div>-->
+                        <div>
+                            <p-radioButton
+                                    [formControl]="form.get('user')"
+                                    [inputId]="'row' + (r.userId + '|' + r.companyHp)"
+                                    [label]="r.userName"
+                                    [value]="r.userId + '|' + r.companyHp + '|' + r.userName"
+                                    name="users"
+                            ></p-radioButton>
+                            <mat-icon
+                                    *ngIf="!r.activation"
+                                    [svgIcon]="'activation_false'"
+                                    style="
+                    height: auto;
+                    width: 16px;
+                    margin-right: 6px;
+                    margin-top: 0;
+                    padding: 0;
+                  "
+                            ></mat-icon>
+                        </div>
+                        <div>{{ r.companyName }}</div>
+                        <div>{{ r.companyHp }}</div>
+                        <div>
+                            <span>{{ r.totalCompanies }}</span>
+                        </div>
+                    </div>
+                </ng-container>
+            </ng-container>
+        </ng-container>
+    </div>
 </div>
 
+
 <ng-container *ngIf="adminService.usersToAdmin | async as usersToAdmin">
-	<app-paginator
-			[rows]="entryLimit"
-			[alwaysShow]="false"
-			#paginator
-			[totalRecords]="usersToAdmin.length"
-			(onPageChange)="paginate($event)"
-	>
-	</app-paginator>
+    <ng-container *ngIf="usersToAdmin.length === 1 && (usersToAdmin[0].activation=== null &&usersToAdmin[0].companyHp===null&&usersToAdmin[0].companyName===null&&usersToAdmin[0].hasPriv===false&&usersToAdmin[0].totalCompanies===null&&usersToAdmin[0].userId===null&&usersToAdmin[0].userName===null)">
+<p style="
+    text-align: center;
+    color: red;
+    font-weight: 600;
+    padding: 20px 0px;
+">
+    אין קריאת שירות פתוחה לחברה הנ”ל
+</p>
+    </ng-container>
+    <app-paginator
+            #paginator
+            (onPageChange)="paginate($event)"
+            [alwaysShow]="false"
+            [rows]="entryLimit"
+            [totalRecords]="usersToAdmin.length"
+    >
+    </app-paginator>
 </ng-container>
 <ng-template #loading>
-	<div class="loader">
-		<div class="circle"></div>
-	</div>
+    <div class="loader">
+        <div class="circle"></div>
+    </div>
 </ng-template>

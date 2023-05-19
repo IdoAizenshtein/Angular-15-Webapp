@@ -79,7 +79,6 @@ export abstract class Preset implements Range {
         // } else {
         //     rslt.toDate = this.till ? this.till.toDate() : null;
         // }
-
         return rslt;
     }
 }
@@ -176,6 +175,28 @@ export class NDaysFromNow extends Preset {
         }
     }
 }
+
+export class NFromStartWorkDate extends Preset {
+    override from: RangePoint;
+    override till: RangePoint;
+
+    constructor(readonly dateFrom: any) {
+        super('all');
+        const now = new Date();
+        this.till = new RangePoint(
+            now.getDate(),
+            now.getMonth(),
+            now.getFullYear()
+        );
+        this.from = new RangePoint(
+            dateFrom.getDate(),
+            dateFrom.getMonth(),
+            dateFrom.getFullYear()
+        );
+        this.default = true;
+    }
+}
+
 
 export class NMonthsFromNow extends Preset {
     override from: RangePoint;

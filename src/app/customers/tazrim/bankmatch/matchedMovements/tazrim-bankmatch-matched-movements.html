@@ -7,7 +7,7 @@
       [scrollHeight]="'135px'"
       required
       (onFocus)="clearFilter(dd)"
-      (onChange)="startChild()"
+      (onChange)="mixPanelAcc(); startChild()"
       optionLabel="accountNickname"
       [style]="{ width: '170px' }"
       [dropdownIcon]="'p-dropdown-icon'"
@@ -15,14 +15,12 @@
     >
       <ng-template let-item pTemplate="selectedItem">
         <div class="p-helper-clearfix" style="display: flex">
-          <img
-         fill [ngSrc]="
+          <img [src]="
               (item.companyAccountId | asBankAccount).bankId
                 | toIconSrc: 'bank'
             "
             [alt]="item.accountNickname"
             style="
-            height: auto; width: auto; position: relative;
               align-self: center;
               flex: 0 0 auto;
               -ms-flex: 0 0 auto;
@@ -76,23 +74,23 @@
       </ng-template>
     </p-dropdown>
 
-    <app-bankmatch-dates></app-bankmatch-dates>
+    <app-bankmatch-dates (sendEvent)="sendEvent($event)"></app-bankmatch-dates>
     <!--<app-acc-dates [option]="'days'" (changedTrigger)="filterDates($event)"></app-acc-dates>-->
 
     <ul class="tabs">
       <li
-        (click)="filterTypes('false')"
+        (click)="sharedComponent.mixPanelEvent('filter system'); filterTypes('false')"
         [class.active]="filterTypesVal === 'false'"
       >
         מערכת
       </li>
       <li
-        (click)="filterTypes('true')"
+        (click)="sharedComponent.mixPanelEvent('filter manual'); filterTypes('true')"
         [class.active]="filterTypesVal === 'true'"
       >
         ידני
       </li>
-      <li (click)="filterTypes(null)" [class.active]="filterTypesVal === null">
+      <li (click)="sharedComponent.mixPanelEvent('filter all'); filterTypes(null)" [class.active]="filterTypesVal === null">
         הכל
       </li>
     </ul>
@@ -151,7 +149,7 @@
     <div>
       <div>{{ 'titles.description' | translate }}</div>
       <div>{{ 'titles.typeOfPayment' | translate }}</div>
-      <div (click)="sortPipeFilter(1)">
+      <div (click)="sharedComponent.mixPanelEvent('date order'); sortPipeFilter(1)">
         תאריך
         <img
           style="height: auto; width: auto; position: relative;margin: 0 3px -3px 0" fill [ngSrc]="
@@ -349,7 +347,7 @@
         <div>
           <button
             class="button-dark"
-            (click)="
+            (click)="sharedComponent.mixPanelEvent('unmatch');
               openPopBankMatchDelete(item.bankMatchTransInner.bankTransId)
             "
             *ngIf="item.allowUnmatch"

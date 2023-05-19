@@ -20,7 +20,7 @@
 					[appMaxInputLength]="30"
 			/>
 		</mat-form-field>
-		
+
 		<!--<label for="firstName">{{'signup.personalInfoStep.firstName'| translate}}</label>-->
 		<!--<div-->
 		<!--[ngClass]="{'Form__group': true, 'Form__group&#45;&#45;err': (!personal.get('firstName').valid && personal.get('firstName').dirty)}">-->
@@ -43,7 +43,7 @@
 					[appMaxInputLength]="30"
 			/>
 		</mat-form-field>
-		
+
 		<!--<label for="lastName">{{'signup.personalInfoStep.lastName'| translate}}</label>-->
 		<!--<div-->
 		<!--[ngClass]="{'Form__group': true, 'Form__group&#45;&#45;err': (!personal.get('lastName').valid && personal.get('lastName').dirty)}">-->
@@ -87,7 +87,7 @@
 				{{ 'מספר טלפון לא תקין' }}
 			</mat-error>
 		</mat-form-field>
-		
+
 		<!--<label for="cell">{{'signup.personalInfoStep.cell'| translate}}</label>-->
 		<!--<div-->
 		<!--[ngClass]="{'Form__group': true, 'Form__group&#45;&#45;err': (!personal.get('cell').valid && personal.get('cell').dirty)}">-->
@@ -127,7 +127,7 @@
 				}}<a href="/">{{ 'מסך כניסה' }}</a>
 			</mat-error>
 		</mat-form-field>
-		
+
 		<!--<label for="mail">{{'signup.personalInfoStep.email'| translate}}</label>-->
 		<!--<div-->
 		<!--[ngClass]="{'Form__group': true, 'Form__group&#45;&#45;err': ((personal.get('mail').invalid && personal.get('mail').dirty) || personal.hasError('emailExists'))}">-->
@@ -142,7 +142,7 @@
 		<!--</div>-->
 		<!--</div>-->
 	</div>
-	
+
 	<div
 			class="Form__feedback Form__feedback--err"
 			style="margin-top: -5px; margin-bottom: 5px"
@@ -154,7 +154,7 @@
 	>
 		{{ 'validation.passwordEqualsUsername' | translate }}
 	</div>
-	
+
 	<div class="Signup__control Signup__control--status">
 		<mat-form-field hideRequiredMarker="true">
 			<mat-label>{{ 'formLogin.password' | translate }}</mat-label>
@@ -217,7 +217,7 @@
 			></i>
 			{{ 'validation.oneLetter' | translate }}
 		</div>
-		
+
 		<!--<label for="password">{{'formLogin.password' | translate}}</label>-->
 		<!--<div class="Form__group Form__group&#45;&#45;icon">-->
 		<!--<i (click)="passwordHide = !passwordHide"-->
@@ -226,7 +226,7 @@
 		<!--name="password"-->
 		<!--(keypress)="handleKeyPress($event)" (keydown)="handleKeyDown($event)"-->
 		<!--autocomplete="new-password">-->
-		
+
 		<!--<div class="Form__feedback Form__feedback&#45;&#45;warning Form__feedback&#45;&#45;warning&#45;&#45;block"-->
 		<!--*ngIf="isHebrew && pwdInp.ownerDocument.activeElement === pwdInp">-->
 		<!--<i class="fa fa-exclamation-triangle"></i> {{'validation.isHebrew' | translate}}-->
@@ -248,7 +248,7 @@
 		<!--</div>-->
 		<!--</div>-->
 	</div>
-	
+
 	<div class="Signup__control" style="text-align: start">
 		<mat-checkbox formControlName="agreementConfirm" color="primary"
 		>{{ 'קראתי ואני מסכים ל' }}
@@ -277,7 +277,7 @@
 		<!--<label>{{'קראתי ואני מסכים ל'}}<a>{{'תנאי שימוש ומדיניות הפרטיות'}}</a>-->
 		<!--</label>-->
 		<!--</div>-->
-		
+
 		<!--<mat-checkbox formControlName="marketingMessagesAgreed" color="primary">{{'הנני מסכים/ה לקבל דיוור שיווקי לתיבת המייל'}}</mat-checkbox>-->
 		<!--<div style="display: flex; display: -ms-flexbox; align-items: baseline;">-->
 		<!--<p-checkbox checkboxIcon="fa fa-check" [formControl]="personal.get('marketingMessagesAgreed')" [binary]="true"-->

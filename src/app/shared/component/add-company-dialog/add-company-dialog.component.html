@@ -1,0 +1,108 @@
+<form
+        id="addCompany"
+        [formGroup]="addCompanyForm"
+        (ngSubmit)="submitAddCompany()"
+>
+    <div class="body">
+        <div>
+            <label
+                    [class.error]="
+          addCompanyForm.get('sourceProgram').invalid &&
+          addCompanyForm.get('sourceProgram').dirty
+        ">
+                <i>*</i>
+                <p-dropdown #sourceProgram
+                            [options]="sourcePrograms"
+                            [formControl]="addCompanyForm.get('sourceProgram')"
+                            optionLabel="name"
+                            optionValue="enum"
+                            [style.flex]="'2'"
+                            appendTo="body"
+                            [placeholder]="'שם התוכנה'"
+                            (onChange)="updateApiTokenValidation()"
+                >
+                </p-dropdown>
+            </label>
+            <label
+                    [class.error]="
+          addCompanyForm.get('companyName').invalid &&
+          addCompanyForm.get('companyName').dirty
+        "
+            >
+                <i>*</i>
+                <input
+                        type="text"
+                        [formControl]="addCompanyForm.get('companyName')"
+                        [placeholder]="'שם החברה'"
+                        style="flex: 2;"
+                />
+            </label>
+            <label [class.error]="
+          addCompanyForm.get('companyHp').invalid &&
+          addCompanyForm.get('companyHp').dirty
+        "
+            >
+                <i>*</i>
+<!--                margin-right: -3px;-->
+<!--                margin-top: -2px;-->
+<!--                position: absolute;">*</i>-->
+                <input
+                        type="text"
+                        [formControl]="addCompanyForm.get('companyHp')"
+                        name="companyHp"
+                        [placeholder]="'מספר ח.פ'"
+                        style="flex: 2;"
+                />
+                <div class="invalidAlert"
+                     [style.visibility]="!!addCompanyForm.get('companyHp').errors?.idExists ? 'visible' : 'hidden' "
+                     style="width: 100%; margin: 0 5px -1em; color: #df0000;">
+                    ח.פ קיים במערכת
+                </div>
+            </label>
+            <label
+                    [class.error]="
+          addCompanyForm.get('esderMaam').invalid &&
+          addCompanyForm.get('esderMaam').dirty
+        "
+            >
+                <i style="visibility: hidden">*</i>
+                <p-dropdown
+                        [options]="esderMaams"
+                        [formControl]="addCompanyForm.get('esderMaam')"
+                        optionLabel="name"
+                        optionValue="enum"
+                        [style.flex]="'2'"
+                        appendTo="body"
+                        [placeholder]="'דיווח מע”מ'"
+                ></p-dropdown>
+            </label>
+            <label
+                    [class.error]="
+          addCompanyForm.get('apiToken').invalid &&
+          addCompanyForm.get('apiToken').dirty"
+                   [style.visibility]="sourceProgram.value === '777' ? 'visible' : 'hidden'"
+            >
+                <i>*</i>
+                <input
+                       type="text"
+                       [formControl]="addCompanyForm.get('apiToken')"
+                       [placeholder]="'API Token'"
+                       style="flex: 2;"
+                />
+            </label>
+        </div>
+    </div>
+    <div class="footer">
+        <button
+                class="button-link"
+                type="button"
+                *ngIf="dialog"
+                (click)="dialog.close($event)"
+        >
+            {{ 'actions.cancellation' | translate }}
+        </button>
+        <button class="button-dark" [disabled]="addCompanyForm.invalid" type="submit">
+            {{ 'expressions.sending' | translate }}
+        </button>
+    </div>
+</form>

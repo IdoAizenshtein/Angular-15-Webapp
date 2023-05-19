@@ -2,6 +2,7 @@
     <div class="filterRow">
         <ul class="tabs navTabs rightSide">
             <li
+                    (click)="sharedComponent.mixPanelEvent('income checks')"
                     [routerLinkActiveOptions]="{ exact: false }"
                     [title]="'filters.inChecks' | translate"
                     id="navToAggregateView"
@@ -13,6 +14,7 @@
                 {{ 'filters.inChecks' | translate }}
             </li>
             <li
+                    (click)="sharedComponent.mixPanelEvent('outcome checks')"
                     [routerLinkActiveOptions]="{ exact: false }"
                     [title]="'filters.outChecks' | translate"
                     id="navToDetailsView"
@@ -26,11 +28,11 @@
         </ul>
         <app-acc-select
             #accountSelector
-            (changedTrigger)="changeAcc($event)"
+            (changedTrigger)="mixPanelAcc(); changeAcc($event)"
             [accounts]="userService.appData.userData.accounts"
         ></app-acc-select>
 
-        <app-checks-dates></app-checks-dates>
+        <app-checks-dates (sendEvent)="sendEvent($event)"></app-checks-dates>
         <!--<app-acc-dates [option]="'monthChecks'" (changedTrigger)="filterDates($event)"></app-acc-dates>-->
 
         <div class="search">
@@ -79,7 +81,7 @@
             id="sumsFilters"
     >
         <div
-                (click)="
+                (click)="sharedComponent.mixPanelEvent('not paid screen');
         queryStatus = router.url.includes('in-checks')
           ? 'not_paid'
           : 'mechake_lehafkada';
@@ -256,7 +258,7 @@
             &nbsp;
         </div>
         <div
-                (click)="queryStatus = 'nimhak_aliadei_user'; filtersAll()"
+                (click)="sharedComponent.mixPanelEvent('deleted by user screen'); queryStatus = 'nimhak_aliadei_user'; filtersAll()"
                 *ngIf="statusTotals?.nimhak_aliadei_user"
                 [class.active]="queryStatus === 'nimhak_aliadei_user'"
                 class="clickable"
@@ -343,7 +345,7 @@
                 {{ 'filters.accounts' | translate }}
             </div>
             <div class="separatorInsider"></div>
-            <div (click)="tooltipAccDeviation.toggle($event)" class="link">
+            <div (click)="sharedComponent.mixPanelEvent('details button'); tooltipAccDeviation.toggle($event)" class="link">
                 {{ 'sumsTitles.forDetails' | translate }}
                 <p-overlayPanel
                     #tooltipAccDeviation
@@ -407,14 +409,14 @@
 
         <div class="exports">
             <button
-                    (click)="printTransactions()"
+                    (click)="sharedComponent.mixPanelEvent('print'); printTransactions()"
                     [matTooltip]="'appWalk.customers.report.printBtn' | translate"
                     matTooltipPosition="above"
             >
                 <img height="21" ngSrc="/assets/images/to-printer.png" width="24"/>
             </button>
             <button
-                    (click)="reportMailSubmitterToggle = true"
+                    (click)="sharedComponent.mixPanelEvent('mail'); reportMailSubmitterToggle = true"
                     [matTooltip]="'appWalk.customers.report.mailBtn' | translate"
                     matTooltipPosition="above"
             >
@@ -425,14 +427,14 @@
                 ></app-report-mail-scheduler>
             </button>
             <button
-                    (click)="exportTransactions('PDF')"
+                    (click)="sharedComponent.mixPanelEvent('pdf'); exportTransactions('PDF')"
                     [matTooltip]="'appWalk.customers.report.pdfBtn' | translate"
                     matTooltipPosition="above"
             >
                 <img height="21" ngSrc="/assets/images/to-pdf.png" width="24"/>
             </button>
             <button
-                    (click)="exportTransactions('EXCEL')"
+                    (click)="sharedComponent.mixPanelEvent('excel'); exportTransactions('EXCEL')"
                     [matTooltip]="'appWalk.customers.report.excelBtn' | translate"
                     matTooltipPosition="above"
             >

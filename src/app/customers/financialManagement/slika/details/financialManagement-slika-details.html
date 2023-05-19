@@ -4,8 +4,7 @@
       [solek]="userService.appData.userData.slika"
       (changed)="getSlikaDetails()"
     ></app-solek-select>
-
-    <app-clragencies-dates></app-clragencies-dates>
+    <app-clragencies-dates (sendEvent)="sendEvent($event)"></app-clragencies-dates>
     <!--<app-solek-dates [option]="'monthCredit'" (onChange)="filterDates($event)"></app-solek-dates>-->
 
     <div class="search">
@@ -19,7 +18,8 @@
     </div>
     <ul class="tabs navTabs">
       <li
-        routerLink="../aggregate"
+              (click)="sharedComponent.mixPanelEvent('aggregate screen')"
+              routerLink="../aggregate"
         queryParamsHandling="preserve"
         routerLinkActive="active"
         [routerLinkActiveOptions]="{ exact: false }"
@@ -32,7 +32,8 @@
         {{ 'filters.consolidated' | translate }}
       </li>
       <li
-        routerLink="../details"
+              (click)="sharedComponent.mixPanelEvent('detailed screen')"
+              routerLink="../details"
         queryParamsHandling="preserve"
         routerLinkActive="active"
         [routerLinkActiveOptions]="{ exact: false }"
@@ -45,7 +46,8 @@
         {{ 'filters.detailed' | translate }}
       </li>
       <li
-        routerLink="../graph"
+              (click)="sharedComponent.mixPanelEvent('graph screen')"
+              routerLink="../graph"
         queryParamsHandling="preserve"
         routerLinkActive="active"
         [routerLinkActiveOptions]="{ exact: false }"
@@ -211,7 +213,7 @@
       <div class="exports" style="flex-flow: row wrap; width: 160px">
         <button
           style="flex: 1"
-          (click)="printTransactions()"
+          (click)="sharedComponent.mixPanelEvent('print'); printTransactions()"
           [matTooltip]="'appWalk.customers.report.printBtn' | translate"
           matTooltipPosition="above"
         >
@@ -219,7 +221,7 @@
         </button>
         <button
           style="flex: 1"
-          (click)="reportMailSubmitterToggle = true"
+          (click)="sharedComponent.mixPanelEvent('mail'); reportMailSubmitterToggle = true"
           [matTooltip]="'appWalk.customers.report.mailBtn' | translate"
           matTooltipPosition="above"
         >
@@ -231,7 +233,7 @@
         </button>
         <button
           style="flex: 1"
-          (click)="exportTransactions('PDF')"
+          (click)="sharedComponent.mixPanelEvent('pdf'); exportTransactions('PDF')"
           [matTooltip]="'appWalk.customers.report.pdfBtn' | translate"
           matTooltipPosition="above"
         >
@@ -239,7 +241,7 @@
         </button>
         <button
           style="flex: 1"
-          (click)="exportTransactions('EXCEL')"
+          (click)="sharedComponent.mixPanelEvent('excel'); exportTransactions('EXCEL')"
           [matTooltip]="'appWalk.customers.report.excelBtn' | translate"
           matTooltipPosition="above"
         >
@@ -419,7 +421,7 @@
                   style="height: auto; width: auto; position: relative;align-self: center; flex: 0 0 auto; margin: 0 0 0 4px" fill [ngSrc]="itemChild.bankId | toIconSrc: 'bank'"
                   *ngIf="itemChild?.bankId"
                   [alt]="itemChild?.accountNickname"
-              
+
                 />
                 <p
                   class="text-ellipsis"

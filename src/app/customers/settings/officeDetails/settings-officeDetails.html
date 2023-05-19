@@ -96,6 +96,8 @@
                 placeholder="בחר עיר"
                 [options]="sharedService.cities$ | async"
                 formControlName="officeCity"
+                name="officeCity"
+
                 [scrollHeight]="'135px'"
                 (onFocus)="clearFilter(dd)"
                 [dropdownIcon]="'p-dropdown-icon'"

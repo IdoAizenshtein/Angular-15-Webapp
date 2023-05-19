@@ -17,6 +17,7 @@
 					'formFixedMovement.field.' + fld.name | translate
 					}}</label>
 				<p-dropdown
+						[name]="fld.name"
 						[options]="userService.appData.userData.accounts"
 						[formControlName]="fld.name"
 						dataKey="companyAccountId"
@@ -60,7 +61,7 @@
 				</p-dropdown>
 				<!--<pre>{{form.get(fld.name).value| json}}</pre>-->
 			</ng-container>
-			
+
 			<ng-container *ngSwitchCase="'transTypeId'">
 				<ng-container *ngIf="fld && fld.name">
 					<label
@@ -117,7 +118,7 @@
 					</ng-template>
 				</ng-container>
 			</ng-container>
-			
+
 			<ng-container *ngSwitchCase="'paymentDesc'">
 				<label
 						[for]="fld.name || 'paymentDesc'"
@@ -125,6 +126,7 @@
 					'formFixedMovement.field.' + fld.name | translate
 					}}</label>
 				<p-dropdown
+						[name]="fld.name"
 						[options]="restCommonService.paymentTypesTranslateSelectable$ | async"
 						[formControlName]="fld.name"
 						[inputId]="fld.name"
@@ -139,12 +141,13 @@
 				<!--                  [placeholder]="('actions.select'| translate) + '...'">-->
 				<!--      </p-dropdown>-->
 			</ng-container>
-			
+
 			<ng-container *ngSwitchCase="'cash'">
 				<label
 						[for]="fld.name || 'cash'"
 				>שבוע עבודה</label>
 				<p-dropdown
+						[name]="fld.name"
 						[dropdownIcon]="'p-dropdown-icon'"
 						[options]="fld.options"
 						[formControlName]="fld.name"
@@ -154,7 +157,7 @@
 				>
 				</p-dropdown>
 			</ng-container>
-			
+
 			<ng-container *ngSwitchCase="'transFrequencyName'">
 				<label
 						[for]="fld.name || 'transFrequencyName'"
@@ -162,6 +165,7 @@
 					'formFixedMovement.field.' + fld.name | translate
 					}}</label>
 				<p-dropdown
+						[name]="fld.name"
 						[options]="fld.options"
 						[formControlName]="fld.name"
 						[inputId]="fld.name"
@@ -171,7 +175,7 @@
 				</p-dropdown>
 				<!--<pre>{{form.get(fld.name).value}}</pre>-->
 			</ng-container>
-			
+
 			<ng-container *ngSwitchCase="'transDate'">
 				<label
 						[for]="fld.name || 'transDate'"
@@ -183,6 +187,7 @@
 					}}</label>
 				<p-calendar
 						[formControlName]="fld.name"
+						[name]="fld.name"
 						[inputId]="fld.name"
 						[inputStyle]="{ 'max-width': '121px' }"
 						[locale]="'langCalendar' | translate"
@@ -194,7 +199,7 @@
 				></p-calendar>
 				<!--<pre>{{form.get(fld.name).value}}</pre>-->
 			</ng-container>
-			
+
 			<ng-container *ngSwitchCase="'autoUpdateTypeName'">
 				<label
 						[for]="fld.name || 'autoUpdateTypeName'"
@@ -216,7 +221,7 @@
 				</div>
 				<!--<pre>{{form.get(fld.name).value| json}}</pre>-->
 			</ng-container>
-			
+
 			<ng-container *ngSwitchCase="'endDate'">
 				<label
 						[for]="fld.name || 'endDate'"
@@ -263,6 +268,8 @@
 								<ng-container *ngSwitchCase="'on'">
 									&nbsp;<p-calendar
 										formControlName="endDateOn"
+										name="endDateOn"
+
 										[inputId]="'endDate-' + opt.value"
 										[inputStyle]="{ 'max-width': '121px' }"
 										[required]="form.get(fld.name).value === opt.value"
@@ -280,7 +287,7 @@
 				</div>
 				<!--<pre>{{form.get(fld.name).value| json}}</pre>-->
 			</ng-container>
-			
+
 			<ng-container *ngSwitchCase="'mutavArray'">
 				<label
 						[for]="fld.name || 'mutavArray'"
@@ -290,6 +297,8 @@
 				<app-beneficiary-multi-select
 						[inputId]="fld.name"
 						formControlName="mutavArray"
+						name="mutavArray"
+
 						(changed)="form.get(fld.name).patchValue($event.value);"
 						#beneficiaryMultiSelectComponent
 						[companyTransTypes]="companyTransTypes"
@@ -322,7 +331,7 @@
 				<!--                                }">-->
 				<!--      </app-beneficiary-select>-->
 			</ng-container>
-			
+
 			<ng-container *ngSwitchCase="'total'">
 				<label
 						[for]="fld.name || 'total'"
@@ -372,7 +381,7 @@
 					</div>
 				</ng-template>
 			</ng-container>
-			
+
 			<ng-container *ngSwitchDefault>
 				<label
 						[for]="fld.name || 'total'"

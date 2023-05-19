@@ -1,0 +1,63 @@
+<div class="menu-dd menu-with-panel">
+	<button
+			class="buttonStatusDD"
+			[disabled]="disabled"
+			[class.unFocus]="unFocus"
+			(click)="
+        showPanelDD = !showPanelDD;
+      "
+			[class.opened]="showPanelDD"
+			[id]="'account-selector'"
+	>
+	<p>
+		סינון תנועות מהיר
+	</p>
+
+		<mat-icon [svgIcon]="(redPointFilter) ? 'filter_active' : 'filter'"></mat-icon>
+	</button>
+
+	<div class="panelDD accountsPanel cardsPanelCurreny accPanelCurreny statusesPanelArr" *ngIf="showPanelDD" [@slideInOutDD]>
+		<div class="currenciesList" [class.active]="statuses.checked">
+			<p-checkbox checkboxIcon="fa fa-check"
+						[inputId]="'all'"
+						[binary]="true"
+						[(ngModel)]="statuses.checked"
+						(onChange)="changeAll(statuses.checked)"
+						[label]="statuses.name">
+			</p-checkbox>
+		</div>
+		<ul
+				class="scroll-chrome"
+				tabindex="-1"
+				(keydown.enter)="showPanelDD = false"
+		>
+			<ng-container *ngFor="let base of statuses.children; index as i"
+				class="card"
+				[class.active]="base.checked">
+				<li class="allCreditCards" [class.active]="base.checked">
+					<p-checkbox checkboxIcon="fa fa-check"
+								[inputId]="'allChild'"
+								[binary]="true"
+								[(ngModel)]="base.checked"
+								(onChange)="changeAllChild(base.children, base.checked)"
+								[label]="base.name">
+					</p-checkbox>
+				</li>
+
+				<li *ngFor="let item of base.children; index as i"
+					class="card"
+					[class.active]="item.checked">
+					<div style="white-space: nowrap; align-items: center">
+						<p-checkbox checkboxIcon="fa fa-check"
+									[binary]="true"
+									[label]="item.name"
+									[(ngModel)]="item.checked"
+									(onChange)="checkedAll()">
+						</p-checkbox>
+					</div>
+				</li>
+			</ng-container>
+
+		</ul>
+	</div>
+</div>

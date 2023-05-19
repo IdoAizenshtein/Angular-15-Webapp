@@ -4,7 +4,8 @@
 	}}
 	<small class="mat-body" *ngIf="!parent.lite">{{
 		'signup.businessInfoStep.subtitle' | translate
-		}}</small>
+		}}
+	</small>
 </h1>
 <form novalidate [formGroup]="business" (ngSubmit)="onSubmit()">
 	<div class="Signup__control">
@@ -104,6 +105,7 @@
 				mat-raised-button
 				color="primary"
 				type="submit"
+				style="height: 35px;"
 				[id]="'submitStep'"
 				[disabled]="!business.valid || (parent.formInProgress$ | async)"
 		>
@@ -111,7 +113,7 @@
 				<mat-spinner diameter="20" color="accent"></mat-spinner>
 			</ng-container>
 			<ng-template #buttonText>
-				<span>{{ 'formLogin.continue' | translate }}</span>
+				<span style="vertical-align: unset">{{ 'formLogin.continue' | translate }}</span>
 			</ng-template>
 		</button>
 		<a

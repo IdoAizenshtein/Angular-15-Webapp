@@ -8,8 +8,10 @@ import {publishRef} from '@app/shared/functions/publishRef';
 
 @Injectable()
 export class MessagesService {
-    private _messagesCount$: Observable<number>;
+    public _messagesCount$: Observable<number>;
     public _messagesStart: any = false;
+    public numberMessagesCount: any;
+    public numberMessagesCountChanged: any = false;
 
     get messagesCount$() {
         if (!this._messagesStart) {
@@ -26,6 +28,13 @@ export class MessagesService {
                     })
                 ),
                 map((response: any) => (!response.error ? response.body : null)),
+                tap((response: any) => {
+                    this.numberMessagesCountChanged = this.numberMessagesCount !== undefined && this.numberMessagesCount !== response;
+                    this.numberMessagesCount = response;
+                    if (this.numberMessagesCountChanged) {
+                        this.userService.appData.reloadMessagesEvent.next(true);
+                    }
+                }),
                 publishRef
             );
         }
@@ -33,7 +42,7 @@ export class MessagesService {
         return this._messagesCount$;
     }
 
-    private readonly messageStateChanged$: Subject<void> = new Subject<void>();
+    public messageStateChanged$: Subject<void> = new Subject<void>();
 
     public readonly companySelectionChange$: Subject<void> = new Subject<void>();
 
@@ -53,7 +62,7 @@ export class MessagesService {
                 this.userService.appData.userData.accountSelect
             )
                 ? this.userService.appData.userData.accountSelect.map(
-                    (acc:any) => acc.companyAccountId
+                    (acc: any) => acc.companyAccountId
                 )
                 : [],
             companyId: this.userService.appData.userData.exampleCompany

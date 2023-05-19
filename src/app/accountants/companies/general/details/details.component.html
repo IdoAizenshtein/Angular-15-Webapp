@@ -28,7 +28,7 @@
 						</div>
 					</div>
 				</div>
-				
+
 				<div class="sett-table">
 					<div>
 						<div>שם חברה באנגלית</div>
@@ -60,7 +60,7 @@
 						</div>
 					</div>
 				</div>
-				
+
 				<div class="sett-table">
 					<div>
 						<div>עיר</div>
@@ -77,7 +77,7 @@
 									appendTo="body"
 									dataKey="cityId"
 									formControlName="cityId"
-									
+									name="cityId"
 									optionLabel="cityName"
 									placeholder="בחירה"
 									styleClass="ddInfoCompanyForm"
@@ -86,7 +86,7 @@
 						</div>
 					</div>
 				</div>
-				
+
 				<div class="sett-table">
 					<div>
 						<div>ח.פ</div>
@@ -136,7 +136,7 @@
             "
 					>
 						ח.פ קיים כבר ב-bizibox
-						
+
 						<div
 								(click)="sharedComponent.showOpenTicket()"
 								class="link"
@@ -162,7 +162,7 @@
 						</div>
 					</div>
 				</div>
-				
+
 				<div class="sett-table">
 					<div>
 						<div>מספר עוסק/איחוד עוסקים</div>
@@ -210,7 +210,7 @@
 						המספר שהוקלד לא תקין
 					</div>
 				</div>
-				
+
 				<ng-container
 						*ngFor="let item of arr.controls; index as i"
 						formArrayName="otherOseknumArray"
@@ -322,7 +322,7 @@
 						>
 							המספר שהוקלד קיים כבר בשדה אחר
 						</div>
-						
+
 						<div
 								*ngIf="i ===0"
 								[class.withAlert]="
@@ -410,7 +410,7 @@
 						</div>
 					</div>
 				</ng-container>
-				
+
 				<div class="sett-table">
 					<div>
 						<div>תחום עיסוק/ענף</div>
@@ -426,7 +426,8 @@
 									appendTo="body"
 									dataKey="businessCategoryId"
 									formControlName="primaryBusinessCategoryId"
-									
+									name="primaryBusinessCategoryId"
+
 									optionLabel="businessCategoryName"
 									placeholder="בחירה"
 									styleClass="ddInfoCompanyForm"
@@ -436,7 +437,7 @@
 					</div>
 				</div>
 			</div>
-			
+
 			<div class="sett-table">
 				<div>
 					<div>הערות</div>

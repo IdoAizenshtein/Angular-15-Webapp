@@ -6,24 +6,24 @@
 				[accounts]="userService.appData.userData.accounts"
 		></app-acc-select>
 		<!--<app-acc-dates [option]="'days'" (changedTrigger)="filterDates($event)"></app-acc-dates>-->
-		<app-account-dates></app-account-dates>
+		<app-account-dates (sendEvent)="sendEvent($event)"></app-account-dates>
 		<ul class="tabs" id="paymentTypesFilter">
 			<li
-					(click)="currentPage = 0; filterTypes('false')"
+					(click)="sharedComponent.mixPanelEvent('filter zhut');currentPage = 0; filterTypes('false')"
 					[class.active]="filterTypesVal === 'false'"
 					id="paymentTypesCredit"
 			>
 				{{ 'filters.credit' | translate }}
 			</li>
 			<li
-					(click)="currentPage = 0; filterTypes('true')"
+					(click)="sharedComponent.mixPanelEvent('filter hova');currentPage = 0; filterTypes('true')"
 					[class.active]="filterTypesVal === 'true'"
 					id="paymentTypeDebit"
 			>
 				{{ 'filters.debit' | translate }}
 			</li>
 			<li
-					(click)="currentPage = 0; filterTypes(null)"
+					(click)="sharedComponent.mixPanelEvent('filter all'); currentPage = 0; filterTypes(null)"
 					[class.active]="filterTypesVal === null"
 					id="paymentTypeBoth"
 			>
@@ -42,6 +42,7 @@
 		</div>
 		<ul class="tabs navTabs">
 			<li
+					(click)="sharedComponent.mixPanelEvent('aggregate screen')"
 					[matTooltip]="
           'appWalk.customers.financialManagement.bankAccount.viewSwitchAggregate'
             | translate
@@ -56,6 +57,7 @@
 				{{ 'filters.consolidated' | translate }}
 			</li>
 			<li
+					(click)="sharedComponent.mixPanelEvent('detailed screen')"
 					[matTooltip]="
           'appWalk.customers.financialManagement.bankAccount.viewSwitchDetails'
             | translate
@@ -70,6 +72,7 @@
 				{{ 'filters.detailed' | translate }}
 			</li>
 			<li
+					(click)="sharedComponent.mixPanelEvent('graph screen')"
 					[matTooltip]="
           'appWalk.customers.financialManagement.bankAccount.viewSwitchChart'
             | translate
@@ -173,7 +176,7 @@
 			<div class="operator">=</div>
 			<div class="sum-data">
 				<h3>{{ 'sumsTitles.balanceUse' | translate }}</h3>
-				
+
 				<p
 						*ngIf="
             userService.appData.userData.accountSelect?.length > 0 &&
@@ -199,7 +202,7 @@
 			<!--<h3>-->
 			<!--{{'sumsTitles.totalIncomes'|translate}}-->
 			<!--</h3>-->
-			
+
 			<!--<p *ngIf="totals?.totalIncomes !== null && userService.appData.userData.accountSelect.length; else totalIncomesNan" class="green"-->
 			<!--[id]="'totalIncomes'">-->
 			<!--<span class="sum">{{totals.totalIncomes | sum:true}}</span>-->
@@ -213,7 +216,7 @@
 			<!--<h3>-->
 			<!--{{'sumsTitles.totalExpenses'|translate}}-->
 			<!--</h3>-->
-			
+
 			<!--<p *ngIf="totals?.totalExpenses !== null && userService.appData.userData.accountSelect.length; else totalExpensesNan" class="red"-->
 			<!--[id]="'totalExpenses'">-->
 			<!--<span class="sum">{{totals?.totalExpenses | sum:true}}</span>-->
@@ -320,7 +323,7 @@
 					{{ 'sumsTitles.forex' | translate }}
 				</ng-template>
 			</div>
-			
+
 			<div *ngIf="accountSelectOneNotUpdate">
 				<app-account-outdated-view
 						[account]="userService.appData.userData.accountSelect[0]"
@@ -335,14 +338,14 @@
 			</div>
 			<div class="exports">
 				<button
-						(click)="printTransactions()"
+						(click)="sharedComponent.mixPanelEvent('print'); printTransactions()"
 						[matTooltip]="'appWalk.customers.report.printBtn' | translate"
 						matTooltipPosition="above"
 				>
 					<img height="21"  ngSrc="/assets/images/to-printer.png" width="24"/>
 				</button>
 				<button
-						(click)="reportMailSubmitterToggle = true"
+						(click)="sharedComponent.mixPanelEvent('mail'); reportMailSubmitterToggle = true"
 						[matTooltip]="'appWalk.customers.report.mailBtn' | translate"
 						matTooltipPosition="above"
 				>
@@ -353,14 +356,14 @@
 					></app-report-mail-scheduler>
 				</button>
 				<button
-						(click)="exportTransactions('PDF')"
+						(click)="sharedComponent.mixPanelEvent('pdf'); exportTransactions('PDF')"
 						[matTooltip]="'appWalk.customers.report.pdfBtn' | translate"
 						matTooltipPosition="above"
 				>
 					<img height="21" ngSrc="/assets/images/to-pdf.png" width="24"/>
 				</button>
 				<button
-						(click)="exportTransactions('EXCEL')"
+						(click)="sharedComponent.mixPanelEvent('excel'); exportTransactions('EXCEL')"
 						[matTooltip]="'appWalk.customers.report.excelBtn' | translate"
 						matTooltipPosition="above"
 				>
@@ -369,7 +372,7 @@
 			</div>
 		</div>
 	</div>
-	
+
 	<div class="bank-acc-details-table-container" style="position: relative">
 		<div #tableHeader class="bank-acc-details-table-header">
 			<ng-template #sortAvailableForColumn>
@@ -378,7 +381,7 @@
 						style="cursor: pointer"
 				></i>
 			</ng-template>
-			
+
 			<div
 					(click)="sortPipeFilter('transDate')"
 					class="bank-acc-details-column-1"
@@ -393,7 +396,7 @@
               (sortPipeDir === 'smaller' ? 'asc' : 'desc') +
               '.png'
             "
-						
+
 					/>
 				</ng-container>
 				<!--                <img style="height: auto; width: auto; position: relative;" fill [ngSrc]="'/assets/images/sort-' + (sortPipeDir === 'smaller' ? 'asc' : 'desc') +'.png'"-->
@@ -431,17 +434,17 @@
               (sortPipeDir === 'smaller' ? 'desc' : 'asc') +
               '.png'
             "
-							
+
 					/>
 				</ng-container>
 			</div>
 			<div class="bank-acc-details-column-4" style="overflow: visible">
 				<app-tooltip-category
 						(changed)="filterCategory($event)"
-						[data]="paymentTypesArr"
-						[title]="'titles.typeOfPayment' | translate"
 						[translateEnum]="sharedService.paymentTypesTranslate$"
+						[title]="'titles.typeOfPayment' | translate"
 						[type]="'payment'"
+						[data]="paymentTypesArr"
 				></app-tooltip-category>
 			</div>
 			<div class="bank-acc-details-column-5" style="overflow: visible">
@@ -624,23 +627,33 @@
 							<!--                            </ng-container>-->
 						</div>
 						<div class="bank-acc-details-column-3">
-							<div
-									[pTooltip]="item.mainDesc"
-									[showDelay]="300"
-									appendTo="body"
-									class="text-ellipsis seamless-edit-prepare"
-									style="display: block !important; padding-right: 24px"
-									tooltipPosition="top"
-							>
-								{{ item.mainDesc }}
+							<div style="display: flex; justify-content: space-between; align-items: center;">
+								<div
+										[pTooltip]="item.mainDesc"
+										[showDelay]="300"
+										appendTo="body"
+										class="text-ellipsis seamless-edit-prepare"
+										style="display: block !important; padding-right: 24px"
+										tooltipPosition="top"
+								>
+									{{ item.mainDesc }}
+								</div>
+								<img *ngIf="item['partialChild']"
+									 [pTooltip]="'התקבל מהבנק פירוט לא תקין'"
+									 height="15"
+									 src="/assets/images/exclamation-triangle.png"
+									 style="margin-left: 4px; margin-top: -3px;"
+									 tooltipPosition="top"
+									 width="17"
+								/>
 							</div>
 						</div>
 						<div class="bank-acc-details-column-4">
 							<ng-container
 									*ngIf="
-                  item.linkId ||
+                  (item.linkId ||
                     item.pictureLink ||
-                    item.paymentDesc === 'cash';
+                    item.paymentDesc === 'cash') && (!item.partialChild);
                   else oldOne
                 "
 							>
@@ -656,7 +669,7 @@
 										style="min-width: 0"
 										tooltipPosition="top"
 								></div>
-								
+
 								<div
 										(click)="openCashSplit(item, $event)"
 										*ngIf="item.paymentDesc === 'cash'"
@@ -668,7 +681,7 @@
 										style="min-width: 0"
 										tooltipPosition="top"
 								></div>
-								
+
 								<!--<div [appTransactionAdditionalTrigger]="item"-->
 								<!--class="text-ellipsis bank-acc-details-link" style=" min-width: 0;"-->
 								<!--[pTooltip]="item.paymentDescTranslate" tooltipPosition="top"-->
@@ -824,9 +837,9 @@
 						></div>
 						<input
 								#descInputRef
-								(blur)="submitChanges($event)"
+								(blur)="sharedComponent.mixPanelEvent('bank description'); submitChanges($event)"
 								(focus)="startDescriptionEditAt(item, descInputRef)"
-								(keyup.enter)="submitChanges($event)"
+								(keyup.enter)="sharedComponent.mixPanelEvent('bank description'); submitChanges($event)"
 								(keyup.esc)="cancelChanges(); descInputRef.blur()"
 								[(ngModel)]="item.mainDesc"
 								[pTooltip]="item.mainDesc"
@@ -839,6 +852,14 @@
 								tooltipPosition="top"
 								type="text"
 						/>
+						<img *ngIf="item['partialChild']"
+							 [pTooltip]="'התקבל מהבנק פירוט לא תקין'"
+							 height="15"
+							 src="/assets/images/exclamation-triangle.png"
+							 style="margin-left: 4px; margin-top: -3px;"
+							 tooltipPosition="top"
+							 width="17"
+						/>
 					</div>
 					<div
 							class="bank-acc-details-column-4"
@@ -846,7 +867,9 @@
 					>
 						<ng-container
 								*ngIf="
-                item.linkId || item.pictureLink || item.paymentDesc === 'cash';
+                     (item.linkId ||
+                    item.pictureLink ||
+                    item.paymentDesc === 'cash') && (!item.partialChild);
                 else oldOne
               "
 						>
@@ -862,9 +885,10 @@
 									[pTooltip]="item.paymentDescTranslate"
 									class="text-ellipsis bank-acc-details-link"
 									style="min-width: 0"
+									(click)="mixPanelEventEvent(item.paymentDesc)"
 									tooltipPosition="top"
 							></div>
-							
+
 							<div
 									(click)="openCashSplit(item, $event)"
 									*ngIf="item.paymentDesc === 'cash'"
@@ -933,8 +957,7 @@
 									[showDelay]="300"
 									appendTo="body"
 									class="seamless-edit-prepare text-ellipsis"
-									tooltipPosition="top"
-							></div>
+									tooltipPosition="top"></div>
 							<div
 									(click)="startCategoryEditAt(item, $event, categorySelector)"
 									*ngIf="!(editingTransaction === item && showCategoryDropDown)"
@@ -956,20 +979,19 @@
 								<app-category-select
 										#categorySelector
 										(cancelChanges)="cancelChanges()"
-										(changed)="item.selectedTransType = $event.value; submitChanges($event)"
+										(changed)="item.selectedTransType = $event.value; sharedComponent.mixPanelEvent('category'); submitChanges($event)"
 										[categories]="companyTransTypes"
 										[companyId]="companyId"
 										[ngModelVal]="item.selectedTransType"
 										[showAuto]="true"
-										[style]="{ width: '100%' }"
-								>
+										[style]="{ width: '100%' }">
 								</app-category-select>
 								<!--                                (onChange)="item.transTypePopup === true ? promptForTransTypeChangeApply(item, $event)-->
 								<!--                                : (submitChanges($event))"-->
 								<!--                                (!!item.biziboxMutavId ? promptForBeneficiaryTransTypeChangeApply(item, $event) : submitChanges($event))-->
 							</ng-container>
-						
-						
+
+
 						</ng-container>
 						<!--<div style="overflow: visible; width: 100%;">-->
 						<!--</div>-->
@@ -1033,12 +1055,12 @@
 						/>
 					</div>
 				</div>
-				
+
 				<!--<app-bank-acc-details-row *ngIf="!item?.rowSum"-->
 				<!--[item]="item" [transTypes]="companyTransTypes" [companyId]="companyId" [highlightInRow]="queryString"-->
 				<!--(onSelected)="onRowSelected($event)"-->
 				<!--(onShowAdditional)="onRowShowAdditional($event)"></app-bank-acc-details-row>-->
-				
+
 				<div
 						*ngIf="item?.rowSum"
 						class="bank-acc-details-row-sum"
@@ -1066,7 +1088,7 @@
 					></div>
 				</div>
 			</ng-container>
-			
+
 			<ng-container
 					*ngIf="
           !loader &&
@@ -1121,7 +1143,7 @@
 				></div>
 			</ng-container>
 		</div>
-		
+
 		<app-paginator
 				#paginator
 				(onPageChange)="paginate($event)"
@@ -1178,13 +1200,13 @@
 	<p-header>
 		{{ 'ניתן לחלק את הסכום ולבחור תיאור וקטגוריה מתאימים' }}
 	</p-header>
-	
+
 	<div *ngIf="!cashSplitPopupOpen.table" class="tableSplit">
 		<div class="loader">
 			<div class="circle"></div>
 		</div>
 	</div>
-	
+
 	<form *ngIf="cashSplitPopupOpen.table" [formGroup]="cashSplitPopupOpen.table">
 		<div class="tableSplit">
 			<div class="header">
@@ -1203,7 +1225,7 @@
 					&nbsp;
 				</div>
 			</div>
-			
+
 			<ul
 					#scrollContainerInside
 					class="scroll-chrome table"
@@ -1225,7 +1247,7 @@
 								(changed)="arr.controls[i].get('transTypeId').patchValue($event.value);"
 								[autoDisplayFirst]="false"
 								[disabled]="arr.controls[i].get('transTypeId').disabled"
-								
+
 								[categories]="companyTransTypes"
 								[companyId]="
                 userService.appData?.userData?.companySelect?.companyId
@@ -1274,7 +1296,7 @@
 					</div>
 				</li>
 			</ul>
-			
+
 			<div class="add">
 				<img
 						(click)="addSplit()"
@@ -1319,7 +1341,7 @@
 			</div>
 		</div>
 	</form>
-	
+
 	<p-footer *ngIf="cashSplitPopupOpen.table">
 		<div
 				style="

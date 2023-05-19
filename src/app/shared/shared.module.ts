@@ -4,7 +4,10 @@ import {TrimPipe} from './pipes/trim.pipe';
 import {NoCommaPipe} from './pipes/noComma.pipe';
 import {SortPipe} from './pipes/sort.pipe';
 import {AccountSelectComponent} from './component/account-select/account-select.component';
+import {AccountSelectByCurrencyComponent} from '@app/shared/component/account-select-by-currency/account-select-by-currency.component';
+import {StatusesComponent} from '@app/shared/component/statuses/statuses.component';
 import {CardsSelectComponent} from './component/cards-select/cards-select.component';
+import {CardsSelectByCurrencyComponent} from './component/cards-select-by-currency/cards-select-by-currency.component';
 import {SolekSelectComponent} from './component/solek-select/solek-select.component';
 import {AccountDatesComponent} from './component/account-dates/account-dates.component';
 import {TooltipCategoryComponent} from './component/tooltip-category/tooltip-category.component';
@@ -72,6 +75,7 @@ import {FocusTrapModule} from 'primeng/focustrap';
 import {CheckboxModule} from 'primeng/checkbox';
 import {OverlayPanelModule} from 'primeng/overlaypanel';
 import {SplitButtonModule} from 'primeng/splitbutton';
+import {InputMaskModule} from 'primeng/inputmask';
 import {PaginatorModule} from 'primeng/paginator';
 import {InputSwitchModule} from 'primeng/inputswitch';
 import {ToastModule} from 'primeng/toast';
@@ -82,13 +86,11 @@ import {DialogComponent} from './component/dialog/dialog.component';
 import {SortTextPipe} from './pipes/sortText.pipe';
 import {SumPipe} from './pipes/sum.pipe';
 import {MonthYearPipe} from './pipes/monthYear.pipe';
-import {ChartModule} from 'angular-highcharts';
-// import * as Highcharts from 'highcharts';
-// import * as highstock from 'highcharts/modules/stock.src';
-// import * as boostCanvas from 'highcharts/modules/boost-canvas';
-// import * as boost from 'highcharts/modules/boost.src';
-// import * as noDataToDisplay from 'highcharts/modules/no-data-to-display.src';
-// declare let Highcharts: any;
+import {ChartModule, HIGHCHARTS_MODULES} from 'angular-highcharts';
+import * as highstock from 'highcharts/modules/stock.src';
+import * as boostCanvas from 'highcharts/modules/boost-canvas';
+import * as boost from 'highcharts/modules/boost.src';
+import * as noDataToDisplay from 'highcharts/modules/no-data-to-display.src';
 import {TodayRelativeHumanizePipe} from './pipes/todayRelativeHumanize.pipe';
 import {CurrencySymbolPipe} from './pipes/currencySymbol.pipe';
 import {HighlightPipe} from './pipes/highlight.pipe';
@@ -99,7 +101,7 @@ import {SolekViewComponent} from './component/solek-view/solek-view.component';
 import {PaginatorComponent} from './component/paginator/paginator.component';
 import {NumbersOnlyDirective} from './directives/numbersOnly.directive';
 import {ScrollbarDirective} from './directives/scrollbar.directive';
-import {NgScrollbarModule} from 'ngx-scrollbar';
+import {NG_SCROLLBAR_OPTIONS, NgScrollbarModule} from 'ngx-scrollbar';
 import {ToIconSrcPipe} from './pipes/toIconSrc.pipe';
 import {BankForeignCredentialsService} from './component/foreign-credentials/foreign-credentials.service';
 import {BankCredentialsComponent} from './component/foreign-credentials/bank-credentials/bank-credentials.component';
@@ -173,7 +175,8 @@ import {UserToAdminSelectorComponent} from './component/user-to-admin-selector/u
 import {MessagesListComponent} from './component/messages/messages-list.component';
 import {MessageTypeAsIconSrcPipe} from './pipes/messageTypeAsIconSrcPipe';
 import {CalendarWrapComponent} from './component/calendar-wrap/calendar-wrap.component';
-import {DropdownWrapComponent} from './component/dropdown-wrap/dropdown-wrap.component';
+import {DropdownItem, DropdownWrapComponent} from './component/dropdown-wrap/dropdown-wrap.component';
+
 import {TopNotificationAreaComponent} from './component/top-notification-area/top-notification-area.component';
 // import {HelpCenterService} from './component/knowledge-base/help-center.service';
 import {UserMailEditComponent} from './component/user-mail-edit/user-mail-edit.component';
@@ -211,9 +214,16 @@ import {
 
 // import {ReloadServices} from './services/reload.services';
 import {ResizableDraggableComponent} from './component/resizable-draggable/resizable-draggable.component';
+import {CropMultipleComponent} from './component/crop-multiple/crop-multiple.component';
+
 import {PlayVideoDialogComponent} from '@app/customers/help-center/customer-help-video/play-video-dialog/play-video-dialog.component';
 import {HashOtpUpdateDialogComponent} from './component/foreign-credentials/hash-otp-update-dialog/hash-otp-update-dialog.component';
 import {MatchDateRangeSelectorAccountantsComponent} from './component/date-range-selectors/match-date-range-selector-accountants.component';
+import {InfiniteScrollModule} from 'ngx-infinite-scroll';
+import {RippleModule} from 'primeng/ripple';
+import {AddCompanyDialogComponent} from '@app/shared/component/add-company-dialog/add-company-dialog-component';
+import {FormLoginOtpModalComponent} from '@app/shared/component/form-login-otp-modal/form-login-otp-modal.component';
+import {OrElsePipe} from './pipes/or-else.pipe';
 
 export function createTranslateLoader(http: HttpClient) {
     return new TranslateHttpLoader(
@@ -225,6 +235,7 @@ export function createTranslateLoader(http: HttpClient) {
 
 @NgModule({
     imports: [
+        InfiniteScrollModule,
         NgOptimizedImage,
         ScrollingModule,
         NgScrollbarModule,
@@ -244,6 +255,7 @@ export function createTranslateLoader(http: HttpClient) {
         PaginatorModule,
         DropdownModule,
         SplitButtonModule,
+        InputMaskModule,
         DialogModule,
         TooltipModule,
         CheckboxModule,
@@ -281,7 +293,8 @@ export function createTranslateLoader(http: HttpClient) {
                 useFactory: createTranslateLoader,
                 deps: [HttpClient]
             }
-        })
+        }),
+        RippleModule
     ],
     providers: [
         DoneXhrService,
@@ -293,10 +306,10 @@ export function createTranslateLoader(http: HttpClient) {
         ConfirmationService,
         BankForeignCredentialsService,
         TitleCasePipe,
-        // {
-        //     provide: HIGHCHARTS_MODULES,
-        //     useFactory: () => [highstock, boostCanvas, boost, noDataToDisplay]
-        // },
+        {
+            provide: HIGHCHARTS_MODULES,
+            useFactory: () => [highstock, boostCanvas, boost, noDataToDisplay]
+        },
         {provide: MAT_MOMENT_DATE_ADAPTER_OPTIONS, useValue: {useUtc: true}},
         TransactionFrequencyHumanizePipe,
         // HelpCenterService,
@@ -308,15 +321,23 @@ export function createTranslateLoader(http: HttpClient) {
         PrivilegeTypeMaxPipe,
         IsTodayPipe,
         AlertStatusHumanizePipe,
-        SortIconPipe
+        SortIconPipe,
+        {
+            provide: NG_SCROLLBAR_OPTIONS,
+            useValue: {
+                scrollAuditTime: 20
+            }
+        }
     ],
     declarations: [
         SharedComponent,
         CardsSelectComponent,
+        CardsSelectByCurrencyComponent,
         SolekSelectComponent,
         NoCommaPipe,
         ChartsComponent,
         ResizableDraggableComponent,
+        CropMultipleComponent,
         TrimPipe,
         SortPipe,
         ScrollHeightDirective,
@@ -344,7 +365,10 @@ export function createTranslateLoader(http: HttpClient) {
         ScrollbarDirective,
         MaxInputLengthDirective,
         AccountSelectComponent,
+        AccountSelectByCurrencyComponent,
+        StatusesComponent,
         AccountDatesComponent,
+        FormLoginOtpModalComponent,
         TooltipCategoryComponent,
         TooltipListComponent,
         SumViewComponent,
@@ -404,6 +428,7 @@ export function createTranslateLoader(http: HttpClient) {
         UserToAdminSelectorComponent,
         MessagesListComponent,
         DropdownWrapComponent,
+        DropdownItem,
         // KnowledgeBaseComponent,
         ServiceCallDialogComponent,
         TopNotificationAreaComponent,
@@ -430,17 +455,22 @@ export function createTranslateLoader(http: HttpClient) {
         ProgressComponent,
         ToEtlUrlPipe,
         PlayVideoDialogComponent,
-        HashOtpUpdateDialogComponent
+        HashOtpUpdateDialogComponent,
+        AddCompanyDialogComponent,
+        OrElsePipe
     ],
     exports: [
         SharedComponent,
+        InfiniteScrollModule,
         NgOptimizedImage,
         ScrollingModule,
         NgScrollbarModule,
         CardsSelectComponent,
+        CardsSelectByCurrencyComponent,
         SolekSelectComponent,
         ChartsComponent,
         ResizableDraggableComponent,
+        CropMultipleComponent,
         OverlayModule,
         ScrollPanelModule,
         SkeletonModule,
@@ -457,6 +487,7 @@ export function createTranslateLoader(http: HttpClient) {
         DropdownModule,
         DialogModule,
         SplitButtonModule,
+        InputMaskModule,
         TooltipModule,
         CheckboxModule,
         SidebarModule,
@@ -492,7 +523,10 @@ export function createTranslateLoader(http: HttpClient) {
         AccessTypeHumanizePipe,
         PrivilegeTypeMaxPipe,
         AccountSelectComponent,
+        AccountSelectByCurrencyComponent,
+        StatusesComponent,
         AccountDatesComponent,
+        FormLoginOtpModalComponent,
         TooltipCategoryComponent,
         SumViewComponent,
         CategorySelectComponent,
@@ -583,6 +617,7 @@ export function createTranslateLoader(http: HttpClient) {
         UserToAdminSelectorComponent,
         MessagesListComponent,
         DropdownWrapComponent,
+        DropdownItem,
         // KnowledgeBaseComponent,
         ServiceCallDialogComponent,
         TopNotificationAreaComponent,

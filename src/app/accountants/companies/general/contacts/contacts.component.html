@@ -1,14 +1,14 @@
 <div>
 	<ng-container *ngIf="!isModal && isModalFromCompaniesScreen">
 		<!--        <p >-->
-		
+
 		<!--&lt;!&ndash;            על-פי הנחיות ממשלה חדשות,&ndash;&gt;-->
 		<!--&lt;!&ndash;            שמירת נתונים ב-bizibox מחייב את אישורו של בית העסק.&ndash;&gt;-->
 		<!--&lt;!&ndash;            שימו לב: רק אנשי קשר מורשי חתימה יכולים&ndash;&gt;-->
 		<!--&lt;!&ndash;            <br>&ndash;&gt;-->
 		<!--&lt;!&ndash;            לחתום על ההסכם&ndash;&gt;-->
 		<!--        </p>-->
-		
+
 		<p #title style="padding: 12px 0px 6px 0px">
 			בהמשך להודעה שנשלחה במייל אנא עדכנו מורשי חתימה למתן ייפוי כוח
 		</p>
@@ -385,7 +385,7 @@
                     "
 											width="15"
 									/>
-									
+
 									<p-checkbox (onChange)="joinAppContact(contact)"
 									            [binary]="true"
 									            [disabled]="
@@ -428,42 +428,55 @@
 								</div>
 								<div class="separator">&nbsp;</div>
 								<div>
+									<p *ngIf="!contact.value.agreementConfirmationDate && !contact.value.agreementSendDate"
+									   class="SENT_SIGNED">
+										-
+									</p>
 									<p
 											*ngIf="contact.value.agreementConfirmationDate"
-											class="agreementConfirmationDate"
-									>
-										<mat-icon
-												[svgIcon]="'tick'"
-												style="
-                        height: 100%;
-                        color: #ffffff;
-                        width: 14px;
-                        margin-left: 6px;
-                      "
-										>
-										</mat-icon>
-										נחתם ב-{{
-										contact.value.agreementConfirmationDate | date: 'dd/MM/yy'
-										}}
+											class="SENT_SIGNED">
+										<img
+												[src]="'/assets/images/SIGNED.png'"
+												style="margin-left: 6px"
+										/>
+										<span
+												class="text-ellipsis SIGNED">
+										נחתם
+									</span>
+										<small>
+											{{withinTwentyFourHours(contact.value.agreementConfirmationDate) <= 24 ? (
+												'לפני '
+												+
+												withinTwentyFourHoursMin(contact.value.agreementConfirmationDate) +
+
+												(withinTwentyFourHours(contact.value.agreementConfirmationDate) >= 1 ? ' שעות' :
+														' דקות')
+										) : '' + (contact.value.agreementConfirmationDate | date: 'dd/MM/yy')}}
+										</small>
 									</p>
-									<p
-											*ngIf="
-                      contact.value.agreementSendDate &&
-                      !contact.value.agreementConfirmationDate
-                    "
-											class="agreementSendDate"
-									>
-										<i class="fas fa-history" style="margin-left: 4px"></i>
-										נשלח לאחרונה
-										{{withinTwentyFourHours(contact.value.agreementSendDate) <= 24 ? (
-											'לפני '
-											+
-											withinTwentyFourHoursMin(contact.value.agreementSendDate) +
-											
-											(withinTwentyFourHours(contact.value.agreementSendDate) >= 1 ? ' שעות' :
-													' דקות')
-									) : 'ב-' + (contact.value.agreementSendDate | date: 'dd/MM/yy')}}
+									<p *ngIf="contact.value.agreementSendDate && !contact.value.agreementConfirmationDate"
+									   class="SENT_SIGNED">
+										<img
+												[src]="'/assets/images/SENT.png'"
+												style="margin-left: 6px"
+										/>
+										<span
+												class="text-ellipsis SENT">
+										נשלח
+									</span>
+										<small>
+											{{withinTwentyFourHours(contact.value.agreementSendDate) <= 24 ? (
+												'לפני '
+												+
+												withinTwentyFourHoursMin(contact.value.agreementSendDate) +
+
+												(withinTwentyFourHours(contact.value.agreementSendDate) >= 1 ? ' שעות' :
+														' דקות')
+										) : '' + (contact.value.agreementSendDate | date: 'dd/MM/yy')}}
+										</small>
 									</p>
+
+
 								</div>
 								<div>
 									<button
@@ -475,7 +488,7 @@
 										<img class="showHover" style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/trash.png"/>
 									</button>
 								</div>
-								
+
 								<div
 										*ngIf="isModal && arr.controls[i].get('joinApp').value"
 										class="modalJoinAppAlert"
@@ -553,7 +566,7 @@
 									</div>
 								</div>
 								<div class="separator">&nbsp;</div>
-								
+
 								<div class="text-ellipsis">
 									<input
 											#inputElement
@@ -574,7 +587,7 @@
 											formControlName="email"
 											type="email"
 									/>
-									
+
 									<div
 											*ngIf="contact.touched && !contact.get('email').value"
 											class="invalidAlert"
@@ -605,7 +618,7 @@
 									</div>
 								</div>
 								<div class="separator">&nbsp;</div>
-								
+
 								<div class="text-ellipsis">
 									<input
 											#inputElement
@@ -673,7 +686,7 @@
 									<!--                                 matTooltipPosition="below"-->
 									<!--                                 width="15"-->
 									<!--                                 height="15">-->
-									
+
 									<p-checkbox (onChange)="joinAppContact(contact)"
 									            [binary]="true"
 									            [disabled]="contact.invalid"
@@ -692,7 +705,7 @@
 										<img class="showHover" style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/trash.png"/>
 									</button>
 								</div>
-								
+
 								<div
 										*ngIf="isModal && arr.controls[i].get('joinApp').value"
 										class="modalJoinAppAlert"
@@ -743,7 +756,7 @@
 							<!--                            <div class="separator">-->
 							<!--                                &nbsp;-->
 							<!--                            </div>-->
-							
+
 							<div class="text-ellipsis">
 								<input
 										#inputElement
@@ -947,7 +960,7 @@
 					</ng-container>
 				</div>
 			</ng-container>
-			
+
 			<div #footer class="addContact">
 				<button
 						(click)="addContact()"
@@ -965,7 +978,7 @@
 					/>
 					<label> הוספת איש קשר חדש </label>
 				</button>
-				
+
 				<!--                <ng-container *ngIf="!isModal && isModalFromCompaniesScreen">-->
 				<!--                    <div class="btns-footer">-->
 				<!--                        <button class="button-link" (click)="closeModal.emit(true)">-->
@@ -986,20 +999,20 @@
 <ng-container *ngIf="deleteContactModal">
 	<p-dialog (visibleChange)="deleteContactModal = false"
 			[visible]="(deleteContactModal)"
-			
+
 			[modal]="true"
 			[resizable]="false"
 			appendTo="body"
 			styleClass="deleteContactModal"
 	>
 		<p-header>{{ 'מחיקת איש קשר' }}</p-header>
-		
+
 		<p style="padding: 17px 0px 17px 10px">
 			שימו לב,
 			<br/>
 			איש הקשר ימחק והשימוש שלו באפליקציית צילום חשבוניות ומסמכים תחסם.
 		</p>
-		
+
 		<p-footer>
 			<button (click)="deleteContactModal = false" class="button-link">
 				{{ 'actions.cancellation' | translate }}
@@ -1024,7 +1037,7 @@
 	<p-dialog
 			(visibleChange)="joinAppContactModalClose(contactSaved.contact)"
 			[visible]="(joinAppContactModal)"
-			
+
 			[modal]="true"
 			[resizable]="false"
 			appendTo="body"
@@ -1033,7 +1046,7 @@
 		<p-header>{{
 			joinAppContactModal.join ? 'צרוף לאפליקציה' : 'ביטול צירוף לאפליקציה'
 			}}</p-header>
-		
+
 		<p
 				*ngIf="
         joinAppContactModal.join && joinAppContactModal['supplierJournalItem']
@@ -1092,24 +1105,24 @@
 	<p-dialog
 			(visibleChange)="authorizedSignerContactModalClose(contactSaved.contact)"
 			[visible]="(authorizedSignerContactModal)"
-			
+
 			[modal]="true"
 			[resizable]="false"
 			appendTo="body"
 			styleClass="joinAppContactModal"
 	>
 		<p-header> שליחת הסכם שימוש</p-header>
-		
+
 		<p style="padding: 17px 0px 0px 10px">
 			הסכם השימוש ישלח ל{{ contactSaved.contact.get('firstName').value }}
-			
+
 			{{ contactSaved.contact.get('lastName').value }}
-			
+
 			לצורך אספקת שירותי bizibox ושמירת
 			<br/>
 			הנתונים
 		</p>
-		
+
 		<p-footer>
 			<button
 					(click)="

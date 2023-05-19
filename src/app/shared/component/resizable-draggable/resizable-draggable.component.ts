@@ -1,4 +1,4 @@
-import {AfterViewInit, Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
+import {AfterViewInit, Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
 
 const Konva = window['Konva'];
 const canvg = window['canvg'];
@@ -7,7 +7,7 @@ const canvg = window['canvg'];
     selector: 'app-resizable-draggable',
     templateUrl: './resizable-draggable.component.html'
 })
-export class ResizableDraggableComponent implements OnInit, AfterViewInit {
+export class ResizableDraggableComponent implements OnInit, AfterViewInit, OnDestroy {
     @Input() public width: number;
     @Input() public height: number;
     @Input() public left: number;
@@ -1097,5 +1097,20 @@ export class ResizableDraggableComponent implements OnInit, AfterViewInit {
         this.setPositions.emit({
             mutatedVertices: mutatedVertices
         });
+    }
+
+    ngOnDestroy() {
+        if (this.stage) {
+            console.log('--------destroy stage---------');
+            this.stage.destroy();
+        }
+        if (this.layer) {
+            console.log('--------destroy layer---------');
+            this.layer.destroy();
+        }
+        if (this.group) {
+            console.log('--------destroy group---------');
+            this.group.destroy();
+        }
     }
 }

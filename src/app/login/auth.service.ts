@@ -4,13 +4,13 @@ import {HttpServices} from '@app/shared/services/http.services';
 import {StorageService} from '@app/shared/services/storage.service';
 import {UserService} from '@app/core/user.service';
 import {Router} from '@angular/router';
-import {combineLatest, Observable, of, Subject, zip} from 'rxjs';
+import {combineLatest, Observable, of, Subject} from 'rxjs';
 import {HttpErrorResponse} from '@angular/common/http';
 import {catchError, map, tap} from 'rxjs/operators';
 import {InterfaceParamHttp} from '@app/shared/interfaces/interface.param.http';
 import {get} from 'lodash';
 import {Location} from '@angular/common';
-import jwt_decode from "jwt-decode";
+import jwt_decode from 'jwt-decode';
 
 @Injectable()
 export class AuthService implements OnDestroy {
@@ -140,20 +140,22 @@ export class AuthService implements OnDestroy {
     public login(
         username: string,
         password: string,
+        gRecaptcha: any,
         rememberMe?: boolean
     ): Observable<any> {
         interface DataParams {
             username: string;
             password: string;
             rememberMe: boolean;
+            gRecaptcha: any;
         }
 
         const data: DataParams = {
             username: username,
             password: password,
-            rememberMe: rememberMe
+            rememberMe: rememberMe,
+            gRecaptcha: gRecaptcha
         };
-
         const interfaceParamHttp: InterfaceParamHttp<any> = {
             method: 'post',
             path: 'v1/auth/token',
@@ -179,7 +181,7 @@ export class AuthService implements OnDestroy {
     public loginOtp(code: string, autologin = true): Observable<any> {
         const interfaceParamHttp: InterfaceParamHttp<any> = {
             method: 'post',
-            path: `v1/auth/otp/code/?code=${code}`,
+            path: `v1/auth/otp/code?code=${code}`,
             isJson: true,
             isProtected: true,
             isAuthorization: true
@@ -204,16 +206,74 @@ export class AuthService implements OnDestroy {
         );
     }
 
-    public resentOtpSms(): Observable<any> {
+    public sendOtpCode(code: string): Observable<any> {
+        const interfaceParamHttp: InterfaceParamHttp<any> = {
+            method: 'post',
+            path: `v1/auth/otp/code?code=${code}`,
+            isJson: true,
+            isProtected: true,
+            isAuthorization: true,
+            stopRedInError: true
+        };
+        return this.httpServices.sendHttp<any>(interfaceParamHttp);
+    }
+
+
+    public resentOtpSms(isAuthorizationToken: any, gRecaptcha: any): Observable<any> {
         const interfaceParamHttp: InterfaceParamHttp<any> = {
             method: 'post',
             path: 'v1/auth/otp/resend-sms',
             isJson: true,
-            isProtected: true,
-            isAuthorization: true
+            params: {
+                gRecaptcha: gRecaptcha
+            },
+            isProtected: true //,
+            // isAuthorization: true
         };
+        if (!!isAuthorizationToken) {
+            interfaceParamHttp['isAuthorizationToken'] = isAuthorizationToken;
+        } else {
+            interfaceParamHttp['isAuthorization'] = true;
+        }
         return this.httpServices.sendHttp<any>(interfaceParamHttp);
     }
+
+    public resentOtpVms(isAuthorizationToken: any): Observable<any> {
+        const interfaceParamHttp: InterfaceParamHttp<any> = {
+            method: 'post',
+            path: 'v1/auth/otp/resend-vms',
+            isJson: true,
+            isProtected: true //,
+            // isAuthorization: true
+        };
+        if (!!isAuthorizationToken) {
+            interfaceParamHttp['isAuthorizationToken'] = isAuthorizationToken;
+        } else {
+            interfaceParamHttp['isAuthorization'] = true;
+        }
+        return this.httpServices.sendHttp<any>(interfaceParamHttp);
+    }
+
+
+    public sendSms(isAuthorizationToken: any, gRecaptcha: any): Observable<any> {
+        const interfaceParamHttp: InterfaceParamHttp<any> = {
+            method: 'post',
+            path: 'v1/auth/otp/send-sms',
+            isJson: true,
+            params: {
+                gRecaptcha: gRecaptcha
+            },
+            isProtected: true //,
+            // isAuthorization: true
+        };
+        if (!!isAuthorizationToken) {
+            interfaceParamHttp['isAuthorizationToken'] = isAuthorizationToken;
+        } else {
+            interfaceParamHttp['isAuthorization'] = true;
+        }
+        return this.httpServices.sendHttp<any>(interfaceParamHttp);
+    }
+
 
     public getUserData(isOnlyThis: boolean = false): Observable<any> {
         const arrSender = [
@@ -240,6 +300,21 @@ export class AuthService implements OnDestroy {
             tap((response: any) => {
                 if (response[0]) {
                     this.userService.appData.userData = response[0].body;
+                    try {
+                        if ((this.userService.appData.userData.biziboxRole === 'REPRESENTATIVE' ||
+                            this.userService.appData.userData.biziboxRole === 'REPRESENTATIVE_MANAGER' ||
+                                this.userService.appData.userData.biziboxRole === 'SALES_REPRESENTATIVE')
+                            && this.userService.appData.isAdmin) {
+                            this.userService.appData.hideCompanyName = true;
+                        } else {
+                            this.userService.appData.hideCompanyName = false;
+                        }
+                    } catch (e) {
+
+                    }
+                    if (window['mixpanel']) {
+                        window['mixpanel'].set_group('user name', this.userService.appData.userData.userName);
+                    }
                 }
                 if (
                     response[1] &&
@@ -379,17 +454,17 @@ export class AuthService implements OnDestroy {
                         }));
                     });
                     combineLatest(arrSenderNav)
-                        .subscribe((navScreens:any) => {
-                            navScreens.forEach((sec)=>{
+                        .subscribe((navScreens: any) => {
+                            navScreens.forEach((sec) => {
                                 const screen = sec.body;
-                                if (screen && screen.screenName){
+                                if (screen && screen.screenName) {
                                     this.storageService.localStorageSetter(
                                         screen.screenName,
                                         JSON.stringify(screen)
                                     );
                                 }
                             });
-                    });
+                        });
                 }
 
                 const lang: string = this.userService.appData.userData.language;
@@ -528,7 +603,7 @@ export class AuthService implements OnDestroy {
 
     private handleErrorLogin<T>(operation = 'operation', result?: T) {
         return (err: HttpErrorResponse) => {
-            console.log(err)
+            console.log(err);
             this.storageService.localStorageRemoveItem('token');
             this.logout();
             return of(err);

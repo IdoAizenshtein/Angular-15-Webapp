@@ -10,37 +10,7 @@ $lang: rtl !default;
   direction: $lang;
   $left: get-side($lang, left);
   $right: get-side($lang, right);
-  .mat-h2, .mat-title, .mat-typography h2 {
-    font: 500 20px/32px Assistant;
-    margin: 0 0 16px;
-  }
-  .mat-h3, .mat-subheading-2, .mat-typography h3, .bank-credentials-update.ui-dialog .ui-dialog-content p, .bank-credentials-update.ui-dialog .ui-dialog-content p, .bank-credentials-update.ui-dialog .ui-dialog-content p, .bank-credentials-update.ui-dialog .ui-dialog-content p {
-    font: 400 16px/28px Assistant;
-    margin: 0 0 16px;
-  }
-  .exam {
-    border-#{$left}: 1em solid #000;
-    border-#{$right}: 3em solid #000;
-    float: $right;
-    #{$left}: 0;
-    text-align: $right;
-    direction: $lang;
-    padding: side-values($lang, 0 2em 0 1em);
 
-    > button {
-      @include padding-box-all($lang, 20px, 10px, 0px, 1px);
-    }
-  }
-
-  text-align: $right;
-
-  label {
-    text-align: $right;
-  }
-
-  .main-container {
-  }
-  @extend .font-normal;
   .containerPage {
     display: flex;
     display: -ms-flexbox;
@@ -167,6 +137,39 @@ $lang: rtl !default;
       }
     }
   }
+
+  .mat-h2, .mat-title, .mat-typography h2 {
+    font: 500 20px/32px Assistant;
+    margin: 0 0 16px;
+  }
+  .mat-h3, .mat-subheading-2, .mat-typography h3, .bank-credentials-update.ui-dialog .ui-dialog-content p, .bank-credentials-update.ui-dialog .ui-dialog-content p, .bank-credentials-update.ui-dialog .ui-dialog-content p, .bank-credentials-update.ui-dialog .ui-dialog-content p {
+    font: 400 16px/28px Assistant;
+    margin: 0 0 16px;
+  }
+  .exam {
+    border-#{$left}: 1em solid #000;
+    border-#{$right}: 3em solid #000;
+    float: $right;
+    #{$left}: 0;
+    text-align: $right;
+    direction: $lang;
+    padding: side-values($lang, 0 2em 0 1em);
+
+    > button {
+      @include padding-box-all($lang, 20px, 10px, 0px, 1px);
+    }
+  }
+
+  text-align: $right;
+
+  label {
+    text-align: $right;
+  }
+
+  .main-container {
+  }
+  @extend .font-normal;
+
   .isAccountants {
     .toolbar {
       .search {

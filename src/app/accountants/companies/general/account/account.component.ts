@@ -5,7 +5,7 @@ import {TranslateService} from '@ngx-translate/core';
 import {StorageService} from '@app/shared/services/storage.service';
 import {SharedComponent} from '@app/shared/component/shared.component';
 import {SharedService} from '@app/shared/services/shared.service';
-import {merge, Observable, of, Subject, Subscription, timer, combineLatest} from 'rxjs';
+import {combineLatest, merge, Observable, of, Subject, Subscription, timer} from 'rxjs';
 import {filter, map, shareReplay, startWith, switchMap, take, takeUntil, tap, withLatestFrom} from 'rxjs/operators';
 import {TokenService, TokenStatusResponse, TokenType} from '@app/core/token.service';
 import {FormControl, FormGroup} from '@angular/forms';
@@ -228,72 +228,72 @@ export class AccountComponent
             tap(() => (this.loader = true)),
             switchMap((selectedCompany) =>
                 combineLatest(
-              [      this.sharedService
-                  .getAccounts(selectedCompany.companyId)
-                  // this.sharedService.getAccountsSettings(selectedCompany.companyId)
-                  .pipe(
-                      tap((responseAcc: any) => {
-                          if (responseAcc.body) {
-                              const accountsWithLinkedCardsRequest =
-                                  responseAcc.body.accounts
-                                      .filter((acc:any) => acc.creditCardNum)
-                                      .map((acc:any) => {
-                                          return {uuid: acc.companyAccountId};
-                                      });
-                              this.linkedCreditCards$ = (
-                                  accountsWithLinkedCardsRequest.length
-                                      ? this.sharedService.getCreditCardDetails(
-                                          accountsWithLinkedCardsRequest
-                                      )
-                                      : of({})
-                              ).pipe(
-                                  map((responseCC: any) => {
-                                      const cCards = responseCC.body;
-                                      return cCards.reduce((acmltr, ccard) => {
-                                          if (ccard.companyAccountId in acmltr) {
-                                              acmltr[ccard.companyAccountId].push(ccard);
-                                          } else {
-                                              acmltr[ccard.companyAccountId] = [ccard];
-                                          }
-                                          return acmltr;
-                                      }, Object.create(null));
-                                  }),
-                                  shareReplay(1),
-                                  takeUntil(this.destroyed$)
-                              );
+                    [this.sharedService
+                        .getAccounts(selectedCompany.companyId)
+                        // this.sharedService.getAccountsSettings(selectedCompany.companyId)
+                        .pipe(
+                            tap((responseAcc: any) => {
+                                if (responseAcc.body) {
+                                    const accountsWithLinkedCardsRequest =
+                                        responseAcc.body.accounts
+                                            .filter((acc: any) => acc.creditCardNum)
+                                            .map((acc: any) => {
+                                                return {uuid: acc.companyAccountId};
+                                            });
+                                    this.linkedCreditCards$ = (
+                                        accountsWithLinkedCardsRequest.length
+                                            ? this.sharedService.getCreditCardDetails(
+                                                accountsWithLinkedCardsRequest
+                                            )
+                                            : of({})
+                                    ).pipe(
+                                        map((responseCC: any) => {
+                                            const cCards = responseCC.body;
+                                            return cCards.reduce((acmltr, ccard) => {
+                                                if (ccard.companyAccountId in acmltr) {
+                                                    acmltr[ccard.companyAccountId].push(ccard);
+                                                } else {
+                                                    acmltr[ccard.companyAccountId] = [ccard];
+                                                }
+                                                return acmltr;
+                                            }, Object.create(null));
+                                        }),
+                                        shareReplay(1),
+                                        takeUntil(this.destroyed$)
+                                    );
 
-                              if (
-                                  this.userService.appData.userData.companySelect
-                                      .companyId === selectedCompany.companyId
-                              ) {
-                                  this.userService.appData.userData.exampleCompany =
-                                      responseAcc.body.exampleCompany;
-                                  this.userService.appData.userData.accounts =
-                                      responseAcc.body.accounts;
-                                  if (
-                                      Array.isArray(this.userService.appData.userData.accounts)
-                                  ) {
-                                      this.userService.appData.userData.accounts.forEach(
-                                          (acc:any) => (acc.isUpToDate = acc.isUpdate)
-                                      );
-                                      // = this.isTodayPipe.transform(acc.balanceLastUpdatedDate));
-                                  }
-                                  this.sharedComponent.forceAccountsReload$.next();
-                              }
-                          }
-                      })
-                  ),
-                  this.tokenService.companyTokensGetStatus(
-                      this.userService.appData.userData.accountant,
-                      TokenType.ACCOUNT,
-                      {
-                          uuid: selectedCompany.companyId
-                      }
-                  ),
-                  this.sharedService.companyGetCustomer({
-                      companyId: selectedCompany.companyId,
-                      sourceProgramId: selectedCompany.sourceProgramId
-                  })]
+                                    if (
+                                        this.userService.appData.userData.companySelect
+                                            .companyId === selectedCompany.companyId
+                                    ) {
+                                        this.userService.appData.userData.exampleCompany =
+                                            responseAcc.body.exampleCompany;
+                                        this.userService.appData.userData.accounts =
+                                            responseAcc.body.accounts;
+                                        if (
+                                            Array.isArray(this.userService.appData.userData.accounts)
+                                        ) {
+                                            this.userService.appData.userData.accounts.forEach(
+                                                (acc: any) => (acc.isUpToDate = acc.isUpdate)
+                                            );
+                                            // = this.isTodayPipe.transform(acc.balanceLastUpdatedDate));
+                                        }
+                                        this.sharedComponent.forceAccountsReload$.next();
+                                    }
+                                }
+                            })
+                        ),
+                        this.tokenService.companyTokensGetStatus(
+                            this.userService.appData.userData.accountant,
+                            TokenType.ACCOUNT,
+                            {
+                                uuid: selectedCompany.companyId
+                            }
+                        ),
+                        this.sharedService.companyGetCustomer({
+                            companyId: selectedCompany.companyId,
+                            sourceProgramId: selectedCompany.sourceProgramId
+                        })]
                 )
             ),
             map((resSub: any) => {
@@ -371,7 +371,7 @@ export class AccountComponent
                         responseTkn.push(newObj);
                     }
                 } else if (responseTkn && responseTkn.length && accs && accs.length) {
-                    const allAccWithoutTknMatch = accs.filter((acc:any) =>
+                    const allAccWithoutTknMatch = accs.filter((acc: any) =>
                         responseTkn.every((tkn) => tkn.token !== acc.token)
                     );
                     if (allAccWithoutTknMatch.length) {
@@ -418,7 +418,7 @@ export class AccountComponent
                         return {
                             id: tknSt.token,
                             status: tknSt,
-                            children: accs.filter((acc:any) => acc.token === tknSt.token)
+                            children: accs.filter((acc: any) => acc.token === tknSt.token)
                         } as ByTokenGroup;
                     });
                 }
@@ -435,14 +435,17 @@ export class AccountComponent
 
         this.deletedAccounts$ = this.byTokenGroups$.pipe(
             withLatestFrom(this.selectedCompany$),
-            switchMap(([groups, selectedCompany]) =>
-                this.sharedService.getDeletedAccounts({
+            switchMap(([groups, selectedCompany]) => {
+                const tokenIds = Array.isArray(groups) ? groups.filter((grC) => grC.id).map((gr) => gr.id) : [];
+                return tokenIds.length ? this.sharedService.getDeletedAccounts({
                     companyId: selectedCompany.companyId,
-                    tokenIds: Array.isArray(groups) ? groups.map((gr) => gr.id) : []
-                })
-            ),
+                    tokenIds: tokenIds
+                }) : of({
+                    error: true
+                });
+            }),
             map((response: any) => {
-                if (response.error || !Array.isArray(response.body)) {
+                if (!response || (response && (response.error || !Array.isArray(response.body)))) {
                     return {};
                 }
 
@@ -462,10 +465,10 @@ export class AccountComponent
         );
 
         this.tokenStatusesUpdate$ = combineLatest(
-       [
-           this.byTokenGroups$,
-           timer(5000, 5000)
-       ]
+            [
+                this.byTokenGroups$,
+                timer(5000, 5000)
+            ]
         ).pipe(
             map(([groups]) =>
                 groups.filter((group) =>
@@ -554,8 +557,8 @@ export class AccountComponent
                     if (resp && !resp.error && resp.body === 1) {
                         tokenGroups.forEach((tknGrp) => {
                             tknGrp.children
-                                .filter((acc:any) => acc !== account && acc.primaryAccount)
-                                .forEach((acc:any) => (acc.primaryAccount = false));
+                                .filter((acc: any) => acc !== account && acc.primaryAccount)
+                                .forEach((acc: any) => (acc.primaryAccount = false));
                         });
 
                         account.primaryAccount = true;
@@ -637,7 +640,7 @@ export class AccountComponent
                                 this.userService.appData.userData.accounts =
                                     response && !response.error ? response.body.accounts : null;
                                 if (Array.isArray(this.userService.appData.userData.accounts)) {
-                                    this.userService.appData.userData.accounts.forEach((acc:any) => {
+                                    this.userService.appData.userData.accounts.forEach((acc: any) => {
                                         acc.isUpToDate = acc.isUpdate;
                                         acc.outdatedBecauseNotFound =
                                             !acc.isUpToDate &&

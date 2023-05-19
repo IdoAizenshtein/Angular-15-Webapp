@@ -302,6 +302,18 @@ export class OcrService {
         return this.httpServices.sendHttp<any>(params);
     }
 
+    getOriginalDocumentPicture(request: any): Observable<any> {
+        const params: InterfaceParamHttp<any> = {
+            method: 'post',
+            path: `${this.baseUrl}/get-original-document-picture`,
+            params: request,
+            isJson: true,
+            isProtected: true,
+            isAuthorization: true
+        };
+        return this.httpServices.sendHttp<any>(params);
+    }
+
     changeFileCompany(fileId: any, companyId: string): Observable<any> {
         return this.changeFilesCompany({filesId: fileId, companyId: companyId});
     }
@@ -399,7 +411,15 @@ export class OcrService {
         };
         return this.httpServices.sendHttp<any>(params);
     }
-
+    imageReplaceUrls(fileId: string): Observable<any> {
+        const params: InterfaceParamHttp<any> = {
+            method: 'get',
+            path: `${this.baseUrl}/image-replace-urls/${fileId}`,
+            isProtected: true,
+            isAuthorization: true
+        };
+        return this.httpServices.sendHttp<any>(params);
+    }
     rotateFile(request: any): Observable<any> {
         const params: InterfaceParamHttp<any> = {
             method: 'post',

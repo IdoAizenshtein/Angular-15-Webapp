@@ -68,7 +68,7 @@
 <!-- 	</div> -->
 </div>
 
-<div class="comapniesTable journalTransTable isDev supplierCustomersJournal">
+<div class="comapniesTable journalTransTable isDev supplierCustomersJournal" [class.hideCompanyName]="userService?.appData?.hideCompanyName">
 	<div #header class="header">
 		<div (click)="toggleCompanyFilesOrderTo('companyName')">
 			שם החברה
@@ -164,6 +164,9 @@
 			>
 			</mat-icon>
 		</div>
+		<div>
+		סטטוס קליטת קבצים
+		</div>
 		<div (click)="toggleCompanyFilesOrderTo('forCare')">
 			<mat-icon
 					[pTooltip]="'להמשך טיפול'"
@@ -214,7 +217,9 @@
 					trackClass="scrollbar">
 
 				<cdk-virtual-scroll-viewport #virtualScroll itemSize="45" scrollViewport>
-					<div *cdkVirtualFor="let company of companies;  let i = index;">
+					<div *cdkVirtualFor="let company of companies | slice
+              : currentPage * entryLimit
+              : currentPage * entryLimit + entryLimit;  let i = index;">
 						<div
 								(click)="companySelect = company"
 								[class.active]="
@@ -306,6 +311,7 @@
 							</div>
 							<div>
 								<div
+										*ngIf="!userService.appData?.hideCompanyName || !!!company.authorized"
 										#transDesc
 										[innerHTML]="
                   (company.companyHp !== null ? company.companyHp : '-')
@@ -317,14 +323,46 @@
                 "
 										class="text-ellipsis left-space"
 								></div>
+								<div
+										*ngIf="userService.appData?.hideCompanyName && !!company.authorized"
+										(mouseleave)="tooltipMoreData.hide()"
+										(mouseover)="
+
+
+                    eventRightPos($event);
+                    onScrollCubes(i);
+                    tooltipMoreData.show($event)
+                  "
+										#transDesc
+										[innerHTML]="
+                  (company.companyHp !== null ? company.companyHp : '-')
+                    | highlight: queryString
+                "
+										[pTooltip]="company.companyHp"
+										[tooltipDisabled]="
+                  transDesc.clientWidth >= transDesc.scrollWidth
+                "
+										style="font-size: 16px;"
+										class="text-ellipsis left-space link"
+
+										(click)="
+								storageService.sessionStorageSetter(
+								'suppliersAndCustomersStatus',
+								'WAIT_FOR_CONFIRM'
+								);
+								sharedComponent.selectCompanyParam(
+								company,'journalTrans/suppliersAndCustomers'
+								)
+								"
+								></div>
 							</div>
 							<div>
 								<div
-										(click)="
+										(click)="!!company.authorized &&
                   storageService.sessionStorageSetter(
                     'suppliersAndCustomersStatus',
                     'WAIT_FOR_CONFIRM'
-                  );
+                  ); !!company.authorized &&
                   sharedComponent.selectCompanyParam(
                     company,
                     'journalTrans/suppliersAndCustomers'
@@ -334,7 +372,7 @@
                   (company.forConfirm !== null ? company.forConfirm : '-')
                     | highlight: queryString
                 "
-										class="text-ellipsis link left-space"
+										[ngClass]="{'text-ellipsis link left-space': !!company.authorized}"
 								></div>
 							</div>
 							<div>
@@ -354,11 +392,11 @@
 							</div>
 							<div>
 								<mat-icon
-										(click)="
+										(click)="!!company.authorized &&
                   storageService.sessionStorageSetter(
                     'suppliersAndCustomersStatus',
                     'CREATE_JOURNAL_TRANS'
-                  );
+                  ); !!company.authorized &&
                   sharedComponent.selectCompanyParam(
                     company,
                     'journalTrans/suppliersAndCustomers'
@@ -374,17 +412,17 @@
                   width: 22px;
                 "
 								>
-									<div
+									<div 	[class.redBg]="company.filesInputStatusDesc"
 											[innerHTML]="company.journalTrans | highlight: queryString"
 											class="text-ellipsis circle"
 									></div>
 								</mat-icon>
 								<mat-icon
-										(click)="
+										(click)="!!company.authorized &&
                   storageService.sessionStorageSetter(
                     'suppliersAndCustomersStatus',
                     'CREATE_JOURNAL_TRANS'
-                  );
+                  ); !!company.authorized &&
                   sharedComponent.selectCompanyParam(
                     company,
                     'journalTrans/suppliersAndCustomers'
@@ -405,11 +443,28 @@
 
 							<div>
 								<div
-										(click)="
+										[class.red]="company.filesInputStatusDesc"
+										#filesInputStatusDesc
+										[innerHTML]="
+                  (company.filesInputStatusDescText)
+                    | highlight: queryString
+                "
+
+										[pTooltip]="company.filesInputStatusDescText"
+										[tooltipDisabled]="
+                  filesInputStatusDesc.clientWidth >= filesInputStatusDesc.scrollWidth
+                "
+										class="text-ellipsis left-space"
+								></div>
+							</div>
+
+							<div>
+								<div
+										(click)="!!company.authorized &&
                   storageService.sessionStorageSetter(
                     'suppliersAndCustomersStatus',
                     'WAIT_FOR_CARE'
-                  );
+                  ); !!company.authorized &&
                   sharedComponent.selectCompanyParam(
                     company,
                     'journalTrans/suppliersAndCustomers'
@@ -419,7 +474,7 @@
                   (company.forCare !== null ? company.forCare : '-')
                     | highlight: queryString
                 "
-										class="text-ellipsis link left-space"
+										[ngClass]="{'text-ellipsis link left-space': !!company.authorized}"
 								></div>
 								<i
 										(click)="onScrollCubes(i); tooltipEdit.toggle($event)"
@@ -1444,6 +1499,7 @@
 			[resizable]="false"
 			[visible]="(scanFilesOcrPopUp?.visible)"
 			appendTo="body"
+			maskStyleClass="scanFilesOcrPopUpMask"
 			styleClass="scanFilesOcrPopUp"
 	>
 		<div [appScrollHeight]="55" class="scroll-chrome flexCenter">
@@ -2279,6 +2335,8 @@
 								#plist_subjectsForCompany
 								(onChange)="op.hide()"
 								[dataKey]="'subjectId'"
+								name="subject"
+
 								[formControlName]="'subject'"
 								[listStyle]="{ 'max-height': '200px', width: '237px' }"
 								[optionLabel]="'subjectName'"
@@ -2466,8 +2524,6 @@
 	          [closeOnEscape]="true"
 	          [draggable]="false"
 	          [modal]="true"
-	          position="top"
-	          [style]="{'margin-top':'198px'}"
 	          [resizable]="false"
 	          [visible]="(companiesWithoutAgreement)"
 	          appendTo="body"

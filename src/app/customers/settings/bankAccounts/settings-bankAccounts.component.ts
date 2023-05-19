@@ -70,6 +70,7 @@ export class SettingsBankAccountsComponent
             } else {
                 const accClosure = this._selectedAccount;
                 const prevNickname = this._selectedAccountBeforeEdit.accountNickname;
+                this.sharedComponent.mixPanelEvent('change account nicname');
                 this.sharedService
                     .setAccountNickname({
                         companyAccountId: this._selectedAccount.companyAccountId,
@@ -150,6 +151,7 @@ export class SettingsBankAccountsComponent
     linkedCreditCards$: Observable<{ [k: string]: any[] }>;
     readonly forceReload$ = new Subject<void>();
     private readonly destroyed$ = new Subject<void>();
+    public exampleCompany: any = false;
 
     constructor(
         public userService: UserService,
@@ -211,6 +213,9 @@ export class SettingsBankAccountsComponent
             processing: false,
             onApprove: () => {
                 this.accountDeletePrompt.processing = true;
+                this.sharedComponent.mixPanelEvent('delete account', {
+                    uuid: this.accountDeletePrompt.account.companyAccountId
+                });
                 this.sharedService
                     .accountDelete(this.accountDeletePrompt.account.companyAccountId)
                     .pipe(tap(() => (this.accountDeletePrompt.processing = false)))
@@ -418,12 +423,15 @@ export class SettingsBankAccountsComponent
 
         this.deletedAccounts$ = this.byTokenGroups$.pipe(
             withLatestFrom(this.settingsComponent.selectedCompany$),
-            switchMap(([groups, selectedCompany]) =>
-                this.sharedService.getDeletedAccounts({
+            switchMap(([groups, selectedCompany]) => {
+                const tokenIds = Array.isArray(groups) ? groups.filter((grC) => grC.id).map((gr) => gr.id) : [];
+                return tokenIds.length ? this.sharedService.getDeletedAccounts({
                     companyId: selectedCompany.companyId,
-                    tokenIds: Array.isArray(groups) ? groups.map((gr) => gr.id) : []
-                })
-            ),
+                    tokenIds: tokenIds
+                }) : of({
+                    error: true
+                });
+            }),
             map((response: any) => {
                 if (response.error || !Array.isArray(response.body)) {
                     return {};
@@ -451,9 +459,9 @@ export class SettingsBankAccountsComponent
             ]
         ).pipe(
             map(([groups]) => {
-                   return  groups.filter((group) =>
+                   return  groups ? groups.filter((group) =>
                         this.tokenService.isTokenStatusProgressing(group.status.tokenStatus)
-                    )
+                    ) : []
                 }
             ),
             filter((groupsToUpdate) => groupsToUpdate.length > 0),
@@ -487,10 +495,15 @@ export class SettingsBankAccountsComponent
         this.showDeletedAccounts.valueChanges
             .pipe(takeUntil(this.destroyed$))
             .subscribe((val: any) =>
-                this.storageService.localStorageSetter(
-                    'settings-bankAccounts.showDeleted',
-                    val
-                )
+                {
+                    if(!val){
+                        this.sharedComponent.mixPanelEvent('unshow deleted accounts');
+                    }
+                    this.storageService.localStorageSetter(
+                        'settings-bankAccounts.showDeleted',
+                        val
+                    )
+                }
             );
     }
 

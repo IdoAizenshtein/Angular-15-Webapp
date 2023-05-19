@@ -9,8 +9,12 @@
             name="viewport"
     />
     <meta content="bizibox" name="keywords"/>
-    <meta content="Ido Aizenshtein, Vladislav Bogdan" name="author"/>
+    <meta content="Ido Aizenshtein" name="author"/>
     <meta content="index follow" name="robots"/>
+    <meta content='no-store' http-equiv='Cache-Control'>
+    <meta content='0' http-equiv='expires'>
+    <meta content="default-src 'self' 127.0.0.1 127.0.0.1:18623 127.0.0.1:* wss://127.0.0.1:18623 wss://127.0.0.1:* localhost bizibox.biz *.bizibox.biz google.com  *.google.com *.google.co.il google.co.il vimeo.com *.vimeo.com amazonaws.com *.amazonaws.com in.hotjar.com hotjar.com *.hotjar.com blob: 'unsafe-eval'; img-src 'self' localhost amazonaws.com *.amazonaws.com data: google-analytics.com *.google-analytics.com facebook.com *.facebook.com google.com  *.google.com *.google.co.il google.co.il vimeocdn.com *.vimeocdn.com *.google.co.il google.co.il 127.0.0.1 127.0.0.1:18623 127.0.0.1:* wss://127.0.0.1:18623 wss://127.0.0.1:*; style-src 'self' localhost fonts.googleapis.com 'unsafe-inline'; font-src 'self' localhost fonts.gstatic.com data:; script-src 'self' 'unsafe-eval' 'unsafe-inline' bizibox.biz *.bizibox.biz google.com  *.google.com gstatic.com; script-src-elem 'self' 'unsafe-eval' 'unsafe-inline' google.com  *.google.com gstatic.com *.gstatic.com  googletagmanager.com *.googletagmanager.com walkme.com *.walkme.com hotjar.com *.hotjar.com doubleclick.net *.doubleclick.net google-analytics.com *.google-analytics.com facebook.net *.facebook.net mxpnl.com *.mxpnl.com mixpanel.com *.mixpanel.com; connect-src  'self' localhost 'unsafe-eval' 'unsafe-inline' wss://127.0.0.1:18623 wss://127.0.0.1:* ws://127.0.0.1:18623 ws://127.0.0.1:* 127.0.0.1 127.0.0.1:18623 127.0.0.1:* data: bizibox.biz *.bizibox.biz google.com  *.google.com vimeo.com *.vimeo.com  amazonaws.com *.amazonaws.com in.hotjar.com hotjar.com *.hotjar.com doubleclick.net *.doubleclick.net google-analytics.com *.google-analytics.com mxpnl.com *.mxpnl.com mixpanel.com *.mixpanel.com;"
+          http-equiv="Content-Security-Policy"/>
     <meta content="התחברות ללקוחות מערכת ביזיבוקס" name="description"/>
     <meta
             content="3KP8MuXEO0_k-oBCmL3xAoxuP_NJsIPrlIoBDDjagmg"
@@ -26,68 +30,9 @@
             href="https://fonts.googleapis.com/icon?family=Material+Icons"
             rel="stylesheet"
     />
-    <!-- Google Tag Manager -->
-    <script>
-        if (window.location.hostname !== 'localhost' && window.location.hostname !== 'dev-bsecure.bizibox.biz') {
-            (function (w, d, s, l, i) {
-                w[l] = w[l] || [];
-                w[l].push({
-                    'gtm.start': new Date().getTime(),
-                    event: 'gtm.js'
-                });
-                var f = d.getElementsByTagName(s)[0],
-                    j = d.createElement(s),
-                    dl = l != 'dataLayer' ? '&l=' + l : '';
-                j.async = true;
-                j.src = 'https://www.googletagmanager.com/gtm.js?id=' + i + dl;
-                f.parentNode.insertBefore(j, f);
-            })(
-                window,
-                document,
-                'script',
-                'dataLayer',
-                'GTM-5RBQ7QX' /*'GTM-T572P7R'*/
-            );
-        }
-    </script>
-
-    <!-- End Google Tag Manager -->
-    <script type="text/javascript">
-        if (window.location.hostname !== 'localhost' && window.location.hostname !== 'dev-bsecure.bizibox.biz') {
-            (function () {
-                var walkme = document.createElement('script');
-                walkme.type = 'text/javascript';
-                walkme.async = true;
-                walkme.src =
-                    'https://cdn.walkme.com/users/ec254e397cfa4e669ba77df93abe8348/test/walkme_ec254e397cfa4e669ba77df93abe8348_https.js';
-                var s = document.getElementsByTagName('script')[0];
-                s.parentNode.insertBefore(walkme, s);
-                window._walkmeConfig = {smartLoad: true};
-            })();
-        }
-    </script>
-
-    <!-- Hotjar Tracking Code for https://bsecure.bizibox.biz -->
-    <script>
-        if (window.location.hostname !== 'localhost' && window.location.hostname !== 'dev-bsecure.bizibox.biz') {
-            (function (h, o, t, j, a, r) {
-                h.hj =
-                    h.hj ||
-                    function () {
-                        (h.hj.q = h.hj.q || []).push(arguments);
-                    };
-                h._hjSettings = {hjid: 930152, hjsv: 6};
-                a = o.getElementsByTagName('head')[0];
-                r = o.createElement('script');
-                r.async = 1;
-                r.src = t + h._hjSettings.hjid + j + h._hjSettings.hjsv;
-                a.appendChild(r);
-            })(window, document, 'https://static.hotjar.com/c/hotjar-', '.js?sv=');
-        }
-    </script>
+    <script src="/assets/js/scripts_index_load.js"></script>
 </head>
 <body>
-<!-- Google Tag Manager (noscript) -->
 <noscript>
     <iframe
             height="0"
@@ -100,5 +45,7 @@
 </noscript>
 <!-- End Google Tag Manager (noscript) -->
 <app-root></app-root>
+<script src="/assets/files/resources/dynamsoft.webtwain.min.js" defer></script>
+<script src="/assets/files/resources/src/dynamsoft.viewer.js" defer></script>
 </body>
 </html>

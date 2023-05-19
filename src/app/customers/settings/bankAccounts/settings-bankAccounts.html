@@ -217,10 +217,11 @@
                         *ngIf="
                           linkedCreditCards[itemChild.companyAccountId]?.length
                         "
-                        (click)="
+                        (click)="sharedComponent.mixPanelEvent('credit', {
+                    uuid: linkedCreditCards[itemChild.companyAccountId][0].creditCardId
+                });
                           navigateToCreditCard(
-                            linkedCreditCards[itemChild.companyAccountId][0]
-                              .creditCardId
+                            linkedCreditCards[itemChild.companyAccountId][0].creditCardId
                           )
                         "
                       >
@@ -291,7 +292,7 @@
                     *ngIf="!itemChild.primaryAccount"
                     class="showHover"
                     style="color: #038ed6"
-                    (click)="accountSetPrimary(itemChild)"
+                    (click)="sharedComponent.mixPanelEvent('lead account');accountSetPrimary(itemChild)"
                   >
                     בחירת חשבון מוביל
                   </span>
@@ -372,6 +373,9 @@
                           linkedCreditCards[itemChild.companyAccountId]?.length
                         "
                         (click)="
+                        sharedComponent.mixPanelEvent('credit', {
+                    uuid: linkedCreditCards[itemChild.companyAccountId][0].creditCardId
+                });
                           navigateToCreditCard(
                             linkedCreditCards[itemChild.companyAccountId][0]
                               .creditCardId
@@ -445,7 +449,7 @@
                     *ngIf="!itemChild.primaryAccount"
                     class="showHover"
                     style="color: #038ed6"
-                    (click)="accountSetPrimary(itemChild)"
+                    (click)="sharedComponent.mixPanelEvent('lead account');accountSetPrimary(itemChild)"
                   >
                     בחירת חשבון מוביל
                   </span>
@@ -553,13 +557,13 @@
 
 <app-token-create-dialog
   *ngIf="addTokenPrompt.visible"
+  [exampleCompany]="exampleCompany"
   [(display)]="addTokenPrompt.visible"
   [settings]="addTokenPrompt.form"
   [companyId]="(settingsComponent.selectedCompany$ | async).companyId"
   [type]="tokenTypes.ACCOUNT"
   (openCallService)="sharedComponent.showOpenTicket()"
-  (creationSuccess)="forceReload$.next()"
->
+  (creationSuccess)="forceReload$.next()">
 </app-token-create-dialog>
 
 <p-dialog (visibleChange)=" accountRestorePrompt.visible = $event"
@@ -615,7 +619,7 @@
 
 <p-dialog (visibleChange)=" accountDeletePrompt.visible = $event"
 		[visible]="(accountDeletePrompt?.visible)"
-  
+
   styleClass="deleteMovementDialog"
   appendTo="body"
   [style]="{width: 360 + 'px'}"

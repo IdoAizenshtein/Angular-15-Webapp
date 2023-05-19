@@ -22,7 +22,7 @@ import {EMPTY, fromEvent, interval, lastValueFrom, Observable, Subject, timer, z
 import {SharedService} from '@app/shared/services/shared.service';
 import {DomSanitizer, SafeHtml, SafeUrl} from '@angular/platform-browser';
 import {FileStatus} from '@app/accountants/companies/shared/file-status.model';
-import {distinctUntilChanged, filter, map, startWith, switchMap, take, takeUntil, tap} from 'rxjs/operators';
+import {distinctUntilChanged, filter, map, retry, startWith, switchMap, take, takeUntil, tap} from 'rxjs/operators';
 import {ReportService} from '@app/core/report.service';
 import {OcrService} from '@app/accountants/companies/shared/ocr.service';
 import {ValidatorsFactory} from '@app/shared/component/foreign-credentials/validators';
@@ -34,6 +34,7 @@ import {Listbox} from 'primeng/listbox/listbox';
 import {HttpServices} from '@app/shared/services/http.services';
 // @ts-ignore
 declare var Dynamsoft: any = window['Dynamsoft'];
+// import Dynamsoft from 'dwt';
 // import {CdkDragDrop, moveItemInArray, transferArrayItem, CdkDrag} from '@angular/cdk/drag-drop';
 // import {DragDropModule} from '@angular/cdk/drag-drop';
 // @NgModule({
@@ -192,6 +193,7 @@ export class JournalTransComponent implements AfterViewInit, OnDestroy, OnInit {
     public companiesWithoutAgreement: any = false;
     readonly docToSend: {
         visible: boolean;
+        sendToClient_show: boolean;
         form: any;
         fd: any;
         showCheckBox: boolean;
@@ -199,6 +201,7 @@ export class JournalTransComponent implements AfterViewInit, OnDestroy, OnInit {
         show: (fd?: any, showFloatNav?: any, showCheckBox?: any) => void;
     } = {
         visible: false,
+        sendToClient_show: true,
         showCheckBox: true,
         form: new FormGroup({
             sendType: new FormControl('MAIL'),
@@ -270,8 +273,11 @@ export class JournalTransComponent implements AfterViewInit, OnDestroy, OnInit {
     private _window = typeof window === 'object' && window ? window : null;
     private readonly destroyed$ = new Subject<void>();
     private TextDecoder: any;
+    public bankCreditBillingExtrapolation: any = false;
 
     // tslint:disable-next-line:member-ordering
+    public extrapolationErrorMessage: any;
+
     constructor(
         public userService: UserService,
         public reportService: ReportService,
@@ -408,7 +414,7 @@ export class JournalTransComponent implements AfterViewInit, OnDestroy, OnInit {
                     );
                 this.docToRemove.visible = true;
             },
-            approve: () => {
+            approve: async () => {
                 const addToDetails =
                     '\n בברכה, \n' +
                     (this.docToRemove.form.get('from').value
@@ -418,8 +424,10 @@ export class JournalTransComponent implements AfterViewInit, OnDestroy, OnInit {
                         this.userService.appData.userData.lastName);
                 // console.log(this.docToRemove.form);
                 this.docToRemove.visible = false;
+                const gRecaptcha = await this.userService.executeAction('remove-unknown-file');
                 this.sharedService
                     .removeUnknownFile({
+                        gRecaptcha: gRecaptcha,
                         filesId:
                             this.componentRefChild.showFloatNav &&
                             this.docToRemove.fd === null
@@ -486,6 +494,7 @@ export class JournalTransComponent implements AfterViewInit, OnDestroy, OnInit {
         };
         this.docToSend = {
             visible: false,
+            sendToClient_show: true,
             form: new FormGroup({
                 sendType: new FormControl('MAIL'),
                 targetUserId: new FormControl(null),
@@ -537,13 +546,33 @@ export class JournalTransComponent implements AfterViewInit, OnDestroy, OnInit {
                     this.userService.appData.userData.companySelect.companyId
                 );
 
+                const filesIds = this.docToSend.form.value.sendToClient
+                    ? this.componentRefChild.showFloatNav &&
+                    this.docToSend.fd === null
+                        ? this.componentRefChild.showFloatNav.selcetedFiles.map(
+                            (file) =>
+                                this.componentRefChild.fileStatus ===
+                                'CREATE_JOURNAL_TRANS'
+                                    ? file.paymentId
+                                    : file.fileId
+                        )
+                        : [this.docToSend.fd]
+                    : [];
+
+                let sendToClient = true;
+                if (filesIds.length === 1 && filesIds[0] === null) {
+                    sendToClient = false;
+                    this.docToSend.sendToClient_show = false;
+                } else {
+                    this.docToSend.sendToClient_show = true;
+                }
                 this.docToSend.form.reset({
                     // sendType: (this.contactsWithoutAgreement.length) ? 'WHATSAPP' : (sendType ? sendType : 'MAIL'),
                     sendType: sendType ? sendType : 'MAIL',
                     targetUserId: targetUserId ? targetUserId : null,
                     from: null,
                     fromMail: null,
-                    sendToClient: true,
+                    sendToClient: sendToClient,
                     subject: {
                         companyId: '',
                         subjectId: '22222222-2222-2222-2222-222222222222',
@@ -696,7 +725,7 @@ export class JournalTransComponent implements AfterViewInit, OnDestroy, OnInit {
 
                 this.docToSend.visible = true;
             },
-            approve: () => {
+            approve: async () => {
                 if (this.docToSend.form.value.toMail) {
                     this.storageService.localStorageSetter(
                         'toMail_' +
@@ -720,77 +749,84 @@ export class JournalTransComponent implements AfterViewInit, OnDestroy, OnInit {
                         this.userService.appData.userData.lastName);
                 // console.log(this.docToSend.form);
                 this.docToSend.visible = false;
+
+
+                const gRecaptcha = await this.userService.executeAction('send-client-message');
+                const sendClientMessageParams =    this.docToSend.form.value.sendType === 'WHATSAPP'
+                    ? {
+                        gRecaptcha: gRecaptcha,
+                        fileIds: this.docToSend.form.value.sendToClient
+                            ? this.componentRefChild.showFloatNav &&
+                            this.docToSend.fd === null
+                                ? this.componentRefChild.showFloatNav.selcetedFiles.map(
+                                    (file) =>
+                                        this.componentRefChild.fileStatus ===
+                                        'CREATE_JOURNAL_TRANS'
+                                            ? file.paymentId
+                                            : file.fileId
+                                )
+                                : [this.docToSend.fd]
+                            : [],
+                        details:
+                            !this.docToSend.form.value.subject ||
+                            this.docToSend.form.value.subject.subjectText === ''
+                                ? null
+                                : this.docToSend.form.value.subject.subjectText,
+                        from: null,
+                        fromMail: null,
+                        sendType: this.docToSend.form.value.sendType,
+                        subject:
+                            !this.docToSend.form.value.subject ||
+                            this.docToSend.form.value.subject.subjectName === ''
+                                ? null
+                                : this.docToSend.form.value.subject.subjectName,
+                        toMail: null,
+                        targetUserId: this.docToSend.form.value.targetUserId
+                    }
+                    : {
+                        gRecaptcha: gRecaptcha,
+                        fileIds: this.docToSend.form.value.sendToClient
+                            ? this.componentRefChild.showFloatNav &&
+                            this.docToSend.fd === null
+                                ? this.componentRefChild.showFloatNav.selcetedFiles.map(
+                                    (file) =>
+                                        this.componentRefChild.fileStatus ===
+                                        'CREATE_JOURNAL_TRANS'
+                                            ? file.paymentId
+                                            : file.fileId
+                                )
+                                : [this.docToSend.fd]
+                            : [],
+                        details:
+                            !this.docToSend.form.value.subject ||
+                            this.docToSend.form.value.subject.subjectText === ''
+                                ? null
+                                : this.docToSend.form.value.subject.subjectText +
+                                addToDetails,
+                        from:
+                            this.docToSend.form.value.from === ''
+                                ? null
+                                : this.docToSend.form.value.from,
+                        fromMail:
+                            this.docToSend.form.value.fromMail === ''
+                                ? null
+                                : this.docToSend.form.value.fromMail,
+                        sendType: this.docToSend.form.value.sendType,
+                        subject:
+                            !this.docToSend.form.value.subject ||
+                            this.docToSend.form.value.subject.subjectName === ''
+                                ? null
+                                : this.docToSend.form.value.subject.subjectName,
+                        toMail:
+                            this.docToSend.form.value.toMail === ''
+                                ? null
+                                : this.docToSend.form.value.toMail
+                    }
+                this.sharedComponent.mixPanelEvent('hodaa lelakoh', {
+                    count: sendClientMessageParams.fileIds.length
+                });
                 this.sharedService
-                    .sendClientMessage(
-                        this.docToSend.form.value.sendType === 'WHATSAPP'
-                            ? {
-                                fileIds: this.docToSend.form.value.sendToClient
-                                    ? this.componentRefChild.showFloatNav &&
-                                    this.docToSend.fd === null
-                                        ? this.componentRefChild.showFloatNav.selcetedFiles.map(
-                                            (file) =>
-                                                this.componentRefChild.fileStatus ===
-                                                'CREATE_JOURNAL_TRANS'
-                                                    ? file.paymentId
-                                                    : file.fileId
-                                        )
-                                        : [this.docToSend.fd]
-                                    : [],
-                                details:
-                                    !this.docToSend.form.value.subject ||
-                                    this.docToSend.form.value.subject.subjectText === ''
-                                        ? null
-                                        : this.docToSend.form.value.subject.subjectText,
-                                from: null,
-                                fromMail: null,
-                                sendType: this.docToSend.form.value.sendType,
-                                subject:
-                                    !this.docToSend.form.value.subject ||
-                                    this.docToSend.form.value.subject.subjectName === ''
-                                        ? null
-                                        : this.docToSend.form.value.subject.subjectName,
-                                toMail: null,
-                                targetUserId: this.docToSend.form.value.targetUserId
-                            }
-                            : {
-                                fileIds: this.docToSend.form.value.sendToClient
-                                    ? this.componentRefChild.showFloatNav &&
-                                    this.docToSend.fd === null
-                                        ? this.componentRefChild.showFloatNav.selcetedFiles.map(
-                                            (file) =>
-                                                this.componentRefChild.fileStatus ===
-                                                'CREATE_JOURNAL_TRANS'
-                                                    ? file.paymentId
-                                                    : file.fileId
-                                        )
-                                        : [this.docToSend.fd]
-                                    : [],
-                                details:
-                                    !this.docToSend.form.value.subject ||
-                                    this.docToSend.form.value.subject.subjectText === ''
-                                        ? null
-                                        : this.docToSend.form.value.subject.subjectText +
-                                        addToDetails,
-                                from:
-                                    this.docToSend.form.value.from === ''
-                                        ? null
-                                        : this.docToSend.form.value.from,
-                                fromMail:
-                                    this.docToSend.form.value.fromMail === ''
-                                        ? null
-                                        : this.docToSend.form.value.fromMail,
-                                sendType: this.docToSend.form.value.sendType,
-                                subject:
-                                    !this.docToSend.form.value.subject ||
-                                    this.docToSend.form.value.subject.subjectName === ''
-                                        ? null
-                                        : this.docToSend.form.value.subject.subjectName,
-                                toMail:
-                                    this.docToSend.form.value.toMail === ''
-                                        ? null
-                                        : this.docToSend.form.value.toMail
-                            }
-                    )
+                    .sendClientMessage(sendClientMessageParams)
                     .subscribe(
                         () => {
                             if (
@@ -981,6 +1017,9 @@ export class JournalTransComponent implements AfterViewInit, OnDestroy, OnInit {
                     this.docNote.visible = false;
                     return;
                 }
+
+                this.sharedComponent.mixPanelEvent('add note');
+
                 if (
                     this.componentRefChild.fileStatus === 'BANK' ||
                     this.componentRefChild.fileStatus === 'CREDIT'
@@ -1700,14 +1739,14 @@ export class JournalTransComponent implements AfterViewInit, OnDestroy, OnInit {
                 this.router.navigate([], navigationExtras);
             }
         });
-        Dynamsoft.DWT.ResourcesPath = '/assets/files/Resources';
-        // Dynamsoft.DWT.ResourcesPath = 'assets/dwt-resources';
-        Dynamsoft.DWT.ProductKey =
+        Dynamsoft.WebTwainEnv.ResourcesPath = '/assets/files/resources';
+        // Dynamsoft.WebTwainEnv.ResourcesPath = 'assets/dwt-resources';
+        Dynamsoft.WebTwainEnv.ProductKey =
             'f0068WQAAAMjD37MYQuF8gD5cX23zdlnKwTn6csMXDHsXWOK4CRS4lDE82sTzeW1ejTcOS7m7gOE9leRs0VSPDlpjDkIWENg=';
-        // Dynamsoft.DWT.ProductKey = 't0115YQEAADLdsKeUCK4+tJktPdfzkeFCkXXNRfl+fAMlzbNS/nDM0sXKq9mW/WFrty8KF3g7lNtAYfUOiICxcac/R4b8dBDJIczVQygkgTcBywD7uHkqFV0+gY9CX58UiSYJd4uYkjBa/RBSgJwlY3AAym9Xsw==';
-        Dynamsoft.DWT.AutoLoad = false;
+        // Dynamsoft.WebTwainEnv.ProductKey = 't0115YQEAADLdsKeUCK4+tJktPdfzkeFCkXXNRfl+fAMlzbNS/nDM0sXKq9mW/WFrty8KF3g7lNtAYfUOiICxcac/R4b8dBDJIczVQygkgTcBywD7uHkqFV0+gY9CX58UiSYJd4uYkjBa/RBSgJwlY3AAym9Xsw==';
+        Dynamsoft.WebTwainEnv.AutoLoad = false;
         if (this.isWindows) {
-            Dynamsoft.DWT.RegisterEvent('OnWebTwainReady', () => {
+            Dynamsoft.WebTwainEnv.RegisterEvent('OnWebTwainReady', () => {
                 this.Dynamsoft_OnReady();
             });
         }
@@ -1818,7 +1857,9 @@ export class JournalTransComponent implements AfterViewInit, OnDestroy, OnInit {
             this.filesOriginal = [];
             this.fileDropRef.nativeElement.type = 'text';
             setTimeout(() => {
-                this.fileDropRef.nativeElement.type = 'file';
+                if (this.fileDropRef && this.fileDropRef.nativeElement) {
+                    this.fileDropRef.nativeElement.type = 'file';
+                }
             }, 200);
             this.progress = false;
             this.fileViewer = false;
@@ -1878,7 +1919,9 @@ export class JournalTransComponent implements AfterViewInit, OnDestroy, OnInit {
         this.filesOriginal = [];
         this.fileDropRef.nativeElement.type = 'text';
         setTimeout(() => {
-            this.fileDropRef.nativeElement.type = 'file';
+            if (this.fileDropRef && this.fileDropRef.nativeElement) {
+                this.fileDropRef.nativeElement.type = 'file';
+            }
         }, 200);
         this.progress = false;
         this.fileViewer = false;
@@ -1926,7 +1969,9 @@ export class JournalTransComponent implements AfterViewInit, OnDestroy, OnInit {
                     this.filesOriginal = [];
                     this.fileDropRef.nativeElement.type = 'text';
                     setTimeout(() => {
-                        this.fileDropRef.nativeElement.type = 'file';
+                        if (this.fileDropRef && this.fileDropRef.nativeElement) {
+                            this.fileDropRef.nativeElement.type = 'file';
+                        }
                     }, 200);
                     this.progress = false;
                     this.fileViewer = false;
@@ -1964,7 +2009,9 @@ export class JournalTransComponent implements AfterViewInit, OnDestroy, OnInit {
         if (this.fileDropRef && this.fileDropRef.nativeElement) {
             this.fileDropRef.nativeElement.type = 'text';
             setTimeout(() => {
-                this.fileDropRef.nativeElement.type = 'file';
+                if (this.fileDropRef && this.fileDropRef.nativeElement) {
+                    this.fileDropRef.nativeElement.type = 'file';
+                }
             }, 200);
         }
         this.progress = false;
@@ -2025,18 +2072,18 @@ export class JournalTransComponent implements AfterViewInit, OnDestroy, OnInit {
             ObjString = [
                 '<div class="header-scanPopUpInstall">' +
                 '<h1> זיהוי סורקים </h1>' +
-                '<span class="fa fa-fw fa-times" onclick="Dynamsoft.DWT.CloseDialog()">&nbsp;</span>' +
+                '<span class="fa fa-fw fa-times" onclick="Dynamsoft.WebTwainEnv.CloseDialog()">&nbsp;</span>' +
                 '</div>'
             ];
             ObjString.push(
                 '<div style="display: flex;justify-content: center;align-items: center;margin: 15px 20px 0px 20px;"><a id="dwt-btn-install" style="display: inline-block;" target="_blank" href="'
             );
             let url = '';
-            if (iPlatform === Dynamsoft.DWT.EnumDWT_PlatformType.enumWindow) {
+            if (iPlatform === Dynamsoft.EnumDWT_PlatformType.enumWindow) {
                 url = '/assets/files/resources/dist/DynamsoftServiceSetup.msi';
-            } else if (iPlatform === Dynamsoft.DWT.EnumDWT_PlatformType.enumMac) {
+            } else if (iPlatform === Dynamsoft.EnumDWT_PlatformType.enumMac) {
                 url = '/assets/files/resources/dist/DynamsoftServiceSetup.pkg';
-            } else if (iPlatform === Dynamsoft.DWT.EnumDWT_PlatformType.enumLinux) {
+            } else if (iPlatform === Dynamsoft.EnumDWT_PlatformType.enumLinux) {
                 url = '/assets/files/resources/dist/DynamsoftServiceSetup.deb';
             }
             ObjString.push(url);
@@ -2065,7 +2112,7 @@ export class JournalTransComponent implements AfterViewInit, OnDestroy, OnInit {
 
             ObjString.push(
                 '<div class="scanPopUpInstall-text">' +
-                'כדי להתחיל לסרוק ישירות מהסורק שבמשרדך ל- bizobox' +
+                'כדי להתחיל לסרוק ישירות מהסורק שבמשרדך ל- bizibox' +
                 '<br>' +
                 'נבצע תהליך התקנה חד פעמי של תוכנה לזיהוי סורקים.' +
                 '<strong>' +
@@ -2108,7 +2155,7 @@ export class JournalTransComponent implements AfterViewInit, OnDestroy, OnInit {
             }
 
             // @ts-ignore
-            Dynamsoft.DWT.ShowDialog(
+            Dynamsoft.WebTwainEnv.ShowDialog(
                 window['promptDlgWidth'],
                 0,
                 ObjString.join('')
@@ -2152,16 +2199,16 @@ export class JournalTransComponent implements AfterViewInit, OnDestroy, OnInit {
             if ((new Date() - window['reconnectTime']) / 1000 > 30) {
                 return;
             }
-            Dynamsoft.DWT['CheckConnectToTheService'](
+            Dynamsoft.WebTwainEnv['CheckConnectToTheService'](
                 function () {
-                    Dynamsoft.DWT['ConnectToTheService']();
+                    Dynamsoft.WebTwainEnv['ConnectToTheService']();
                 },
                 function () {
                     setTimeout(window['DWT_Reconnect'], 1000);
                 }
             );
         };
-        Dynamsoft.DWT.Load();
+        Dynamsoft.WebTwainEnv.Load();
     }
 
     unload() {
@@ -2172,7 +2219,7 @@ export class JournalTransComponent implements AfterViewInit, OnDestroy, OnInit {
                     elem.DWObject &&
                     elem.DWObject.config.containerID !== 'dwtcontrolContainer'
                 ) {
-                    Dynamsoft.DWT.DeleteDWTObject(
+                    Dynamsoft.WebTwainEnv.DeleteDWTObject(
                         elem.DWObject.config.containerID
                     );
                 }
@@ -2196,7 +2243,7 @@ export class JournalTransComponent implements AfterViewInit, OnDestroy, OnInit {
         this.showProgressScan = false;
         this.showScanLoader = false;
         this.fileViewer = false;
-        Dynamsoft.DWT.Unload();
+        Dynamsoft.WebTwainEnv.Unload();
         location.reload();
     }
 
@@ -2237,7 +2284,7 @@ export class JournalTransComponent implements AfterViewInit, OnDestroy, OnInit {
         this.dynamsoftReady = true;
         this.scanerList = [];
 
-        Dynamsoft.DWT.CreateDWTObjectEx(
+        Dynamsoft.WebTwainEnv.CreateDWTObjectEx(
             {
                 WebTwainId: 'dwtcontrolContainer'
             },
@@ -2392,7 +2439,7 @@ export class JournalTransComponent implements AfterViewInit, OnDestroy, OnInit {
                 this.arr[this.index].DWObject.config.containerID !==
                 'dwtcontrolContainer'
             ) {
-                Dynamsoft.DWT.DeleteDWTObject(
+                Dynamsoft.WebTwainEnv.DeleteDWTObject(
                     this.arr[this.index].DWObject.config.containerID
                 );
                 this.arr.splice(this.index, 1);
@@ -2416,7 +2463,7 @@ export class JournalTransComponent implements AfterViewInit, OnDestroy, OnInit {
             //base64String, if not empty, it overrides settings and more settings.
             settings: {
                 exception: 'fail', // "ignore" (default) or "fail",
-                pixelType: Dynamsoft.DWT.EnumDWT_PixelType.TWPT_RGB, //rgb, bw, gray, etc
+                pixelType: Dynamsoft.EnumDWT_PixelType.TWPT_RGB, //rgb, bw, gray, etc
                 resolution: 200, // 300
                 bFeeder: true,
                 bDuplex: false //whether to enable duplex
@@ -2424,8 +2471,8 @@ export class JournalTransComponent implements AfterViewInit, OnDestroy, OnInit {
             moreSettings: {
                 exception: 'fail', // "ignore" or “fail”
                 // bitDepth: 24, //1,8,24,etc
-                pageSize: Dynamsoft.DWT.EnumDWT_CapSupportedSizes.TWSS_A4, //A4, etc.
-                unit: Dynamsoft.DWT.EnumDWT_UnitType.TWUN_INCHES
+                pageSize: Dynamsoft.EnumDWT_CapSupportedSizes.TWSS_A4, //A4, etc.
+                unit: Dynamsoft.EnumDWT_UnitType.TWUN_INCHES
                 // layout: {
                 //     left: float,
                 //     top: float,
@@ -2561,7 +2608,7 @@ export class JournalTransComponent implements AfterViewInit, OnDestroy, OnInit {
                         this.arr[this.index].DWObject.config.containerID !==
                         'dwtcontrolContainer'
                     ) {
-                        Dynamsoft.DWT.DeleteDWTObject(
+                        Dynamsoft.WebTwainEnv.DeleteDWTObject(
                             this.arr[this.index].DWObject.config.containerID
                         );
                         this.arr.splice(this.index, 1);
@@ -2607,7 +2654,7 @@ export class JournalTransComponent implements AfterViewInit, OnDestroy, OnInit {
             this.arr.push({
                 DWObject: null
             });
-            Dynamsoft.DWT.CreateDWTObjectEx(
+            Dynamsoft.WebTwainEnv.CreateDWTObjectEx(
                 {
                     WebTwainId: 'dwtcontrolContainer' + this.index
                 },
@@ -2715,7 +2762,9 @@ export class JournalTransComponent implements AfterViewInit, OnDestroy, OnInit {
         }
         this.fileDropRef.nativeElement.type = 'text';
         setTimeout(() => {
-            this.fileDropRef.nativeElement.type = 'file';
+            if (this.fileDropRef && this.fileDropRef.nativeElement) {
+                this.fileDropRef.nativeElement.type = 'file';
+            }
         }, 200);
         if (!this.files.length) {
             this.fileViewer = false;
@@ -3290,7 +3339,13 @@ export class JournalTransComponent implements AfterViewInit, OnDestroy, OnInit {
             );
             const progress = new Subject<number>();
             progress.next(0);
-            this.http.request(req).subscribe(
+            this.http.request(req)
+                .pipe(
+                    retry({
+                        count: 3,
+                        delay: 1500
+                    })
+                ).subscribe(
                 {
                     next: (event) => {
                         if (event.type === HttpEventType.UploadProgress) {
@@ -3395,52 +3450,60 @@ export class JournalTransComponent implements AfterViewInit, OnDestroy, OnInit {
             );
             const progress = new Subject<number>();
             progress.next(0);
-            this.http.request(req).subscribe(
-                (event) => {
-                    if (event.type === HttpEventType.UploadProgress) {
-                        const percentDone = Math.round((100 * event.loaded) / event.total);
-                        progress.next(percentDone);
-                        percentDoneTotal[index] = percentDone / files.length;
-                        const totalAll = percentDoneTotal.reduce((a, b) => a + b, 0);
-                        // console.log('totalAll: ', totalAll);
-                        this.progressAll.next(Math.round(totalAll));
-                    } else if (event instanceof HttpResponse) {
-                        progress.complete();
-                    }
-                },
-                (error) => {
-                    const reqServer = new HttpRequest(
-                        'POST',
-                        this.httpServices.mainUrl +
-                        '/v1/ocr/upload-workaround/' +
-                        this.scanFilesOcrPopUp.urlsFiles.links[index].workaroundUploadUrl,
-                        file,
-                        {
-                            headers: new HttpHeaders({
-                                'Content-Type': 'application/octet-stream',
-                                Authorization: this.userService.appData.token
-                            }),
-                            reportProgress: true
+            this.http.request(req)
+                .pipe(
+                    retry({
+                        count: 3,
+                        delay: 1500
+                    })
+                ).subscribe(
+                {
+                    next: (event) => {
+                        if (event.type === HttpEventType.UploadProgress) {
+                            const percentDone = Math.round((100 * event.loaded) / event.total);
+                            progress.next(percentDone);
+                            percentDoneTotal[index] = percentDone / files.length;
+                            const totalAll = percentDoneTotal.reduce((a, b) => a + b, 0);
+                            // console.log('totalAll: ', totalAll);
+                            this.progressAll.next(Math.round(totalAll));
+                        } else if (event instanceof HttpResponse) {
+                            progress.complete();
                         }
-                    );
-                    this.http.request(reqServer).subscribe(
-                        (event) => {
-                            if (event.type === HttpEventType.UploadProgress) {
-                                const percentDone = Math.round(
-                                    (100 * event.loaded) / event.total
-                                );
-                                progress.next(percentDone);
-                                percentDoneTotal[index] = percentDone / files.length;
-                                const totalAll = percentDoneTotal.reduce((a, b) => a + b, 0);
-                                // console.log('totalAll: ', totalAll);
-                                this.progressAll.next(Math.round(totalAll));
-                            } else if (event instanceof HttpResponse) {
-                                progress.complete();
+                    },
+                    error: (error) => {
+                        const reqServer = new HttpRequest(
+                            'POST',
+                            this.httpServices.mainUrl +
+                            '/v1/ocr/upload-workaround/' +
+                            this.scanFilesOcrPopUp.urlsFiles.links[index].workaroundUploadUrl,
+                            file,
+                            {
+                                headers: new HttpHeaders({
+                                    'Content-Type': 'application/octet-stream',
+                                    Authorization: this.userService.appData.token
+                                }),
+                                reportProgress: true
                             }
-                        },
-                        (error) => {
-                        }
-                    );
+                        );
+                        this.http.request(reqServer).subscribe(
+                            (event) => {
+                                if (event.type === HttpEventType.UploadProgress) {
+                                    const percentDone = Math.round(
+                                        (100 * event.loaded) / event.total
+                                    );
+                                    progress.next(percentDone);
+                                    percentDoneTotal[index] = percentDone / files.length;
+                                    const totalAll = percentDoneTotal.reduce((a, b) => a + b, 0);
+                                    // console.log('totalAll: ', totalAll);
+                                    this.progressAll.next(Math.round(totalAll));
+                                } else if (event instanceof HttpResponse) {
+                                    progress.complete();
+                                }
+                            },
+                            (error) => {
+                            }
+                        );
+                    }
                 }
             );
 
@@ -4028,6 +4091,38 @@ export class JournalTransComponent implements AfterViewInit, OnDestroy, OnInit {
                 // });
             }
         }
+    }
+
+    billingExtrapolation() {
+        if (!this.bankCreditBillingExtrapolation) {
+            this.bankCreditBillingExtrapolation = true;
+        }
+
+        this.sharedService
+            .bankCreditBillingExtrapolation({
+                uuid: this.userService.appData.userData.companySelect.companyId
+            })
+            .subscribe((response) => {
+                    this.bankCreditBillingExtrapolation = response ? response['body'] : response;
+                    if (this.bankCreditBillingExtrapolation && this.bankCreditBillingExtrapolation.length) {
+                        const month = this.userService.appData.moment(this.bankCreditBillingExtrapolation[0].month);
+                        this.bankCreditBillingExtrapolation[0].month = new Date(month.year(), month.month(), month.date());
+                    }
+                },
+                (error) => {
+                    this.extrapolationErrorMessage = error.error.message;
+                });
+    }
+
+    updateFreeBillingMonth(date: any) {
+        this.sharedService
+            .updateFreeBillingMonth({
+                companyId: this.userService.appData.userData.companySelect.companyId,
+                date: date
+            })
+            .subscribe((response) => {
+                this.billingExtrapolation();
+            });
     }
 
     ngOnDestroy() {

@@ -19,8 +19,7 @@
             [label]="'עם סוג תנועה'"
             [value]="true"
             inputId="radio2"
-            name="radioGroupInterested"
-    >
+            name="radioGroupInterested">
     </p-radioButton>
 </div>
 <ng-container *ngIf="interested">
@@ -52,7 +51,7 @@
                 [appendTo]="isModal ? 'parent' : 'body'"
                 class="scrollPage scrollbar-dynamic"
         >
-            <div *ngIf="!isModal" class="table">
+            <div *ngIf="showAllTypes" class="table">
                 <div class="titleTable">הוצאה</div>
                 <div class="headerTable">
                     <div>&nbsp;</div>
@@ -140,7 +139,7 @@
                                         appendTo="body"
                                         dataKey="transTypeCode"
                                         emptyFilterMessage="לא נמצאו תוצאות"
-                                        filterBy="value.transTypeCode,value.transTypeName"
+                                        filterBy="transTypeCode,transTypeName"
                                         optionDisabled="disabled"
                                         optionLabel="transTypeCode"
                                         panelStyleClass="transTypeAllDD-panel"
@@ -375,7 +374,7 @@
                     </ng-container>
                 </div>
             </div>
-            <div *ngIf="!isModal" class="table">
+            <div *ngIf="showAllTypes" class="table">
                 <div class="titleTable">הכנסה</div>
                 <div class="headerTable">
                     <div>&nbsp;</div>
@@ -463,7 +462,7 @@
                                         appendTo="body"
                                         dataKey="transTypeCode"
                                         emptyFilterMessage="לא נמצאו תוצאות"
-                                        filterBy="value.transTypeCode,value.transTypeName"
+                                        filterBy="transTypeCode,transTypeName"
                                         optionDisabled="disabled"
                                         optionLabel="transTypeCode"
                                         panelStyleClass="transTypeAllDD-panel"
@@ -788,7 +787,7 @@
                                         appendTo="body"
                                         dataKey="transTypeCode"
                                         emptyFilterMessage="לא נמצאו תוצאות"
-                                        filterBy="value.transTypeCode,value.transTypeName"
+                                        filterBy="transTypeCode,transTypeName"
                                         optionDisabled="disabled"
                                         optionLabel="transTypeCode"
                                         panelStyleClass="transTypeAllDD-panel"
@@ -1113,7 +1112,7 @@
                                         appendTo="body"
                                         dataKey="transTypeCode"
                                         emptyFilterMessage="לא נמצאו תוצאות"
-                                        filterBy="value.transTypeCode,value.transTypeName"
+                                        filterBy="transTypeCode,transTypeName"
                                         optionDisabled="disabled"
                                         optionLabel="transTypeCode"
                                         panelStyleClass="transTypeAllDD-panel"

@@ -2,7 +2,7 @@
 	<h2 class="titlePage">
 		<i>{{ 'menu.accountants.companies.products' | translate }}</i>
 	</h2>
-	
+
 	<div
 			class="filterRow"
 			style="
@@ -31,7 +31,7 @@
 			</div>
 		</div>
 	</div>
-	
+
 	<div class="comapniesTable companyProducts">
 		<div #header class="header">
 			<div #companyNameColumn>
@@ -64,7 +64,7 @@
 				>
 				</app-tooltip-category>
 			</div>
-			
+
 			<div>
 				<app-tooltip-category
 						(changed)="filterCategory($event)"
@@ -145,7 +145,7 @@
 			<div *ngIf="loader" class="loader">
 				<div class="circle"></div>
 			</div>
-			
+
 			<ng-container *ngIf="companies && companies.length">
 				<div
 						(click)="resetActive()"
@@ -181,7 +181,7 @@
 		              class="link text-ellipsis"
               >
               </span>
-							
+
 							<p-overlayPanel
 									#tooltipMoreData
 									[style]="{
@@ -200,7 +200,7 @@
 											שם בסיס נתונים |
 											{{ !company?.yearlyProgram ? 'רב שנתי' : 'שנתי' }}
 										</p>
-										
+
 										<p
 												*ngIf="companyDataObj && companyDataObj?.dbName"
 												style="margin-right: 20px"
@@ -210,7 +210,7 @@
 									</div>
 									<div [class.red]="company.companyColor === 'RED'">
 										<small> טעינה אחרונה </small>
-										
+
 										<small
 												*ngIf="companyDataObj && companyDataObj?.dataReceiveDate"
 												style="margin-right: 20px"
@@ -222,7 +222,7 @@
 										</small>
 									</div>
 								</ng-container>
-								
+
 								<ng-template #loader>
 									<div class="loaderPercent" style="justify-content: center">
 										<div class="circle"></div>
@@ -230,7 +230,7 @@
 								</ng-template>
 							</p-overlayPanel>
 						</div>
-						
+
 						<div
 								[innerHTML]="company.companyHp || '-' | highlight: queryString"
 								[ngStyle]="{
@@ -247,7 +247,7 @@
                   ? '/assets/images/productExist.png'
                   : '/assets/images/productNotExist.png'
               "
-						
+
 						/>
 					</div>
 					<div>
@@ -275,7 +275,7 @@
                   ? '/assets/images/productExist.png'
                   : '/assets/images/productNotExist.png'
               "
-							
+
 						/>
 					</div>
 					<div>
@@ -285,10 +285,10 @@
                   ? '/assets/images/productExist.png'
                   : '/assets/images/productNotExist.png'
               "
-						
+
 						/>
 					</div>
-					
+
 					<div>
 						<mat-icon
 								*ngIf="company.contactsList.length"
@@ -306,29 +306,31 @@
 						>
 						</mat-icon>
 					</div>
-					
+
 					<div>
 						<!--                        <img style="height: auto; width: auto; position: relative;" fill [ngSrc]="'/assets/images/hasAllTheProducts.png'"-->
 						<!--                             style="vertical-align: middle;"/>-->
-						
+
 						<img
 								*ngIf="company.hasAllTheProducts"
 								style="height: auto; width: auto; position: relative;vertical-align: middle" fill [ngSrc]="'/assets/images/hasAllTheProducts.png'"
 						/>
-						
+
 						<img
 								(click)="selectedCompany = company"
 								*ngIf="!company.hasAllTheProducts"
 								[routerLinkActiveOptions]="{ exact: true }"
 								[routerLink]="['./addProducts']"
-								style="height: auto; width: auto; position: relative;vertical-align: middle" fill [ngSrc]="'/assets/images/hasNotAllTheProducts.png'"
+								style="height: auto; width: auto; position: relative;vertical-align: middle"
+								fill
+								[ngSrc]="'/assets/images/hasNotAllTheProducts.png'"
 								queryParamsHandling="merge"
 								routerLinkActive="active"
 						/>
 					</div>
 				</div>
 			</ng-container>
-			
+
 			<div *ngIf="companiesSrc && !companiesSrc.length" class="noData">
 				<mat-icon
 						style="
@@ -341,7 +343,7 @@
 				></mat-icon>
 				<h1>לא נמצאו חברות</h1>
 			</div>
-			
+
 			<div
 					*ngIf="
           companiesSrc && companiesSrc.length && companies && !companies.length
@@ -358,7 +360,7 @@
 				</p>
 			</div>
 		</div>
-		
+
 		<div #footer [class.noDataFooter]="!companies.length" class="footer">
 			<div>
 				<strong *ngIf="companies.length"> סה״כ </strong>
@@ -382,7 +384,7 @@
 			<div></div>
 			<div></div>
 		</div>
-		
+
 		<div #paginator>
 			<app-paginator
 					(onPageChange)="paginate($event)"

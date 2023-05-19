@@ -5,7 +5,19 @@ import {UserService} from '@app/core/user.service';
 import {BehaviorSubject, combineLatest, concat, defer, Observable, of, Subject} from 'rxjs';
 import {BeneficiaryService, CompanyBeneficiary, CompanyBeneficiaryHistory} from '@app/core/beneficiary.service';
 import {FormControl, FormGroup} from '@angular/forms';
-import {filter, first, map, shareReplay, startWith, switchMap, takeUntil, tap, withLatestFrom} from 'rxjs/operators';
+import {
+    debounceTime,
+    distinctUntilChanged,
+    filter,
+    first,
+    map,
+    shareReplay,
+    startWith,
+    switchMap,
+    takeUntil,
+    tap,
+    withLatestFrom
+} from 'rxjs/operators';
 import {SharedService} from '@app/shared/services/shared.service'; //import {sharedService} from '@app/customers.service';
 import {SharedComponent} from '@app/shared/component/shared.component'; //import {sharedComponent} from '@app/customers.component';
 import {TranslateService} from '@ngx-translate/core';
@@ -26,16 +38,16 @@ import {publishRef} from '@app/shared/functions/publishRef';
 export class CustomersFinancialManagementBeneficiaryComponent
     extends ReloadServices
     implements OnInit, OnDestroy, AfterViewInit {
-    readonly forceReload$ = new Subject<void>();
+    readonly forceReload$: any = new Subject<void>();
     private readonly destroyed$ = new Subject<void>();
 
     readonly filter: any;
-    private companyBeneficiaries$: any
-    beneficiariesPresented$: any
-    readonly loading$ = new BehaviorSubject<boolean>(false);
+    private companyBeneficiaries$: any;
+    beneficiariesPresented$: any;
+    readonly loading$ = new BehaviorSubject<boolean>(true);
 
     currentPage = 0;
-    entryLimit = 50;
+    entryLimit = 25;
     private readonly searchableList = [
         'accountMutavName',
         'accountMutavDetails',
@@ -80,7 +92,7 @@ export class CustomersFinancialManagementBeneficiaryComponent
         printContent(contentRoot: HTMLElement): void;
     };
 
-    private readonly forceRefilter$:any = new BehaviorSubject<void>(null);
+    private readonly forceRefilter$: any = new BehaviorSubject<void>(null);
     // private forceRefilter$: Subject<any> = new Subject<any>();
     // public forceRefilterOb = this.forceRefilter$.asObservable();
 
@@ -467,7 +479,29 @@ export class CustomersFinancialManagementBeneficiaryComponent
                 filter(() => this.userService.appData && this.userService.appData.userData
                     && this.userService.appData.userData.companySelect
                     && this.userService.appData.userData.accountSelect),
-                tap(() => this.loading$.next(true)),
+                tap(() => {
+                    // if(this.userService.appData.userData.accountSelect.filter((account) => {
+                    //     return account.currency !== 'ILS';
+                    // }).length){
+                    //     this.sharedComponent.mixPanelEvent('accounts drop');
+                    // }
+
+                    const accountSelectExchange = this.userService.appData.userData.accountSelect.filter((account) => {
+                        return account.currency !== 'ILS';
+                    });
+                    this.sharedComponent.mixPanelEvent('accounts drop', {
+                        accounts: (this.userService.appData.userData.accountSelect.length === accountSelectExchange.length) ? 'כל החשבונות מט"ח' :
+                            (((this.userService.appData.userData.accounts.length - accountSelectExchange.length) === this.userService.appData.userData.accountSelect.length) ? 'כל החשבונות' :
+                                (
+                                    this.userService.appData.userData.accountSelect.map(
+                                        (account) => {
+                                            return account.companyAccountId;
+                                        }
+                                    )
+                                ))
+                    });
+                    this.loading$.next(true);
+                }),
                 switchMap(() => {
                     return (this.userService.appData.userData.accountSelect.length)
                         ? this.beneficiaryService.getBeneficiariesForAccountsIn({
@@ -477,7 +511,7 @@ export class CustomersFinancialManagementBeneficiaryComponent
                         })
                         : of([]);
                 }),
-                tap(() => this.loading$.next(false)),
+                // tap(() => this.loading$.next(false)),
                 withLatestFrom(this.companyTransTypes$),
                 map(([companyBeneficiaries, companyCategories]) => {
                     companyBeneficiaries
@@ -530,29 +564,122 @@ export class CustomersFinancialManagementBeneficiaryComponent
                 this.companyBeneficiaries$,
                 this.filter.valueChanges
                     .pipe(
-                        startWith(this.filter.value)
+                        // tap(() => {
+                        //     this.loading$.next(true);
+                        //     console.log(this.loading$);
+                        // }),
+                        startWith(this.filter.value),
+                        debounceTime(20),
+                        distinctUntilChanged()
                     ),
                 this.forceRefilter$
             ])
                 .pipe(
-                    map((res:any) => {
+                    map((res: any) => {
                         let [rows, filterVal] = res;
-                        if(rows && rows.length){
-                            rows = filterVal.type
-                                ? rows.filter(bfn =>
-                                    filterVal.type === 'debit'
-                                        ? bfn.averageThreeMonths <= 0
-                                        : bfn.averageThreeMonths >= 0)
+                        if (rows && rows.length) {
+                            rows = (filterVal.type || (Array.isArray(filterVal.category) && filterVal.category.length) || filterVal.query)
+                                ? rows.filter(it => {
+                                        let isTypeFilter = !filterVal.type;
+                                        let isCategoryFilter = !(Array.isArray(filterVal.category) && filterVal.category.length);
+                                        let isQueryFilter = !filterVal.query;
+                                        if (filterVal.type) {
+                                            isTypeFilter = filterVal.type === 'debit'
+                                                ? it.averageThreeMonths <= 0
+                                                : it.averageThreeMonths >= 0;
+                                        }
+                                        if ((Array.isArray(filterVal.category) && filterVal.category.length)) {
+                                            isCategoryFilter = filterVal.category.includes(it.transTypeId);
+                                        }
+                                        if (filterVal.query) {
+                                            const query = filterVal.query.toString().toLowerCase();
+                                            isQueryFilter =
+                                                (it['accountMutavName'] && it['accountMutavName'].toString()
+                                                    .toLowerCase()
+                                                    .includes(query)) ||
+                                                (it['accountMutavDetails'] && it['accountMutavDetails'].toString()
+                                                    .toLowerCase()
+                                                    .includes(query)) ||
+                                                (it['accountMutavHp'] && it['accountMutavHp'].toString()
+                                                    .toLowerCase()
+                                                    .includes(query)) ||
+                                                (it['contactMail'] && it['contactMail'].toString()
+                                                    .toLowerCase()
+                                                    .includes(query)) ||
+                                                (it['contactName'] && it['contactName'].toString()
+                                                    .toLowerCase()
+                                                    .includes(query)) ||
+                                                (it['contactPhone'] && it['contactPhone'].toString()
+                                                    .toLowerCase()
+                                                    .includes(query)) ||
+                                                (it['averageThreeMonths'] && it['averageThreeMonths'].toString()
+                                                    .toLowerCase()
+                                                    .includes(query)) ||
+                                                (it['transTypeName'] && it['transTypeName'].toString()
+                                                    .toLowerCase()
+                                                    .includes(query)) ||
+                                                (it['accountId'] && it['accountId'].toString()
+                                                    .toLowerCase()
+                                                    .includes(query));
+                                        }
+                                        if (isTypeFilter && isCategoryFilter && isQueryFilter) {
+                                            return true;
+                                        } else {
+                                            return false;
+                                        }
+                                    }
+                                )
                                 : rows;
-                            rows = filterVal.query
-                                ? this.filterPipe.transform(rows, filterVal.query, this.searchableList)
-                                : rows;
+
+
+                            // rows = filterVal.type
+                            //     ? rows.filter(bfn =>
+                            //         filterVal.type === 'debit'
+                            //             ? bfn.averageThreeMonths <= 0
+                            //             : bfn.averageThreeMonths >= 0)
+                            //     : rows;
+                            //
+                            // rows = Array.isArray(filterVal.category)
+                            //     ? filterVal.category.length > 0
+                            //         ? rows.filter(bfn => filterVal.category.includes(bfn.transTypeId))
+                            //         : []
+                            //     : rows;
+                            // // this.filterPipe.transform(rows, filterVal.query, this.searchableList)
+                            //
+                            // rows = filterVal.query
+                            //     ? rows.filter(it => {
+                            //         const query = filterVal.query.toString().toLowerCase();
+                            //         return it['accountMutavName'] && it['accountMutavName'].toString()
+                            //                 .toLowerCase()
+                            //                 .includes(query) ||
+                            //             it['accountMutavDetails'] && it['accountMutavDetails'].toString()
+                            //                 .toLowerCase()
+                            //                 .includes(query) ||
+                            //             it['accountMutavHp'] && it['accountMutavHp'].toString()
+                            //                 .toLowerCase()
+                            //                 .includes(query) ||
+                            //             it['contactMail'] && it['contactMail'].toString()
+                            //                 .toLowerCase()
+                            //                 .includes(query) ||
+                            //             it['contactName'] && it['contactName'].toString()
+                            //                 .toLowerCase()
+                            //                 .includes(query) ||
+                            //             it['contactPhone'] && it['contactPhone'].toString()
+                            //                 .toLowerCase()
+                            //                 .includes(query) ||
+                            //             it['averageThreeMonths'] && it['averageThreeMonths'].toString()
+                            //                 .toLowerCase()
+                            //                 .includes(query) ||
+                            //             it['transTypeName'] && it['transTypeName'].toString()
+                            //                 .toLowerCase()
+                            //                 .includes(query) ||
+                            //             it['accountId'] && it['accountId'].toString()
+                            //                 .toLowerCase()
+                            //                 .includes(query);
+                            //     })
+                            //     : rows;
                             // debugger;
-                            rows = Array.isArray(filterVal.category)
-                                ? filterVal.category.length > 0
-                                    ? rows.filter(bfn => filterVal.category.includes(bfn.transTypeId))
-                                    : []
-                                : rows;
+
                             if (filterVal.sort.column === 'absAverageThreeMonths') {
                                 rows.sort((v1, v2) => this.compareNumberVals(v1[filterVal.sort.column], v2[filterVal.sort.column])
                                     * (filterVal.sort.order === 'desc' ? -1 : 1)
@@ -563,7 +690,6 @@ export class CustomersFinancialManagementBeneficiaryComponent
                                 );
                             }
                         }
-
                         return rows;
                     }),
                     tap(() => {
@@ -571,6 +697,7 @@ export class CustomersFinancialManagementBeneficiaryComponent
                             // debugger;
                             this.paginator.changePage(0);
                         }
+                        this.loading$.next(false);
                     }),
                     publishRef,
                     takeUntil(this.destroyed$)
@@ -646,7 +773,6 @@ export class CustomersFinancialManagementBeneficiaryComponent
         if (!somethingChanged) {
             return;
         }
-
         const submitCandidate = Object.assign(
             {
                 companyId: this.userService.appData.userData.companySelect.companyId,

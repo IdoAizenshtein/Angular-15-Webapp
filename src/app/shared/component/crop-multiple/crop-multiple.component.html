@@ -1,0 +1,32 @@
+<p style="padding-top: 10px; font-weight: 600">
+    סמנו כל חשבונית בנפרד.
+    לאחר שתאשרו את הפרדת החשבוניות הם יעברו בדיקה מחודשת לזיהוי.
+    <br>
+    להוספת עוד ריבועי סימון
+    <span (click)="add()" class="link">
+							לחצו כאן
+    </span>
+</p>
+<p *ngIf="index > 0" style="padding-bottom: 10px; font-weight: 700">
+    נבחרו
+    {{index + 1}}
+    חשבוניות להפרדה
+</p>
+<p *ngIf="index === 0" style=" padding-bottom: 10px; font-weight: 700">
+    נבחרה חשבונית אחת להפרדה
+</p>
+<div *ngIf="showLoader" style="background: #ffffff;border: 1px solid #022258;"
+     [style.height.px]="heightPopup">
+    <div class="loader">
+        <div class="circle"></div>
+    </div>
+</div>
+<div [ngStyle]="(showLoader) && {display: 'none'}"
+     [style.height.px]="heightPopup"
+     id="crop-konva"
+></div>
+
+<div style="display: none"
+     [style.height.px]="heightPopup"
+     id="preview"
+></div>

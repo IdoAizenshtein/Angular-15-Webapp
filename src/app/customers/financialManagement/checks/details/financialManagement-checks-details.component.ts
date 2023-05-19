@@ -246,6 +246,11 @@ export class FinancialManagementChecksDetailsComponent
                 distinctUntilChanged()
             )
             .subscribe((term) => {
+                this.sharedComponent.mixPanelEvent('search', {
+                    value: term
+                });
+
+
                 this.queryString = term;
                 if (this.queryString && this.queryString.length) {
                     this.queryStatus = 'undefined';
@@ -364,6 +369,7 @@ export class FinancialManagementChecksDetailsComponent
     }
 
     ngOnInit(): void {
+
         this.defaultsResolver.userDefaultsSubject.subscribe((userDefaults) => {
             console.log('resolved data ===> %o, userDefaults: %o', userDefaults);
             this.entryLimit =
@@ -487,18 +493,52 @@ export class FinancialManagementChecksDetailsComponent
     }
 
     filterCategory(type: any) {
+        this.sharedComponent.mixPanelEvent('filter category', {
+            value: type.checked
+        });
         this.filterTypesCategory = type.checked;
         this.filtersAll('filterTypes');
     }
 
     filterProgram(type: any) {
+        this.sharedComponent.mixPanelEvent('check source filter', {
+            value: type.checked
+        });
         this.filterProgramName = type.checked;
         this.filtersAll('filterProgram');
     }
 
     filterBeneficiaries(val: any) {
+        this.sharedComponent.mixPanelEvent('mutav', {
+            value: val.checked
+        });
         this.beneficiaryFilter.setValue(val.checked);
         this.filtersAll('biziboxMutavId');
+    }
+
+    sendEvent(isOpened: any) {
+        if (isOpened && this.childDates) {
+            this.sharedComponent.mixPanelEvent('checks type drop', {
+                value: this.childDates.asText()
+            });
+        }
+    }
+
+    mixPanelAcc() {
+        const accountSelectExchange = this.userService.appData.userData.accountSelect.filter((account) => {
+            return account.currency !== 'ILS';
+        });
+        this.sharedComponent.mixPanelEvent('accounts drop', {
+            accounts: (this.userService.appData.userData.accountSelect.length === accountSelectExchange.length) ? 'כל החשבונות מט"ח' :
+                (((this.userService.appData.userData.accounts.length - accountSelectExchange.length) === this.userService.appData.userData.accountSelect.length) ? 'כל החשבונות' :
+                    (
+                        this.userService.appData.userData.accountSelect.map(
+                            (account) => {
+                                return account.companyAccountId;
+                            }
+                        )
+                    ))
+        });
     }
 
     changeAcc(event): void {
@@ -1040,6 +1080,12 @@ export class FinancialManagementChecksDetailsComponent
     }
 
     sortPipeFilter(columnName?: 'dueDate' | 'chequeNo'): void {
+        if (columnName === 'dueDate') {
+            this.sharedComponent.mixPanelEvent('date order');
+        }
+        if (columnName === 'chequeNo') {
+            this.sharedComponent.mixPanelEvent('num of check order');
+        }
         if (columnName && columnName !== this.sortColumn) {
             this.sortColumn = columnName;
             this.sortPipeDir = 'smaller';
@@ -1326,7 +1372,7 @@ export class FinancialManagementChecksDetailsComponent
                         !eventPath[0].classList.contains('p-dialog-mask') &&
                         !eventPath.some(
                             (node) =>
-                                node === this.scrollContainer.nativeElement ||
+                                (this.scrollContainer && (node === this.scrollContainer.nativeElement)) ||
                                 (node.classList && node.classList.contains('p-dialog'))
                         );
                     if (shouldTerminateEdit) {
@@ -1363,6 +1409,30 @@ export class FinancialManagementChecksDetailsComponent
             this.editingTransaction.total = this.editingTransactionOld.total;
             return;
         }
+        let textMixPanelEvent = '';
+        if (type === 'account') {
+            textMixPanelEvent = 'change account';
+        }
+        if (type === 'mainDescription') {
+            textMixPanelEvent = 'change check description';
+        }
+        // if (type === 'dueDateAsDate') {
+        //     textMixPanelEvent = 'change account';
+        // }
+        if (type === 'chequeNo') {
+            textMixPanelEvent = 'change check number';
+        }
+        if (type === 'chequeComment') {
+            textMixPanelEvent = 'change remarks';
+        }
+        if (type === 'total') {
+            textMixPanelEvent = 'change total';
+        }
+        if (!type && $event) {
+            textMixPanelEvent = 'change category';
+        }
+        this.sharedComponent.mixPanelEvent(textMixPanelEvent);
+
 
         console.log('Submitting changes...');
         const oldValue = Object.assign({}, this.editingTransactionOld);
@@ -1790,8 +1860,10 @@ export class FinancialManagementChecksDetailsComponent
 
     onRowRestoreClick(item?: any): void {
         if (item) {
+            this.sharedComponent.mixPanelEvent('resotre one check');
             item = [item];
         } else {
+            this.sharedComponent.mixPanelEvent('resotre multy check');
             item = this.dataTable.filter(it => it.selcetFile);
         }
         this.restorePrompt.item = item;
@@ -1810,6 +1882,7 @@ export class FinancialManagementChecksDetailsComponent
     }
 
     onRowDeleteClick(item: any): void {
+        this.sharedComponent.mixPanelEvent('delete check');
         this.deleteConfirmationPrompt.item = item;
         this.deleteConfirmationPrompt.message = this.translate.instant(
             'actions.deleteChequePattern',
@@ -1831,6 +1904,9 @@ export class FinancialManagementChecksDetailsComponent
         );
         this.addChequesDialog.receiptTypeId =
             (evt.target as HTMLLIElement).id === 'addIncomeCheck' ? 400 : 44;
+
+        this.sharedComponent.mixPanelEvent(this.addChequesDialog.receiptTypeId === 400 ? 'add income' : 'add outcome');
+
         this.addChequesDialog.form = new FormGroup({});
         this.addChequesDialog.visible = true;
         this.addChequesDialog.accounts =

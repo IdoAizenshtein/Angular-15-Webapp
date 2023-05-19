@@ -76,6 +76,28 @@ export class TransactionAdditionalTriggerDirective {
     // }
     @HostListener('click', []) onclick() {
         if (!this.disabledClick) {
+            document.body.click();
+            if (window['mixpanel']) {
+                if(this.appTransactionAdditionalTrigger.paymentDesc){
+                    window['mixpanel'].track('payment type', {
+                        'type': this.appTransactionAdditionalTrigger.paymentDesc
+                    });
+                }
+                if (
+                    this.appTransactionAdditionalTrigger.pictureLink ||
+                    (this.appTransactionAdditionalTrigger.splitArrayBase &&
+                        this.appTransactionAdditionalTrigger.splitArrayBase.paymentDesc === 'Checks')
+                ) {
+                    window['mixpanel'].track('perut check');
+                    // factory = ChecksViewComponent;
+                } else if (this.appTransactionAdditionalTrigger.unionId) {
+                    // factory = UnionViewComponent;
+                } else {
+                    window['mixpanel'].track('perut bank transfer');
+                    // factory = TransferViewComponent;
+                }
+            }
+
             this.toggleAdditionals();
         }
     }

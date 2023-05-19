@@ -12,11 +12,9 @@ import {TodayRelativeHumanizePipe} from '@app/shared/pipes/todayRelativeHumanize
 import {Dropdown} from 'primeng/dropdown/dropdown';
 import {HttpErrorResponse} from '@angular/common/http';
 import {Paginator} from 'primeng/paginator';
-import {debounceTime, distinctUntilChanged, filter} from 'rxjs/operators';
+import {debounceTime, distinctUntilChanged, filter, take} from 'rxjs/operators';
 // tslint:disable-next-line:max-line-length
-import {
-    BankMatchDateRangeSelectorComponent
-} from '@app/shared/component/date-range-selectors/bankMatch-date-range-selector.component';
+import {BankMatchDateRangeSelectorComponent} from '@app/shared/component/date-range-selectors/bankMatch-date-range-selector.component';
 import {Beneficiary, BeneficiaryService} from '@app/core/beneficiary.service';
 import {combineLatest} from 'rxjs';
 import {ReloadServices} from '@app/shared/services/reload.services';
@@ -121,6 +119,7 @@ export class TazrimBankmatchMatchedMovementsComponent
                 distinctUntilChanged()
             )
             .subscribe((term) => {
+                this.sharedComponent.mixPanelEvent('search',{value: term});
                 this.queryString = term;
                 this.filtersAll();
             });
@@ -145,8 +144,20 @@ export class TazrimBankmatchMatchedMovementsComponent
         }
     }
 
+    sendEvent(isOpened: any) {
+        if (isOpened && this.childDates) {
+            this.childDates.selectedRange
+                .pipe(take(1))
+                .subscribe((paramDate) => {
+                    this.sharedComponent.mixPanelEvent('date drop', {
+                        value: paramDate.fromDate + '-' + paramDate.toDate
+                    });
+                });
+        }
+    }
+
     ngOnInit(): void {
-        console.log('ngOnInit')
+        console.log('ngOnInit');
         // this.transactionAdditionalDetails$ = this.transactionAdditionalDetailId$
         //     .pipe(
         //         distinctUntilChanged((a, b) => {
@@ -272,6 +283,26 @@ export class TazrimBankmatchMatchedMovementsComponent
                     }
                 }
             );
+    }
+
+    mixPanelAcc() {
+        // const accountSelectExchange = this.userService.appData.userData.accountSelect.filter((account) => {
+        //     return account.currency !== 'ILS';
+        // });
+        // this.sharedComponent.mixPanelEvent('accounts drop', {
+        //     accounts: (this.userService.appData.userData.accountSelect.length === accountSelectExchange.length) ? 'כל החשבונות מט"ח' :
+        //         (((this.userService.appData.userData.accounts.length - accountSelectExchange.length) === this.userService.appData.userData.accountSelect.length) ? 'כל החשבונות' :
+        //             (
+        //                 this.userService.appData.userData.accountSelect.map(
+        //                     (account) => {
+        //                         return account.companyAccountId;
+        //                     }
+        //                 )
+        //             ))
+        // });
+        this.sharedComponent.mixPanelEvent('accounts drop', {
+            accounts: [this.userService.appData.userData.bankMatchAccountAcc.companyAccountId]
+        });
     }
 
     startChild(): void {

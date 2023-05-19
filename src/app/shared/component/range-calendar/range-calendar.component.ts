@@ -170,7 +170,6 @@ export class RangeCalendarComponent implements OnInit, OnChanges {
             this.toMonths(mon === null ? 0 : constraint.month, constraint.year)
         );
     }
-
     isAfter(
         mon: number | null,
         year: number,
@@ -398,10 +397,10 @@ export class RangeCalendarComponent implements OnInit, OnChanges {
             } else if (this.min.getFullYear() === year) {
                 if (this.min.getMonth() > month) {
                     validMin = false;
-                    // } else if (this.min.getMonth() === month) {
-                    //     if (this.min.getDate() > day) {
-                    //         validMin = false;
-                    //     }
+                } else if (this.min.getMonth() === month) {
+                    if (this.min.getDate() > day) {
+                        validMin = false;
+                    }
                 }
             }
         }

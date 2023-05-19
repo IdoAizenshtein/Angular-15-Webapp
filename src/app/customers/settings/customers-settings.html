@@ -15,6 +15,7 @@
 	<div class="settingsNav">
 		<ul class="tabs">
 			<li
+					(click)="sharedComponent.mixPanelEvent('my profile');"
 					#myAccLinkRef="routerLinkActive"
 					[routerLinkActiveOptions]="{ exact: false }"
 					[title]="'menu.customers.settings.myaccount' | translate"
@@ -26,6 +27,7 @@
 				{{ 'menu.customers.settings.myaccount' | translate }}
 			</li>
 			<li
+					(click)="sharedComponent.mixPanelEvent('my details');"
 					#myBusinessLinkRef="routerLinkActive"
 					[routerLinkActiveOptions]="{ exact: false }"
 					[title]="'menu.customers.settings.businessDetails' | translate"
@@ -69,6 +71,7 @@
           ">({{officeUsersCount}})</span>
 			</li>
 			<li
+					(click)="sharedComponent.mixPanelEvent('alerts');"
 					[routerLinkActiveOptions]="{ exact: false }"
 					[title]="'menu.customers.settings.alerts' | translate"
 					class="text-ellipsis"
@@ -79,6 +82,7 @@
 				{{ 'menu.customers.settings.alerts' | translate }}
 			</li>
 			<li
+					(click)="sharedComponent.mixPanelEvent('users');"
 					#usersLinkRef="routerLinkActive"
 					[routerLinkActiveOptions]="{ exact: false }"
 					[title]="'menu.customers.settings.users' | translate"
@@ -90,6 +94,7 @@
 				{{ 'menu.customers.settings.users' | translate }}
 			</li>
 			<li
+					(click)="sharedComponent.mixPanelEvent('banks');"
 					#bankAccountsRef="routerLinkActive"
 					[routerLinkActiveOptions]="{ exact: false }"
 					[title]="'menu.customers.settings.bankAccounts' | translate"
@@ -100,6 +105,7 @@
 				{{ 'menu.customers.settings.bankAccounts' | translate }}
 			</li>
 			<li
+					(click)="sharedComponent.mixPanelEvent('credits');"
 					#creditCardAccountsRef="routerLinkActive"
 					[routerLinkActiveOptions]="{ exact: false }"
 					[title]="'menu.customers.settings.creditCards' | translate"
@@ -111,6 +117,7 @@
 				{{ 'menu.customers.settings.creditCards' | translate }}
 			</li>
 			<li
+					(click)="sharedComponent.mixPanelEvent('solek accounts');"
 					#slikaAccountsRef="routerLinkActive"
 					[routerLinkActiveOptions]="{ exact: false }"
 					[title]="'menu.customers.settings.slikaAccounts' | translate"
@@ -122,6 +129,7 @@
 				{{ 'menu.customers.settings.slikaAccounts' | translate }}
 			</li>
 			<li
+					(click)="sharedComponent.mixPanelEvent('bookkeeping');"
 					*ngIf="
           (selectedCompany$ | async)
             ? (selectedCompany$ | async).biziboxType !== 'regular'
@@ -138,7 +146,7 @@
 			</li>
 		</ul>
 	</div>
-	
+
 	<ng-container
 			*ngIf="
       myAccLinkRef &&
@@ -174,25 +182,26 @@
 			            (onChange)="selectedCompany$.next($event.value)"
 			            [dropdownIcon]="'p-dropdown-icon'"
 			            placeholder="{{'actions.company' | translate}}"
-			            optionLabel="companyName">
+						[optionLabel]="userService.appData?.hideCompanyName ? 'companyHp' : 'companyName'"
+			>
 				<ng-template let-company pTemplate="item">
 					<div class="ui-helper-clearfix">
-						<div>{{company.companyName}}</div>
+						<div>{{company[userService.appData?.hideCompanyName ? 'companyHp' : 'companyName']}}</div>
 					</div>
 				</ng-template>
 			</p-dropdown>
-			
+
 			<ul *ngIf="arrCompanies.length > 1 && arrCompanies.length <= 5">
 				<li
 						(click)="selectedCompany$.next(item)"
 						*ngFor="let item of arrCompanies"
 						[class.active]="item === (selectedCompany$ | async)"
 				>
-					{{ item.companyName }}
+					{{ item[userService.appData?.hideCompanyName ? 'companyHp' : 'companyName'] }}
 				</li>
 			</ul>
 			<!--</ng-container>-->
-			
+
 			<button
 					(click)="createCompanyPrompt.show()"
 					*ngIf="myBusinessLinkRef.isActive"
@@ -200,7 +209,7 @@
 			>
 				<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/add.png"/>&nbsp;{{ 'הוספת חברה חדשה' }}
 			</button>
-			
+
 			<button
 					*ngIf="
           usersLinkRef &&
@@ -213,7 +222,7 @@
 			>
 				<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/add.png"/>&nbsp;{{ 'הוספת משתמש חדש' }}
 			</button>
-			
+
 			<button
 					(click)="componentRefChild.addTokenPrompt.show()"
 					*ngIf="
@@ -225,7 +234,7 @@
 				'actions.addAccount' | translate
 				}}
 			</button>
-			
+
 			<button
 					(click)="
           !exampleCompany ? componentRefChild.addTokenPrompt.show() : null
@@ -242,7 +251,7 @@
 				'actions.addNonBankCreditCard' | translate
 				}}
 			</button>
-			
+
 			<button
 					(click)="
           !exampleCompany ? componentRefChild.addTokenPrompt.show() : null
@@ -321,9 +330,20 @@
 				>({{officeUsersCount}})</span
 				>
 			</li>
+			<li
+					#productSettingsRef="routerLinkActive"
+					[routerLinkActiveOptions]="{ exact: false }"
+					[title]="'menu.customers.settings.productSettings' | translate"
+					class="text-ellipsis"
+					queryParamsHandling="preserve"
+					routerLink="./productSettings"
+					routerLinkActive="active"
+			>
+				{{ 'menu.customers.settings.productSettings' | translate }}
+			</li>
 		</ul>
 	</div>
-	
+
 	<ng-container
 			*ngIf="
       myAccLinkRef &&
@@ -331,7 +351,9 @@
       officeUsersRef &&
       !officeUsersRef.isActive &&
       myBusinessLinkRef &&
-      !myBusinessLinkRef.isActive
+      !myBusinessLinkRef.isActive &&
+       productSettingsRef &&
+      !productSettingsRef.isActive
     "
 	>
 		<!--    <ng-container *ngIf="(myAccLinkRef && !myAccLinkRef.isActive)">-->
@@ -344,7 +366,7 @@
 				class="rowOfCompanies"
 		>
 			<!--<ng-container *ngIf="(settingsComponent.selectedCompany$)| async as selectedCompany">-->
-			
+
 			<p-dropdown *ngIf="arrCompanies.length > 5"
 			            [options]="arrCompanies"
 			            [style]="{
@@ -354,25 +376,25 @@
 			            (ngModelChange)="selectedCompany$.next($event)"
 			            [dropdownIcon]="'p-dropdown-icon'"
 			            placeholder="{{'actions.company' | translate}}"
-			            optionLabel="companyName">
+						[optionLabel]="userService.appData?.hideCompanyName ? 'companyHp' : 'companyName'">
 				<ng-template let-company pTemplate="item">
 					<div class="ui-helper-clearfix">
-						<div>{{company.companyName}}</div>
+						<div>{{company[userService.appData?.hideCompanyName ? 'companyHp' : 'companyName']}}</div>
 					</div>
 				</ng-template>
 			</p-dropdown>
-			
+
 			<ul *ngIf="arrCompanies.length > 1 && arrCompanies.length <= 5">
 				<li
 						(click)="selectedCompany$.next(item)"
 						*ngFor="let item of arrCompanies"
 						[class.active]="item === (selectedCompany$ | async)"
 				>
-					{{ item.companyName }}
+					{{ item[userService.appData?.hideCompanyName ? 'companyHp' : 'companyName'] }}
 				</li>
 			</ul>
 			<!--</ng-container>-->
-			
+
 			<button
 					(click)="createCompanyPrompt.show()"
 					*ngIf="myBusinessLinkRef.isActive"
@@ -380,7 +402,7 @@
 			>
 				<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/add.png"/>&nbsp;{{ 'הוספת חברה חדשה' }}
 			</button>
-			
+
 			<!--       <button -->
 			<!--         class="button-link" -->
 			<!--         *ngIf=" -->
@@ -392,7 +414,7 @@
 			<!--       > -->
 			<!--         <img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/add.png" />&nbsp;{{ 'הוספת משתמש חדש' }} -->
 			<!--       </button> -->
-			
+
 			<!--       <button -->
 			<!--         class="button-link" -->
 			<!--         *ngIf=" -->
@@ -404,7 +426,7 @@
 			<!--           'actions.addAccount' | translate -->
 			<!--         }} -->
 			<!--       </button> -->
-			
+
 			<!--       <button -->
 			<!--         class="button-link" -->
 			<!--         [ngStyle]="{ opacity: exampleCompany ? 0.6 : 1 }" -->
@@ -421,7 +443,7 @@
 			<!--           'actions.addNonBankCreditCard' | translate -->
 			<!--         }} -->
 			<!--       </button> -->
-			
+
 			<!--       <button -->
 			<!--         class="button-link" -->
 			<!--         [ngStyle]="{ opacity: exampleCompany ? 0.6 : 1 }" -->

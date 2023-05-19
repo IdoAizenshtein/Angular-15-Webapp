@@ -244,6 +244,7 @@ export class CreditCardComponent
             tap(() => (this.loader = true)),
             switchMap((selectedCompany) =>
                 combineLatest([
+                    this.sharedService.getCurrencyList(),
                         this.sharedService
                             .getAccounts(selectedCompany.companyId)
                             // this.sharedService.getAccountsSettings(selectedCompany.companyId)
@@ -283,7 +284,22 @@ export class CreditCardComponent
                 )
             ),
             map((resSub: any) => {
-                const [responseCC, responseTkn, resCompanyGetCustomer] = resSub;
+                const [responseCurr, responseCC, responseTkn, resCompanyGetCustomer] = resSub;
+                this.userService.appData.userData.currencyList = responseCurr ? responseCurr['body'] : responseCurr;
+                this.arrAccounts.forEach((acc: any) => {
+                    if (acc.currency) {
+                        const sign = this.userService.appData.userData.currencyList.find(
+                            (curr) => curr.code === acc.currency
+                        );
+                        if(sign){
+                            acc.currencyId = sign.id;
+                        }else{
+                            acc.currencyId = 99;
+                        }
+                    } else {
+                        acc.currencyId = 1;
+                    }
+                });
                 // }, responseAccTkn]) => {
                 // if (resCompanyGetCustomer && !resCompanyGetCustomer.error && Array.isArray(resCompanyGetCustomer.body) && resCompanyGetCustomer.body.length) {
                 //     let banksCards = resCompanyGetCustomer.body.filter(it => it.cartisCodeId === 1700);
@@ -458,12 +474,15 @@ export class CreditCardComponent
 
         this.deletedCards$ = this.byTokenGroups$.pipe(
             withLatestFrom(this.selectedCompany$),
-            switchMap(([groups, selectedCompany]) =>
-                this.sharedService.getDeletedCreditCards({
+            switchMap(([groups, selectedCompany]) => {
+                const tokenIds = Array.isArray(groups) ? groups.filter((grC) => grC.id).map((gr) => gr.id) : [];
+                return tokenIds.length ? this.sharedService.getDeletedCreditCards({
                     companyId: selectedCompany.companyId,
-                    tokens: groups.map((gr) => gr.id)
-                })
-            ),
+                    tokens: tokenIds
+                }) : of({
+                    error: true
+                });
+            }),
             map((response: any) => {
                 if (response.error || !Array.isArray(response.body)) {
                     return {};
@@ -602,12 +621,12 @@ export class CreditCardComponent
             processing: new BehaviorSubject(false),
             card: itemChild,
             oldAccount: this.arrAccounts.find((acc: any) => acc === itemChild.account),
-            newAccount: $event,
+            newAccount: $event.value,
             onApprove: () => {
                 this.changeCardLinkedAccountPrompt.processing.next(true);
                 this.sharedService
                     .changeCreditCardLinkedAccount({
-                        companyAccountId: $event.companyAccountId,
+                        companyAccountId: $event.value.companyAccountId,
                         creditCardId: itemChild.creditCardId
                     })
                     .pipe(
@@ -651,7 +670,6 @@ export class CreditCardComponent
     clearFilter(dropdown: Dropdown): void {
         dropdown.resetFilter();
     }
-
     setVarTool(item: any) {
         this.tooltipEditFile = JSON.parse(JSON.stringify(item));
     }

@@ -14,98 +14,98 @@
 <!-- 		<span>{{ labelText.transTypeName }}</span> -->
 <!-- 	</div> -->
 <!-- </ng-container> -->
-
-
-<p-dropdown
-		#ddCategories
-		(onFocus)="focused.emit($event)"
-		#panelTooltip="matTooltip"
-		(keyup.esc)="cancelChanges.emit($event)"
-		(onChange)="changed.emit($event)"
-		(onClick)="panelTooltip.show(0)"
-		(onFilter)="filterFunc($event, ddCategories)"
-		(onHide)="hide()"
-		(onShow)="show()"
-		[disabled]="disabled"
-		[(ngModel)]="ngModelVal"
-		[autoDisplayFirst]="autoDisplayFirst"
-		[dataKey]="dataKey"
-		[dropdownIcon]="labelText ? 'fas fa-plus-circle' : 'p-dropdown-icon'"
-		[filterBy]="'transTypeName'"
-		[filter]="filter"
-		[inputId]="inputId"
-		[matTooltip]="
-    !labelText ? ('appWalk.customers.categoriesSelection' | translate) : ''
-  "
-		[optionLabel]="optionLabel"
-		[options]="categories"
-		[panelStyleClass]="'category_select_panel'"
-		[placeholder]="labelText ? labelText.transTypeName : placeholder"
-		[scrollHeight]="'188px'"
-		[style]="style"
-		appendTo="body"
-		matTooltipPosition="after"
-		optionDisabled="disabled">
-	<ng-template pTemplate="empty">
-		<div>
-			<div>לא נמצאו קטגוריות</div>
-		</div>
-	</ng-template>
-	<ng-template pTemplate="emptyfilter">
-		<div
-				#createCategoryInline
-				(click)="
+<app-dropdown-wrap
+    #ddCategories
+    #panelTooltip="matTooltip"
+    (keyup.esc)="cancelChanges.emit($event)"
+    (onChange)="changed.emit($event)"
+    (onClick)="panelTooltip.show(0)"
+    (onFilter)="filterFunc($event, ddCategories)"
+    (onFocus)="focused.emit($event)"
+    (onHide)="hide()"
+    (onShow)="show()"
+    [(ngModel)]="ngModelVal"
+    [autoDisplayFirst]="autoDisplayFirst"
+    [dataKey]="dataKey"
+    [disabled]="disabled"
+    [dropdownIcon]="labelText ? 'fas fa-plus-circle' : 'p-dropdown-icon'"
+    [filterBy]="'transTypeName'"
+    [filter]="filter"
+    [inputId]="inputId"
+    [matTooltip]="!labelText ? ('appWalk.customers.categoriesSelection' | translate) : ''"
+    [optionLabel]="optionLabel"
+    [options]="categories"
+    [panelStyleClass]="'category_select_panel'"
+    [placeholder]="labelText ? labelText.transTypeName : placeholder"
+    [scrollHeight]="'188px'"
+    [style]="style"
+    [virtualScroll]="true"
+    [virtualScrollItemSize]="33"
+    appendTo="body"
+    matTooltipPosition="after"
+    optionDisabled="disabled">
+    <ng-template pTemplate="empty">
+        <div>
+            <div>לא נמצאו קטגוריות</div>
+        </div>
+    </ng-template>
+    <ng-template pTemplate="emptyfilter">
+        <div
+            #createCategoryInline
+            (click)="
             categoryCreateThenSelect(
               filterVal,
-              $event
+              $event,
+              ddCategories
             );
             $event.stopPropagation()
           "
-				(keydown.enter)="
+            (keydown.enter)="
             categoryCreateThenSelect(
               filterVal,
-              $event
+              $event,
+              ddCategories
             );
             $event.stopPropagation()
           "
-				*ngIf="
+            *ngIf="
             !isExistCategory &&
          filterVal
           "
-				[class.p-highlight]="
+            [class.p-highlight]="
             createCategoryInline.ownerDocument.activeElement ===
             createCategoryInline
           "
-				class="p-dropdown-item"
-				style="
+            class="p-dropdown-item"
+            style="
             display: flex;
             display: -ms-flexbox;
             flex-direction: column;
             height: auto;
             margin-bottom: 2em !important;
           "
-				tabindex="0"
-		>
+            tabindex="0"
+        >
           <span style="line-height: 1.4em">{{
-	          filterVal
-	          }}</span>
-			<span
-					style="
+              filterVal
+              }}</span>
+            <span
+                    style="
               opacity: 0.5;
               white-space: normal;
               text-overflow: unset;
               line-height: 1.4em;
             "
-			>{{ '(הוספת קטגוריה חדשה)' }}</span
-			>
-		</div>
-		<div
+            >{{ '(הוספת קטגוריה חדשה)' }}</span
+            >
+        </div>
+        <div
 
-				*ngIf="
+                *ngIf="
             isExistCategory
           "
-				class="p-dropdown-item p-disabled"
-				style="
+                class="p-dropdown-item p-disabled"
+                style="
             display: flex;
             display: -ms-flexbox;
             flex-direction: column;
@@ -113,68 +113,68 @@
             margin-bottom: 2em !important;
             cursor: default;
           "
-				tabindex="0"
-		>
+                tabindex="0"
+        >
           <span style="line-height: 1.4em">{{
-	          filterVal
-	          }}</span>
-			<span
-					style="
+              filterVal
+              }}</span>
+            <span
+                    style="
               opacity: 0.5;
               white-space: normal;
               text-overflow: unset;
               line-height: 1.4em;
             "
-			>{{ '(הקטגוריה קיימת בתקציב)' }}</span
-			>
-		</div>
-	</ng-template>
-	<ng-template let-option pTemplate="selectedItem">
-		<div>
+            >{{ '(הקטגוריה קיימת בתקציב)' }}</span
+            >
+        </div>
+    </ng-template>
+    <ng-template let-option pTemplate="selectedItem">
+        <div>
 				     <span
-						     #spanElement
-						     *ngIf="!labelText"
-						     [pTooltip]="option.transTypeName"
-						     [tooltipDisabled]="
+                         #spanElement
+                         *ngIf="!labelText"
+                         [pTooltip]="option.transTypeName"
+                         [tooltipDisabled]="
                   spanElement.offsetWidth >= spanElement.scrollWidth
                 "
-				     >{{ option.transTypeName || 'empty' }}</span>
+                     >{{ option.transTypeName || 'empty' }}</span>
 
-			<div *ngIf="labelText"
-			     [ngClass]="{ income: !labelText.hova, expence: labelText.hova }"
-			     class="budgetTypeAdd"
-			>
-				<img
-						style="height: auto; width: auto; "  [src]="
+            <div *ngIf="labelText"
+                 [ngClass]="{ income: !labelText.hova, expence: labelText.hova }"
+                 class="budgetTypeAdd"
+            >
+                <img
+                        [src]="
           labelText.hova
             ? '/assets/images/addExpencePlus.png'
             : '/assets/images/addIncomePlus.png'
-        "
-				/>
-				<span>{{ labelText.transTypeName }}</span>
-			</div>
-		</div>
-	</ng-template>
-	<ng-template let-option pTemplate="item">
-		<div *ngIf="!option.title">
+        " style="height: auto; width: auto; "
+                />
+                <span>{{ labelText.transTypeName }}</span>
+            </div>
+        </div>
+    </ng-template>
+    <ng-template let-option pTemplate="item">
+        <div *ngIf="!option.title">
 				     <span
-						     #spanElement
-						     [pTooltip]="option.transTypeName"
-						     [tooltipDisabled]="
+                         #spanElement
+                         [pTooltip]="option.transTypeName"
+                         [tooltipDisabled]="
                   spanElement.offsetWidth >= spanElement.scrollWidth
                 "
-						     style="
+                         style="
 display: block;
     white-space: nowrap;
     overflow: hidden;
     line-height: 33px;
     text-overflow: ellipsis;
     margin: 0 6px!important;"
-				     >{{ option.transTypeName || '' }}</span>
-		</div>
-		<div *ngIf="option.isHistory && option.title" class="firstHistory">
+                     >{{ option.transTypeName || '' }}</span>
+        </div>
+        <div *ngIf="option.isHistory && option.title" class="firstHistory">
               <span
-		              style="
+                      style="
                   font-weight: 700;
                   display: block;
                     margin: 0 6px!important;
@@ -186,13 +186,13 @@ display: block;
               >
                 בשימוש לאחרונה:
               </span>
-		</div>
+        </div>
 
-		<div
-				*ngIf="
+        <div
+                *ngIf="
                   option.isLastHistory
                 "
-				style="
+                style="
                   height: 1px;
                   background: #cacaca;
                   padding: 0;
@@ -202,14 +202,14 @@ display: block;
                   left: 0;
                   z-index: 999;
                 "
-		></div>
-	</ng-template>
-	<ng-template pTemplate="footer">
-		<button
-				(click)="showMore(); $event.stopPropagation()"
-				*ngIf="showMoreOption"
-				class="p-dropdown-item p-dropdown-btn-footer"
-				style="
+        ></div>
+    </ng-template>
+    <ng-template pTemplate="footer">
+        <button
+                (click)="ddCategories.hide(); showMore(); $event.stopPropagation()"
+                *ngIf="showMoreOption"
+                class="p-dropdown-item p-dropdown-btn-footer"
+                style="
 				height: 33px;font-size: 15px;font-weight: 600;font-family: Assistant!important;line-height: 30px;border-radius: unset!important;margin: 0!important;text-align: right!important;
         width: 100%;
         padding: 0.25em 1em !important;
@@ -218,28 +218,29 @@ display: block;
         filter: drop-shadow(0 -2px 2px rgba(0, 0, 0, 0.12));
         border: 0;cursor: pointer;
       "
-				type="button"
-		>
-			{{ 'actions.more' | translate }}
-		</button>
-	</ng-template>
-</p-dropdown>
+                type="button"
+        >
+            {{ 'actions.more' | translate }}
+        </button>
+    </ng-template>
+</app-dropdown-wrap>
 
 
 <p-dialog (onHide)="
       dlgEditingOption = null;
       dlgSelectedOption = null;
+      resetCategories();
       newTransTypeName.reset()
     "
-          (visibleChange)="display = false"
+          (visibleChange)="display = false; resetCategories();"
           [modal]="true"
           [visible]="(display)"
           appendTo="body"
 >
-	<p-header> {{ 'titles.categories' | translate }} </p-header>
-	<div class="category-select-body" style="width: 20em">
-		<div
-				style="
+    <p-header> {{ 'titles.categories' | translate }} </p-header>
+    <div class="category-select-body" style="width: 20em">
+        <div
+                style="
           flex: 1 100%;
           -ms-flex: 1 100%;
           display: flex;
@@ -247,51 +248,56 @@ display: block;
           flex-flow: row wrap;
           justify-content: space-between;
         "
-		>
-			<input
-					[formControl]="newTransTypeName"
-					[placeholder]="'expressions.enterCategoryName' | translate"
-					style="flex: 0 0 14em; -ms-flex: 0 0 14em"
-					type="text"
-			/>
-			<button
-					(click)="categoryCreate(newTransTypeName.value)"
-					[disabled]="newTransTypeName.invalid"
-					class="button-dark"
-					style="flex: 0 1 4em; -ms-flex: 0 1 4em"
-			>
-				{{ 'actions.add' | translate }}
-			</button>
-			<!--<span style="color: red; flex: 1 100%; height: 1em; line-height: 1em;"-->
-			<!--[style.visibility]="newTransTypeName.errors?.transTypeNameDuplicate ? 'visible' : 'hidden'">-->
-			<!--{{'validation.categoryExists' | translate}}-->
-			<!--</span>-->
-		</div>
-		<ul (mouseout)="dlgMouseOverOption = null" class="scroll-chrome">
-			<ng-container
-					*ngFor="
+        >
+            <input
+                    [formControl]="newTransTypeName"
+                    [placeholder]="'expressions.enterCategoryName' | translate"
+                    style="flex: 0 0 14em; -ms-flex: 0 0 14em"
+                    type="text"
+            />
+            <button
+                    (click)="categoryCreate(newTransTypeName.value)"
+                    [disabled]="newTransTypeName.invalid"
+                    class="button-dark"
+                    style="flex: 0 1 4em; -ms-flex: 0 1 4em"
+            >
+                {{ 'actions.add' | translate }}
+            </button>
+            <!--<span style="color: red; flex: 1 100%; height: 1em; line-height: 1em;"-->
+            <!--[style.visibility]="newTransTypeName.errors?.transTypeNameDuplicate ? 'visible' : 'hidden'">-->
+            <!--{{'validation.categoryExists' | translate}}-->
+            <!--</span>-->
+        </div>
+
+        <ul (mouseout)="dlgMouseOverOption = null"
+            [appScrollHeight]="200"
+            style="max-height: 320px;"
+            [appendTo]="'body'"
+            class="scroll-chrome">
+            <ng-container
+                    *ngFor="
             let cat of categoriesView;
             let i = index;
             trackBy: categoryIdTrack
           "
-			>
-				<!--                    <li [ngClass]="{'p-dropdown-item p-corner-all':true, 'p-highlight':(selectedOption == option), 'p-dropdown-item-empty':!option.label||option.label.length === 0}"-->
-				<!--                        (click)="selectItem($event, option)"-->
-				<!--                        style="position: relative">-->
+            >
+                <!--                    <li [ngClass]="{'p-dropdown-item p-corner-all':true, 'p-highlight':(selectedOption == option), 'p-dropdown-item-empty':!option.label||option.label.length === 0}"-->
+                <!--                        (click)="selectItem($event, option)"-->
+                <!--                        style="position: relative">-->
 
-				<!--                            <span *ngIf="!itemTemplate" #spanElement [pTooltip]="option.label"-->
-				<!--                                  [tooltipDisabled]="spanElement.offsetWidth >= spanElement.scrollWidth">{{option.label || 'empty'}}</span>-->
+                <!--                            <span *ngIf="!itemTemplate" #spanElement [pTooltip]="option.label"-->
+                <!--                                  [tooltipDisabled]="spanElement.offsetWidth >= spanElement.scrollWidth">{{option.label || 'empty'}}</span>-->
 
-				<!--                        <div *ngIf="!itemTemplate && option.isHistory && options[i + 1] && !options[i + 1].value.isHistory"-->
-				<!--                             style="height: 1px;background: #cacaca;padding: 0;position: absolute;bottom: -1px;right: 0;left: 0;z-index: 999;"></div>-->
+                <!--                        <div *ngIf="!itemTemplate && option.isHistory && options[i + 1] && !options[i + 1].value.isHistory"-->
+                <!--                             style="height: 1px;background: #cacaca;padding: 0;position: absolute;bottom: -1px;right: 0;left: 0;z-index: 999;"></div>-->
 
-				<!--                        <ng-container *ngTemplateOutlet="itemTemplate; context: {$implicit: option}"></ng-container>-->
-				<!--                    </li>-->
+                <!--                        <ng-container *ngTemplateOutlet="itemTemplate; context: {$implicit: option}"></ng-container>-->
+                <!--                    </li>-->
 
-				<li *ngIf="i === 0 && cat.isHistory" class="firstHistory">
-					<div class="text-ellipsis">
+                <li *ngIf="i === 0 && cat.isHistory" class="firstHistory">
+                    <div class="text-ellipsis">
               <span
-		              style="
+                      style="
                   font-weight: 700;
                   display: block;
                   white-space: nowrap;
@@ -302,75 +308,80 @@ display: block;
               >
                 בשימוש לאחרונה:
               </span>
-					</div>
-				</li>
-				<li
-						#categoryItems
-						(click)="dlgSelectedOption = cat"
-						(mouseover)="dlgMouseOverOption = cat"
-						[class.active]="dlgSelectedOption === cat"
-						style="position: relative"
-				>
-					<div class="text-ellipsis">
+                    </div>
+                </li>
+                <li
+                    #categoryItems
+                    (click)="dlgSelectedOption = cat"
+                    (mouseover)="dlgMouseOverOption = cat"
+                    [class.active]="dlgSelectedOption === cat"
+                    style="position: relative"
+                >
+                    <div class="text-ellipsis">
               <span *ngIf="dlgEditingOption !== cat">{{
-	              cat.transTypeName
-	              }}</span>
-						<input
-								#categoryInputRef
-								(keyup.enter)="editTransTypeName.valid && editCommit()"
-								(keyup.esc)="editCancel()"
-								*ngIf="dlgEditingOption === cat"
-								[formControl]="editTransTypeName"
-								[placeholder]="'expressions.enterCategoryName' | translate"
-								[value]="dlgEditingOption.transTypeName"
-								type="text"
-						/>
-					</div>
+                  cat.transTypeName
+                  }}</span>
+                        <input
+                            style="    width: 100%;
+    height: 100%;
+    border: none;
+    margin-right: 10px;
+    background: transparent;"
+                            #categoryInputRef
+                            (keyup.enter)="editTransTypeName.valid && editCommit(); $event.stopPropagation()"
+                            (keyup.esc)="editCancel(); $event.stopPropagation()"
+                            *ngIf="dlgEditingOption === cat"
+                            [formControl]="editTransTypeName"
+                            [placeholder]="'expressions.enterCategoryName' | translate"
+                            [value]="dlgEditingOption.transTypeName"
+                            type="text"
+                        />
+                    </div>
 
-					<div
-							[style.visibility]="
+                    <div
+                            [style.visibility]="
                 (cat.immutable && !cat.isHistory) ||
                 (dlgMouseOverOption !== cat && dlgEditingOption !== cat) ||
                 cat.companyId === '00000000-0000-0000-0000-000000000000'
                   ? 'hidden'
                   : 'visible'
               "
-							class="controls last-child"
-					>
-						<button (click)="editStart(cat)" *ngIf="dlgEditingOption !== cat">
-							<img height="16"  ngSrc="/assets/images/pencil.png" width="16"/>
-						</button>
-						<button
-								(click)="categoryDelete(cat)"
-								*ngIf="dlgEditingOption !== cat"
-						>
-							<img height="16"  ngSrc="/assets/images/trash.png" width="16"/>
-						</button>
-						<button
-								(click)="editCommit()"
-								*ngIf="dlgEditingOption === cat"
-								[disabled]="editTransTypeName.invalid"
-						>
-							<i class="fas fa-fw fa-check"></i>
-						</button>
-						<button
-								(click)="editCancel()"
-								*ngIf="dlgEditingOption === cat"
-								[disabled]="
+                            class="controls last-child"
+                    >
+                        <button (click)="editStart(cat); $event.stopPropagation()" *ngIf="dlgEditingOption !== cat">
+                            <img height="16" ngSrc="/assets/images/pencil.png" width="16"/>
+                        </button>
+                        <button
+                                (click)="categoryDelete(cat); $event.stopPropagation()"
+                                *ngIf="dlgEditingOption !== cat"
+                        >
+                            <img height="16" src="/assets/images/trash.png" width="16"/>
+                        </button>
+                        <button
+                                (click)="editCommit(); $event.stopPropagation()"
+                                *ngIf="dlgEditingOption === cat"
+                                [disabled]="editTransTypeName.invalid"
+                        >
+                            <i class="fas fa-fw fa-check"></i>
+                        </button>
+                        <button
+                                (click)="editCancel(); $event.stopPropagation()"
+                                *ngIf="dlgEditingOption === cat"
+                                [disabled]="
                   dlgEditingOption.transTypeName === editTransTypeName.value
                 "
-						>
-							<i class="fas fa-fw fa-undo"></i>
-						</button>
-					</div>
+                        >
+                            <i class="fas fa-fw fa-undo"></i>
+                        </button>
+                    </div>
 
-					<div
-							*ngIf="
+                    <div
+                            *ngIf="
                 cat.isHistory &&
                 categoriesView[i + 1] &&
                 !categoriesView[i + 1].isHistory
               "
-							style="
+                            style="
                 height: 1px;
                 background: #cacaca;
                 padding: 0;
@@ -380,28 +391,28 @@ display: block;
                 left: 0;
                 z-index: 999;
               "
-					></div>
-				</li>
-			</ng-container>
-		</ul>
-	</div>
-	<p-footer>
-		<a
-				(click)="display = false"
-				class="button-white button-link"
-				href="#"
-				role="button"
-		>
-			{{ 'actions.cancel' | translate }}
-		</a>
-		<button
-				(click)="update($event)"
-				[disabled]="dlgEditingOption !== null || dlgSelectedOption === null"
-				class="button-dark"
-		>
-			{{ 'actions.update' | translate }}
-		</button>
-	</p-footer>
+                    ></div>
+                </li>
+            </ng-container>
+        </ul>
+    </div>
+    <p-footer>
+        <a
+                (click)="display = false"
+                class="button-white button-link"
+                href="#"
+                role="button"
+        >
+            {{ 'actions.cancel' | translate }}
+        </a>
+        <button
+                (click)="update($event)"
+                [disabled]="dlgEditingOption !== null || dlgSelectedOption === null"
+                class="button-dark"
+        >
+            {{ 'actions.update' | translate }}
+        </button>
+    </p-footer>
 </p-dialog>
 
 

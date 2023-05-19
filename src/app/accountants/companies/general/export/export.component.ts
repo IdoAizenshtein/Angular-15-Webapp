@@ -74,11 +74,11 @@ export class ExportComponent
                 value: '',
                 disabled: true
             }),
-            izuFileExportType: new FormControl({
-                value: '',
-                disabled: true
-            }),
-            izuCreditType: new FormControl({
+            // izuFileExportType: new FormControl({
+            //     value: '',
+            //     disabled: true
+            // }),
+            indPkudotYoman: new FormControl({
                 value: '',
                 disabled: true
             }),
@@ -109,25 +109,26 @@ export class ExportComponent
                 takeUntil(this.destroyed$)
             )
             .subscribe(() => {
-                this.sharedService.izu().subscribe((response: any) => {
+                this.sharedService.izu(this.userService.appData.userData.companySelect.companyId)
+                    .subscribe((response: any) => {
                     const responseRest = response ? response['body'] : response;
                     // companyId: "909e0702-483b-1d4b-e053-650019accda1"
                     // izuAsmachtaNumChar: null
-                    // izuCreditType: null
+                    // indPkudotYoman: null
                     // izuCreditValueDate: null
                     // manager: false
                     // userId: "00000000-0000-0000-0999
 
                     this.info.patchValue({
-                        izuFileExportType: responseRest.izuFileExportType
-                            ? responseRest.izuFileExportType
-                            : '1',
+                        // izuFileExportType: responseRest.izuFileExportType
+                        //     ? responseRest.izuFileExportType
+                        //     : '1',
                         izuAsmachtaNumChar: responseRest.izuAsmachtaNumChar
                             ? responseRest.izuAsmachtaNumChar.toString()
                             : '0',
-                        izuCreditType: responseRest.izuCreditType
-                            ? responseRest.izuCreditType
-                            : 'BANK_PAGE',
+                        indPkudotYoman: responseRest.indPkudotYoman
+                            ? responseRest.indPkudotYoman
+                            : '0',
                         izuCreditValueDate: responseRest.izuCreditValueDate
                             ? responseRest.izuCreditValueDate
                             : 'TRANS_DATE'
@@ -135,9 +136,9 @@ export class ExportComponent
 
                     if (responseRest.manager) {
                         this.info.get('izuAsmachtaNumChar').enable();
-                        this.info.get('izuCreditType').enable();
+                        this.info.get('indPkudotYoman').enable();
                         this.info.get('izuCreditValueDate').enable();
-                        this.info.get('izuFileExportType').enable();
+                        // this.info.get('izuFileExportType').enable();
                     }
                 });
             });
@@ -164,10 +165,10 @@ export class ExportComponent
             return;
         }
         const params = {
-            // companyId: this.userService.appData.userData.companySelect.companyId,
-            izuFileExportType: this.info.get('izuFileExportType').value,
+            companyId: this.userService.appData.userData.companySelect.companyId,
+            // izuFileExportType: this.info.get('izuFileExportType').value,
             izuAsmachtaNumChar: this.info.get('izuAsmachtaNumChar').value,
-            izuCreditType: this.info.get('izuCreditType').value,
+            indPkudotYoman: this.info.get('indPkudotYoman').value,
             izuCreditValueDate: this.info.get('izuCreditValueDate').value
         };
 

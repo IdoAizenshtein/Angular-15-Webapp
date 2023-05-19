@@ -150,6 +150,9 @@ export class FinancialManagementSlikaDetailsComponent
                 distinctUntilChanged()
             )
             .subscribe((term) => {
+                this.sharedComponent.mixPanelEvent('search', {
+                    value:term
+                });
                 this.queryString = term;
                 this.filtersAll();
             });
@@ -354,8 +357,10 @@ export class FinancialManagementSlikaDetailsComponent
 
     setIndexRowCollapse(opened, cycleDate): void {
         if (opened) {
+            this.sharedComponent.mixPanelEvent('open detailed transes');
             this.indexOpenedRows.push(cycleDate);
         } else {
+            this.sharedComponent.mixPanelEvent('close detailed transes');
             const getIdx = this.indexOpenedRows.findIndex((element) => {
                 return element === cycleDate;
             });
@@ -364,7 +369,17 @@ export class FinancialManagementSlikaDetailsComponent
             }
         }
     }
-
+    sendEvent(isOpened: any) {
+        if (isOpened && this.childDates) {
+            this.childDates.selectedRange
+                .pipe(take(1))
+                .subscribe((paramDate) => {
+                    this.sharedComponent.mixPanelEvent('dates drop', {
+                        value: paramDate.fromDate + '-' + paramDate.toDate
+                    });
+                });
+        }
+    }
     clickToPackages(): void {
         if (this.userService.appData.userData.companySelect.lite) {
             if (
@@ -478,10 +493,12 @@ export class FinancialManagementSlikaDetailsComponent
 
     collapseOpen(open: boolean): void {
         if (open) {
+            this.sharedComponent.mixPanelEvent('open all');
             this.indexOpenedRows = this.dataTable.map((gr) => {
                 return gr.date;
             });
         } else {
+            this.sharedComponent.mixPanelEvent('close all');
             this.indexOpenedRows.length = 0;
         }
 
@@ -573,6 +590,9 @@ export class FinancialManagementSlikaDetailsComponent
     }
 
     filterCardType(type: any) {
+        this.sharedComponent.mixPanelEvent('credit type fillter', {
+            value: type.checked
+        });
         this.filterCardTypes = type.checked;
         this.filtersAll('filterTypes');
     }

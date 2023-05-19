@@ -60,6 +60,7 @@
         "myaccount": "החשבון שלי",
         "businessDetails": "פרטים",
         "officeDetails": "פרטי משרד",
+        "productSettings": "הגדרות מוצר",
         "alerts": "התראות",
         "bankAccounts": "חשבונות בנק",
         "creditCards": "כרטיסי אשראי",
@@ -82,15 +83,16 @@
       "companies": {
         "archivesDocs": "ניהול מסמכים",
         "parent": "חברות",
+        "generalParent": "חברות כללי",
         "products": "מוצרי חברה",
-        "addProduct": "הוספת חברה/ מוצר",
+        "addProduct": "הוספת מוצר",
         "daily": "תזרים יומי",
         "tazrimExample": "תזרים לדוגמה",
         "file": "תזרים מקובץ",
         "bankmatch": "התאמות בנקים",
         "fixedMovements": "תנועות קבועות",
         "general": "נתוני חברה",
-        "bankExport": "יצוא",
+        "bankExport": "יצוא בנק/אשראי",
         "journalTrans": "פקודות יומן",
         "archives": "ארכיון",
         "supplierCustomersJournal": "פ. יומן ספקים ולקוחות",
@@ -102,6 +104,9 @@
         "file": "תזרים מקובץ",
         "bankmatch": "התאמות בנקים",
         "fixedMovements": "תנועות קבועות"
+      },
+      "accountingFirmEstablishment": {
+        "parent": "הקמת משרד רו״ח"
       },
       "ocr": "OCR"
     }
@@ -123,7 +128,7 @@
     "oneMoreStep": "עוד צעד קטן...",
     "otpInfoText1": "קוד אימות לכניסה חד פעמית נשלח למספר",
     "otpInfoText2": "הטלפון {{phone}}",
-    "otpInfoText3": "שימו לב, הקוד תקף ל-10 דקות בלבד",
+    "otpInfoText3": "שימו לב, הקוד תקף ל-10 דקות בלבד.",
     "typeTheCode": "הקלידו את הקוד",
     "didNotReceiveTheCode": "לא קיבלתם את הקוד?",
     "tryAgain": "נסו שוב",
@@ -711,13 +716,13 @@
     "21": "ויזה כ.א.ל",
     "22": "ישראכרט",
     "23": "מסטרכארד",
-    "24": "לאומי קארד",
+    "24": "מקס",
     "25": "אמריקן אקספרס",
     "26": "דיינרס",
     "30": "אחר"
   },
   "clearingAgencies": {
-    "80": "לאומי קארד",
+    "80": "מקס",
     "81": "ויזה כ.א.ל",
     "82": "ישראכרט",
     "83": "דיינרס",
@@ -1950,6 +1955,39 @@
         "126": "https://online.u-bank.net/MatafRecoverPassword/index.jsp",
         "157": "https://start.telebank.co.il/apollo/core/templates/lobby/masterPage.html#/PWD_RESET",
         "158": "https://start.telebank.co.il/apollo/core/templates/lobby/masterPage.html#/PWD_RESET"
+      },
+      "login": {
+        "4": "https://register.yahav.co.il",
+        "9": "https://www.bankhadoar.co.il/#/Login",
+        "10": "https://www.leumi.co.il",
+        "11": "https://start.telebank.co.ilT",
+        "12": "https://login.bankhapoalim.co.il",
+        "14": "https://online.bankotsar.co.il",
+        "17": "https://start.telebank.co.il",
+        "13": "https://help.unionbank.co.il",
+        "20": "https://sc.mizrahi-tefahot.co.il",
+        "21": "https://services.cal-online.co.il",
+        "22": "https://digital.isracard.co.il",
+        "23": "https://digital.isracard.co.il",
+        "24": "https://online.leumi-card.co.il",
+        "25": "https://he.americanexpress.co.il",
+        "31": "https://online.fibi.co.il",
+        "34": "https://www.leumi.co.il",
+        "46": "https://online.bankmassad.co.il",
+        "52": "https://online.pagi.co.il",
+        "54": "https://services.bankjerusalem.co.il",
+        "57": "https://start.telebank.co.il",
+        "58": "https://start.telebank.co.il",
+        "68": "https://login.dexia-israel.co.il/heb/Personal/",
+        "80": "https://businessinfo.leumi-card.co.il",
+        "81": "https://services.cal-online.co.il",
+        "82": "https://service.isracard.co.il",
+        "89": "https://service.tzm.co.il",
+        "90": "https://www.gamaf.co.il/",
+        "91": "https://services.yatzil.co.il",
+        "126": "https://online.u-bank.net",
+        "157": "https://start.telebank.co.il",
+        "158": "https://start.telebank.co.il"
       }
     },
     "statusHumanized": {
@@ -2413,6 +2451,7 @@
     }
   },
   "dateRangePresets": {
+    "all": "הכול",
     "customMonths": "חודשים מלאים",
     "customDates": "בין תאריכים",
     "last30Days": "30 ימים אחרונים",
@@ -2440,6 +2479,7 @@
     "clrAgencyCurrentMonth": "חודש נוכחי"
   },
   "billingCycles": {
+    "all": "הכול",
     "customMonths": "חודשים מלאים",
     "customDates": "בין תאריכים",
     "last2Months": "2 מחזורי חיוב אחרונים",
@@ -2606,10 +2646,12 @@
     "CUSTOMER_IGNORE": "לא לטיפול על ידי",
     "DONE": "טופל",
     "DISABLED": "נקלט בהנה\"ח",
-    "RECHECK": "לבדיקה חוזרת",
+    "RECHECK": "אוכלס אוטומטי",
     "CHECKED": "טופל",
     "TEMP_COMMAND": "פ. זמנית בהנה\"ח",
-    "PERMANENT_COMMAND": "פ. קבועה בהנה\"ח"
+    "PERMANENT_COMMAND": "פ. קבועה בהנה\"ח",
+    "HASH_MATCH_IGNORE": "לא לטיפול מהתאמה בחשבשבת",
+    "BIZIBOX_MATCH_IGNORE": "לא לטיפול מהתאמה בביזיבוקס"
   },
   "ocr-fields-validation-errors": {
     "required": "שדה חובה",

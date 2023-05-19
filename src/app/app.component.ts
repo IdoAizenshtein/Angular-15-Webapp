@@ -8,7 +8,7 @@ import {
     OnInit,
     Renderer2,
     SecurityContext,
-    Testability
+    Testability, ViewChild, ViewChildren
 } from '@angular/core';
 import {TranslateService} from '@ngx-translate/core';
 import {UserService} from './core/user.service';
@@ -22,6 +22,7 @@ import {MatLegacySnackBar as MatSnackBar} from '@angular/material/legacy-snack-b
 import {MatIconRegistry} from '@angular/material/icon';
 import {Angulartics2GoogleAnalytics} from 'angulartics2';
 import {PrimeNGConfig} from 'primeng/api';
+import { OnExecuteData, OnExecuteErrorData, ReCaptchaV3Service } from "ng-recaptcha";
 
 import {NewVersionAvailablePromptComponent} from './shared/component/new-version-available-prompt/new-version-available-prompt.component';
 import {DomHandler} from 'primeng/dom';
@@ -36,7 +37,6 @@ DomHandler.absolutePosition = function (element: any, target: any) {
     const targetOuterHeight = target.offsetHeight;
     const targetOuterWidth = target.offsetWidth;
     const targetOffset = target.getBoundingClientRect();
-
     const windowScrollTop = this.getWindowScrollTop();
     const windowScrollLeft = this.getWindowScrollLeft();
     const viewport = this.getViewport();
@@ -44,7 +44,6 @@ DomHandler.absolutePosition = function (element: any, target: any) {
     if (targetOffset.top + targetOuterHeight + elementOuterHeight > viewport.height) {
         top = targetOffset.top + windowScrollTop - elementOuterHeight;
         element.style.transformOrigin = 'bottom';
-
         if (top < 0) {
             top = windowScrollTop;
         }
@@ -53,6 +52,10 @@ DomHandler.absolutePosition = function (element: any, target: any) {
         element.style.transformOrigin = 'top';
     }
 
+    if(element.className.includes('tooltipInfoCompanyZero')){
+        top = targetOuterHeight + targetOffset.top + windowScrollTop - 130;
+        element.style.transformOrigin = 'top';
+    }
     if (targetOffset.left + elementOuterWidth > viewport.width) {
         // left = targetOffset.left + windowScrollLeft;
         left = Math.max(0, targetOffset.left + windowScrollLeft + targetOuterWidth - elementOuterWidth);
@@ -122,8 +125,7 @@ DomHandler.relativePosition = function (element: any, target: any) {
              [ngClass]="{
         isLTR: userService?.appData?.dir === 'ltr',
         isRTL: userService?.appData?.dir === 'rtl'
-      }"
-        >
+      }">
 <!--            <p-dialog [(visible)]="networkDisconnect" [closable]="false" [draggable]="false" [modal]="true"-->
 <!--                      [resizable]="false" [rtl]="true" [style]="{width: '50vw', height: '393px'}" appendTo="body"-->
 <!--                      header="אינכם מחוברים לרשת!"-->
@@ -149,7 +151,6 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
     // private viewportHandler: any;
     documentClickListener: any;
     target: any;
-
     constructor(
         public translate: TranslateService,
         public angulartics2GoogleAnalytics: Angulartics2GoogleAnalytics,
@@ -166,8 +167,10 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
         private adminService: AdminService,
         public snackBar: MatSnackBar,
         private matIconRegistry: MatIconRegistry,
-        private config: PrimeNGConfig
+        private config: PrimeNGConfig,
+        private recaptchaV3Service: ReCaptchaV3Service
     ) {
+        this.userService.appData.recaptchaV3Service = recaptchaV3Service;
         // if (navigator.connection) {
         //     if (navigator.connection.rtt === 0) {
         //         this.networkDisconnect = true;
@@ -684,7 +687,14 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
             'rightBtnArrActive',
             _sanitizer.bypassSecurityTrustResourceUrl('../assets/images/rightBtnArrActive.svg')
         );
-
+        this.matIconRegistry.addSvgIcon(
+            'canAddBillingItems',
+            _sanitizer.bypassSecurityTrustResourceUrl('../assets/images/canAddBillingItems.svg')
+        );
+        this.matIconRegistry.addSvgIcon(
+            'canAddBillingItemsActive',
+            _sanitizer.bypassSecurityTrustResourceUrl('../assets/images/canAddBillingItemsActive.svg')
+        );
 
         this.matIconRegistry.addSvgIcon(
             'BankTransferMulti',
@@ -737,6 +747,47 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
         this.matIconRegistry.addSvgIcon(
             'Checks',
             _sanitizer.bypassSecurityTrustResourceUrl('../assets/images/Checks.svg')
+        );
+        this.matIconRegistry.addSvgIcon(
+            'billingItemExists',
+            _sanitizer.bypassSecurityTrustResourceUrl('../assets/images/billingItemExists.svg')
+        );
+        this.matIconRegistry.addSvgIcon(
+            'icon_support',
+            _sanitizer.bypassSecurityTrustResourceUrl('../assets/images/icon_support.svg')
+        );
+        this.matIconRegistry.addSvgIcon(
+            'crop',
+            _sanitizer.bypassSecurityTrustResourceUrl('../assets/images/crop.svg')
+        );
+        this.matIconRegistry.addSvgIcon(
+            'journalPaymentPrompt_journalCount',
+            _sanitizer.bypassSecurityTrustResourceUrl('../assets/images/journalPaymentPrompt_journalCount.svg')
+        );
+        this.matIconRegistry.addSvgIcon(
+            'vectorlink',
+            _sanitizer.bypassSecurityTrustResourceUrl('../assets/images/vectorlink.svg')
+        );
+        this.matIconRegistry.addSvgIcon(
+            'filter',
+            _sanitizer.bypassSecurityTrustResourceUrl('../assets/images/filter.svg')
+        );
+        this.matIconRegistry.addSvgIcon(
+            'filter_active',
+            _sanitizer.bypassSecurityTrustResourceUrl('../assets/images/filter-active.svg')
+        );
+
+        this.matIconRegistry.addSvgIcon(
+            'filterIconBtnBase',
+            _sanitizer.bypassSecurityTrustResourceUrl('../assets/images/filterIconBtnBase.svg')
+        );
+        this.matIconRegistry.addSvgIcon(
+            'filterIconBtnHover',
+            _sanitizer.bypassSecurityTrustResourceUrl('../assets/images/filterIconBtnHover.svg')
+        );
+        this.matIconRegistry.addSvgIcon(
+            'filterIconBtnBaseActive',
+            _sanitizer.bypassSecurityTrustResourceUrl('../assets/images/filterIconBtnBaseActive.svg')
         );
     }
 

@@ -1,570 +1,572 @@
 <div>
-  <div class="navTable">
-    <div
-      id="addSlikaAccount"
-      [ngStyle]="{ opacity: exampleCompany ? 0.6 : 1 }"
-      (click)="!exampleCompany ? addTokenPrompt.show() : null"
-      *ngIf="!((settingsComponent.arrCompanies$ | async)?.length > 1)"
-    >
-      <img
-       fill ngSrc="/assets/images/add.png"
-        style="align-self: center; flex: 0 0 auto; margin: 0 0px 0px 4px; height: auto; width: auto; position: relative;"
-      />
-      <label>{{ 'actions.addSlikaAccount' | translate }}</label>
-    </div>
-    <ul style="display: flex; justify-content: space-between">
-      <li class="button-link" (click)="toggleExpandedForAllTo(true)">
-        {{ 'actions.expandAll' | translate }}
-      </li>
-      <li>|</li>
-      <li class="button-link" (click)="toggleExpandedForAllTo(false)">
-        {{ 'actions.collapseAll' | translate }}
-      </li>
-    </ul>
-    <div>
-      <p-checkbox checkboxIcon="fa fa-check"
-        id="p-showHideValuesInside"
-        inputId="showHideValuesInside"
-        class="checkboxGraph"
-        label="הצג חשבונות שנמחקו"
-        [formControl]="showDeletedSolkim"
-        [binary]="true"
-      >
-      </p-checkbox>
-    </div>
-  </div>
-  <div class="tableSlika">
-    <div class="header" #header>
-      <div class="separator">&nbsp;</div>
-      <div></div>
-      <div class="separator">&nbsp;</div>
-      <div>שם החשבון</div>
-      <div class="separator">&nbsp;</div>
-      <div>שם הסולק</div>
-      <div class="separator">&nbsp;</div>
-      <div>מס׳ סולק</div>
-      <div class="separator">&nbsp;</div>
-      <div>מס׳ חשבון</div>
-      <!--            <div class="separator">&nbsp;</div>-->
-      <!--            <div>-->
-      <!--                מועד הסליקה-->
-      <!--            </div>-->
-      <div class="separator">&nbsp;</div>
-      <div>טעינת נתונים אחרונה</div>
-      <div class="separator">&nbsp;</div>
-      <div></div>
-      <div class="separator">&nbsp;</div>
-      <div></div>
-      <div class="separator">&nbsp;</div>
-      <div></div>
-      <div class="separator">&nbsp;</div>
-    </div>
-    <div
-      [appScrollHeight]="header.getBoundingClientRect().bottom + 5"
-      class="scrollPage scrollbar-dynamic"
-      style="position: relative"
-    >
-      <div *ngIf="loader" class="loader">
-        <div class="circle"></div>
-      </div>
-
-      <ng-template #nonDeletedSolkimOnly let-tokenGroup>
+    <div class="navTable">
         <div
-          (click)="
+                (click)="!exampleCompany ? addTokenPrompt.show() : null"
+                *ngIf="!((settingsComponent.arrCompanies$ | async)?.length > 1)"
+                [ngStyle]="{ opacity: exampleCompany ? 0.6 : 1 }"
+                id="addSlikaAccount"
+        >
+            <img
+                    fill ngSrc="/assets/images/add.png"
+                    style="align-self: center; flex: 0 0 auto; margin: 0 0px 0px 4px; height: auto; width: auto; position: relative;"
+            />
+            <label>{{ 'actions.addSlikaAccount' | translate }}</label>
+        </div>
+        <ul style="display: flex; justify-content: space-between">
+            <li (click)="toggleExpandedForAllTo(true)" class="button-link">
+                {{ 'actions.expandAll' | translate }}
+            </li>
+            <li>|</li>
+            <li (click)="toggleExpandedForAllTo(false)" class="button-link">
+                {{ 'actions.collapseAll' | translate }}
+            </li>
+        </ul>
+        <div>
+            <p-checkbox [binary]="true"
+                        [formControl]="showDeletedSolkim"
+                        checkboxIcon="fa fa-check"
+                        class="checkboxGraph"
+                        id="p-showHideValuesInside"
+                        inputId="showHideValuesInside"
+                        label="הצג חשבונות שנמחקו"
+            >
+            </p-checkbox>
+        </div>
+    </div>
+    <div class="tableSlika">
+        <div #header class="header">
+            <div class="separator">&nbsp;</div>
+            <div></div>
+            <div class="separator">&nbsp;</div>
+            <div>שם החשבון</div>
+            <div class="separator">&nbsp;</div>
+            <div>שם הסולק</div>
+            <div class="separator">&nbsp;</div>
+            <div>מס׳ סולק</div>
+            <div class="separator">&nbsp;</div>
+            <div>מס׳ חשבון</div>
+            <!--            <div class="separator">&nbsp;</div>-->
+            <!--            <div>-->
+            <!--                מועד הסליקה-->
+            <!--            </div>-->
+            <div class="separator">&nbsp;</div>
+            <div>טעינת נתונים אחרונה</div>
+            <div class="separator">&nbsp;</div>
+            <div></div>
+            <div class="separator">&nbsp;</div>
+            <div></div>
+            <div class="separator">&nbsp;</div>
+            <div></div>
+            <div class="separator">&nbsp;</div>
+        </div>
+        <div
+                [appScrollHeight]="header.getBoundingClientRect().bottom + 5"
+                class="scrollPage scrollbar-dynamic"
+                style="position: relative"
+        >
+            <div *ngIf="loader" class="loader">
+                <div class="circle"></div>
+            </div>
+
+            <ng-template #nonDeletedSolkimOnly let-tokenGroup>
+                <div
+                        (click)="
             tokenGroup.children.length && toggleExpandedFor(tokenGroup.id)
           "
-          [class.pointer]="tokenGroup.children.length > 0"
-        >
-          <i
-            *ngIf="tokenGroup.children.length"
-            class="fa fa-fw"
-            [ngClass]="
+                        [class.pointer]="tokenGroup.children.length > 0"
+                >
+                    <i
+                            *ngIf="tokenGroup.children.length"
+                            [ngClass]="
               groupExpanded[tokenGroup.id] ? 'fa-caret-up' : 'fa-caret-down'
             "
-          ></i>
-          <i *ngIf="!tokenGroup.children.length" class="fa fa-fw">&nbsp;</i>
-        </div>
-      </ng-template>
+                            class="fa fa-fw"
+                    ></i>
+                    <i *ngIf="!tokenGroup.children.length" class="fa fa-fw">&nbsp;</i>
+                </div>
+            </ng-template>
 
-      <ng-template #watchDeletedSolkim let-tokenGroup>
-        <ng-container *ngIf="deletedSolkim$ | async as deletedSolkim">
-          <div
-            (click)="
+            <ng-template #watchDeletedSolkim let-tokenGroup>
+                <ng-container *ngIf="deletedSolkim$ | async as deletedSolkim">
+                    <div
+                            (click)="
               (tokenGroup.children.length || deletedSolkim[tokenGroup.id]) &&
                 toggleExpandedFor(tokenGroup.id)
             "
-            [class.pointer]="
+                            [class.pointer]="
               tokenGroup.children.length || deletedSolkim[tokenGroup.id]
             "
-          >
-            <i
-              *ngIf="tokenGroup.children.length || deletedSolkim[tokenGroup.id]"
-              class="fa fa-fw"
-              [ngClass]="
+                    >
+                        <i
+                                *ngIf="tokenGroup.children.length || deletedSolkim[tokenGroup.id]"
+                                [ngClass]="
                 groupExpanded[tokenGroup.id] ? 'fa-caret-up' : 'fa-caret-down'
               "
-            ></i>
-            <i
-              *ngIf="
+                                class="fa fa-fw"
+                        ></i>
+                        <i
+                                *ngIf="
                 !(tokenGroup.children.length || deletedSolkim[tokenGroup.id])
               "
-              class="fa fa-fw"
-              >&nbsp;</i
-            >
-          </div>
-        </ng-container>
-      </ng-template>
+                                class="fa fa-fw"
+                        >&nbsp;</i
+                        >
+                    </div>
+                </ng-container>
+            </ng-template>
 
-      <ng-container *ngIf="byTokenGroups$ | async as byTokenGroups">
-        <div *ngFor="let tokenGroup of byTokenGroups">
-          <div class="rowTitle">
-            <ng-template
-              [ngTemplateOutlet]="
+            <ng-container *ngIf="byTokenGroups$ | async as byTokenGroups">
+                <div *ngFor="let tokenGroup of byTokenGroups">
+                    <div class="rowTitle">
+                        <ng-template
+                                [ngTemplateOutletContext]="{ $implicit: tokenGroup }"
+                                [ngTemplateOutlet]="
                 showDeletedSolkim.value
                   ? watchDeletedSolkim
                   : nonDeletedSolkimOnly
               "
-              [ngTemplateOutletContext]="{ $implicit: tokenGroup }"
-            ></ng-template>
-            <!--<div (click)="tokenGroup.children.length && toggleExpandedFor(tokenGroup.id)"-->
-            <!--[class.pointer]="tokenGroup.children.length > 0">-->
-            <!--<i *ngIf="tokenGroup.children.length"-->
-            <!--class="fa fa-fw" [ngClass]="groupExpanded[tokenGroup.id] ? 'fa-caret-up':'fa-caret-down'"></i>-->
-            <!--<i *ngIf="!tokenGroup.children.length"-->
-            <!--class="fa fa-fw">&nbsp;</i>-->
-            <!--</div>-->
+                        ></ng-template>
+                        <!--<div (click)="tokenGroup.children.length && toggleExpandedFor(tokenGroup.id)"-->
+                        <!--[class.pointer]="tokenGroup.children.length > 0">-->
+                        <!--<i *ngIf="tokenGroup.children.length"-->
+                        <!--class="fa fa-fw" [ngClass]="groupExpanded[tokenGroup.id] ? 'fa-caret-up':'fa-caret-down'"></i>-->
+                        <!--<i *ngIf="!tokenGroup.children.length"-->
+                        <!--class="fa fa-fw">&nbsp;</i>-->
+                        <!--</div>-->
 
-            <img
-              style="height: auto; width: auto; position: relative;" fill [ngSrc]="
+                        <img
+                                [ngSrc]="
                 tokenGroup.status.websiteTargetTypeId
                   | toIconSrc
                     : ((tokenGroup.status.websiteTargetTypeId | asTokenType) ===
                       tokenTypes.SLIKA
                         ? 'solek'
                         : 'any')
-              "
-            />&nbsp;
+              " fill style="height: auto; width: auto; position: relative;"
+                        />&nbsp;
 
-            <!--<input [(ngModel)]="tokenGroup.status.tokenNickname" #tokenNicknameInp-->
-            <!--(focus)="selectedToken = tokenGroup.status;" (blur)="selectedToken = null;"-->
-            <!--(keydown.enter)="tokenNicknameInp.blur();"-->
-            <!--(keydown.esc)="selectedToken.tokenNickname = ''; tokenNicknameInp.blur();"-->
-            <!--[readonly]="!tokenGroup.status.hasPrivs || selectedToken !== tokenGroup.status"-->
-            <!--[disabled]="!tokenGroup.status.hasPrivs">-->
-            {{ tokenGroup.status.tokenNickname }}
+                        <!--<input [(ngModel)]="tokenGroup.status.tokenNickname" #tokenNicknameInp-->
+                        <!--(focus)="selectedToken = tokenGroup.status;" (blur)="selectedToken = null;"-->
+                        <!--(keydown.enter)="tokenNicknameInp.blur();"-->
+                        <!--(keydown.esc)="selectedToken.tokenNickname = ''; tokenNicknameInp.blur();"-->
+                        <!--[readonly]="!tokenGroup.status.hasPrivs || selectedToken !== tokenGroup.status"-->
+                        <!--[disabled]="!tokenGroup.status.hasPrivs">-->
+                        {{ tokenGroup.status.tokenNickname }}
 
-            <ng-container>
-              <app-token-status-view
-                [status]="tokenGroup.status"
-                [companyId]="
+                        <ng-container>
+                            <app-token-status-view
+                                    (creationSuccess)="forceReload$.next()"
+                                    [companyId]="
                   (settingsComponent.selectedCompany$ | async).companyId
                 "
-                (creationSuccess)="forceReload$.next()"
-              >
-              </app-token-status-view>
-            </ng-container>
-          </div>
+                                    [status]="tokenGroup.status"
+                            >
+                            </app-token-status-view>
+                        </ng-container>
+                    </div>
 
-          <ng-container
-            *ngIf="tokenGroup.children.length && groupExpanded[tokenGroup.id]"
-          >
-            <div
-              *ngFor="let itemChild of tokenGroup.children"
-              tabindex="-1"
-              class="row"
-              [class.row-outdated]="
+                    <ng-container
+                            *ngIf="tokenGroup.children.length && groupExpanded[tokenGroup.id]"
+                    >
+                        <div
+                                (blur)="selectedSolek = null"
+                                (focus)="selectedSolek = itemChild"
+                                *ngFor="let itemChild of tokenGroup.children"
+                                [class.row-outdated]="
                 !(itemChild.ballanceLastUpdatedDate | isToday: true:false)
               "
-              (focus)="selectedSolek = itemChild"
-              (blur)="selectedSolek = null"
-            >
-              <div class="separator">&nbsp;</div>
-              <div></div>
-              <div class="separator">&nbsp;</div>
+                                class="row"
+                                tabindex="-1"
+                        >
+                            <div class="separator">&nbsp;</div>
+                            <div></div>
+                            <div class="separator">&nbsp;</div>
 
-              <!--<div>{{itemChild.account?.accountNickname}}</div>-->
-              <div class="dropdownOnHover">
-                <ng-container *ngIf="itemChild.account">
-                  <span>{{ itemChild.account.accountNickname }}</span>
-                  <p-dropdown [dropdownIcon]="'fa fa-fw fa-caret-down'"
-                    appendTo="body"
-                    #accChangeTrigger
-                    [options]="defaultCurrencyAccounts"
-                    [(ngModel)]="itemChild.account"
-                    dataKey="companyAccountId"
-                    optionLabel="accountNickname"
-                    (onChange)="
+                            <!--<div>{{itemChild.account?.accountNickname}}</div>-->
+                            <div class="dropdownOnHover">
+                                <ng-container *ngIf="itemChild.account">
+                                    <span>{{ itemChild.account.accountNickname }}</span>
+                                    <p-dropdown #accChangeTrigger
+                                                (onChange)="
+                                                sharedComponent.mixPanelEvent('change account');
                       promptForAccountChangeAt(
                         itemChild,
                         $event,
                         accChangeTrigger
                       )
                     "
-                    [scrollHeight]="'14em'"
-                    (onFocus)="selectedSolek = itemChild"
-                    [style]="{ width: '100%' }"
-                  >
-                    <ng-template let-item pTemplate="selectedItem">
-                      <div
-                        style="
+                                                (onClick)="itemChild.accountSaved = itemChild.account"
+                                                (onFocus)="selectedSolek = itemChild"
+                                                [(ngModel)]="itemChild.account"
+                                                [dropdownIcon]="'fa fa-fw fa-caret-down'"
+                                                [options]="defaultCurrencyAccounts"
+                                                [scrollHeight]="'14em'"
+                                                [style]="{ width: '100%' }"
+                                                appendTo="body"
+                                                dataKey="companyAccountId"
+                                                optionLabel="accountNickname"
+                                    >
+                                        <ng-template let-item pTemplate="selectedItem">
+                                            <div
+                                                    style="
                           display: flex;
                           display: -ms-flexbox;
                           align-items: center;
                         "
-                      >
-                        <!--<img style="height: auto; width: auto; position: relative;" fill [ngSrc]="!item.bankId ? '' : item.bankId| toIconSrc:'bank'"/>&nbsp;-->
-                        <div class="text-ellipsis" style="min-width: 0">
-                          {{ item.accountNickname }}
-                        </div>
-                      </div>
-                    </ng-template>
-                    <ng-template let-option pTemplate="item">
-                      <div
-                        style="
+                                            >
+                                                <!--<img style="height: auto; width: auto; position: relative;" fill [ngSrc]="!item.bankId ? '' : item.bankId| toIconSrc:'bank'"/>&nbsp;-->
+                                                <div class="text-ellipsis" style="min-width: 0">
+                                                    {{ item.accountNickname }}
+                                                </div>
+                                            </div>
+                                        </ng-template>
+                                        <ng-template let-option pTemplate="item">
+                                            <div
+                                                    style="
                           position: relative;
                           display: flex;
                           display: -ms-flexbox;
                           align-items: center;
                         "
-                      >
-                        <img
-                          style="height: auto; width: auto; position: relative;" fill [ngSrc]="
+                                            >
+                                                <img
+                                                        [ngSrc]="
                             (!option.bankId ? '' : option.bankId)
                               | toIconSrc: 'bank'
-                          "
-                        />&nbsp;
-                        <div class="text-ellipsis">{{ option.accountNickname }}</div>
-                      </div>
-                    </ng-template>
-                  </p-dropdown>
-                </ng-container>
-              </div>
+                          " fill
+                                                        style="height: auto; width: auto; position: relative;"
+                                                />&nbsp;
+                                                <div class="text-ellipsis">{{ option.accountNickname }}</div>
+                                            </div>
+                                        </ng-template>
+                                    </p-dropdown>
+                                </ng-container>
+                            </div>
 
-              <div class="separator">&nbsp;</div>
-              <div>
-                <div
-                  [pTooltip]="itemChild.solekDesc"
-                  style="display: flex"
-                  tooltipPosition="top"
-                  appendTo="body"
-                  [showDelay]="300"
-                  [tooltipDisabled]="
+                            <div class="separator">&nbsp;</div>
+                            <div>
+                                <div
+                                        [pTooltip]="itemChild.solekDesc"
+                                        [showDelay]="300"
+                                        [tooltipDisabled]="
                     nicknameInp.clientWidth >= nicknameInp.scrollWidth
                   "
-                >
-                  <input
-                    [(ngModel)]="itemChild.solekDesc"
-                    #nicknameInp
-                    (focus)="selectedSolek = itemChild"
-                    (blur)="selectedSolek = null"
-                    (keydown.enter)="nicknameInp.blur()"
-                    (keydown.esc)="
+                                        appendTo="body"
+                                        style="display: flex"
+                                        tooltipPosition="top"
+                                >
+                                    <input
+                                            #nicknameInp
+                                            (blur)="sharedComponent.mixPanelEvent('change solek name'); selectedSolek = null"
+                                            (focus)="selectedSolek = itemChild"
+                                            (keydown.enter)="nicknameInp.blur()"
+                                            (keydown.esc)="
                       selectedSolek.solekDesc = ''; nicknameInp.blur()
                     "
-                    [readonly]="selectedSolek !== itemChild"
-                    [appMaxInputLength]="19"
-                  />
-                </div>
-                <!--{{itemChild.solekDesc}}-->
-                <!--{{('clearingAgencies.' + itemChild.solekBankId)| translate}}-->
-              </div>
-              <div class="separator">&nbsp;</div>
-              <div>{{ itemChild.solekNum }}</div>
-              <div class="separator">&nbsp;</div>
-              <div>{{ itemChild.account.bankAccountId }}</div>
-              <div class="separator">&nbsp;</div>
-              <!--                            <div>-->
-              <!--                                <ng-container *ngIf="itemChild.frequencyDay">-->
-              <!--                                    {{itemChild.frequencyDay|transactionFrequencyHumanize:'MONTH'}}-->
-              <!--                                </ng-container>-->
-              <!--                            </div>-->
-              <!--                            <div class="separator">&nbsp;</div>-->
-              <div>
-                {{
-                  itemChild.ballanceLastUpdatedDate
-                    | todayRelativeHumanize: 'dd/MM/yy'
-                }}
-              </div>
-              <div class="separator">&nbsp;</div>
-              <div>
-                <i
-                  *ngIf="
+                                            [(ngModel)]="itemChild.solekDesc"
+                                            [appMaxInputLength]="19"
+                                            [readonly]="selectedSolek !== itemChild"
+                                    />
+                                </div>
+                                <!--{{itemChild.solekDesc}}-->
+                                <!--{{('clearingAgencies.' + itemChild.solekBankId)| translate}}-->
+                            </div>
+                            <div class="separator">&nbsp;</div>
+                            <div>{{ itemChild.solekNum }}</div>
+                            <div class="separator">&nbsp;</div>
+                            <div>{{ itemChild.account.bankAccountId }}</div>
+                            <div class="separator">&nbsp;</div>
+                            <!--                            <div>-->
+                            <!--                                <ng-container *ngIf="itemChild.frequencyDay">-->
+                            <!--                                    {{itemChild.frequencyDay|transactionFrequencyHumanize:'MONTH'}}-->
+                            <!--                                </ng-container>-->
+                            <!--                            </div>-->
+                            <!--                            <div class="separator">&nbsp;</div>-->
+                            <div>
+                                {{
+                                itemChild.ballanceLastUpdatedDate
+                                    | todayRelativeHumanize: 'dd/MM/yy'
+                                }}
+                            </div>
+                            <div class="separator">&nbsp;</div>
+                            <div>
+                                <i
+                                        *ngIf="
                     itemChild.alertStatus
                       | alertStatusHumanize as alertStatusHumanized
                   "
-                  class="outdated"
-                >
-                  {{ alertStatusHumanized }}
-                </i>
-              </div>
-              <div class="separator">&nbsp;</div>
-              <div>
-                <!--<span *ngIf="!itemChild.primaryAccount" class="showHover" style="color: #038ed6;"-->
-                <!--(click)="accountSetPrimary(itemChild.companyAccountId, itemChild.companyId)">-->
-                <!--בחירת חשבון מוביל-->
-                <!--</span>-->
-              </div>
-              <div class="separator">&nbsp;</div>
-              <div>
-                <img
-                  style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/trash.png"
-                  *ngIf="!exampleCompany"
-                  class="showHover"
-                  (click)="solekDelete(itemChild)"
-                />
-              </div>
-              <div class="separator">&nbsp;</div>
-            </div>
-          </ng-container>
+                                        class="outdated"
+                                >
+                                    {{ alertStatusHumanized }}
+                                </i>
+                            </div>
+                            <div class="separator">&nbsp;</div>
+                            <div>
+                                <!--<span *ngIf="!itemChild.primaryAccount" class="showHover" style="color: #038ed6;"-->
+                                <!--(click)="accountSetPrimary(itemChild.companyAccountId, itemChild.companyId)">-->
+                                <!--בחירת חשבון מוביל-->
+                                <!--</span>-->
+                            </div>
+                            <div class="separator">&nbsp;</div>
+                            <div>
+                                <img
+                                        (click)="solekDelete(itemChild)" *ngIf="!exampleCompany"
+                                        class="showHover"
+                                        fill
+                                        ngSrc="/assets/images/trash.png"
+                                        style="height: auto; width: auto; position: relative;"
+                                />
+                            </div>
+                            <div class="separator">&nbsp;</div>
+                        </div>
+                    </ng-container>
 
-          <ng-container *ngIf="showDeletedSolkim.value">
-            <ng-container *ngIf="deletedSolkim$ | async as deletedSolkim">
-              <div
-                *ngFor="let itemChild of deletedSolkim[tokenGroup.id]"
-                tabindex="-1"
-                class="row deletedSolekRow"
-              >
-                <div class="separator">&nbsp;</div>
-                <div></div>
-                <div class="separator">&nbsp;</div>
-                <div>{{ itemChild.account?.accountNickname }}</div>
-                <div class="separator">&nbsp;</div>
-                <div>
-                  {{ 'clearingAgencies.' + itemChild.solekBankId | translate }}
-                </div>
-                <div class="separator">&nbsp;</div>
-                <div>{{ itemChild.solekNum }}</div>
-                <div class="separator">&nbsp;</div>
-                <div>{{ itemChild.account?.bankAccountId }}</div>
-                <div class="separator">&nbsp;</div>
-                <div>
-                  <ng-container *ngIf="itemChild.frequencyDay">
-                    {{
-                      itemChild.frequencyDay
-                        | transactionFrequencyHumanize: 'MONTH'
-                    }}
-                  </ng-container>
-                  <!--<span *ngFor="let itemChildDays of itemChild.frequencyDay;let last = last;">-->
-                  <!--{{itemChildDays}}-->
+                    <ng-container *ngIf="showDeletedSolkim.value">
+                        <ng-container *ngIf="deletedSolkim$ | async as deletedSolkim">
+                            <div
+                                    *ngFor="let itemChild of deletedSolkim[tokenGroup.id]"
+                                    class="row deletedSolekRow"
+                                    tabindex="-1"
+                            >
+                                <div class="separator">&nbsp;</div>
+                                <div></div>
+                                <div class="separator">&nbsp;</div>
+                                <div>{{ itemChild.account?.accountNickname }}</div>
+                                <div class="separator">&nbsp;</div>
+                                <div>
+                                    {{ 'clearingAgencies.' + itemChild.solekBankId | translate }}
+                                </div>
+                                <div class="separator">&nbsp;</div>
+                                <div>{{ itemChild.solekNum }}</div>
+                                <div class="separator">&nbsp;</div>
+                                <div>{{ itemChild.account?.bankAccountId }}</div>
+                                <div class="separator">&nbsp;</div>
+                                <div>
+                                    <ng-container *ngIf="itemChild.frequencyDay">
+                                        {{
+                                        itemChild.frequencyDay
+                                            | transactionFrequencyHumanize: 'MONTH'
+                                        }}
+                                    </ng-container>
+                                    <!--<span *ngFor="let itemChildDays of itemChild.frequencyDay;let last = last;">-->
+                                    <!--{{itemChildDays}}-->
 
-                  <!--<i *ngIf="!last">ו</i>-->
-                  <!--</span>-->
-                  <!--בחודש-->
-                </div>
-                <div class="separator">&nbsp;</div>
-                <div>
-                  {{
-                    itemChild.ballanceLastUpdatedDate
-                      | todayRelativeHumanize: 'dd/MM/yy'
-                  }}
-                </div>
-                <div class="separator">&nbsp;</div>
-                <div style="overflow: visible">
+                                    <!--<i *ngIf="!last">ו</i>-->
+                                    <!--</span>-->
+                                    <!--בחודש-->
+                                </div>
+                                <div class="separator">&nbsp;</div>
+                                <div>
+                                    {{
+                                    itemChild.ballanceLastUpdatedDate
+                                        | todayRelativeHumanize: 'dd/MM/yy'
+                                    }}
+                                </div>
+                                <div class="separator">&nbsp;</div>
+                                <div style="overflow: visible">
                   <span
-                    class="showHover link"
-                    (click)="solekRestore(itemChild)"
-                    >{{ 'actions.restoreSolek' | translate }}</span
+                          (click)="solekRestore(itemChild)"
+                          class="showHover link"
+                  >{{ 'actions.restoreSolek' | translate }}</span
                   >
+                                </div>
+                                <div class="separator">&nbsp;</div>
+                                <div>
+                                    <!--<span *ngIf="!itemChild.primaryAccount" class="showHover" style="color: #038ed6;"-->
+                                    <!--(click)="accountSetPrimary(itemChild.companyAccountId, itemChild.companyId)">-->
+                                    <!--בחירת חשבון מוביל-->
+                                    <!--</span>-->
+                                </div>
+                                <div class="separator">&nbsp;</div>
+                                <div>
+                                    <!--<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/trash.png" class="showHover" (click)="deleteOperation(itemChild)"/>-->
+                                </div>
+                                <div class="separator">&nbsp;</div>
+                            </div>
+                        </ng-container>
+                    </ng-container>
                 </div>
-                <div class="separator">&nbsp;</div>
-                <div>
-                  <!--<span *ngIf="!itemChild.primaryAccount" class="showHover" style="color: #038ed6;"-->
-                  <!--(click)="accountSetPrimary(itemChild.companyAccountId, itemChild.companyId)">-->
-                  <!--בחירת חשבון מוביל-->
-                  <!--</span>-->
-                </div>
-                <div class="separator">&nbsp;</div>
-                <div>
-                  <!--<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/trash.png" class="showHover" (click)="deleteOperation(itemChild)"/>-->
-                </div>
-                <div class="separator">&nbsp;</div>
-              </div>
             </ng-container>
-          </ng-container>
+
+            <!--<div *ngFor="let item of slikaAccounts;let i = index;">-->
+            <!--<div [class.opened]="item.opened" class="rowTitle">-->
+            <!--<div class="separator">&nbsp;</div>-->
+            <!--<div (click)="item.opened=!item.opened; collapseOpenVal = false; setIndexRowCollapse(item.opened, i)"-->
+            <!--class="pointer">-->
+            <!--<i class="fa fa-fw" [ngClass]="item.opened ? 'fa-caret-up':'fa-caret-down'"></i>-->
+            <!--</div>-->
+            <!--<div class="separator">&nbsp;</div>-->
+            <!--<div (click)="item.opened=!item.opened; collapseOpenVal = false; setIndexRowCollapse(item.opened, i)"-->
+            <!--class="pointer">-->
+            <!--<app-solek-view [solekNumber]="item.solekBankId" [showName]="true"-->
+            <!--style="align-self: center; flex: 0 0 auto;"></app-solek-view>-->
+            <!--</div>-->
+            <!--<div class="separator">&nbsp;</div>-->
+            <!--<div (click)="item.opened=!item.opened; collapseOpenVal = false; setIndexRowCollapse(item.opened, i)"-->
+            <!--class="pointer">-->
+            <!--&nbsp;-->
+            <!--</div>-->
+            <!--<div class="separator">&nbsp;</div>-->
+            <!--<div (click)="item.opened=!item.opened; collapseOpenVal = false; setIndexRowCollapse(item.opened, i)"-->
+            <!--class="pointer">-->
+            <!--&nbsp;-->
+            <!--</div>-->
+            <!--<div class="separator">&nbsp;</div>-->
+            <!--<div (click)="item.opened=!item.opened; collapseOpenVal = false; setIndexRowCollapse(item.opened, i)"-->
+            <!--class="pointer">-->
+            <!--&nbsp;-->
+            <!--</div>-->
+            <!--<div class="separator">&nbsp;</div>-->
+            <!--<div (click)="item.opened=!item.opened; collapseOpenVal = false; setIndexRowCollapse(item.opened, i)"-->
+            <!--class="pointer">-->
+            <!--&nbsp;-->
+            <!--</div>-->
+            <!--<div class="separator">&nbsp;</div>-->
+            <!--<div>-->
+            <!--<div [ngSwitch]="item?.tokenStatus" class="text_status">-->
+            <!--<ng-template ngSwitchCase="VALID">-->
+            <!--<div class="VALID_text">-->
+            <!--עדכון פרטי זיהוי-->
+            <!--</div>-->
+            <!--</ng-template>-->
+            <!--<ng-template ngSwitchCase="INVALIDPASSWORD">-->
+            <!--<div class="INVALIDPASSWORD_text">-->
+            <!--סיסמה שגויה-->
+            <!--</div>-->
+            <!--</ng-template>-->
+            <!--<ng-template ngSwitchCase="INPROGRESS">-->
+            <!--<div>-->
+            <!--INPROGRESS-->
+            <!--</div>-->
+            <!--</ng-template>-->
+            <!--<ng-template [ngSwitchCase]="getStatusLoad(item?.tokenStatus)">-->
+            <!--<div class="check_text">-->
+            <!--מאמת פרטי זיהוי-->
+            <!--</div>-->
+            <!--</ng-template>-->
+            <!--<ng-template ngSwitchDefault></ng-template>-->
+            <!--</div>-->
+            <!--</div>-->
+            <!--<div class="separator">&nbsp;</div>-->
+            <!--<div>-->
+            <!--<div [ngSwitch]="item?.tokenStatus" class="status">-->
+            <!--<ng-template ngSwitchCase="VALID">-->
+            <!--<div class="VALID_status">-->
+            <!--פרטי הזיהוי תקינים-->
+            <!--</div>-->
+            <!--</ng-template>-->
+            <!--<ng-template ngSwitchCase="INVALIDPASSWORD">-->
+            <!--<div class="INVALIDPASSWORD_status">-->
+            <!--<button style="font-weight: 600 !important;">-->
+            <!--עדכון סיסמה-->
+            <!--</button>-->
+            <!--</div>-->
+            <!--</ng-template>-->
+            <!--<ng-template ngSwitchCase="INPROGRESS">-->
+            <!--INPROGRESS-->
+            <!--</ng-template>-->
+            <!--<ng-template [ngSwitchCase]="getStatusLoad(item?.tokenStatus)">-->
+            <!--<div class="check_status">-->
+            <!--מאמת פרטי זיהוי-->
+            <!--</div>-->
+            <!--</ng-template>-->
+            <!--<ng-template ngSwitchDefault></ng-template>-->
+            <!--</div>-->
+            <!--</div>-->
+            <!--<div class="separator">&nbsp;</div>-->
+            <!--<div class="icon">-->
+            <!--<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/valid.png" *ngIf="item?.tokenStatus === 'VALID'"/>-->
+            <!--<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/invalid.png" *ngIf="item?.tokenStatus === 'INVALIDPASSWORD'"/>-->
+            <!--<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/inProgress.png" *ngIf="getStatusLoad(item?.tokenStatus)"/>-->
+            <!--</div>-->
+            <!--<div class="separator">&nbsp;</div>-->
+            <!--</div>-->
+            <!--<div *ngIf="item.opened">-->
+            <!--<div *ngFor="let itemChild of item.data" tabindex="-1" class="row">-->
+            <!--<div class="separator">&nbsp;</div>-->
+            <!--<div>-->
+            <!--</div>-->
+            <!--<div class="separator">&nbsp;</div>-->
+            <!--<div>-->
+            <!--{{itemChild.account.accountNickname}}-->
+            <!--</div>-->
+            <!--<div class="separator">&nbsp;</div>-->
+            <!--<div>-->
+            <!--{{itemChild.account.bankAccountId}}-->
+            <!--</div>-->
+            <!--<div class="separator">&nbsp;</div>-->
+            <!--<div>-->
+            <!--{{itemChild.solekNum}}-->
+            <!--</div>-->
+            <!--<div class="separator">&nbsp;</div>-->
+            <!--<div *ngIf="itemChild.frequencyDay !== null">-->
+            <!--<span *ngFor="let itemChildDays of itemChild.frequencyDay;let last = last;">-->
+            <!--{{itemChildDays}}-->
+
+            <!--<i *ngIf="!last">ו</i>-->
+            <!--</span>-->
+            <!--בחודש-->
+            <!--</div>-->
+            <!--<div *ngIf="itemChild.frequencyDay === null">-->
+
+            <!--</div>-->
+            <!--<div class="separator">&nbsp;</div>-->
+            <!--<div>-->
+            <!--{{itemChild.ballanceLastUpdatedDate | todayRelativeHumanize:'dd/MM/yy'}}-->
+            <!--</div>-->
+            <!--<div class="separator">&nbsp;</div>-->
+            <!--<div>-->
+            <!--</div>-->
+            <!--<div class="separator">&nbsp;</div>-->
+            <!--<div>-->
+            <!--<span *ngIf="!itemChild.primaryAccount" class="showHover" style="color: #038ed6;"-->
+            <!--(click)="accountSetPrimary(itemChild.companyAccountId, itemChild.companyId)">-->
+            <!--בחירת חשבון מוביל-->
+            <!--</span>-->
+            <!--</div>-->
+            <!--<div class="separator">&nbsp;</div>-->
+            <!--<div>-->
+            <!--<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/trash.png" class="showHover" (click)="deleteOperation(itemChild)"/>-->
+            <!--</div>-->
+            <!--<div class="separator">&nbsp;</div>-->
+            <!--</div>-->
+            <!--</div>-->
+            <!--</div>-->
         </div>
-      </ng-container>
-
-      <!--<div *ngFor="let item of slikaAccounts;let i = index;">-->
-      <!--<div [class.opened]="item.opened" class="rowTitle">-->
-      <!--<div class="separator">&nbsp;</div>-->
-      <!--<div (click)="item.opened=!item.opened; collapseOpenVal = false; setIndexRowCollapse(item.opened, i)"-->
-      <!--class="pointer">-->
-      <!--<i class="fa fa-fw" [ngClass]="item.opened ? 'fa-caret-up':'fa-caret-down'"></i>-->
-      <!--</div>-->
-      <!--<div class="separator">&nbsp;</div>-->
-      <!--<div (click)="item.opened=!item.opened; collapseOpenVal = false; setIndexRowCollapse(item.opened, i)"-->
-      <!--class="pointer">-->
-      <!--<app-solek-view [solekNumber]="item.solekBankId" [showName]="true"-->
-      <!--style="align-self: center; flex: 0 0 auto;"></app-solek-view>-->
-      <!--</div>-->
-      <!--<div class="separator">&nbsp;</div>-->
-      <!--<div (click)="item.opened=!item.opened; collapseOpenVal = false; setIndexRowCollapse(item.opened, i)"-->
-      <!--class="pointer">-->
-      <!--&nbsp;-->
-      <!--</div>-->
-      <!--<div class="separator">&nbsp;</div>-->
-      <!--<div (click)="item.opened=!item.opened; collapseOpenVal = false; setIndexRowCollapse(item.opened, i)"-->
-      <!--class="pointer">-->
-      <!--&nbsp;-->
-      <!--</div>-->
-      <!--<div class="separator">&nbsp;</div>-->
-      <!--<div (click)="item.opened=!item.opened; collapseOpenVal = false; setIndexRowCollapse(item.opened, i)"-->
-      <!--class="pointer">-->
-      <!--&nbsp;-->
-      <!--</div>-->
-      <!--<div class="separator">&nbsp;</div>-->
-      <!--<div (click)="item.opened=!item.opened; collapseOpenVal = false; setIndexRowCollapse(item.opened, i)"-->
-      <!--class="pointer">-->
-      <!--&nbsp;-->
-      <!--</div>-->
-      <!--<div class="separator">&nbsp;</div>-->
-      <!--<div>-->
-      <!--<div [ngSwitch]="item?.tokenStatus" class="text_status">-->
-      <!--<ng-template ngSwitchCase="VALID">-->
-      <!--<div class="VALID_text">-->
-      <!--עדכון פרטי זיהוי-->
-      <!--</div>-->
-      <!--</ng-template>-->
-      <!--<ng-template ngSwitchCase="INVALIDPASSWORD">-->
-      <!--<div class="INVALIDPASSWORD_text">-->
-      <!--סיסמה שגויה-->
-      <!--</div>-->
-      <!--</ng-template>-->
-      <!--<ng-template ngSwitchCase="INPROGRESS">-->
-      <!--<div>-->
-      <!--INPROGRESS-->
-      <!--</div>-->
-      <!--</ng-template>-->
-      <!--<ng-template [ngSwitchCase]="getStatusLoad(item?.tokenStatus)">-->
-      <!--<div class="check_text">-->
-      <!--מאמת פרטי זיהוי-->
-      <!--</div>-->
-      <!--</ng-template>-->
-      <!--<ng-template ngSwitchDefault></ng-template>-->
-      <!--</div>-->
-      <!--</div>-->
-      <!--<div class="separator">&nbsp;</div>-->
-      <!--<div>-->
-      <!--<div [ngSwitch]="item?.tokenStatus" class="status">-->
-      <!--<ng-template ngSwitchCase="VALID">-->
-      <!--<div class="VALID_status">-->
-      <!--פרטי הזיהוי תקינים-->
-      <!--</div>-->
-      <!--</ng-template>-->
-      <!--<ng-template ngSwitchCase="INVALIDPASSWORD">-->
-      <!--<div class="INVALIDPASSWORD_status">-->
-      <!--<button style="font-weight: 600 !important;">-->
-      <!--עדכון סיסמה-->
-      <!--</button>-->
-      <!--</div>-->
-      <!--</ng-template>-->
-      <!--<ng-template ngSwitchCase="INPROGRESS">-->
-      <!--INPROGRESS-->
-      <!--</ng-template>-->
-      <!--<ng-template [ngSwitchCase]="getStatusLoad(item?.tokenStatus)">-->
-      <!--<div class="check_status">-->
-      <!--מאמת פרטי זיהוי-->
-      <!--</div>-->
-      <!--</ng-template>-->
-      <!--<ng-template ngSwitchDefault></ng-template>-->
-      <!--</div>-->
-      <!--</div>-->
-      <!--<div class="separator">&nbsp;</div>-->
-      <!--<div class="icon">-->
-      <!--<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/valid.png" *ngIf="item?.tokenStatus === 'VALID'"/>-->
-      <!--<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/invalid.png" *ngIf="item?.tokenStatus === 'INVALIDPASSWORD'"/>-->
-      <!--<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/inProgress.png" *ngIf="getStatusLoad(item?.tokenStatus)"/>-->
-      <!--</div>-->
-      <!--<div class="separator">&nbsp;</div>-->
-      <!--</div>-->
-      <!--<div *ngIf="item.opened">-->
-      <!--<div *ngFor="let itemChild of item.data" tabindex="-1" class="row">-->
-      <!--<div class="separator">&nbsp;</div>-->
-      <!--<div>-->
-      <!--</div>-->
-      <!--<div class="separator">&nbsp;</div>-->
-      <!--<div>-->
-      <!--{{itemChild.account.accountNickname}}-->
-      <!--</div>-->
-      <!--<div class="separator">&nbsp;</div>-->
-      <!--<div>-->
-      <!--{{itemChild.account.bankAccountId}}-->
-      <!--</div>-->
-      <!--<div class="separator">&nbsp;</div>-->
-      <!--<div>-->
-      <!--{{itemChild.solekNum}}-->
-      <!--</div>-->
-      <!--<div class="separator">&nbsp;</div>-->
-      <!--<div *ngIf="itemChild.frequencyDay !== null">-->
-      <!--<span *ngFor="let itemChildDays of itemChild.frequencyDay;let last = last;">-->
-      <!--{{itemChildDays}}-->
-
-      <!--<i *ngIf="!last">ו</i>-->
-      <!--</span>-->
-      <!--בחודש-->
-      <!--</div>-->
-      <!--<div *ngIf="itemChild.frequencyDay === null">-->
-
-      <!--</div>-->
-      <!--<div class="separator">&nbsp;</div>-->
-      <!--<div>-->
-      <!--{{itemChild.ballanceLastUpdatedDate | todayRelativeHumanize:'dd/MM/yy'}}-->
-      <!--</div>-->
-      <!--<div class="separator">&nbsp;</div>-->
-      <!--<div>-->
-      <!--</div>-->
-      <!--<div class="separator">&nbsp;</div>-->
-      <!--<div>-->
-      <!--<span *ngIf="!itemChild.primaryAccount" class="showHover" style="color: #038ed6;"-->
-      <!--(click)="accountSetPrimary(itemChild.companyAccountId, itemChild.companyId)">-->
-      <!--בחירת חשבון מוביל-->
-      <!--</span>-->
-      <!--</div>-->
-      <!--<div class="separator">&nbsp;</div>-->
-      <!--<div>-->
-      <!--<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/trash.png" class="showHover" (click)="deleteOperation(itemChild)"/>-->
-      <!--</div>-->
-      <!--<div class="separator">&nbsp;</div>-->
-      <!--</div>-->
-      <!--</div>-->
-      <!--</div>-->
+        <!--<div id="addCreditCard">-->
+        <!--<p>-->
+        <!--<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/add.png" style="align-self: center; flex: 0 0 auto; margin: 0 0px 0px 4px;"/>-->
+        <!--<span>-->
+        <!--הוספת חשבון סליקה-->
+        <!--</span>-->
+        <!--</p>-->
+        <!--</div>-->
     </div>
-    <!--<div id="addCreditCard">-->
-    <!--<p>-->
-    <!--<img style="height: auto; width: auto; position: relative;" fill ngSrc="/assets/images/add.png" style="align-self: center; flex: 0 0 auto; margin: 0 0px 0px 4px;"/>-->
-    <!--<span>-->
-    <!--הוספת חשבון סליקה-->
-    <!--</span>-->
-    <!--</p>-->
-    <!--</div>-->
-  </div>
 </div>
 
 <app-token-create-dialog
-  *ngIf="addTokenPrompt.visible"
-  [(display)]="addTokenPrompt.visible"
-  [type]="tokenTypes.SLIKA"
-  [settings]="addTokenPrompt.form"
-  (openCallService)="sharedComponent.showOpenTicket()"
-  [companyId]="(settingsComponent.selectedCompany$ | async).companyId"
-  (creationSuccess)="forceReload$.next()"
+        (creationSuccess)="forceReload$.next()"
+        (openCallService)="sharedComponent.showOpenTicket()"
+        *ngIf="addTokenPrompt.visible"
+        [(display)]="addTokenPrompt.visible"
+        [companyId]="(settingsComponent.selectedCompany$ | async).companyId"
+        [settings]="addTokenPrompt.form"
+        [type]="tokenTypes.SLIKA"
 >
 </app-token-create-dialog>
 
 <p-dialog (visibleChange)="solekRestorePrompt.visible = $event"
-  [visible]="(solekRestorePrompt?.visible)"
+          [modal]="true"
+          [style]="{width: 360 + 'px'}"
+          [visible]="(solekRestorePrompt?.visible)"
+          appendTo="body"
           styleClass="deleteMovementDialog"
-  appendTo="body"
-  [style]="{width: 360 + 'px'}"
-  [modal]="true"
 >
-  <p-header>{{ 'actions.solekRestore.title' | translate }}</p-header>
+    <p-header>{{ 'actions.solekRestore.title' | translate }}</p-header>
 
-  <div
-    class="mat-h3"
-    style="font-weight: 700"
-    *ngIf="solekRestorePrompt.solek"
-    [innerHTML]="
+    <div
+            *ngIf="solekRestorePrompt.solek"
+            [innerHTML]="
       'actions.solekRestore.subjectPtrn'
         | translate
           : {
@@ -574,55 +576,55 @@
                 | translate)
             }
     "
-  ></div>
-  <div
-		  style="
+            class="mat-h3"
+            style="font-weight: 700"
+    ></div>
+    <div
+            [innerHTML]="'actions.solekRestore.body' | translate"
+            class="mat-h4"
+            style="
     font-size: 15px;
     line-height: 24px;
     margin-bottom: 16px;
 "
-    class="mat-h4"
-    [innerHTML]="'actions.solekRestore.body' | translate"
-  ></div>
+    ></div>
 
-  <p-footer>
-    <div style="justify-content: center">
-      <button
-        class="button-white button-link"
-        (click)="solekRestorePrompt.visible = false"
-      >
-        {{ 'actions.solekRestore.decline' | translate }}
-      </button>
-      <button
-        class="button-dark"
-        (click)="solekRestorePrompt.onApprove()"
-        [disabled]="solekRestorePrompt?.processing"
-      >
-        <i
-          class="fas fa-fw fa-circle-notch fa-spin"
-          *ngIf="solekRestorePrompt?.processing"
-        ></i>
-        {{ 'actions.solekRestore.approve' | translate }}
-      </button>
-    </div>
-  </p-footer>
+    <p-footer>
+        <div style="justify-content: center">
+            <button
+                    (click)="solekRestorePrompt.visible = false"
+                    class="button-white button-link"
+            >
+                {{ 'actions.solekRestore.decline' | translate }}
+            </button>
+            <button
+                    (click)="solekRestorePrompt.onApprove()"
+                    [disabled]="solekRestorePrompt?.processing"
+                    class="button-dark"
+            >
+                <i
+                        *ngIf="solekRestorePrompt?.processing"
+                        class="fas fa-fw fa-circle-notch fa-spin"
+                ></i>
+                {{ 'actions.solekRestore.approve' | translate }}
+            </button>
+        </div>
+    </p-footer>
 </p-dialog>
 
 <p-dialog (visibleChange)="solekDeletePrompt.visible = $event"
-		[visible]="(solekDeletePrompt?.visible)"
+          [modal]="true"
 
-  styleClass="deleteMovementDialog"
-  appendTo="body"
-  [style]="{width: 360 + 'px'}"
-  [modal]="true"
+          [style]="{width: 360 + 'px'}"
+          [visible]="(solekDeletePrompt?.visible)"
+          appendTo="body"
+          styleClass="deleteMovementDialog"
 >
-  <p-header>{{ 'actions.clearingAgencyDelete.title' | translate }}</p-header>
+    <p-header>{{ 'actions.clearingAgencyDelete.title' | translate }}</p-header>
 
-  <ng-container *ngIf="solekDeletePrompt.solek">
-    <div
-      class="mat-h3"
-      style="font-weight: 700"
-      [innerHTML]="
+    <ng-container *ngIf="solekDeletePrompt.solek">
+        <div
+                [innerHTML]="
         'actions.clearingAgencyDelete.subjectPtrn'
           | translate
             : {
@@ -631,10 +633,11 @@
                   | translate)
               }
       "
-    ></div>
-    <div
-      class="mat-h4"
-      [innerHTML]="
+                class="mat-h3"
+                style="font-weight: 700"
+        ></div>
+        <div
+                [innerHTML]="
         'actions.clearingAgencyDelete.body'
           | translate
             : {
@@ -643,79 +646,80 @@
                   | translate)
               }
       "
-    ></div>
-  </ng-container>
+                class="mat-h4"
+        ></div>
+    </ng-container>
 
-  <p-footer>
-    <div style="justify-content: center">
-      <button
-        class="button-white button-link"
-        (click)="solekDeletePrompt.visible = false"
-      >
-        {{ 'actions.clearingAgencyDelete.decline' | translate }}
-      </button>
-      <button
-        class="button-dark"
-        (click)="solekDeletePrompt.onApprove()"
-        [disabled]="solekDeletePrompt.processing"
-      >
-        <i
-          class="fas fa-fw fa-circle-notch fa-spin"
-          *ngIf="solekDeletePrompt.processing"
-        ></i>
-        {{ 'actions.clearingAgencyDelete.approve' | translate }}
-      </button>
-    </div>
-  </p-footer>
+    <p-footer>
+        <div style="justify-content: center">
+            <button
+                    (click)="solekDeletePrompt.visible = false"
+                    class="button-white button-link"
+            >
+                {{ 'actions.clearingAgencyDelete.decline' | translate }}
+            </button>
+            <button
+                    (click)="solekDeletePrompt.onApprove()"
+                    [disabled]="solekDeletePrompt.processing"
+                    class="button-dark"
+            >
+                <i
+                        *ngIf="solekDeletePrompt.processing"
+                        class="fas fa-fw fa-circle-notch fa-spin"
+                ></i>
+                {{ 'actions.clearingAgencyDelete.approve' | translate }}
+            </button>
+        </div>
+    </p-footer>
 </p-dialog>
 
-<p-dialog (visibleChange)="    changeSolekLinkedAccountPrompt.visible = $event;
-    changeSolekLinkedAccountPrompt.syncSelection()"
-  *ngIf="changeSolekLinkedAccountPrompt"
-  [visible]="(changeSolekLinkedAccountPrompt?.visible)"
- 
-  styleClass="deleteMovementDialog"
-  appendTo="body"
-  [style]="{width: 360 + 'px'}"
-  [modal]="true"
-  #changeSolekLinkedAccountDlg
->
-  <p-header>{{
-    'actions.clearingAgencyLinkedAccountReplace.title' | translate
-  }}</p-header>
+<p-dialog #changeSolekLinkedAccountDlg
+          (visibleChange)="changeSolekLinkedAccountPrompt.visible = $event;
+    changeSolekLinkedAccountPrompt.syncSelection($event);"
+          *ngIf="changeSolekLinkedAccountPrompt"
 
-  <div
-    class="mat-h3"
-    style="font-weight: 700"
-    [innerHTML]="
+          [modal]="true"
+          [style]="{width: 360 + 'px'}"
+          [visible]="(changeSolekLinkedAccountPrompt?.visible)"
+          appendTo="body"
+          styleClass="deleteMovementDialog"
+>
+    <p-header>{{
+        'actions.clearingAgencyLinkedAccountReplace.title' | translate
+        }}</p-header>
+
+    <div
+            [innerHTML]="
       'actions.clearingAgencyLinkedAccountReplace.subjectPtrn'
         | translate: changeSolekLinkedAccountPrompt.newAccount
     "
-  ></div>
-  <div
-    class="mat-h4"
-    [innerHTML]="'actions.clearingAgencyLinkedAccountReplace.body' | translate"
-  ></div>
+            class="mat-h3"
+            style="font-weight: 700"
+    ></div>
+    <div
+            [innerHTML]="'actions.clearingAgencyLinkedAccountReplace.body' | translate"
+            class="mat-h4"
+    ></div>
 
-  <p-footer>
-    <div style="justify-content: center">
-      <button
-        class="button-white button-link"
-        (click)="changeSolekLinkedAccountDlg.close($event)"
-      >
-        {{ 'actions.clearingAgencyLinkedAccountReplace.decline' | translate }}
-      </button>
-      <button
-        class="button-dark"
-        (click)="changeSolekLinkedAccountPrompt.onApprove()"
-        [disabled]="changeSolekLinkedAccountPrompt.processing | async"
-      >
-        <i
-          class="fas fa-fw fa-circle-notch fa-spin"
-          *ngIf="changeSolekLinkedAccountPrompt.processing | async"
-        ></i>
-        {{ 'actions.clearingAgencyLinkedAccountReplace.approve' | translate }}
-      </button>
-    </div>
-  </p-footer>
+    <p-footer>
+        <div style="justify-content: center">
+            <button
+                    (click)="changeSolekLinkedAccountDlg.close($event)"
+                    class="button-white button-link"
+            >
+                {{ 'actions.clearingAgencyLinkedAccountReplace.decline' | translate }}
+            </button>
+            <button
+                    (click)="changeSolekLinkedAccountPrompt.onApprove()"
+                    [disabled]="changeSolekLinkedAccountPrompt.processing | async"
+                    class="button-dark"
+            >
+                <i
+                        *ngIf="changeSolekLinkedAccountPrompt.processing | async"
+                        class="fas fa-fw fa-circle-notch fa-spin"
+                ></i>
+                {{ 'actions.clearingAgencyLinkedAccountReplace.approve' | translate }}
+            </button>
+        </div>
+    </p-footer>
 </p-dialog>

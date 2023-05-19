@@ -13,6 +13,7 @@ import {filter, map, startWith, takeUntil} from 'rxjs/operators';
 import {BrowserService} from '@app/shared/services/browser.service';
 import {Dropdown} from 'primeng/dropdown/dropdown';
 import {ReloadServices} from '@app/shared/services/reload.services';
+import {GeneralComponent} from '@app/accountants/companies/general/general.component';
 
 @Component({
     selector: 'app-journal-vendor-and-customer',
@@ -65,9 +66,13 @@ export class JournalVendorAndCustomerComponent
     public currencySetModal: any = false;
     public currencyList: any = [];
     public revaluationCurrCodeArr: any = [];
+    public modalBeforeContinue: any = false;
     public selectedCurrency: any = false;
     public type_currencyRates_modal: any;
     private readonly destroyed$ = new Subject<void>();
+    isYear: boolean = false;
+    currencyRates: any;
+    setCurrDef: any = {};
 
     constructor(
         public userService: UserService,
@@ -76,7 +81,8 @@ export class JournalVendorAndCustomerComponent
         public sharedService: SharedService,
         public translate: TranslateService,
         public snackBar: MatSnackBar,
-        public router: Router
+        public router: Router,
+        public generalComponent: GeneralComponent
     ) {
         super(sharedComponent);
 
@@ -86,7 +92,7 @@ export class JournalVendorAndCustomerComponent
                 .filter((it) => it.code !== 'ILS')
                 .map((cur) => {
                     return {
-                        label: cur.sign,
+                        label: cur.code + ' - ' + cur.sign,
                         value: cur.code
                     };
                 });
@@ -100,6 +106,10 @@ export class JournalVendorAndCustomerComponent
     override reload() {
         console.log('reload child');
         this.ngOnInit();
+    }
+
+    setCurrDefFunc(param: any) {
+        this.setCurrDef[param] = this.info.get(param).value;
     }
 
     ngOnInit(): void {
@@ -250,6 +260,9 @@ export class JournalVendorAndCustomerComponent
                         })
                         .subscribe((response: any) => {
                             const responseRest = response ? response['body'] : response;
+                            this.isYear = responseRest.yearlyProgram;
+                            this.currencyRates = responseRest.currencyRates;
+
                             // const responseRest = {
                             //     'supplierAsmachtaNumChar': null,
                             //     'manualApprove': false,
@@ -279,10 +292,7 @@ export class JournalVendorAndCustomerComponent
                             // };
 
                             this.info.patchValue({
-                                exportFileVatPeriod: this.asExportFileVatPeriodWithDefault(
-                                    responseRest.exportFileVatPeriod ||
-                                    this.userService.appData.userData.companySelect.esderMaam
-                                ),
+                                exportFileVatPeriod: responseRest.exportFileVatPeriod ? responseRest.exportFileVatPeriod : this.asExportFileVatPeriodWithDefault(),
                                 invoicePayment:
                                     responseRest.invoicePayment !== null
                                         ? responseRest.invoicePayment
@@ -321,14 +331,14 @@ export class JournalVendorAndCustomerComponent
                                 unitedMailFiles: responseRest.unitedMailFiles
                                     ? responseRest.unitedMailFiles
                                     : '0',
-                                revaluationCurr:
-                                    responseRest.revaluationCurr !== null
-                                        ? responseRest.revaluationCurr
-                                        : false,
                                 expenseOnly:
                                     responseRest.expenseOnly !== null
                                         ? responseRest.expenseOnly
                                         : true,
+                                revaluationCurr:
+                                    responseRest.revaluationCurr !== null
+                                        ? responseRest.revaluationCurr
+                                        : false,
                                 revaluationCurrCode: responseRest.revaluationCurrCode
                                     ? responseRest.revaluationCurrCode
                                     : 'USD'
@@ -400,179 +410,195 @@ export class JournalVendorAndCustomerComponent
                             ) {
                                 this.info.get('thirdDate').disable();
                             }
+                            const esderMaam = (this.isModal
+                                ? this.isModal.esderMaam
+                                : this.userService.appData &&
+                                this.userService.appData.userData &&
+                                this.userService.appData.userData.companySelect
+                                    ? this.userService.appData.userData.companySelect.esderMaam
+                                    : '');
+                            if (esderMaam === 'NONE') {
+                                this.info.get('exportFileVatPeriod').disable();
+                            }
                             if (!responseRest.exportFileVatPeriod) {
-                                this.updateValues(
+                                    this.updateValues(
                                     'exportFileVatPeriod',
-                                    this.asExportFileVatPeriodWithDefault(
-                                        this.userService.appData.userData.companySelect.esderMaam
-                                    )
+                                        this.isYear ? 'YEAR' : this.asExportFileVatPeriodWithDefault()
                                 );
                             }
                         });
                 });
         } else {
-            if (!this.infoJournalVendorAndCustomerComponent) {
-                this.sharedService
-                    .supplierJournal({
-                        uuid: this.isModal.companyId
-                    })
-                    .subscribe((response: any) => {
-                        const responseRest = response ? response['body'] : response;
-                        // const responseRest = {
-                        //     'supplierAsmachtaNumChar': null,
-                        //     'manualApprove': false,
-                        //     'incomeAsmachtaType': 2,
-                        //     'expenseAsmachtaType': null,
-                        //     'revaluationCurrCode': null,
-                        //     'revaluationCurr': false,
-                        //     'currencyRates': [
-                        //         {
-                        //             'fixedRate': null,
-                        //             'code': 'EUR',
-                        //             'type': 'BANK'
-                        //         },
-                        //         {
-                        //             'fixedRate': null,
-                        //             'code': 'GBP',
-                        //             'type': 'BANK'
-                        //         },
-                        //         {
-                        //             'fixedRate': 4,
-                        //             'code': 'USD',
-                        //             'type': 'FIXED'
-                        //         }
-                        //     ],
-                        //     'manager': true,
-                        //     'companyId': '36ed09c5-8e14-40d9-862c-ad8cba16f1df'
-                        // };
+            this.sharedService
+                .supplierJournal({
+                    uuid: this.isModal.companyId
+                })
+                .subscribe((response: any) => {
+                    const responseRest = response ? response['body'] : response;
+                    this.isYear = responseRest.yearlyProgram;
+                    this.currencyRates = responseRest.currencyRates;
 
-                        this.info.patchValue({
-                            exportFileVatPeriod: this.asExportFileVatPeriodWithDefault(
-                                responseRest.exportFileVatPeriod || this.isModal.esderMaam
-                            ),
-                            invoicePayment:
-                                responseRest.invoicePayment !== null
-                                    ? responseRest.invoicePayment
-                                    : false,
-                            invertedCreditInvoice:
-                                responseRest.invertedCreditInvoice !== null &&
-                                responseRest.invertedCreditInvoice !== undefined
-                                    ? responseRest.invertedCreditInvoice
-                                    : true,
-                            supplierAsmachtaNumChar: responseRest.supplierAsmachtaNumChar
-                                ? String(responseRest.supplierAsmachtaNumChar)
-                                : '0',
-                            thirdDate:
-                                this.isModal.esderMaam === 'NONE'
-                                    ? '1'
-                                    : responseRest.thirdDate
-                                        ? responseRest.thirdDate
-                                        : '0',
-                            // manualApprove: responseRest.manualApprove !== null ? responseRest.manualApprove : true,
-                            expenseAsmachtaType: responseRest.expenseAsmachtaType
-                                ? responseRest.expenseAsmachtaType
-                                : '2',
-                            incomeAsmachtaType: responseRest.incomeAsmachtaType
-                                ? responseRest.incomeAsmachtaType
-                                : '1',
-                            supplierDocOrderType: responseRest.supplierDocOrderType
-                                ? responseRest.supplierDocOrderType.toString()
-                                : '1',
-                            supplierIncomeOrderType: responseRest.supplierIncomeOrderType
-                                ? responseRest.supplierIncomeOrderType
-                                : '3',
-                            supplierExpenseOrderType: responseRest.supplierExpenseOrderType
-                                ? responseRest.supplierExpenseOrderType
-                                : '4',
-                            unitedMailFiles: responseRest.unitedMailFiles
-                                ? responseRest.unitedMailFiles
-                                : '0',
-                            revaluationCurr:
-                                responseRest.revaluationCurr !== null
-                                    ? responseRest.revaluationCurr
-                                    : false,
-                            expenseOnly:
-                                responseRest.expenseOnly !== null
-                                    ? responseRest.expenseOnly
-                                    : true,
-                            revaluationCurrCode: responseRest.revaluationCurrCode
-                                ? responseRest.revaluationCurrCode
-                                : 'USD'
-                        });
-                        responseRest.currencyRates.forEach((cur) => {
-                            let bankIsrael = true;
-                            const isMatchCode = this.currencyList.find(
-                                (it) => it.code === cur.code
-                            );
-                            if (isMatchCode) {
-                                bankIsrael = isMatchCode.bankIsrael;
-                            }
-                            // @ts-ignore
-                            const isCodeExist = this.arr.controls.find((it) =>
-                                it.get(cur.code)
-                            );
-                            if (isCodeExist) {
-                                isCodeExist.get(cur.code).patchValue({
-                                    type: bankIsrael ? cur.type : 'FIXED',
-                                    fixedRate: cur.fixedRate,
-                                    hashCodeId: cur.hashCodeId || '',
-                                    bankIsrael: bankIsrael,
-                                    delete: false
-                                });
-                            } else {
-                                this.arr.push(
-                                    new FormGroup({
-                                        [cur.code]: new FormGroup({
-                                            type: new FormControl({
-                                                value: bankIsrael ? cur.type : 'FIXED',
-                                                disabled: false
-                                            }),
-                                            fixedRate: new FormControl({
-                                                value: cur.fixedRate,
-                                                disabled: false
-                                            }),
-                                            hashCodeId: new FormControl({
-                                                value: cur.hashCodeId || '',
-                                                disabled: false
-                                            }),
-                                            delete: new FormControl({
-                                                value: false,
-                                                disabled: false
-                                            }),
-                                            bankIsrael: new FormControl({
-                                                value: bankIsrael,
-                                                disabled: false
-                                            })
+                    // const responseRest = {
+                    //     'supplierAsmachtaNumChar': null,
+                    //     'manualApprove': false,
+                    //     'incomeAsmachtaType': 2,
+                    //     'expenseAsmachtaType': null,
+                    //     'revaluationCurrCode': null,
+                    //     'revaluationCurr': false,
+                    //     'currencyRates': [
+                    //         {
+                    //             'fixedRate': null,
+                    //             'code': 'EUR',
+                    //             'type': 'BANK'
+                    //         },
+                    //         {
+                    //             'fixedRate': null,
+                    //             'code': 'GBP',
+                    //             'type': 'BANK'
+                    //         },
+                    //         {
+                    //             'fixedRate': 4,
+                    //             'code': 'USD',
+                    //             'type': 'FIXED'
+                    //         }
+                    //     ],
+                    //     'manager': true,
+                    //     'companyId': '36ed09c5-8e14-40d9-862c-ad8cba16f1df'
+                    // };
+
+                    this.info.patchValue({
+                        exportFileVatPeriod: this.asExportFileVatPeriodWithDefault(),
+                        invoicePayment:
+                            responseRest.invoicePayment !== null
+                                ? responseRest.invoicePayment
+                                : false,
+                        invertedCreditInvoice:
+                            responseRest.invertedCreditInvoice !== null &&
+                            responseRest.invertedCreditInvoice !== undefined
+                                ? responseRest.invertedCreditInvoice
+                                : true,
+                        supplierAsmachtaNumChar: responseRest.supplierAsmachtaNumChar
+                            ? String(responseRest.supplierAsmachtaNumChar)
+                            : '0',
+                        thirdDate:
+                            this.isModal.esderMaam === 'NONE'
+                                ? '1'
+                                : responseRest.thirdDate
+                                    ? responseRest.thirdDate
+                                    : '0',
+                        // manualApprove: responseRest.manualApprove !== null ? responseRest.manualApprove : true,
+                        expenseAsmachtaType: responseRest.expenseAsmachtaType
+                            ? responseRest.expenseAsmachtaType
+                            : '2',
+                        incomeAsmachtaType: responseRest.incomeAsmachtaType
+                            ? responseRest.incomeAsmachtaType
+                            : '1',
+                        supplierDocOrderType: responseRest.supplierDocOrderType
+                            ? responseRest.supplierDocOrderType.toString()
+                            : '1',
+                        supplierIncomeOrderType: responseRest.supplierIncomeOrderType
+                            ? responseRest.supplierIncomeOrderType
+                            : '3',
+                        supplierExpenseOrderType: responseRest.supplierExpenseOrderType
+                            ? responseRest.supplierExpenseOrderType
+                            : '4',
+                        unitedMailFiles: responseRest.unitedMailFiles
+                            ? responseRest.unitedMailFiles
+                            : '0',
+                        revaluationCurr:
+                            responseRest.revaluationCurr !== null
+                                ? responseRest.revaluationCurr
+                                : false,
+                        expenseOnly:
+                            responseRest.expenseOnly !== null
+                                ? responseRest.expenseOnly
+                                : true,
+                        revaluationCurrCode: responseRest.revaluationCurrCode
+                            ? responseRest.revaluationCurrCode
+                            : 'USD'
+                    });
+                    responseRest.currencyRates.forEach((cur) => {
+                        let bankIsrael = true;
+                        const isMatchCode = this.currencyList.find(
+                            (it) => it.code === cur.code
+                        );
+                        if (isMatchCode) {
+                            bankIsrael = isMatchCode.bankIsrael;
+                        }
+                        // @ts-ignore
+                        const isCodeExist = this.arr.controls.find((it) =>
+                            it.get(cur.code)
+                        );
+                        if (isCodeExist) {
+                            isCodeExist.get(cur.code).patchValue({
+                                type: bankIsrael ? cur.type : 'FIXED',
+                                fixedRate: cur.fixedRate,
+                                hashCodeId: cur.hashCodeId || '',
+                                bankIsrael: bankIsrael,
+                                delete: false
+                            });
+                        } else {
+                            this.arr.push(
+                                new FormGroup({
+                                    [cur.code]: new FormGroup({
+                                        type: new FormControl({
+                                            value: bankIsrael ? cur.type : 'FIXED',
+                                            disabled: false
+                                        }),
+                                        fixedRate: new FormControl({
+                                            value: cur.fixedRate,
+                                            disabled: false
+                                        }),
+                                        hashCodeId: new FormControl({
+                                            value: cur.hashCodeId || '',
+                                            disabled: false
+                                        }),
+                                        delete: new FormControl({
+                                            value: false,
+                                            disabled: false
+                                        }),
+                                        bankIsrael: new FormControl({
+                                            value: bankIsrael,
+                                            disabled: false
                                         })
                                     })
-                                );
-                            }
-                        });
-                        console.log(this.arr);
-                        if (responseRest.manager) {
-                            if (this.isModal.esderMaam !== 'NONE') {
-                                this.info.get('exportFileVatPeriod').enable();
-                            }
-                            this.info.get('supplierAsmachtaNumChar').enable();
-                            this.info.get('expenseAsmachtaType').enable();
-                            this.info.get('incomeAsmachtaType').enable();
-                        }
-                        if (this.isModal.esderMaam === 'NONE') {
-                            this.info.get('thirdDate').disable();
-                        }
-                        if (!responseRest.exportFileVatPeriod) {
-                            const def = this.asExportFileVatPeriodWithDefault(
-                                this.isModal.esderMaam
+                                })
                             );
-                            this.updateValues('exportFileVatPeriod', def);
                         }
                     });
-            } else {
-                const def = this.asExportFileVatPeriodWithDefault(
-                    this.isModal.esderMaam
-                );
-                this.updateValues('exportFileVatPeriod', def);
-            }
+                    console.log(this.arr);
+                    if (responseRest.manager) {
+                        if (this.isModal.esderMaam !== 'NONE') {
+                            this.info.get('exportFileVatPeriod').enable();
+                        }
+                        this.info.get('supplierAsmachtaNumChar').enable();
+                        this.info.get('expenseAsmachtaType').enable();
+                        this.info.get('incomeAsmachtaType').enable();
+                    }
+                    if (this.isModal.esderMaam === 'NONE') {
+                        this.info.get('thirdDate').disable();
+                    }
+                    const esderMaam = (this.isModal
+                        ? this.isModal.esderMaam
+                        : this.userService.appData &&
+                        this.userService.appData.userData &&
+                        this.userService.appData.userData.companySelect
+                            ? this.userService.appData.userData.companySelect.esderMaam
+                            : '');
+                    if (esderMaam === 'NONE') {
+                        this.info.get('exportFileVatPeriod').disable();
+                    }
+                    if (!responseRest.exportFileVatPeriod) {
+                        const def = this.asExportFileVatPeriodWithDefault();
+                        this.updateValues('exportFileVatPeriod', def);
+                    }
+                });
+            // if (!this.infoJournalVendorAndCustomerComponent) {
+            //
+            // } else {
+            //     const def = this.asExportFileVatPeriodWithDefault();
+            //     this.updateValues('exportFileVatPeriod', def);
+            // }
         }
     }
 
@@ -712,13 +738,74 @@ export class JournalVendorAndCustomerComponent
         const pbj = {};
         pbj[param] = val;
         this.info.patchValue(pbj);
-        this.updateSupplierJournal();
+        this.updateSupplierJournal(param === 'exportFileVatPeriod');
     }
 
     updateValuesFromModal(param: string, val: any) {
         const pbj = {};
         pbj[param] = val;
         this.info.patchValue(pbj);
+    }
+
+    updateValuesCurrencyRatesTypesInit(item: any, val: any, param: string) {
+        this.modalBeforeContinue = {
+            type: 'updateValuesCurrencyRatesTypes',
+            item: item,
+            val: val,
+            param: param,
+            changeTo: val === 'BANK' ? 'FIXED' : 'BANK'
+        };
+    }
+
+    preliminaryModalApproval() {
+        if (this.modalBeforeContinue.type === 'updateValuesCurrencyRatesTypes') {
+            this.updateValuesCurrencyRatesTypes(this.modalBeforeContinue.item, this.modalBeforeContinue.val, this.modalBeforeContinue.param);
+        }
+        if (this.modalBeforeContinue.type === 'revaluationCurrCode') {
+            if (this.currencyRates.some(it => it.code === this.info.get('revaluationCurrCode').value)) {
+                this.updateSupplierJournal();
+            } else {
+                this.selectedCurrency = this.currencyList.find(it => it.code === this.info.get('revaluationCurrCode').value);
+                this.addCurrency(
+                    this.selectedCurrency.code,
+                    this.selectedCurrency.bankIsrael,
+                    this.selectedCurrency
+                );
+            }
+        }
+        if (this.modalBeforeContinue.type === 'revaluationCurrFalse') {
+            this.updateValues('revaluationCurr', false);
+        }
+        if (this.modalBeforeContinue.type === 'revaluationCurrTrue') {
+            this.openPopUpSetRevaluationCurr();
+        }
+        this.modalBeforeContinue = false;
+    }
+
+    preliminaryModalCancelation() {
+        if (this.modalBeforeContinue.type === 'updateValuesCurrencyRatesTypes') {
+            const pbj = {};
+            pbj[this.modalBeforeContinue.param] = this.modalBeforeContinue.changeTo;
+            this.modalBeforeContinue.item.get(Object.keys(this.modalBeforeContinue.item.value)).patchValue(pbj);
+        }
+        if (this.modalBeforeContinue.type === 'revaluationCurrCode') {
+            const pbj = {};
+            pbj['revaluationCurrCode'] = this.modalBeforeContinue.changeTo;
+            this.info.patchValue(pbj);
+        }
+        if (this.modalBeforeContinue.type === 'revaluationCurrFalse' || this.modalBeforeContinue.type === 'revaluationCurrTrue') {
+            const pbj = {};
+            pbj['revaluationCurr'] = this.modalBeforeContinue.changeTo;
+            this.info.patchValue(pbj);
+        }
+        this.modalBeforeContinue = false;
+    }
+
+    openModalBeforeContinue(type) {
+        this.modalBeforeContinue = {
+            type: type,
+            changeTo: type === 'revaluationCurrFalse' ? true : type === 'revaluationCurrTrue' ? false : this.setCurrDef['revaluationCurrCode']
+        };
     }
 
     updateValuesCurrencyRatesTypes(item: any, val: any, param: string) {
@@ -769,7 +856,7 @@ export class JournalVendorAndCustomerComponent
         }
     }
 
-    updateSupplierJournal() {
+    updateSupplierJournal(exportFileVatPeriod?:boolean) {
         // debugger;
         if (this.info.invalid) {
             BrowserService.flattenControls(this.info).forEach((ac) =>
@@ -831,7 +918,13 @@ export class JournalVendorAndCustomerComponent
             this.arr.updateValueAndValidity();
         }
         if (!this.isModal) {
+            if(exportFileVatPeriod){
+                this.generalComponent.startCounter();
+            }
             this.sharedService.updateSupplierJournal(params).subscribe(() => {
+                if(exportFileVatPeriod){
+                    this.generalComponent.resReceived();
+                }
             });
         }
     }
@@ -848,17 +941,30 @@ export class JournalVendorAndCustomerComponent
         this.destroy();
     }
 
-    asExportFileVatPeriodWithDefault(valToApply = 'MONTH'): string {
-        const defaultVal =
-            (this.isModal
-                ? this.isModal.esderMaam
-                : this.userService.appData &&
-                this.userService.appData.userData &&
-                this.userService.appData.userData.companySelect
-                    ? this.userService.appData.userData.companySelect.esderMaam
-                    : '') !== 'TWO_MONTH'
-                ? 'MONTH'
-                : 'TWO_MONTH';
-        return [defaultVal, 'NONE'].includes(valToApply) ? valToApply : defaultVal;
+    asExportFileVatPeriodWithDefault(): string {
+        const esderMaam = (this.isModal
+            ? this.isModal.esderMaam
+            : this.userService.appData &&
+            this.userService.appData.userData &&
+            this.userService.appData.userData.companySelect
+                ? this.userService.appData.userData.companySelect.esderMaam
+                : '');
+        if (esderMaam) {
+            if (esderMaam === 'MONTH') {
+                return 'MONTH';
+            }
+            if (esderMaam === 'TWO_MONTH') {
+                return 'TWO_MONTH';
+            }
+            if (esderMaam === 'NONE' && this.isModal) {
+                return 'YEAR';
+            }
+            if (esderMaam === 'NONE' && !this.isModal) {
+                return (this.isYear ? 'YEAR' : 'NONE');
+            }
+            return 'NONE';
+        } else {
+            return 'NONE';
+        }
     }
 }

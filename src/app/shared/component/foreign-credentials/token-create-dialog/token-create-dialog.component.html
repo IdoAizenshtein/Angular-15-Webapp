@@ -68,6 +68,8 @@
 				<form [formGroup]="settings" novalidate>
 					<div>
 						<app-bank-foreign-credentials
+								[resetBankDD]="resetBankDD"
+								(changedTrigger)="changedBankTrigger($event)"
 								#credentials
 								[bankCredentialsGroup]="settings"
 								[is_station]="is_station"
@@ -175,6 +177,8 @@
 										[style]="{ width: '268px' }"
 										dataKey="companyAccountId"
 										formControlName="linkedAccount"
+										name="linkedAccount"
+
 
 										optionLabel="accountNickname"
 								>
@@ -314,6 +318,7 @@
 										[style]="{ width: '268px' }"
 										dataKey="companyAccountId"
 										formControlName="linkedAccount"
+										name="linkedAccount"
 
 										optionLabel="accountNickname"
 								>
@@ -635,4 +640,13 @@
 			</div>
 		</div>
 	</p-dialog>
+</ng-container>
+
+
+
+<ng-container *ngIf="formLoginOtpModal">
+	<app-form-login-otp-modal
+			[formLoginOtpModal]="formLoginOtpModal"
+			(changedTrigger)="otpModalClose($event)"
+	></app-form-login-otp-modal>
 </ng-container>

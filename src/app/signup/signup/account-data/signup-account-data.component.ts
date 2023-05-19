@@ -2,9 +2,7 @@ import {Component, ViewChild, ViewEncapsulation} from '@angular/core';
 import {tap} from 'rxjs/operators';
 import {ActivatedRoute, Router} from '@angular/router';
 import {SignupComponent} from '@app/signup/signup/signup.component';
-import {
-    BankCredentialsComponent
-} from '@app/shared/component/foreign-credentials/bank-credentials/bank-credentials.component';
+import {BankCredentialsComponent} from '@app/shared/component/foreign-credentials/bank-credentials/bank-credentials.component';
 import {TokenService} from '@app/core/token.service';
 import {BankForeignCredentialsService} from '@app/shared/component/foreign-credentials/foreign-credentials.service';
 import {SignupService} from '@app/signup/signup.service';
@@ -21,6 +19,9 @@ export class SignupAccountDataComponent {
 
     readonly account: any;
     banksCredentialSettings: any[] = null;
+    public formLoginOtpModal: boolean = false;
+    public showBankPanel: boolean = true;
+
 
     constructor(
         private tokenService: TokenService,
@@ -91,5 +92,20 @@ export class SignupAccountDataComponent {
                     }
                 }
             );
+    }
+
+
+    otpModalClose(eve: any) {
+        this.formLoginOtpModal = false;
+        if (!eve) {
+            this.showBankPanel = false;
+            setTimeout(() => {
+                this.showBankPanel = true;
+            }, 30);
+        }
+    }
+
+    changedBankTrigger(eve: any) {
+        this.formLoginOtpModal = true;
     }
 }

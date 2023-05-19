@@ -1,35 +1,12 @@
 /* tslint:disable:member-ordering no-inferrable-types max-line-length comment-format */
-import {
-    AfterViewInit,
-    Component,
-    ElementRef,
-    HostListener,
-    OnDestroy,
-    OnInit,
-    QueryList,
-    ViewChild,
-    ViewChildren,
-    ViewEncapsulation
-} from '@angular/core';
+import {AfterViewInit, Component, ElementRef, HostListener, OnDestroy, OnInit, QueryList, ViewChild, ViewChildren, ViewEncapsulation} from '@angular/core';
 import {UserService} from '@app/core/user.service';
 import {SharedComponent} from '@app/shared/component/shared.component';
 import {ActivatedRoute, Router} from '@angular/router';
 import {StorageService} from '@app/shared/services/storage.service';
 import {SharedService} from '@app/shared/services/shared.service';
 import {HttpClient, HttpErrorResponse} from '@angular/common/http';
-import {
-    debounceTime,
-    distinctUntilChanged,
-    filter,
-    finalize,
-    first,
-    map,
-    startWith,
-    switchMap,
-    take,
-    takeUntil,
-    tap
-} from 'rxjs/operators';
+import {debounceTime, distinctUntilChanged, filter, finalize, first, map, startWith, switchMap, take, takeUntil, tap, retry} from 'rxjs/operators';
 import {BehaviorSubject, EMPTY, interval, lastValueFrom, Observable, Subject, Subscription, timer, zip} from 'rxjs';
 import {FormControl} from '@angular/forms';
 import {SumPipe} from '@app/shared/pipes/sum.pipe';
@@ -54,7 +31,9 @@ import {roundAndAddComma} from '@app/shared/functions/addCommaToNumbers';
 import {takeWhileInclusive} from '@app/shared/functions/takeWhileInclusive';
 import {BrowserService} from '@app/shared/services/browser.service';
 import {ReportService} from '@app/core/report.service';
-import {getPageHeight} from "@app/shared/functions/getPageHeight";
+import {getPageHeight} from '@app/shared/functions/getPageHeight';
+import {MessagesService} from '@app/core/messages.service';
+import {HelpCenterService} from '@app/customers/help-center/help-center.service';
 
 @Component({
     templateUrl: './suppliers-and-customers.component.html',
@@ -167,6 +146,9 @@ export class SuppliersAndCustomersComponent
     public filterTypesEditJournalTrans: any = null;
     public journalTransData: any = false;
     public journalTransDataSave: any = false;
+    public scrollContainerHasScroll = false;
+    @ViewChild('scrollContainerVirtual') scrollContainerVirtual: ElementRef<HTMLElement>;
+
     public fileToRemove: any = false;
     public mergeFiles = false;
     public selectedItem: any;
@@ -204,11 +186,13 @@ export class SuppliersAndCustomersComponent
         prompt: string;
     };
     public enabledDownloadLink: boolean = true;
+
     public docsfile: any = null;
     public enabledDownloadLink_docfile: boolean = true;
     public enabledDownloadLink_paramsfile: boolean = true;
     public exportFileFolderCreatePrompt: {
-        approveSubscription?: Subscription;
+        alertDownloadedOneFileOnly?: boolean;
+        approveSubscription?: Subscription | any;
         visible: boolean;
         pending: boolean;
         prompt: string;
@@ -233,12 +217,14 @@ export class SuppliersAndCustomersComponent
         public userService: UserService,
         public override sharedComponent: SharedComponent,
         private sharedService: SharedService,
+        private helpCenterService: HelpCenterService,
         private ocrService: OcrService,
         private filterPipe: FilterPipe,
         private http: HttpClient,
         private httpClient: HttpClient,
         private route: ActivatedRoute,
         public translate: TranslateService,
+        private messagesService: MessagesService,
         private storageService: StorageService,
         public journalTransComponent: JournalTransComponent,
         private sumPipe: SumPipe,
@@ -444,7 +430,7 @@ export class SuppliersAndCustomersComponent
     }
 
     getPageHeightFunc(value: any) {
-        return getPageHeight(value)
+        return getPageHeight(value);
     }
 
     countStatusAll(loadData?: boolean) {
@@ -531,6 +517,10 @@ export class SuppliersAndCustomersComponent
         });
     }
 
+    onScroll11() {
+        console.log('scrolled!!');
+    }
+
     resetVars(): void {
         this.isRun = false;
         this.loader = false;
@@ -585,10 +575,9 @@ export class SuppliersAndCustomersComponent
         if (this.docsfile) {
             const a = document.createElement('a');
             a.target = '_parent';
-            a.href =
-                param === 'enabledDownloadLink_docfile'
-                    ? this.docsfile.docfile
-                    : this.docsfile.paramsfile;
+            a.href = param === 'enabledDownloadLink_docfile'
+                ? this.docsfile.docfile
+                : this.docsfile.paramsfile;
             (document.body || document.documentElement).appendChild(a);
             a.click();
             a.parentNode.removeChild(a);
@@ -597,31 +586,63 @@ export class SuppliersAndCustomersComponent
             this.sharedService
                 .exportFileManualDownload(this.ocrExportFileId)
                 .pipe(
-                    map((response: any) =>
-                        response && !response.error ? response.body : null
-                    ),
+                    map((response: any) => {
+                       if (response.status === 206) {
+                           throw response;
+                       }
+                       return response;
+                    }),
+                    retry(3),
+                    map((response: any) => {
+                        if (!!response) {
+                            if (response.status === 500) {
+                                throw response;
+                            }
+                            return response.error || response.body;
+                        }
+                        return null;
+                    }),
                     first()
                 )
-                .subscribe(
-                    {
+                .subscribe({
                         next: (docfile) => {
                             this.enabledDownloadLink = true;
                             if (docfile) {
                                 this.docsfile = docfile;
                                 const a = document.createElement('a');
                                 a.target = '_parent';
-                                a.href =
-                                    param === 'enabledDownloadLink_docfile'
-                                        ? this.docsfile.docfile
-                                        : this.docsfile.paramsfile;
+                                a.href = param === 'enabledDownloadLink_docfile'
+                                    ? this.docsfile.docfile
+                                    : this.docsfile.paramsfile;
                                 (document.body || document.documentElement).appendChild(a);
                                 a.click();
                                 a.parentNode.removeChild(a);
                             }
                         },
-                        error: (err: HttpErrorResponse) => {
+                        error: async (err: HttpErrorResponse) => {
                             this.responseRestPath = true;
                             this.showModalCheckFolderFile = 'ERROR';
+                            const userData = this.userService.appData.isAdmin
+                                ? this.userService.appData.userDataAdmin
+                                : this.userService.appData.userData;
+
+                            this.sharedService.cancelFile(this.ocrExportFileId).subscribe(() => {});
+
+                            let serviceCallRequest = {
+                                'closeMailToSend': userData.mail,
+                                'companyId': this.userService.appData.userData.companySelect.companyId,
+                                'taskDesc': 'כישלון בתהליך הורדת קובץ',
+                                'taskOpenerName': userData.userName,
+                                'userCellPhone': userData.phone,
+                                'companyName': this.userService.appData.userData.companySelect.companyName,
+                                'taskTitle': 'כישלון בתהליך הורדת קובץ'
+                            };
+                            serviceCallRequest['gRecaptcha'] = await this.userService.executeAction('open-ticket');
+                            this.helpCenterService
+                                .requestOpenTicket(serviceCallRequest)
+                                .subscribe((resp) => {
+                                });
+
                             if (err.error instanceof Error) {
                                 console.log('An error occurred:', err.error.message);
                             } else {
@@ -1243,7 +1264,7 @@ export class SuppliersAndCustomersComponent
                 );
                 if (isExistFileId !== -1 && this.virtualScrollSaved) {
                     requestAnimationFrame(() => {
-                        this.virtualScrollSaved.scrollToIndex(isExistFileId)
+                        this.virtualScrollSaved.scrollToIndex(isExistFileId);
                     });
                 }
                 // if (isExistFileId) {
@@ -1448,7 +1469,7 @@ export class SuppliersAndCustomersComponent
                         );
                         if (isExistFileId !== -1 && this.virtualScrollSaved) {
                             requestAnimationFrame(() => {
-                                this.virtualScrollSaved.scrollToIndex(isExistFileId)
+                                this.virtualScrollSaved.scrollToIndex(isExistFileId);
                             });
                         }
                         // if (isExistFileId) {
@@ -1497,7 +1518,8 @@ export class SuppliersAndCustomersComponent
                                 : {}
                         )
                     )
-                )
+                ),
+                takeUntil(this.destroyed$)
             )
             .subscribe((response: any) => this.handleCountStatusResponse(response));
     }
@@ -2212,8 +2234,22 @@ export class SuppliersAndCustomersComponent
         });
         this.allTransData = allTransData;
         // console.log(allTransData);
-
+        this.validateScrollPresence();
         this.loader = false;
+    }
+
+    private validateScrollPresence(): void {
+        setTimeout(() => {
+            console.log(this.scrollContainerVirtual);
+            const scrollContainerHasScrollNow =
+                this.scrollContainerVirtual !== null &&
+                this.scrollContainerVirtual['elementRef'].nativeElement.scrollHeight >
+                this.scrollContainerVirtual['elementRef'].nativeElement.clientHeight;
+            if (this.scrollContainerHasScroll !== scrollContainerHasScrollNow) {
+                // console.log('validateScrollPresence: scrollContainerHasScroll > %o', scrollContainerHasScrollNow);
+                this.scrollContainerHasScroll = scrollContainerHasScrollNow;
+            }
+        });
     }
 
     checkSelect(parent, children) {
@@ -2394,6 +2430,7 @@ export class SuppliersAndCustomersComponent
                             if (
                                 gr.status === 'CREATE_JOURNAL_TRANS' ||
                                 gr.status === 'TEMP_COMMAND' ||
+                                gr.status === 'FOLDER_PLUS_ISSUE' ||
                                 gr.status === 'PERMANENT_COMMAND'
                             ) {
                                 gr.totalIncludeMaam = gr.fileData.reduce(
@@ -2425,22 +2462,30 @@ export class SuppliersAndCustomersComponent
                                         this.userService.appData.moment(gr.vatDateFrom).month()
                                         ] + year;
                             } else {
-                                gr.monthName =
-                                    monthNames[
-                                        this.userService.appData.moment(gr.vatDateFrom).month()
-                                        ] +
-                                    ' - ' +
-                                    monthNames[
-                                        this.userService.appData.moment(gr.vatDateTill).month()
-                                        ] +
-                                    year;
+                                if ((this.userService.appData.moment(gr.vatDateFrom).year() ===
+                                        this.userService.appData.moment(gr.vatDateTill).year()) &&
+                                    this.userService.appData.moment(gr.vatDateFrom).month() === 0
+                                    &&
+                                    this.userService.appData.moment(gr.vatDateTill).month() === 11) {
+                                    gr.monthName = this.userService.appData.moment(gr.vatDateFrom).format('YYYY');
+                                } else {
+                                    gr.monthName =
+                                        monthNames[
+                                            this.userService.appData.moment(gr.vatDateFrom).month()
+                                            ] +
+                                        ' - ' +
+                                        monthNames[
+                                            this.userService.appData.moment(gr.vatDateTill).month()
+                                            ] +
+                                        year;
+                                }
+
+
                             }
                         }
 
                         gr.dateLastModifiedName =
-                            monthNames[
-                                this.userService.appData.moment(gr.dateLastModified).month()
-                                ];
+                            monthNames[this.userService.appData.moment(gr.dateLastModified).month()];
                         gr.manualCustIdsArray = [];
                         for (const fd of gr.fileData) {
                             const code = this.currencyList.find(
@@ -2661,6 +2706,7 @@ export class SuppliersAndCustomersComponent
             allTransData = allTransData.concat(parentObj.fileData);
         });
         this.allTransData = allTransData;
+        this.validateScrollPresence();
         // console.log(allTransData);
         // }, 0);
     }
@@ -2808,7 +2854,7 @@ export class SuppliersAndCustomersComponent
         return lastValueFrom(this.httpClient
             .get(contentUrl, {
                 responseType: 'blob'
-            }))
+            }));
     }
 
     createImageBase64FromBlob(blobFile: Blob, getSizes?: boolean): Promise<any> {
@@ -2945,7 +2991,7 @@ export class SuppliersAndCustomersComponent
         let getDocumentStorageData = [];
         for (let idx = 0; idx < this.showFloatNav.selcetedFiles.length; idx++) {
             const res = await lastValueFrom(this.sharedService
-                .getDocumentStorageData([this.showFloatNav.selcetedFiles[idx].fileId]))
+                .getDocumentStorageData([this.showFloatNav.selcetedFiles[idx].fileId]));
             if (res) {
                 getDocumentStorageData = getDocumentStorageData.concat(
                     res['body'][this.showFloatNav.selcetedFiles[idx].fileId]
@@ -2982,13 +3028,13 @@ export class SuppliersAndCustomersComponent
                     imageBase64.height > imageBase64.width
                         ? imageBase64.width / imageBase64.height
                         : imageBase64.height / imageBase64.width;
-                if (imageBase64.width > width) {
-                    outputWidth = width;
-                    outputHeight = width / inputImageAspectRatio;
-                }
+
                 if (imageBase64.height > height) {
                     outputHeight = height;
                     outputWidth = height * inputImageAspectRatio;
+                } else if (imageBase64.width > width) {
+                    outputWidth = width;
+                    outputHeight = width / inputImageAspectRatio;
                 }
             }
 
@@ -3127,13 +3173,13 @@ export class SuppliersAndCustomersComponent
                                     imageBase64.height > imageBase64.width
                                         ? imageBase64.width / imageBase64.height
                                         : imageBase64.height / imageBase64.width;
-                                if (imageBase64.width > width) {
-                                    outputWidth = width;
-                                    outputHeight = width / inputImageAspectRatio;
-                                }
+
                                 if (imageBase64.height > height) {
                                     outputHeight = height;
                                     outputWidth = height * inputImageAspectRatio;
+                                } else if (imageBase64.width > width) {
+                                    outputWidth = width;
+                                    outputHeight = width / inputImageAspectRatio;
                                 }
                             }
                             doc.addImage(
@@ -3879,6 +3925,9 @@ export class SuppliersAndCustomersComponent
         if (this.subscriptionStatus) {
             this.subscriptionStatus.unsubscribe();
         }
+        if(this.interval$){
+            this.interval$.unsubscribe();
+        }
         if (this.scrollSubscription) {
             this.scrollSubscription.unsubscribe();
         }
@@ -3935,58 +3984,165 @@ export class SuppliersAndCustomersComponent
         this.parentManualCustIdsArray = parent;
     }
 
-    createExportFileFor(parent: any) {
-        if (!this.userService.appData || !this.userService.appData.folderState) {
-            return;
-        }
+    createExportFileForFolder(parent: any) {
+        const folderPlus = this.userService.appData.userData.companySelect.folderPlus;
+        // if (!this.userService.appData || !this.userService.appData.folderState) {
+        //     return;
+        // }
         this.ocrExportFileId = parent.ocrExportFileId;
-        if (this.userService.appData.folderState === 'OK') {
-            if (parent.createExportFileSub) {
-                return;
-            }
-            parent.createExportFileSub = this.sharedService
-                .exportFileCreateFolder(parent.ocrExportFileId)
-                .pipe(
-                    first(),
-                    finalize(() => (parent.createExportFileSub = null))
-                )
-                .subscribe((value) => {
+        this.sharedService
+            .exportFileCreateFolder(parent.ocrExportFileId,
+                this.userService.appData.userData.companySelect.companyId)
+            .pipe(
+                first(),
+                finalize(() => (parent.createExportFileSub = null))
+            )
+            .subscribe({
+                next: (value) => {
+                    // {
+                    //     "filePath": "string",
+                    //     "folderState": "string"
+                    // }
                     this.responseRestPath = value ? value['body'] : value;
-                    if (!this.responseRestPath) {
-                        this.startChild();
-                    } else {
-                        this.showModalCheckFolderFile = true;
-                        const checkFolderFile = setInterval(() => {
-                            if (this.showModalCheckFolderFile !== true) {
-                                clearInterval(checkFolderFile);
-                            } else {
-                                this.sharedService
-                                    .checkFolderFile(parent.ocrExportFileId)
-                                    .subscribe((res) => {
-                                        if (res && res.body && res.body !== 'NOT_DONE') {
-                                            this.showModalCheckFolderFile = res.body;
-                                            clearInterval(checkFolderFile);
-                                            if (
-                                                res.body === 'ERROR' &&
-                                                !this.userService.appData.isAdmin
-                                            ) {
-                                                this.sharedService
-                                                    .folderError({
-                                                        companyId:
-                                                        this.userService.appData.userData.companySelect
-                                                            .companyId,
-                                                        ocrExportFileId: parent.ocrExportFileId
-                                                    })
-                                                    .subscribe((value) => {
-                                                    });
-                                            }
+                    if (folderPlus && this.responseRestPath.folderState === 'OK') {
+                        this.sharedComponent.messagesSideShow = true;
+                        const subscriptionTimerGetFilesStatus = interval(10000)
+                            .pipe(
+                                startWith(0),
+                                tap(() => {
+                                    if (!this.userService.appData.userData.companySelect) {
+                                        subscriptionTimerGetFilesStatus.unsubscribe();
+                                    }
+                                }),
+                                filter(() => this.userService.appData.userData.companySelect),
+                                tap(() => {
+                                    this.messagesService.messageStateChanged$.next();
+                                })
+                            )
+                            .subscribe(() => {
+                                // if (this.sharedComponent.openMessagesAgain) {
+                                //     this.sharedComponent.messagesSideShow = true;
+                                // }
+                                this.userService.appData.reloadMessagesEvent
+                                    .pipe(take(1))
+                                    .subscribe((reload: any) => {
+                                        if (this.sharedComponent.messagesSideShow && reload) {
+                                            this.sharedComponent.reloadMessagesEve.next();
                                         }
                                     });
-                            }
-                        }, 5000);
-                    }
-                });
+                                // const stopInterval = this.sharedComponent.reloadMessagesSavedData && this.sharedComponent.reloadMessagesSavedData.find(it => it.indNew === true && it.uploadSource === 'FOLDER' && (it.indAlert === 'bizibox' || it.indAlert === 'red'));
+                                if (!this.userService.appData.userData.companySelect) {
+                                    subscriptionTimerGetFilesStatus.unsubscribe();
+                                }
+                            });
 
+                        this.startChild();
+                    } else {
+                        if (parent.manualCustIdsArray && parent.manualCustIdsArray.length && this.responseRestPath.folderState === 'OK') {
+                            this.createExportFileForPrevModal(
+                                parent
+                            );
+                        } else {
+                            this.createExportFileFor(
+                                parent
+                            );
+                        }
+                    }
+
+                },
+                error: (err: HttpErrorResponse) => {
+                    if (err.error instanceof Error) {
+                        console.log('An error occurred:', err.error.message);
+                    } else {
+                        console.log(
+                            `Backend returned code ${err.status}, body was: ${err.error}`
+                        );
+                    }
+                }
+            });
+    }
+
+    onHide_exportFileFolderCreatePrompt(hideVisible?: any, cancelFile?: any) {
+        if (
+            (
+                (this.exportFileFolderCreatePrompt.approveSubscription && this.exportFileFolderCreatePrompt.approveSubscription.closed && this.responseRestPath.folderState === 'NOT_EXIST')
+                ||
+                (!this.exportFileFolderCreatePrompt.approveSubscription && this.responseRestPath.folderState === 'NOT_OK')
+            )
+            && ((this.enabledDownloadLink_paramsfile && !this.enabledDownloadLink_docfile) || (this.enabledDownloadLink_docfile && !this.enabledDownloadLink_paramsfile))) {
+            if (cancelFile) {
+                this.sharedService
+                    .cancelFile(this.ocrExportFileId)
+                    .subscribe((res) => {
+                    });
+                if (hideVisible) {
+                    this.exportFileFolderCreatePrompt.visible = false;
+                }
+                this.exportFileFolderCreatePrompt.onHide();
+                this.startChild();
+                this.enabledDownloadLink = true;
+                this.enabledDownloadLink_docfile = true;
+                this.enabledDownloadLink_paramsfile = true;
+                this.exportFileFolderCreatePrompt.alertDownloadedOneFileOnly = false;
+            } else {
+                this.exportFileFolderCreatePrompt.alertDownloadedOneFileOnly = true;
+            }
+        } else {
+            // if ((
+            //         (this.exportFileFolderCreatePrompt.approveSubscription && this.exportFileFolderCreatePrompt.approveSubscription.closed && this.responseRestPath.folderState === 'NOT_EXIST')
+            //         ||
+            //         (!this.exportFileFolderCreatePrompt.approveSubscription && this.responseRestPath.folderState === 'NOT_OK')
+            //     )
+            //     && ((!this.enabledDownloadLink_paramsfile && !this.enabledDownloadLink_docfile))) {
+            //     this.sharedService
+            //         .cancelFile(this.ocrExportFileId)
+            //         .subscribe((res) => {
+            //         });
+            // }
+            if (hideVisible) {
+                this.exportFileFolderCreatePrompt.visible = false;
+            }
+            this.exportFileFolderCreatePrompt.onHide();
+            this.startChild();
+            this.enabledDownloadLink = true;
+            this.enabledDownloadLink_docfile = true;
+            this.enabledDownloadLink_paramsfile = true;
+            this.exportFileFolderCreatePrompt.alertDownloadedOneFileOnly = false;
+        }
+    }
+
+    createExportFileFor(parent: any) {
+        this.ocrExportFileId = parent.ocrExportFileId;
+        if (this.responseRestPath.folderState === 'OK') {
+            this.showModalCheckFolderFile = true;
+            const checkFolderFile = setInterval(() => {
+                if (this.showModalCheckFolderFile !== true) {
+                    clearInterval(checkFolderFile);
+                } else {
+                    this.sharedService
+                        .checkFolderFile(parent.ocrExportFileId)
+                        .subscribe((res) => {
+                            if (res && res.body && res.body !== 'NOT_DONE') {
+                                this.showModalCheckFolderFile = res.body;
+                                clearInterval(checkFolderFile);
+                                if (
+                                    res.body === 'ERROR' &&
+                                    !this.userService.appData.isAdmin
+                                ) {
+                                    this.sharedService
+                                        .folderError({
+                                            companyId:
+                                            this.userService.appData.userData.companySelect
+                                                .companyId,
+                                            ocrExportFileId: parent.ocrExportFileId
+                                        })
+                                        .subscribe((value) => {
+                                        });
+                                }
+                            }
+                        });
+                }
+            }, 5000);
             this.docsfile = null;
             this.exportFileFolderCreatePrompt = {
                 onAnchorClick(): void {
@@ -4014,111 +4170,72 @@ export class SuppliersAndCustomersComponent
                     // }
                 }
             };
-        } else if (this.userService.appData.folderState === 'NOT_OK') {
-            if (!this.userService.appData.isAdmin) {
-                this.sharedService
-                    .folderError({
-                        companyId: this.userService.appData.userData.companySelect.companyId
-                    })
-                    .subscribe((value) => {
-                    });
-            }
-
+        } else if (this.responseRestPath.folderState === 'NOT_OK') {
+            // if (!this.userService.appData.isAdmin) {
+            //     this.sharedService
+            //         .folderError({
+            //             companyId: this.userService.appData.userData.companySelect.companyId
+            //         })
+            //         .subscribe((value) => {
+            //         });
+            // }
             this.docsfile = null;
             this.exportFileFolderCreatePrompt = {
                 visible: true,
                 pending: false,
                 onAnchorClick: () => {
-                    let counter = 0;
-                    this.exportFileFolderCreatePrompt.pending = true;
-                    this.exportFileFolderCreatePrompt.approveSubscription = timer(
-                        500,
-                        30 * 1000
-                    )
-                        .pipe(
-                            tap(() => counter++),
-                            switchMap(() =>
-                                this.sharedService
-                                    .exporterFolderState()
-                                    .pipe(
-                                        map((response: any) =>
-                                            response && !response.error ? response.body : response
-                                        )
-                                    )
-                            ),
-                            takeWhileInclusive(
-                                (response: any) =>
-                                    response != null &&
-                                    !response.error &&
-                                    response.folderState !== 'OK' &&
-                                    counter < 10 &&
-                                    this.exportFileFolderCreatePrompt &&
-                                    this.exportFileFolderCreatePrompt.visible
-                            ),
-                            finalize(
-                                () => (this.exportFileFolderCreatePrompt.pending = false)
-                            )
-                        )
-                        .subscribe((response: any) => {
-                            this.userService.appData.countStatusData =
-                                response && !!response.exporterState
-                                    ? response.exporterState
-                                    : null;
-                            this.userService.appData.folderState =
-                                response && !!response.folderState
-                                    ? response.folderState
-                                    : null;
-                        });
+
                 },
                 onHide: () => {
-                    if (
-                        this.userService.appData.folderState === 'OK' &&
-                        this.exportFileFolderCreatePrompt.approveSubscription &&
-                        this.exportFileFolderCreatePrompt.approveSubscription.closed
-                    ) {
-                        parent.createExportFileSub = this.sharedService
-                            .exportFileCreateFolder(parent.ocrExportFileId)
-                            .pipe(
-                                first(),
-                                finalize(() => (parent.createExportFileSub = null))
-                            )
-                            .subscribe((value) => {
-                                this.responseRestPath = value ? value['body'] : value;
-                                if (!this.responseRestPath) {
-                                    this.startChild();
-                                } else {
-                                    this.showModalCheckFolderFile = true;
-                                    const checkFolderFile = setInterval(() => {
-                                        if (this.showModalCheckFolderFile !== true) {
-                                            clearInterval(checkFolderFile);
-                                        } else {
-                                            this.sharedService
-                                                .checkFolderFile(parent.ocrExportFileId)
-                                                .subscribe((res) => {
-                                                    if (res && res.body && res.body !== 'NOT_DONE') {
-                                                        this.showModalCheckFolderFile = res.body;
-                                                        clearInterval(checkFolderFile);
-                                                        if (
-                                                            res.body === 'ERROR' &&
-                                                            !this.userService.appData.isAdmin
-                                                        ) {
-                                                            this.sharedService
-                                                                .folderError({
-                                                                    companyId:
-                                                                    this.userService.appData.userData
-                                                                        .companySelect.companyId,
-                                                                    ocrExportFileId: parent.ocrExportFileId
-                                                                })
-                                                                .subscribe((value) => {
-                                                                });
-                                                        }
-                                                    }
-                                                });
-                                        }
-                                    }, 5000);
-                                }
-                            });
-                    }
+                    // if (
+                    //     this.responseRestPath.folderState === 'OK' &&
+                    //     this.exportFileFolderCreatePrompt.approveSubscription &&
+                    //     this.exportFileFolderCreatePrompt.approveSubscription.closed
+                    // ) {
+                    //     parent.createExportFileSub = this.sharedService
+                    //         .exportFileCreateFolder(parent.ocrExportFileId,
+                    //             this.userService.appData.userData.companySelect.companyId)
+                    //         .pipe(
+                    //             first(),
+                    //             finalize(() => (parent.createExportFileSub = null))
+                    //         )
+                    //         .subscribe((value) => {
+                    //             this.responseRestPath = value ? value['body'] : value;
+                    //             if (!this.responseRestPath) {
+                    //                 this.startChild();
+                    //             } else {
+                    //                 this.showModalCheckFolderFile = true;
+                    //                 const checkFolderFile = setInterval(() => {
+                    //                     if (this.showModalCheckFolderFile !== true) {
+                    //                         clearInterval(checkFolderFile);
+                    //                     } else {
+                    //                         this.sharedService
+                    //                             .checkFolderFile(parent.ocrExportFileId)
+                    //                             .subscribe((res) => {
+                    //                                 if (res && res.body && res.body !== 'NOT_DONE') {
+                    //                                     this.showModalCheckFolderFile = res.body;
+                    //                                     clearInterval(checkFolderFile);
+                    //                                     if (
+                    //                                         res.body === 'ERROR' &&
+                    //                                         !this.userService.appData.isAdmin
+                    //                                     ) {
+                    //                                         this.sharedService
+                    //                                             .folderError({
+                    //                                                 companyId:
+                    //                                                 this.userService.appData.userData
+                    //                                                     .companySelect.companyId,
+                    //                                                 ocrExportFileId: parent.ocrExportFileId
+                    //                                             })
+                    //                                             .subscribe((value) => {
+                    //                                             });
+                    //                                     }
+                    //                                 }
+                    //                             });
+                    //                     }
+                    //                 }, 5000);
+                    //             }
+                    //         });
+                    // }
                 },
                 prompt: null,
                 cancelFile: () => {
@@ -4179,10 +4296,10 @@ export class SuppliersAndCustomersComponent
                     //     );
                 }
             };
-        } else if (this.userService.appData.folderState === 'NOT_EXIST') {
+        } else if (this.responseRestPath.folderState === 'NOT_EXIST') {
             this.docsfile = null;
-
             this.exportFileFolderCreatePrompt = {
+                alertDownloadedOneFileOnly: false,
                 visible: true,
                 pending: false,
                 onAnchorClick: () => {
@@ -4196,7 +4313,7 @@ export class SuppliersAndCustomersComponent
                             tap(() => counter++),
                             switchMap(() =>
                                 this.sharedService
-                                    .exporterFolderState()
+                                    .exportFileCreateFolder(this.ocrExportFileId, this.userService.appData.userData.companySelect.companyId)
                                     .pipe(
                                         map((response: any) =>
                                             response && !response.error ? response.body : response
@@ -4215,7 +4332,7 @@ export class SuppliersAndCustomersComponent
                             finalize(() => {
                                 this.exportFileFolderCreatePrompt.pending = false;
                                 if (
-                                    this.userService.appData.folderState === 'OK' &&
+                                    this.responseRestPath.folderState === 'OK' &&
                                     this.exportFileFolderCreatePrompt.visible
                                 ) {
                                     this.exportFileFolderCreatePrompt.visible = false;
@@ -4223,64 +4340,92 @@ export class SuppliersAndCustomersComponent
                             })
                         )
                         .subscribe((response: any) => {
-                            this.userService.appData.countStatusData =
-                                response && !!response.exporterState
-                                    ? response.exporterState
-                                    : null;
-                            this.userService.appData.folderState =
-                                response && !!response.folderState
-                                    ? response.folderState
-                                    : null;
+                            this.responseRestPath = response;
+                            // this.userService.appData.countStatusData =
+                            //     response && !!response.exporterState
+                            //         ? response.exporterState
+                            //         : null;
                         });
                 },
                 onHide: () => {
                     if (
-                        this.userService.appData.folderState === 'OK' &&
+                        this.responseRestPath.folderState === 'OK' &&
                         this.exportFileFolderCreatePrompt.approveSubscription &&
                         this.exportFileFolderCreatePrompt.approveSubscription.closed
                     ) {
-                        parent.createExportFileSub = this.sharedService
-                            .exportFileCreateFolder(parent.ocrExportFileId)
-                            .pipe(
-                                first(),
-                                finalize(() => (parent.createExportFileSub = null))
-                            )
-                            .subscribe((value) => {
-                                this.responseRestPath = value ? value['body'] : value;
-                                if (!this.responseRestPath) {
-                                    this.startChild();
-                                } else {
-                                    this.showModalCheckFolderFile = true;
-                                    const checkFolderFile = setInterval(() => {
-                                        if (this.showModalCheckFolderFile !== true) {
+                        this.showModalCheckFolderFile = true;
+                        const checkFolderFile = setInterval(() => {
+                            if (this.showModalCheckFolderFile !== true) {
+                                clearInterval(checkFolderFile);
+                            } else {
+                                this.sharedService
+                                    .checkFolderFile(parent.ocrExportFileId)
+                                    .subscribe((res) => {
+                                        if (res && res.body && res.body !== 'NOT_DONE') {
+                                            this.showModalCheckFolderFile = res.body;
                                             clearInterval(checkFolderFile);
-                                        } else {
-                                            this.sharedService
-                                                .checkFolderFile(parent.ocrExportFileId)
-                                                .subscribe((res) => {
-                                                    if (res && res.body && res.body !== 'NOT_DONE') {
-                                                        this.showModalCheckFolderFile = res.body;
-                                                        clearInterval(checkFolderFile);
-                                                        if (
-                                                            res.body === 'ERROR' &&
-                                                            !this.userService.appData.isAdmin
-                                                        ) {
-                                                            this.sharedService
-                                                                .folderError({
-                                                                    companyId:
-                                                                    this.userService.appData.userData
-                                                                        .companySelect.companyId,
-                                                                    ocrExportFileId: parent.ocrExportFileId
-                                                                })
-                                                                .subscribe((value) => {
-                                                                });
-                                                        }
-                                                    }
-                                                });
+                                            if (
+                                                res.body === 'ERROR' &&
+                                                !this.userService.appData.isAdmin
+                                            ) {
+                                                this.sharedService
+                                                    .folderError({
+                                                        companyId:
+                                                        this.userService.appData.userData
+                                                            .companySelect.companyId,
+                                                        ocrExportFileId: parent.ocrExportFileId
+                                                    })
+                                                    .subscribe((value) => {
+                                                    });
+                                            }
                                         }
-                                    }, 5000);
-                                }
-                            });
+                                    });
+                            }
+                        }, 5000);
+
+                        // parent.createExportFileSub = this.sharedService
+                        //     .exportFileCreateFolder(parent.ocrExportFileId,
+                        //         this.userService.appData.userData.companySelect.companyId)
+                        //     .pipe(
+                        //         first(),
+                        //         finalize(() => (parent.createExportFileSub = null))
+                        //     )
+                        //     .subscribe((value) => {
+                        //         this.responseRestPath = value ? value['body'] : value;
+                        //         if (!this.responseRestPath) {
+                        //             this.startChild();
+                        //         } else {
+                        //             this.showModalCheckFolderFile = true;
+                        //             const checkFolderFile = setInterval(() => {
+                        //                 if (this.showModalCheckFolderFile !== true) {
+                        //                     clearInterval(checkFolderFile);
+                        //                 } else {
+                        //                     this.sharedService
+                        //                         .checkFolderFile(parent.ocrExportFileId)
+                        //                         .subscribe((res) => {
+                        //                             if (res && res.body && res.body !== 'NOT_DONE') {
+                        //                                 this.showModalCheckFolderFile = res.body;
+                        //                                 clearInterval(checkFolderFile);
+                        //                                 if (
+                        //                                     res.body === 'ERROR' &&
+                        //                                     !this.userService.appData.isAdmin
+                        //                                 ) {
+                        //                                     this.sharedService
+                        //                                         .folderError({
+                        //                                             companyId:
+                        //                                             this.userService.appData.userData
+                        //                                                 .companySelect.companyId,
+                        //                                             ocrExportFileId: parent.ocrExportFileId
+                        //                                         })
+                        //                                         .subscribe((value) => {
+                        //                                         });
+                        //                                 }
+                        //                             }
+                        //                         });
+                        //                 }
+                        //             }, 5000);
+                        //         }
+                        //     });
                     }
                 },
                 prompt: null,

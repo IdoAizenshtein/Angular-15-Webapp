@@ -212,12 +212,12 @@ export class CustomersSettingsComponent implements OnInit, OnDestroy {
                     return;
                 } else {
                     this.createCompanyPrompt.processing = true;
+                    this.sharedComponent.mixPanelEvent('new company');
                     const frmVal = this.createCompanyPrompt.form.value;
                     const saveCompanies = JSON.parse(
                         JSON.stringify(this.userService.appData.userData.companies)
                     );
                     let {firstName, lastName, cellPhone, mail} = this.userSettings;
-
                     if (this.userService.appData && this.userService.appData.isAdmin) {
                         this.sharedService.userOnBehalf().subscribe((response: any) => {
                             const resBody = response ? response['body'] : response;

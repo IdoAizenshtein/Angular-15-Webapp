@@ -43,7 +43,7 @@
 				<header>
 					<span>{{ 'אמצעי תשלום' }}</span>
 				</header>
-				
+
 				<div class="body">
 					<h1>{{ 'הסליקה מתבצעת דרך חברת קארדקום בע"מ' }}</h1>
 					<small>{{ 'אנא וודאו שפרטי החשבונית הרשומים מטה נכונים' }}</small>
@@ -56,7 +56,7 @@
 					</button>
 				</div>
 			</section>
-			
+
 			<section
 					*ngIf="billingAccountDetails.billingAccountId !== preHandledAccountId"
 					[class.billing-error]="billingAccountDetails.operationresponse !== 0"
@@ -68,16 +68,16 @@
               &nbsp;&minus;&nbsp;<span class="error">{{ 'לא תקין' }}</span>
             </span>
           </span>
-					
-					<button
+
+					<button style="font-size: 18px"
 							(click)="detailsFormSubmit(true)"
 							class="button-link"
 							type="submit"
 					>
-						{{ 'עדכון' }}
+						{{ 'עדכון אמצעי תשלום' }}
 					</button>
 				</header>
-				
+
 				<div class="body readonly">
 					<label>
 						<span>{{ 'תשלום באמצעות' }}</span>
@@ -119,7 +119,7 @@
 					</ng-container>
 				</div>
 			</section>
-			
+
 			<section>
 				<header>
 					<span>{{ 'פרטים לחשבונית' }}</span>
@@ -137,7 +137,7 @@
 						{{ 'פרטי העסק' }}
 					</button>
 				</header>
-				
+
 				<div class="body">
 					<label
 							[class.error]="
@@ -177,7 +177,7 @@
 								[filter]="true"
 								[formControl]="detailsForm.get('billingAccountCity')"
 								[options]="sharedService.cities$ | async"
-								
+
 								[placeholder]="'בחר עיר'"
 								[scrollHeight]="'135px'"
 								dataKey="cityId"
@@ -232,7 +232,7 @@
 						/>
 					</label>
 				</div>
-				
+
 				<div
 						[class.flexCancelService]="userService.appData?.userData?.billingLite"
 				>
@@ -247,7 +247,7 @@
             "
 					            checkboxIcon="fa fa-check"
 					></p-checkbox>
-					
+
 					<a
 							(click)="cancelServiceShow()"
 							*ngIf="userService.appData?.userData?.billingLite"
@@ -260,13 +260,13 @@
 				</div>
 			</section>
 		</form>
-		
+
 		<div>
 			<section>
 				<header>
 					<span>{{ 'החיוב הבא' }}</span>
 				</header>
-				
+
 				<div class="bank-acc-details-table-container client-payments-table">
 					<div class="bank-acc-details-table-header">
 						<div>{{ 'תאריך' }}</div>
@@ -306,12 +306,12 @@
 					</div>
 				</div>
 			</section>
-			
+
 			<section>
 				<header>
 					<span>{{ 'חיובים אחרונים' }}</span>
 				</header>
-				
+
 				<div class="bank-acc-details-table-container client-payments-table">
 					<div class="bank-acc-details-table-header">
 						<div>{{ 'תאריך' }}</div>
@@ -404,12 +404,12 @@
 					class="logo"
 					src="/assets/images/logoUpgradePopup.png"
 					style="height: 21px; width: auto; position: relative;" fill
-			
+
 			/>
 		</div>
 	</p-header>
 	<h2>קיבלנו את בקשתך לביטול השירות, נציגנו יצרו איתך קשר בהקדם</h2>
-	
+
 	<div class="dd">
 		<p>ספרו לנו מהי סיבת הביטול</p>
 		<p-dropdown
@@ -420,7 +420,7 @@
 				placeholder=""
 		></p-dropdown>
 	</div>
-	
+
 	<div
 			*ngIf="valuesEndBiziboxService.reason !== null"
 			style="display: flex; flex-direction: column"

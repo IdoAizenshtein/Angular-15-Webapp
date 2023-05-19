@@ -79,7 +79,8 @@ export class LoginComponent implements OnInit {
                     Validators.required,
                     Validators.pattern(new RegExp(/^-?[0-9][^\.]*$/))
                 ])
-            ]
+            ],
+            vms: new FormControl(false)
         });
 
         merge(
@@ -108,7 +109,7 @@ export class LoginComponent implements OnInit {
         this.state = screen;
     }
 
-    login(model: UserAuth, isValid: boolean): void {
+    async login(model: UserAuth, isValid: boolean): Promise<void> {
         if (
             !isValid ||
             this.formInProgress ||
@@ -119,7 +120,8 @@ export class LoginComponent implements OnInit {
         const {username, password, rememberMe} = model.formUser;
         this.formInProgress = true;
         this.loginIsBlocked = false;
-        this.authService.login(username, password, rememberMe).subscribe({
+        const gRecaptcha = await this.userService.executeAction('token');
+        this.authService.login(username, password, gRecaptcha, rememberMe).subscribe({
             next: (response: any) => {
                 this.formInProgress = false;
                 if (response.status === 401 || response.status === 403) {
@@ -190,15 +192,23 @@ export class LoginComponent implements OnInit {
         );
     }
 
-    resendSms(): void {
+    async resendSms(): Promise<void> {
         if (!this.tokenInfo.smsRemained) {
             return;
         }
-        this.authService.resentOtpSms().subscribe((response: any) => {
+        const gRecaptcha = await this.userService.executeAction('resend-sms');
+        this.authService.resentOtpSms(false, gRecaptcha).subscribe((response: any) => {
             this.tokenInfo = response.body;
         });
     }
-
+    resentOtpVms(): void {
+        if (!this.tokenInfo.smsRemained) {
+            return;
+        }
+        this.authService.resentOtpVms(false).subscribe((response: any) => {
+            this.tokenInfo = response.body;
+        });
+    }
     private rememberFailedAttempt(username: string, password: string) {
         this.lastFailedAttemptCredentials = {
             username: username,

@@ -14,6 +14,7 @@
 			</div>
 		</div>
 		<app-token-create-dialog
+				[exampleCompany]="userService.appData?.userData?.exampleCompany"
 				*ngIf="addTokenPrompt.visible"
 				[(display)]="addTokenPrompt.visible"
 				[settings]="addTokenPrompt.form"
@@ -59,7 +60,7 @@
 						}}%
 					</div>
 				</div>
-				
+
 				<div
 						*ngSwitchCase="
             (statusToShow.tokenStatus | toTokenStatusEnumValue) ===
@@ -92,7 +93,7 @@
 						}}
 					</button>
 				</div>
-				
+
 				<div
 						*ngSwitchCase="
             (statusToShow.tokenStatus | toTokenStatusEnumValue) ===
@@ -120,7 +121,7 @@
 						{{ 'foreignCredentialsUpdate.expressions.unBlock' | translate }}
 					</button>
 				</div>
-				
+
 				<div
 						*ngSwitchCase="
             (statusToShow.tokenStatus | toTokenStatusEnumValue) ===
@@ -153,7 +154,7 @@
 						}}
 					</button>
 				</div>
-				
+
 				<div
 						*ngSwitchCase="
             (statusToShow.tokenStatus | toTokenStatusEnumValue) ===
@@ -174,7 +175,7 @@
             "
 					></div>
 				</div>
-				
+
 				<ng-container
 						*ngSwitchCase="
             [
@@ -203,7 +204,7 @@
 							<div class="link" (click)="reloadPrompt.rollout()">
 								{{ 'tokenTracker.expressions.successMessage.1' | translate }}
 							</div>
-							
+
 							<p-dialog (visibleChange)="reloadPrompt.visible = false"
 									*ngIf="reloadPrompt.visible"
 									[visible]="(reloadPrompt.visible)"
@@ -219,7 +220,7 @@
 										}}
 									</div>
 								</p-header>
-								
+
 								<div
 										class="subheader mat-h4"
 										[innerHTML]="
@@ -276,7 +277,7 @@
 						</ng-template>
 					</ng-container>
 				</ng-container>
-				
+
 				<!--<div class="token-tracker-view mat-h3 success"-->
 				<!--*ngSwitchCase="[TokenStatus.AboutToExpire, TokenStatus.Valid].includes((statusToShow.tokenStatus| toTokenStatusEnumValue)) ? statusToShow.tokenStatus : ''">-->
 				<!--<ng-container *ngIf="exampleCompanyPoll$| async">-->
@@ -286,14 +287,14 @@
 				<!--<div>{{'tokenTracker.expressions.successMessage.0'| translate}}</div>-->
 				<!--<div class="link" (click)="reloadPrompt.rollout()">{{'tokenTracker.expressions.successMessage.1'| translate}}</div>-->
 				<!--</ng-container>-->
-				
+
 				<!--<p-dialog (visibleChange)="aaa = false" *ngIf="reloadPrompt.visible" [visible]="reloadPrompt.visible" (onHide)="reloadPrompt.countdownCompleteSub.unsubscribe();"-->
 				<!--styleClass="token-tracker-reloadDialog" appendTo="body"-->
 				<!--[modal]="true">-->
 				<!--<p-header>-->
 				<!--<div class="header mat-h2">{{'tokenTracker.expressions.reloadPrompt.title'| translate}}</div>-->
 				<!--</p-header>-->
-				
+
 				<!--<div class="subheader mat-h4" [innerHTML]="'tokenTracker.expressions.reloadPrompt.subtitle'| translate"></div>-->
 				<!--<div class="counter">-->
 				<!--<ng-container *ngIf="reloadPrompt.countdownTimer$| async as counter; else placeholder">-->
@@ -307,13 +308,13 @@
 				<!--</button>-->
 				<!--<button class="button-dark" (click)="reloadPrompt.visible = false; reloadPrompt.onApprove();">{{'tokenTracker.expressions.reloadPrompt.approve'| translate}}</button>-->
 				<!--</p-footer>-->
-				
+
 				<!--</p-dialog>-->
 				<!--</div>-->
-				
+
 				<div *ngSwitchDefault class="token-tracker-view"></div>
 			</ng-container>
-			
+
 			<app-bank-update-foreign-credentials-dialog
 					*ngIf="updatePromptVisible"
 					#credsUpdateDlg

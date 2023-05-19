@@ -48,7 +48,7 @@ export class ManagementComponent
                 value: '',
                 disabled: true
             }),
-            izuCreditType: new FormControl({
+            indPkudotYoman: new FormControl({
                 value: '',
                 disabled: true
             }),

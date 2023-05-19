@@ -5503,7 +5503,7 @@
     display: flex;
     align-items: flex-start;
 
-    p-dropdown {
+    p-dropdown, app-dropdown-wrap {
       align-self: flex-start;
     }
 
@@ -5531,7 +5531,11 @@
       line-height: 20px;
     }
   }
-
+  p-radiobutton[name='vms'] {
+    label {
+      pointer-events: none;
+    }
+  }
   p-radiobutton[name='creditCardCalcTypeDesc'] {
     display: block;
 
@@ -5903,6 +5907,98 @@
     }
   }
 
+  #addCompany {
+    width: 363px;
+    height: 410px;
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    display: -ms-flexbox;
+    flex-flow: column nowrap;
+    padding: 1em 0;
+    align-items: center;
+
+    .body {
+      flex: 1;
+      display: flex;
+      display: -ms-flexbox;
+      flex-flow: row nowrap;
+      width: 90%;
+      height: 90%;
+
+      > div > label {
+        display: flex;
+        display: -ms-flexbox;
+        flex-flow: row wrap;
+        line-height: unset;
+
+        + label {
+          margin-top: 1em;
+        }
+
+        &:only-child {
+          flex: 1;
+        }
+
+        > i {
+          color: $red-error;
+          min-width: 0;
+        }
+
+        &.error {
+
+          > input,
+          > p-dropdown .p-dropdown,
+          > app-dropdown-wrap .p-dropdown {
+            border-color: $red-error;
+          }
+        }
+      }
+
+      > div:first-child {
+        flex: 40;
+        display: flex;
+        display: -ms-flexbox;
+        flex-flow: column nowrap;
+      }
+
+      > div:last-child {
+        flex: 60;
+        display: flex;
+        display: -ms-flexbox;
+        flex-flow: column nowrap;
+        justify-content: space-evenly;
+
+        &:not(:only-child) {
+          margin-#{$right}: 2em;
+        }
+      }
+    }
+
+    .footer {
+      margin-top: 1em;
+      display: flex;
+      display: -ms-flexbox;
+      flex-flow: wrap;
+
+      > button,
+      > a {
+        font: inherit;
+        display: flex;
+        display: -ms-flexbox;
+        align-items: center;
+
+        > img {
+          margin-#{$left}: 1ch;
+        }
+      }
+
+      > button:nth-child(2) {
+        margin-#{$right}: auto;
+      }
+    }
+  }
+
   #serviceCall {
     flex: 1;
     min-height: 0;
@@ -5953,7 +6049,8 @@
 
           > input,
           > textarea,
-          > p-dropdown .p-dropdown {
+          > p-dropdown .p-dropdown,
+          > app-dropdown-wrap .p-dropdown {
             border-color: $red-error;
           }
         }
@@ -6064,8 +6161,8 @@
         transform: rotate(-28deg);
         position: absolute;
         z-index: 999999;
-        left: -75px;
-        top: -27px;
+        left: -76px;
+        top: 23px;
         box-shadow: 0px 0px 10px 2px #d0d0d0;
         display: flex;
         flex-direction: row;
@@ -6115,7 +6212,7 @@
         position: absolute;
         right: 12px;
         left: 12px;
-        top: 14px;
+        top: 62px;
         z-index: 9;
 
         .title {
@@ -6886,7 +6983,7 @@
 
         > div.sumNumbers,
         > input,
-        > p-dropdown,
+        > app-dropdown-wrap,
         > p-calendar,
         > p-dropdown {
           margin-#{$right}: auto;
@@ -8640,15 +8737,62 @@
     }
   }
   .tooltip-acc-deviation.tooltipInfoCompany {
-    left: inherit !important;
+    &:not(.leftAuto) {
+      left: inherit !important;
 
-    &::before {
-      left: 85% !important;
+      &::before {
+        left: 85% !important;
+      }
+
+      &::after {
+        left: 85% !important;
+      }
     }
 
-    &::after {
-      left: 85% !important;
+    &.leftAuto {
+      margin-top: -120px !important;
     }
+
+    &.leftAuto.mainTop {
+      margin-top: -120px !important;
+    }
+
+    .p-overlaypanel-content {
+      padding: 16px;
+
+      & > div {
+        display: flex;
+        align-content: center;
+        justify-content: space-between;
+        align-items: center;
+        padding-bottom: 5px;
+
+        p {
+          @include font(regular, 15px);
+          color: #022258;
+        }
+
+        small {
+          @include font(light, 15px);
+          color: #022258;
+        }
+
+        &.red {
+          color: #cd1010 !important;
+
+          p,
+          small {
+            color: #cd1010 !important;
+          }
+        }
+      }
+    }
+  }
+  .tooltip-acc-deviation.tooltipInfoCompanyZero {
+    &.tooltipInfoCompanyZeroTen {
+      margin-top: 0px !important;
+    }
+
 
     .p-overlaypanel-content {
       padding: 16px;

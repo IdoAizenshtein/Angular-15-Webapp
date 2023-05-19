@@ -26,6 +26,8 @@
 									[style]="{ width: '275px' }"
 									appendTo="body"
 									formControlName="supplierAsmachtaNumChar"
+									name="supplierAsmachtaNumChar"
+
 									placeholder="בחירה"
 									styleClass="ddInfoCompanyForm"
 							>
@@ -38,7 +40,7 @@
 				<!--                        <div>-->
 				<!--                            אישור ידני לחשבוניות-->
 				<!--                        </div>-->
-				
+
 				<!--                        <div>-->
 				<!--                            <div style="padding: 0px 10px;height: 30px;">-->
 				<!--                                <p-radioButton-->
@@ -65,7 +67,7 @@
 				<!--                    &lt;!&ndash;                        <div>&ndash;&gt;-->
 				<!--                    &lt;!&ndash;                            פקודת יומן לחשבונית זיכוי&ndash;&gt;-->
 				<!--                    &lt;!&ndash;                        </div>&ndash;&gt;-->
-				
+
 				<!--                    &lt;!&ndash;                        <div>&ndash;&gt;-->
 				<!--                    &lt;!&ndash;                            <div style="padding: 0px 10px;height: 30px;">&ndash;&gt;-->
 				<!--                    &lt;!&ndash;                                <p-radioButton&ndash;&gt;-->
@@ -88,13 +90,13 @@
 				<!--                    &lt;!&ndash;                            </div>&ndash;&gt;-->
 				<!--                    &lt;!&ndash;                        </div>&ndash;&gt;-->
 				<!--                    &lt;!&ndash;                    </div>&ndash;&gt;-->
-				
+
 				<!--                </div>-->
-				
+
 				<div class="sett-table">
 					<div>
 						<div>קליטת חשבוניות</div>
-						
+
 						<div>
 							<div style="padding: 0px 10px; height: 30px">
 								<p-radioButton
@@ -120,7 +122,7 @@
 						</div>
 					</div>
 				</div>
-				
+
 				<div class="sett-table">
 					<div>
 						<div
@@ -131,7 +133,7 @@
 						>
 							אסמכתא לרישום הוצאה
 						</div>
-						
+
 						<div>
 							<div style="padding: 0px 10px; height: 30px">
 								<p-radioButton
@@ -157,7 +159,7 @@
 						</div>
 					</div>
 				</div>
-				
+
 				<div class="sett-table">
 					<div>
 						<div
@@ -168,7 +170,7 @@
 						>
 							אסמכתא לרישום הכנסה
 						</div>
-						
+
 						<div>
 							<div style="padding: 0px 10px; height: 30px">
 								<p-radioButton
@@ -194,11 +196,11 @@
 						</div>
 					</div>
 				</div>
-				
+
 				<div class="sett-table">
 					<div>
 						<div>פקודות יומן לחשבונית זיכוי</div>
-						
+
 						<div>
 							<div style="padding: 0px 10px; height: 30px">
 								<p-radioButton
@@ -224,7 +226,7 @@
 						</div>
 					</div>
 				</div>
-				
+
 				<div class="sett-table">
 					<div>
 						<div
@@ -240,6 +242,13 @@
 						<div>
 							<div style="padding: 0px 10px; height: 30px">
 								<p-radioButton
+										*ngIf="(isModal
+								? isModal.esderMaam
+								: userService.appData?.userData?.companySelect
+								?.esderMaam) === 'MONTH' || (isModal
+								? isModal.esderMaam
+								: userService.appData?.userData?.companySelect
+								?.esderMaam) !== 'TWO_MONTH'"
 										(onClick)="
                     updateValues(
                       'exportFileVatPeriod',
@@ -252,21 +261,46 @@
                     )
                   "
 										[label]="
-                    (isModal
-                      ? isModal.esderMaam
-                      : userService.appData?.userData?.companySelect
-                          ?.esderMaam) !== 'TWO_MONTH'
-                      ? 'חודשי (קובץ לכל חודש)'
-                      : 'דו חודשי (קובץ לכל חודשיים)'
+         (isModal
+								? isModal.esderMaam
+								: userService.appData?.userData?.companySelect
+								?.esderMaam) === 'MONTH' ? 'חודשי (קובץ לכל חודש)' : (isModal
+								? isModal.esderMaam
+								: userService.appData?.userData?.companySelect
+								?.esderMaam) === 'TWO_MONTH' ? 'דו חודשי (קובץ לכל חודשיים)' : 'חודשי (קובץ לכל חודש)'
                   "
-										[value]="
-                    (isModal
-                      ? isModal.esderMaam
-                      : userService.appData?.userData?.companySelect
-                          ?.esderMaam) !== 'TWO_MONTH'
-                      ? 'MONTH'
-                      : 'TWO_MONTH'
+										[value]="'MONTH'"
+										formControlName="exportFileVatPeriod"
+										inputId="radio123"
+										name="exportFileVatPeriod"
+								>
+								</p-radioButton>
+								<p-radioButton
+										*ngIf="(isModal
+								? isModal.esderMaam
+								: userService.appData?.userData?.companySelect
+								?.esderMaam) === 'TWO_MONTH'"
+										(onClick)="
+                    updateValues(
+                      'exportFileVatPeriod',
+                      (isModal
+                        ? isModal.esderMaam
+                        : userService.appData?.userData?.companySelect
+                            ?.esderMaam) !== 'TWO_MONTH'
+                        ? 'MONTH'
+                        : 'TWO_MONTH'
+                    )
                   "
+										[label]="
+         (isModal
+								? isModal.esderMaam
+								: userService.appData?.userData?.companySelect
+								?.esderMaam) === 'MONTH' ? 'חודשי (קובץ לכל חודש)' : (isModal
+								? isModal.esderMaam
+								: userService.appData?.userData?.companySelect
+								?.esderMaam) === 'TWO_MONTH' ? 'דו חודשי (קובץ לכל חודשיים)' : 'חודשי (קובץ לכל חודש)'
+                  "
+										[value]="'TWO_MONTH'"
 										formControlName="exportFileVatPeriod"
 										inputId="radio123"
 										name="exportFileVatPeriod"
@@ -274,23 +308,69 @@
 								</p-radioButton>
 								<span style="padding: 0px 8px"></span>
 								<p-radioButton
-										(onClick)="updateValues('exportFileVatPeriod', 'NONE')"
-										[label]="'מצטבר (קובץ אחד)'"
+										*ngIf="!isYear"
+										(onClick)="updateValues('exportFileVatPeriod', (isYear ? 'YEAR' : 'NONE'))"
+										[label]="
+												isYear ? 'שנתי (קובץ לכל שנה)'
+												:
+
+(
+(isModal
+								? isModal.esderMaam
+								: userService.appData?.userData?.companySelect
+								?.esderMaam) === 'MONTH' ? 'מצטבר (קובץ אחד)' : (isModal
+								? isModal.esderMaam
+								: userService.appData?.userData?.companySelect
+								?.esderMaam) === 'TWO_MONTH' ?
+								'מצטבר (קובץ אחד)' :
+
+								isYear ? 'שנתי (קובץ לכל שנה)'
+								:
+
+								'מצטבר (קובץ אחד)'
+)
+
+"
 										formControlName="exportFileVatPeriod"
 										inputId="radio245"
 										name="exportFileVatPeriod"
-										value="NONE"
+										[value]="'NONE'"
+								>
+								</p-radioButton>
+								<p-radioButton
+										*ngIf="isYear"
+										(onClick)="updateValues('exportFileVatPeriod', (isYear ? 'YEAR' : 'NONE'))"
+										[label]="
+														isYear ? 'שנתי (קובץ לכל שנה)'
+												:
+((isModal
+								? isModal.esderMaam
+								: userService.appData?.userData?.companySelect
+								?.esderMaam) === 'MONTH' ? 'מצטבר (קובץ אחד)' : (isModal
+								? isModal.esderMaam
+								: userService.appData?.userData?.companySelect
+								?.esderMaam) === 'TWO_MONTH' ?
+								'מצטבר (קובץ אחד)' :
+
+								isYear ? 'שנתי (קובץ לכל שנה)'
+								:
+								'מצטבר (קובץ אחד)')
+"
+										formControlName="exportFileVatPeriod"
+										inputId="radio245"
+										name="exportFileVatPeriod"
+										[value]="'YEAR'"
 								>
 								</p-radioButton>
 							</div>
 						</div>
 					</div>
 				</div>
-				
+
 				<div class="sett-table">
 					<div>
 						<div>פקודה לחשבונית מס קבלה</div>
-						
+
 						<div>
 							<div style="padding: 0px 10px; height: 30px">
 								<p-radioButton
@@ -316,7 +396,7 @@
 						</div>
 					</div>
 				</div>
-				
+
 				<div class="sett-table">
 					<div>
 						<div
@@ -327,7 +407,7 @@
 						>
 							תכולת תאריך נוסף (3) בפקודה
 						</div>
-						
+
 						<div>
 							<div style="padding: 0px 10px; height: 30px">
 								<p-radioButton
@@ -353,7 +433,7 @@
 						</div>
 					</div>
 				</div>
-				
+
 				<div class="sett-table">
 					<div>
 						<div>מיון תנועות המסמכים בקובץ הנה”ח</div>
@@ -400,7 +480,7 @@
 											name="supplierDocOrderType"
 									>
 									</p-radioButton>
-									
+
 									<div
 											(click)="
                       info.get('supplierDocOrderType').value !== '3'
@@ -419,7 +499,7 @@
 						</div>
 					</div>
 				</div>
-				
+
 				<div class="sett-table">
 					<div>
 						<div
@@ -429,30 +509,32 @@
 								style="cursor: pointer; display: flex"
 						>
 							שיערוך כל פקודות היומן למט"ח
-							
+
 							<div style="margin-top: -9px; margin-right: 10px">
 								<p-dropdown
 										#dd11
-										(onChange)="updateSupplierJournal()"
+										(onClick)="setCurrDefFunc('revaluationCurrCode')"
+										(onChange)="openModalBeforeContinue('revaluationCurrCode')"
 										(onFocus)="clearFilter(dd11)"
 										[dropdownIcon]="'p-dropdown-icon'"
 										[options]="revaluationCurrCodeArr"
 										[scrollHeight]="'135px'"
-										[style]="{ width: '70px' }"
+										[style]="{ width: '100px' }"
 										appendTo="body"
 										formControlName="revaluationCurrCode"
-										
 										placeholder="בחירה"
 										styleClass="ddInfoCompanyForm"
+										name="revaluationCurrCode"
+
 								>
 								</p-dropdown>
 							</div>
 						</div>
-						
+
 						<div>
 							<div style="padding: 0px 10px; height: 30px">
 								<p-radioButton
-										(onClick)="updateValues('revaluationCurr', false)"
+										(onClick)="openModalBeforeContinue('revaluationCurrFalse')"
 										[label]="'לא'"
 										[value]="false"
 										formControlName="revaluationCurr"
@@ -461,9 +543,9 @@
 								>
 								</p-radioButton>
 								<span style="padding: 0px 8px"></span>
-								
+
 								<p-radioButton
-										(onClick)="openPopUpSetRevaluationCurr()"
+										(onClick)="openModalBeforeContinue('revaluationCurrTrue')"
 										[label]="'כן'"
 										[value]="true"
 										formControlName="revaluationCurr"
@@ -475,7 +557,7 @@
 						</div>
 					</div>
 				</div>
-				
+
 				<ng-container
 						*ngFor="let item of arr.controls; let i = index"
 						formArrayName="currencyRates"
@@ -491,13 +573,13 @@
 									({{ currency.sign }})
 								</ng-container>
 								<ng-template #empty> שער חליפין להמרת</ng-template>
-								
+
 								<div
 										*ngIf="!getKey(item.value).indDefault"
 										class="hashCodeId_part"
 								>
 									קוד מטבע
-									
+
 									<input
 											(change)="
                       item.get(getKeyName(item.value)).get('hashCodeId').value
@@ -511,11 +593,11 @@
 								</div>
 							</div>
 							<div>
-								<div style="padding: 0px 10px; height: 30px">
+								<div style="padding: 0px 10px;height: 30px;display: flex;align-items: center;">
 									<ng-container *ngIf="getKey(item.value).bankIsrael">
 										<p-radioButton
 												(onClick)="
-                        updateValuesCurrencyRatesTypes(item, 'BANK', 'type')
+                        updateValuesCurrencyRatesTypesInit(item, 'BANK', 'type')
                       "
 												[label]="'שער יציג (בנק ישראל)'"
 												formControlName="type"
@@ -528,7 +610,7 @@
 									</ng-container>
 									<p-radioButton
 											(onClick)="
-                      updateValuesCurrencyRatesTypes(item, 'FIXED', 'type')
+                      updateValuesCurrencyRatesTypesInit(item, 'FIXED', 'type')
                     "
 											[label]="'שער קבוע'"
 											formControlName="type"
@@ -541,7 +623,7 @@
 											(blur)="
                       !item.get(getKeyName(item.value)).get('fixedRate')
                         .value && !getKey(item.value).bankIsrael
-                        ? updateValuesCurrencyRatesTypes(item, true, 'delete')
+                        ? updateValuesCurrencyRatesTypesInit(item, true, 'delete')
                         : null
                     "
 											(change)="
@@ -549,8 +631,8 @@
                         ? updateSupplierJournal()
                         : null
                     "
-											(click)="
-                      updateValuesCurrencyRatesTypes(item, 'FIXED', 'type')
+											(click)="item.get(getKeyName(item.value)).get('type').value === 'BANK' ?
+                      updateValuesCurrencyRatesTypesInit(item, 'FIXED', 'type') : null
                     "
 											(keyup)="setMaxDigitsAfterDec(item)"
 											[class.err]="
@@ -607,7 +689,7 @@
 								הוספת מט"ח
 							</div>
 							<div
-									(click)="updateValuesCurrencyRatesTypes(item, true, 'delete')"
+									(click)="updateValuesCurrencyRatesTypesInit(item, true, 'delete')"
 									*ngIf="
                   getKeyName(item.value) !== 'USD' &&
                   getKeyName(item.value) !== 'EUR'
@@ -629,7 +711,7 @@
 						</div>
 					</div>
 				</ng-container>
-				
+
 				<div class="sett-table">
 					<div>
 						<div>בהעלאת קבצים ממייל</div>
@@ -674,190 +756,7 @@
 	</div>
 </div>
 
-<ng-container *ngIf="currencyListTemp">
-	<p-dialog (visibleChange)="currencyListTemp = false"
-			[visible]="(currencyListTemp)"
-			
-			[modal]="true"
-			[resizable]="false"
-			appendTo="body"
-			styleClass="currencyListSelectModal"
-	>
-		<p-header>{{ 'הוספת מטבע מט"ח' }}</p-header>
-		
-		<p>בחרו את סוג המטבע שתרצו להוסיף</p>
-		<div
-				class="scrollbar-dynamic scroll-chrome"
-				style="max-height: 215px; overflow: auto"
-		>
-			<mat-list>
-				<mat-list-item
-						(click)="selectedCurrency = item"
-						*ngFor="let item of currencyListTemp; trackBy: trackCurrency"
-						[class.active]="item.code === selectedCurrency.code"
-				>
-					<p matLine>
-						<span class="forceLTR"> {{ item.code }} - {{ item.sign }} </span>
-					</p>
-				</mat-list-item>
-			</mat-list>
-		</div>
-		
-		<div class="border">&nbsp;</div>
-		<p-footer>
-			<button (click)="currencyListTemp = false" class="button-link">
-				{{ 'actions.cancellation' | translate }}
-			</button>
-			<button
-					(click)="
-          addCurrency(
-            selectedCurrency.code,
-            selectedCurrency.bankIsrael,
-            selectedCurrency
-          )
-        "
-					class="button-dark"
-			>
-				אישור
-			</button>
-		</p-footer>
-	</p-dialog>
-</ng-container>
-<ng-container *ngIf="currencySetModal">
-	<p-dialog (visibleChange)="currencySetModal = false"
-			[visible]="(currencySetModal)"
-			[modal]="true"
-			[resizable]="false"
-			appendTo="body"
-			styleClass="currencySetModal"
-	>
-		<p-header>
-			שער חליפין להמרת
-			{{ selectedCurrency.code }}
-		</p-header>
-		<p style="padding-top: 10px; padding-bottom: 10px; font-weight: 600">
-			שער חליפין להמרת
-			{{ selectedCurrency.name }}
-			
-			<ng-container *ngIf="selectedCurrency">
-				({{ selectedCurrency.code }})
-			</ng-container>
-		</p>
-		<div>
-			<div style="height: 30px">
-				<ng-container *ngIf="selectedCurrency.bankIsrael">
-					<p-radioButton
-							[(ngModel)]="type_currencyRates_modal.type"
-							[label]="'שער יציג (בנק ישראל)'"
-							inputId="radio_modal_BANK"
-							name="radioGroup_type_currencyRates_modal"
-							value="BANK"
-					>
-					</p-radioButton>
-					<span style="padding: 0px 8px"></span>
-				</ng-container>
-				<p-radioButton
-						[(ngModel)]="type_currencyRates_modal.type"
-						[label]="'שער קבוע'"
-						inputId="radio_modal_FIXED"
-						name="radioGroup_type_currencyRates_modal"
-						value="FIXED"
-				>
-				</p-radioButton>
-				<input
-						(click)="type_currencyRates_modal.type = 'FIXED'"
-						(keyup)="setMaxDigitsAfterDecModal(type_currencyRates_modal.value)"
-						[(ngModel)]="type_currencyRates_modal.value"
-						[class.err]="
-            type_currencyRates_modal.type === 'FIXED' &&
-            !type_currencyRates_modal.value
-          "
-						appNumbersOnly="positive"
-						type="text"
-				/>
-			</div>
-			<div style="height: 30px; margin-top: 10px">
-				קוד מטבע בהנה״ח
-				
-				<input
-						[(ngModel)]="type_currencyRates_modal.hashCodeId"
-						[class.err]="
-            !type_currencyRates_modal.hashCodeId ||
-            type_currencyRates_modal.hashCodeId === '0'
-          "
-						appNumbersOnly="regexPositiveInt"
-						type="text"
-				/>
-			</div>
-		</div>
-		<p-footer>
-			<button (click)="currencySetModal = false" class="button-link">
-				{{ 'actions.cancellation' | translate }}
-			</button>
-			<button
-					(click)="
-          addCurrencyModal(
-            selectedCurrency.code,
-            selectedCurrency.bankIsrael,
-            selectedCurrency
-          )
-        "
-					[disabled]="
-          !type_currencyRates_modal.hashCodeId ||
-          type_currencyRates_modal.hashCodeId === '0' ||
-          (type_currencyRates_modal.type === 'FIXED' &&
-            !type_currencyRates_modal.value)
-        "
-					class="button-dark"
-			>
-				אישור
-			</button>
-		</p-footer>
-	</p-dialog>
-</ng-container>
 
-<ng-container *ngIf="showPopUpSetRevaluationCurr">
-	<p-dialog (visibleChange)="showPopUpSetRevaluationCurr = false"
-			[visible]="(showPopUpSetRevaluationCurr)"
-			
-			[modal]="true"
-			[resizable]="false"
-			appendTo="body"
-			styleClass="showPopUpSetRevaluationCurr"
-	>
-		<p-header>{{ 'שיערוך כל פקודות היומן למט"ח' }}</p-header>
-		
-		<p>
-			<strong> שימו לב, </strong>
-		</p>
-		
-		<p>
-			<strong> לא - </strong>
-			
-			מיועד לכל החברות, כולל שערוך לחשבוניות מט”ח
-		</p>
-		<p>
-			<strong> כן - </strong>
-			
-			מיועד אך ורק לחברות שמנהלות דוחות גם במט”ח
-		</p>
-		
-		<p-footer>
-			<button (click)="showPopUpSetRevaluationCurr = false" class="button-link">
-				{{ 'actions.cancellation' | translate }}
-			</button>
-			<button
-					(click)="
-          updateValues('revaluationCurr', true);
-          showPopUpSetRevaluationCurr = false
-        "
-					class="button-dark"
-			>
-				אישור
-			</button>
-		</p-footer>
-	</p-dialog>
-</ng-container>
 
 <ng-container *ngIf="showSupplierDocOrderTypeEdit">
 	<p-dialog (visibleChange)="showSupplierDocOrderTypeEdit = false"
@@ -868,7 +767,7 @@
 			styleClass="showSupplierDocOrderTypeEdit"
 	>
 		<p-header> מיון התנועות בקובץ הנה”ח</p-header>
-		
+
 		<p>בחרו את סדר המיון שתרצו בהכנסות והוצאות</p>
 		<form [formGroup]="info" novalidate>
 			<div class="tableSupplierDocOrderTypeEdit">
@@ -970,6 +869,222 @@
 					class="button-dark"
 					style="width: 111px; height: 33px !important; padding: 0"
 			>
+				אישור
+			</button>
+		</p-footer>
+	</p-dialog>
+</ng-container>
+<ng-container *ngIf="currencyListTemp">
+	<p-dialog (visibleChange)="currencyListTemp = false"
+			  [visible]="(currencyListTemp)"
+
+			  [modal]="true"
+			  [resizable]="false"
+			  appendTo="body"
+			  styleClass="currencyListSelectModal"
+	>
+		<p-header>{{ 'הוספת מטבע מט"ח' }}</p-header>
+
+		<p>בחרו את סוג המטבע שתרצו להוסיף</p>
+		<div
+				class="scrollbar-dynamic scroll-chrome"
+				style="max-height: 215px; overflow: auto"
+		>
+			<mat-list>
+				<mat-list-item
+						(click)="selectedCurrency = item"
+						*ngFor="let item of currencyListTemp; trackBy: trackCurrency"
+						[class.active]="item.code === selectedCurrency.code"
+				>
+					<p matLine>
+						<span class="forceLTR"> {{ item.code }} - {{ item.sign }} </span>
+					</p>
+				</mat-list-item>
+			</mat-list>
+		</div>
+
+		<div class="border">&nbsp;</div>
+		<p-footer>
+			<button (click)="currencyListTemp = false" class="button-link">
+				{{ 'actions.cancellation' | translate }}
+			</button>
+			<button
+					(click)="
+          addCurrency(
+            selectedCurrency.code,
+            selectedCurrency.bankIsrael,
+            selectedCurrency
+          )
+        "
+					class="button-dark"
+			>
+				אישור
+			</button>
+		</p-footer>
+	</p-dialog>
+</ng-container>
+<ng-container *ngIf="currencySetModal">
+	<p-dialog (visibleChange)="currencySetModal = false"
+			  [visible]="(currencySetModal)"
+			  [modal]="true"
+			  [resizable]="false"
+			  appendTo="body"
+			  styleClass="currencySetModal"
+	>
+		<p-header>
+			שער חליפין להמרת
+			{{ selectedCurrency.code }}
+		</p-header>
+		<p style="padding-top: 10px; padding-bottom: 10px; font-weight: 600">
+			שער חליפין להמרת
+			{{ selectedCurrency.name }}
+
+			<ng-container *ngIf="selectedCurrency">
+				({{ selectedCurrency.code }})
+			</ng-container>
+		</p>
+		<div>
+			<div style="height: 30px;display: flex;align-items: center;">
+				<ng-container *ngIf="selectedCurrency.bankIsrael">
+					<p-radioButton
+							[(ngModel)]="type_currencyRates_modal.type"
+							[label]="'שער יציג (בנק ישראל)'"
+							inputId="radio_modal_BANK"
+							name="radioGroup_type_currencyRates_modal"
+							value="BANK"
+					>
+					</p-radioButton>
+					<span style="padding: 0px 8px"></span>
+				</ng-container>
+				<p-radioButton
+						[(ngModel)]="type_currencyRates_modal.type"
+						[label]="'שער קבוע'"
+						inputId="radio_modal_FIXED"
+						name="radioGroup_type_currencyRates_modal"
+						value="FIXED"
+				>
+				</p-radioButton>
+				<input
+						style="
+    height: 20px;
+    line-height: 20px;
+"
+						(click)="type_currencyRates_modal.type = 'FIXED'"
+						(keyup)="setMaxDigitsAfterDecModal(type_currencyRates_modal.value)"
+						[(ngModel)]="type_currencyRates_modal.value"
+						[class.err]="
+            type_currencyRates_modal.type === 'FIXED' &&
+            !type_currencyRates_modal.value
+          "
+						appNumbersOnly="positive"
+						type="text"
+				/>
+			</div>
+			<div style="height: 30px; margin-top: 10px">
+				קוד מטבע בהנה״ח
+
+				<input
+						[(ngModel)]="type_currencyRates_modal.hashCodeId"
+						[class.err]="
+            !type_currencyRates_modal.hashCodeId ||
+            type_currencyRates_modal.hashCodeId === '0'
+          "
+						appNumbersOnly="regexPositiveInt"
+						type="text"
+				/>
+			</div>
+		</div>
+		<p-footer>
+			<button (click)="currencySetModal = false" class="button-link">
+				{{ 'actions.cancellation' | translate }}
+			</button>
+			<button
+					(click)="
+          addCurrencyModal(
+            selectedCurrency.code,
+            selectedCurrency.bankIsrael,
+            selectedCurrency
+          )
+        "
+					[disabled]="
+          !type_currencyRates_modal.hashCodeId ||
+          type_currencyRates_modal.hashCodeId === '0' ||
+          (type_currencyRates_modal.type === 'FIXED' &&
+            !type_currencyRates_modal.value)
+        "
+					class="button-dark"
+			>
+				אישור
+			</button>
+		</p-footer>
+	</p-dialog>
+</ng-container>
+<ng-container *ngIf="showPopUpSetRevaluationCurr">
+	<p-dialog (visibleChange)="showPopUpSetRevaluationCurr = false"
+			  [visible]="(showPopUpSetRevaluationCurr)"
+
+			  [modal]="true"
+			  [resizable]="false"
+			  appendTo="body"
+			  styleClass="showPopUpSetRevaluationCurr"
+	>
+		<p-header>{{ 'שיערוך כל פקודות היומן למט"ח' }}</p-header>
+
+		<p>
+			<strong> שימו לב, </strong>
+		</p>
+
+		<p>
+			<strong> לא - </strong>
+
+			מיועד לכל החברות, כולל שערוך לחשבוניות מט”ח
+		</p>
+		<p>
+			<strong> כן - </strong>
+
+			מיועד אך ורק לחברות שמנהלות דוחות גם במט”ח
+		</p>
+
+		<p-footer>
+			<button (click)="showPopUpSetRevaluationCurr = false" class="button-link">
+				{{ 'actions.cancellation' | translate }}
+			</button>
+			<button
+					(click)="
+          updateValues('revaluationCurr', true);
+          showPopUpSetRevaluationCurr = false
+        "
+					class="button-dark"
+			>
+				אישור
+			</button>
+		</p-footer>
+	</p-dialog>
+</ng-container>
+<ng-container *ngIf="modalBeforeContinue">
+	<p-dialog (visibleChange)="$event === false ? preliminaryModalCancelation() : null"
+			  [visible]="(modalBeforeContinue)"
+			  [modal]="true"
+			  [resizable]="false"
+			  appendTo="body"
+			  styleClass="modalBeforeContinue">
+		<p-header>
+			הוספת מט״ח
+		</p-header>
+
+		<p>
+			שימו לב,
+			הגדרה זו תעדכן שער חליפין גם בפקודות יומן בנק ואשראי
+		</p>
+
+		<p-footer>
+			<button (click)="preliminaryModalCancelation()" class="button-link">
+				{{ 'actions.cancellation' | translate }}
+			</button>
+			<button
+					style="width: 111px; height: 33px !important; padding: 0"
+					(click)="preliminaryModalApproval()"
+					class="button-dark">
 				אישור
 			</button>
 		</p-footer>

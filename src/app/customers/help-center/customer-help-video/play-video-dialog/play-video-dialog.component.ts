@@ -34,7 +34,6 @@ export class PlayVideoDialogComponent
     @Inject(MAT_DIALOG_DATA) data,
     private _sanitizer: DomSanitizer
   ) {
-    debugger;
     this.vimeoData = data.vimeoData;
     this.dialogW = data.relativeWidth;
     this.dialogH = data.relativeHeight;

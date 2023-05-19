@@ -18,7 +18,7 @@ export class AdminService {
         type: 'companyHp' | 'companyName' | 'userName' | 'officeName';
         value: string;
     } = {
-        type: 'companyName',
+        type: 'companyHp',
         value: null
     };
     get usersToAdminCriteria(): {

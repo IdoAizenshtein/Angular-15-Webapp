@@ -71,15 +71,15 @@
             )
           "
 						[disabled]="
-            userService.appData.userOnBehalfPrompt.processing ||
+            userService.appData?.userOnBehalfPrompt?.processing ||
             userSelector.form.get('user').invalid ||
             userSelector.form.get('user').value ===
-              userService.appData.userOnBehalf?.id
+              userService.appData?.userOnBehalf?.id
           "
 				>
 					<i
 							class="fas fa-fw fa-circle-notch fa-spin"
-							*ngIf="userService.appData.userOnBehalfPrompt.processing"
+							*ngIf="userService.appData?.userOnBehalfPrompt?.processing"
 					></i>
 					{{ 'actions.approve' | translate }}
 				</button>

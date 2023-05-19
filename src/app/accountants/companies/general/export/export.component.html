@@ -1,8 +1,8 @@
 <div [appScrollHeight]="330" class="scrollPage scrollbar-dynamic">
-	<h1 style="font-weight: 700; font-size: 20px; padding-top: 15px">
-		עדכון ההגדרות בטאב זה יחול על כל החברות שבטיפולכם
-	</h1>
-	<div class="infoCompanyForm" style="margin-top: 20px">
+<!--	<h1 style="font-weight: 700; font-size: 20px; padding-top: 15px">-->
+<!--		עדכון ההגדרות בטאב זה יחול על כל החברות שבטיפולכם-->
+<!--	</h1>-->
+	<div class="infoCompanyForm" style="margin-top: 40px">
 		<form [formGroup]="info" novalidate>
 			<div class="columns" style="flex-wrap: wrap">
 				<div class="sett-table">
@@ -26,7 +26,8 @@
 									[style]="{ width: '100%' }"
 									appendTo="body"
 									formControlName="izuAsmachtaNumChar"
-									
+									name="izuAsmachtaNumChar"
+
 									placeholder="בחירה"
 									styleClass="ddInfoCompanyForm"
 							>
@@ -34,11 +35,11 @@
 						</div>
 					</div>
 				</div>
-				
+
 				<div class="sett-table">
 					<div>
 						<div>תאריך הערך ביצוא כרטיסי אשראי</div>
-						
+
 						<div>
 							<div style="padding: 0px 10px; height: 30px">
 								<p-radioButton
@@ -64,66 +65,66 @@
 						</div>
 					</div>
 				</div>
-				
+
 				<div class="sett-table">
 					<div>
 						<div>שיטת יצוא כרטיסי אשראי</div>
-						
+
 						<div>
 							<div style="padding: 0px 10px; height: 30px">
 								<p-radioButton
-										(onClick)="updateValues('izuCreditType', 'BANK_PAGE')"
+										(onClick)="updateValues('indPkudotYoman', '0')"
 										[label]="'דף בנק'"
-										formControlName="izuCreditType"
+										formControlName="indPkudotYoman"
 										inputId="radio11"
-										name="izuCreditType"
-										value="BANK_PAGE"
+										name="indPkudotYoman"
+										value="0"
 								>
 								</p-radioButton>
 								<span style="padding: 0px 8px"></span>
 								<p-radioButton
-										(onClick)="updateValues('izuCreditType', 'JOURNAL_TRANS')"
+										(onClick)="updateValues('indPkudotYoman', '1')"
 										[label]="'פקודות יומן'"
-										formControlName="izuCreditType"
+										formControlName="indPkudotYoman"
 										inputId="radio22"
-										name="izuCreditType"
-										value="JOURNAL_TRANS"
-								>
-								</p-radioButton>
-							</div>
-						</div>
-					</div>
-				</div>
-				
-				<div class="sett-table" style="width: 350px">
-					<div>
-						<div>תכולת קובץ יצוא</div>
-						
-						<div>
-							<div style="padding: 0px 10px; height: 30px">
-								<p-radioButton
-										(onClick)="updateValues('izuFileExportType', '1')"
-										[label]="'בנק ואשראי ביחד'"
-										formControlName="izuFileExportType"
-										inputId="radio1221"
-										name="izuFileExportType"
+										name="indPkudotYoman"
 										value="1"
 								>
 								</p-radioButton>
-								<span style="padding: 0px 8px"></span>
-								<p-radioButton
-										(onClick)="updateValues('izuFileExportType', '2')"
-										[label]="'בנק ואשראי כל אחד בנפרד'"
-										formControlName="izuFileExportType"
-										inputId="radio2132"
-										name="izuFileExportType"
-										value="2"
-								>
-								</p-radioButton>
 							</div>
 						</div>
 					</div>
 				</div>
+
+<!--				<div class="sett-table" style="width: 350px">-->
+<!--					<div>-->
+<!--						<div>תכולת קובץ יצוא</div>-->
+<!--						-->
+<!--						<div>-->
+<!--							<div style="padding: 0px 10px; height: 30px">-->
+<!--								<p-radioButton-->
+<!--										(onClick)="updateValues('izuFileExportType', '1')"-->
+<!--										[label]="'בנק ואשראי ביחד'"-->
+<!--										formControlName="izuFileExportType"-->
+<!--										inputId="radio1221"-->
+<!--										name="izuFileExportType"-->
+<!--										value="1"-->
+<!--								>-->
+<!--								</p-radioButton>-->
+<!--								<span style="padding: 0px 8px"></span>-->
+<!--								<p-radioButton-->
+<!--										(onClick)="updateValues('izuFileExportType', '2')"-->
+<!--										[label]="'בנק ואשראי כל אחד בנפרד'"-->
+<!--										formControlName="izuFileExportType"-->
+<!--										inputId="radio2132"-->
+<!--										name="izuFileExportType"-->
+<!--										value="2"-->
+<!--								>-->
+<!--								</p-radioButton>-->
+<!--							</div>-->
+<!--						</div>-->
+<!--					</div>-->
+<!--				</div>-->
 			</div>
 		</form>
 	</div>

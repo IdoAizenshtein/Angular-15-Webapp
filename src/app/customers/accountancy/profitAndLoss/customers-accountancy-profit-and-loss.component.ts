@@ -210,7 +210,10 @@ export class CustomersAccountancyProfitAndLossComponent
         (response:any) => {
           this.revahHefsedArr = response ? response['body'] : response;
           this.revahHefsed = JSON.parse(JSON.stringify(this.revahHefsedArr));
-          if (this.revahHefsed.data.length) {
+          if(!this.revahHefsed.data){
+            this.revahHefsed.data = [];
+          }
+          if (this.revahHefsed.data && this.revahHefsed.data.length) {
             this.selectRevah = [];
             this.revahHefsed.data.forEach((a, index) => {
               if (index % 2 === 0) {
@@ -246,7 +249,6 @@ export class CustomersAccountancyProfitAndLossComponent
             this.selectRevahSet = this.selectRevah[0];
             this.setGraph();
           }
-
           this.loader = false;
         },
         (err: HttpErrorResponse) => {}

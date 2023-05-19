@@ -17,6 +17,7 @@ import {
   switchMap,
   take,
   takeUntil,
+  exhaustMap,
   tap
 } from 'rxjs/operators';
 import {
@@ -156,30 +157,37 @@ export class SettingsUserListComponent
           ]),
           token: new FormControl('', Validators.required)
         }),
-        initiateCode$: defer(() => {
-          return this.sharedService.sendSms().pipe(
-            mergeMap((response: any) => {
-              if (
-                !response ||
-                response.error ||
-                !response.body.token ||
-                [
-                  'Incorrect one time token code',
-                  'userNotfound',
-                  'userNotFound'
-                ].includes(response.body.token)
-              ) {
-                throw new Error('Could not trigger otp process')
-              }
-              return of(response.body);
-            }),
-            tap((otpTriggerResp: any) =>
-              this.companySuperAdminPrivTransferPrompt.otpVerifyStep.confirmForm.patchValue(
-                {token: otpTriggerResp.token}
-              )
-            ),
-            publishRef
-          );
+        initiateCode$: defer( () => {
+          return  new Observable<any>((observer: any) => {
+            this.userService.executeAction('send-sms').then((gRecaptcha)=>{
+              this.sharedService.sendSms(gRecaptcha).pipe(
+                  exhaustMap((response: any) => {
+                    if (
+                        !response ||
+                        response.error ||
+                        !response.body.token ||
+                        [
+                          'Incorrect one time token code',
+                          'userNotfound',
+                          'userNotFound'
+                        ].includes(response.body.token)
+                    ) {
+                      throw new Error('Could not trigger otp process')
+                    }
+                    return of(response.body);
+                  }),
+                  tap((otpTriggerResp: any) =>
+                      this.companySuperAdminPrivTransferPrompt.otpVerifyStep.confirmForm.patchValue(
+                          {token: otpTriggerResp.token}
+                      )
+                  )
+              ).subscribe((res)=>{
+                observer.next(
+                    res
+                )
+              })
+            })
+          });
         }),
         reset: () => {
           this.companySuperAdminPrivTransferPrompt.otpVerifyStep.confirmForm.reset();
@@ -196,6 +204,8 @@ export class SettingsUserListComponent
           ) {
             return;
           }
+
+          this.sharedComponent.mixPanelEvent('change admin user');
 
           this.companySuperAdminPrivTransferPrompt.otpVerifyStep.tryCount++;
           this.settingsComponent.selectedCompany$

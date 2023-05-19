@@ -63,7 +63,8 @@ export class AuthGuard implements CanActivate, CanActivateChild, CanLoad {
     checkLogin(url: string): Observable<boolean> {
         if (
             url.includes('api-account-management') ||
-            url.includes('agreement-page')
+            url.includes('agreement-page') ||
+            url.includes('accountant-agreement-page')
         ) {
             return of(true);
         } else {

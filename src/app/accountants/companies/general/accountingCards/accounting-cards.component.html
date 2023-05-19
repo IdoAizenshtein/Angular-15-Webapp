@@ -21,7 +21,9 @@
 					<div>
 						<div>כרטיס "קופה קטנה"</div>
 						<div>
-							<p-dropdown
+							<app-dropdown-wrap
+									[virtualScroll]="true"
+									[virtualScrollItemSize]="33"
 									#formDropdowns
 									(onChange)="updateBookKeepingCust()"
 									(onFocus)="clearFilter(formDropdowns)"
@@ -33,10 +35,11 @@
 									appendTo="body"
 									dataKey="custId"
 									filterBy="lName,custId,hp"
+									name="pettyCashCustId"
 									formControlName="pettyCashCustId"
 									id="pettyCashCustId"
 									optionLabel="custId"
-									panelStyleClass="company-customer-dropdown-panel cardsDD"
+									panelStyleClass="company-customer-dropdown-panel"
 									placeholder="בחירה"
 									styleClass="ddInfoCompanyForm"
 							>
@@ -100,23 +103,25 @@
 										</div>
 									</div>
 								</ng-template>
-							</p-dropdown>
+							</app-dropdown-wrap>
 						</div>
 					</div>
 					<div>
 						<div>
 							<i *ngIf="isModal" style="color: #df0000">*</i>
-							
+
 							כרטיס "מע"מ עסקאות"
 						</div>
 						<div>
-							<p-dropdown
+							<app-dropdown-wrap
+									[virtualScroll]="true"
+									[virtualScrollItemSize]="33"
 									#formDropdowns
 									(onChange)="updateBookKeepingCust()"
 									(onFocus)="clearFilter(formDropdowns)"
 									[autoDisplayFirst]="false"
 									[filter]="true"
-									[options]="maamCustIds"
+									[options]="maamCustIds12"
 									[scrollHeight]="'135px'"
 									[style]="{ width: '100%' }"
 									appendTo="body"
@@ -124,9 +129,11 @@
 									emptyFilterMessage="לא נמצאו תוצאות"
 									filterBy="lName,custId,hp"
 									formControlName="custMaamIska"
+									name="custMaamIska"
+
 									id="custMaamIska"
 									optionLabel="custId"
-									panelStyleClass="company-customer-dropdown-panel cardsDD"
+									panelStyleClass="company-customer-dropdown-panel"
 									placeholder="בחירה"
 									styleClass="ddInfoCompanyForm"
 							>
@@ -190,7 +197,7 @@
 										</div>
 									</div>
 								</ng-template>
-							</p-dropdown>
+							</app-dropdown-wrap>
 						</div>
 					</div>
 					<div>
@@ -198,11 +205,13 @@
 							<i *ngIf="supplierTaxDeductionCustIdReq" style="color: #df0000"
 							>*</i
 							>
-							
+
 							כרטיס "ניכוי מס במקור לספקים"
 						</div>
 						<div>
-							<p-dropdown
+							<app-dropdown-wrap
+									[virtualScroll]="true"
+									[virtualScrollItemSize]="33"
 									#formDropdowns
 									(onChange)="updateBookKeepingCust()"
 									(onFocus)="clearFilter(formDropdowns)"
@@ -216,9 +225,11 @@
 									emptyFilterMessage="לא נמצאו תוצאות"
 									filterBy="lName,custId,hp"
 									formControlName="supplierTaxDeductionCustId"
+									name="supplierTaxDeductionCustId"
+
 									id="supplierTaxDeductionCustId"
 									optionLabel="custId"
-									panelStyleClass="company-customer-dropdown-panel cardsDD"
+									panelStyleClass="company-customer-dropdown-panel"
 									placeholder="בחירה"
 									styleClass="ddInfoCompanyForm"
 							>
@@ -282,8 +293,8 @@
 										</div>
 									</div>
 								</ng-template>
-							</p-dropdown>
-				
+							</app-dropdown-wrap>
+
 						</div>
 					</div>
 					<!--                    <div>-->
@@ -473,19 +484,21 @@
 								style="cursor: pointer"
 						>
 							<i *ngIf="isModal" style="color: #df0000">*</i>
-							
+
 							כרטיס "מע"מ תשומות נכסים"
 						</div>
 						<div>
-							
-							<p-dropdown
+
+							<app-dropdown-wrap
+									[virtualScroll]="true"
+									[virtualScrollItemSize]="33"
 									#formDropdowns
 									(onChange)="updateBookKeepingCust()"
 									(onFocus)="clearFilter(formDropdowns)"
 									[autoDisplayFirst]="false"
 									[filter]="true"
-									
-									[options]="maamCustIds"
+
+									[options]="maamCustIds14"
 									[scrollHeight]="'135px'"
 									[style]="{ width: '100%' }"
 									appendTo="body"
@@ -494,9 +507,10 @@
 									filterBy="lName,custId,hp"
 									formControlName="custMaamNechasim"
 									id="custMaamNechasim"
-									
+									name="custMaamNechasim"
+
 									optionLabel="custId"
-									panelStyleClass="company-customer-dropdown-panel cardsDD"
+									panelStyleClass="company-customer-dropdown-panel"
 									placeholder="בחירה"
 									styleClass="ddInfoCompanyForm"
 							>
@@ -560,7 +574,7 @@
 										</button>
 									</div>
 								</ng-template>
-							</p-dropdown>
+							</app-dropdown-wrap>
 						</div>
 					</div>
 					<div>
@@ -574,15 +588,17 @@
 							כרטיס "מע"מ תשומות יבוא"
 						</div>
 						<div>
-							
-							<p-dropdown
+
+							<app-dropdown-wrap
+									[virtualScroll]="true"
+									[virtualScrollItemSize]="33"
 									#formDropdowns
 									(onChange)="updateBookKeepingCust()"
 									(onFocus)="clearFilter(formDropdowns)"
 									[autoDisplayFirst]="false"
 									[filter]="true"
-									
-									[options]="maamCustIds"
+
+									[options]="maamCustIds13"
 									[scrollHeight]="'135px'"
 									[style]="{ width: '100%' }"
 									appendTo="body"
@@ -591,9 +607,10 @@
 									filterBy="lName,custId,hp"
 									formControlName="custMaamYevu"
 									id="custMaamYevu"
-									
+									name="custMaamYevu"
+
 									optionLabel="custId"
-									panelStyleClass="company-customer-dropdown-panel cardsDD"
+									panelStyleClass="company-customer-dropdown-panel"
 									placeholder="בחירה"
 									styleClass="ddInfoCompanyForm"
 							>
@@ -657,7 +674,7 @@
 										</button>
 									</div>
 								</ng-template>
-							</p-dropdown>
+							</app-dropdown-wrap>
 						</div>
 					</div>
 				</div>
@@ -665,15 +682,17 @@
 					<div>
 						<div>כרטיס " ניכוי מס במקור מלקוחות"</div>
 						<div>
-					
-							
-							<p-dropdown
+
+
+							<app-dropdown-wrap
+									[virtualScroll]="true"
+									[virtualScrollItemSize]="33"
 									#formDropdowns
 									(onChange)="updateBookKeepingCust()"
 									(onFocus)="clearFilter(formDropdowns)"
 									[autoDisplayFirst]="false"
 									[filter]="true"
-									
+
 									[options]="customerTaxDeductionCustIdArr"
 									[scrollHeight]="'135px'"
 									[style]="{ width: '100%' }"
@@ -683,9 +702,10 @@
 									filterBy="lName,custId,hp"
 									formControlName="customerTaxDeductionCustId"
 									id="customerTaxDeductionCustId"
-									
+									name="customerTaxDeductionCustId"
+
 									optionLabel="custId"
-									panelStyleClass="company-customer-dropdown-panel cardsDD"
+									panelStyleClass="company-customer-dropdown-panel"
 									placeholder="בחירה"
 									styleClass="ddInfoCompanyForm"
 							>
@@ -749,26 +769,28 @@
 										</button>
 									</div>
 								</ng-template>
-							</p-dropdown>
+							</app-dropdown-wrap>
 						</div>
 					</div>
 					<div>
 						<div>
 							<i *ngIf="isModal" style="color: #df0000">*</i>
-							
+
 							כרטיס "מע"מ תשומות"
 						</div>
 						<div>
-						
-							
-							<p-dropdown
+
+
+							<app-dropdown-wrap
+									[virtualScroll]="true"
+									[virtualScrollItemSize]="33"
 									#formDropdowns
 									(onChange)="updateBookKeepingCust()"
 									(onFocus)="clearFilter(formDropdowns)"
 									[autoDisplayFirst]="false"
 									[filter]="true"
-									
-									[options]="maamCustIds"
+
+									[options]="maamCustIds13"
 									[scrollHeight]="'135px'"
 									[style]="{ width: '100%' }"
 									appendTo="body"
@@ -777,9 +799,10 @@
 									filterBy="lName,custId,hp"
 									formControlName="custMaamTsumot"
 									id="custMaamTsumot"
-									
+									name="custMaamTsumot"
+
 									optionLabel="custId"
-									panelStyleClass="company-customer-dropdown-panel cardsDD"
+									panelStyleClass="company-customer-dropdown-panel"
 									placeholder="בחירה"
 									styleClass="ddInfoCompanyForm"
 							>
@@ -843,10 +866,10 @@
 										</button>
 									</div>
 								</ng-template>
-							</p-dropdown>
+							</app-dropdown-wrap>
 						</div>
 					</div>
-					
+
 					<!--                    <div>-->
 					<!--                        <div>-->
 					<!--                            כרטיס "הכנסות לקבל"-->

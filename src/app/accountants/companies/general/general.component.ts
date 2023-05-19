@@ -44,6 +44,7 @@ export class GeneralComponent implements OnInit, OnDestroy {
     public companyDataObj: any = false;
     public rightSideTooltip: any = 0;
     private readonly destroyed$ = new Subject<void>();
+    public modalPendeingServerRes: any = false;
 
     constructor(
         public userService: UserService,
@@ -58,6 +59,48 @@ export class GeneralComponent implements OnInit, OnDestroy {
         //     incomeAsmachtaType: new FormControl(null),
         //     pettyCashCustId: new FormControl(null)
         // });
+    }
+
+    startCounter() {
+        this.modalPendeingServerRes = {
+            resReceived: false,
+            resReceivedComplete: false,
+            Interval: null,
+            seconds: 0,
+            minutes: 0,
+            secondsPresent: '00',
+            minutesPresent: '00'
+        };
+        clearInterval(this.modalPendeingServerRes.Interval);
+        this.modalPendeingServerRes.Interval = setInterval(() => {
+            this.modalPendeingServerRes.seconds++;
+            if (this.modalPendeingServerRes.seconds <= 9) {
+                this.modalPendeingServerRes.secondsPresent = '0' + this.modalPendeingServerRes.seconds;
+            }
+            if (this.modalPendeingServerRes.seconds > 9) {
+                this.modalPendeingServerRes.secondsPresent = String(this.modalPendeingServerRes.seconds);
+            }
+            if (this.modalPendeingServerRes.seconds > 59) {
+                this.modalPendeingServerRes.minutes++;
+                this.modalPendeingServerRes.minutesPresent = '0' + this.modalPendeingServerRes.minutes;
+                this.modalPendeingServerRes.seconds = 0;
+                this.modalPendeingServerRes.secondsPresent = '0' + 0;
+            }
+            if (this.modalPendeingServerRes.minutes > 9) {
+                this.modalPendeingServerRes.minutesPresent = String(this.modalPendeingServerRes.minutes);
+            }
+        }, 1000);
+    }
+
+    resReceived(){
+        this.modalPendeingServerRes.resReceivedComplete = true;
+        setTimeout(()=>{
+            this.modalPendeingServerRes.resReceived = true;
+            clearInterval(this.modalPendeingServerRes.Interval);
+            setTimeout(()=>{
+                this.modalPendeingServerRes = false;
+            }, 2000)
+        }, 600)
     }
 
     get companyHpEmail(): string {
@@ -81,6 +124,7 @@ export class GeneralComponent implements OnInit, OnDestroy {
             (event.target.parentElement.offsetLeft + event.target.offsetWidth) -
             33;
     }
+
 
     ngOnInit(): void {
         this.sharedComponent.getDataEvent

@@ -1,0 +1,175 @@
+<p-dialog (onHide)="formLoginOtpModal = false"
+          (visibleChange)="formLoginOtpModal = false; changedTrigger.emit(false);"
+          [closable]="true"
+          [closeOnEscape]="false"
+          [draggable]="false"
+          [modal]="true"
+          [resizable]="false"
+          [visible]="(formLoginOtpModal)"
+          appendTo="body"
+          styleClass="otpModal">
+    <ng-template pTemplate="header">
+        <h1>קוד אימות לכניסה</h1>
+    </ng-template>
+    <div  *ngIf="tokenInfo.phone" style="height: 281px">
+        <div style="
+    margin-top: 32px;
+">
+            <div>
+                <div class="Login__otp" style="
+    width: 385px;
+">
+                    <ng-container
+                            *ngIf="formLoginOtp.hasError('incorrect'); else otpValidationForm"
+                    >
+                        <div
+                                [innerHTML]="
+                  'validation.unableToContinueIdentificationProcess' | translate
+                "
+                                class="Login__info"
+                                style="text-align: center"
+                        ></div>
+                    </ng-container>
+                    <ng-template #otpValidationForm>
+                        <div style="
+    width: 385px;
+">
+                            <p>
+                                {{ 'formLogin.otpInfoText1' | translate }}
+                                {{ 'formLogin.otpInfoText2' | translate: tokenInfo }}
+                            </p>
+                            <p>{{ 'formLogin.otpInfoText3' | translate }}</p>
+                        </div>
+
+                        <form
+                                [formGroup]="formLoginOtp"
+                                class="Form"
+                                style="margin: 0"
+                                novalidate
+                        >
+                            <div class="Login__control" style="width: 380px;">
+                                <mat-form-field hideRequiredMarker="true">
+                                    <mat-label>{{
+                                        'formLogin.typeTheCode' | translate
+                                        }}</mat-label>
+                                    <input
+                                            [errorStateMatcher]="matcher"
+                                            autocomplete="off"
+                                            class="forceLTR"
+                                            formControlName="code"
+                                            id="code"
+                                            matInput
+                                            type="text"
+                                    />
+
+                                    <mat-hint
+                                            *ngIf="
+                        (!formLoginOtp.hasError('wrongCode') &&
+                          !formLoginOtp.hasError('incorrect')) ||
+                        formLoginOtp.pristine
+                      "
+                                            style="font-size: 14px"
+                                    >
+                                        <i class="fa fa-exclamation-triangle"></i>
+                                        {{ 'formLogin.codeContainsNumbersOnly' | translate }}
+                                    </mat-hint>
+                                    <mat-error
+                                            *ngIf="
+                        !formLoginOtp.hasError('wrongCode') &&
+                        !formLoginOtp.hasError('incorrect') &&
+                        formLoginOtp.touched &&
+                        formLoginOtp.invalid
+                      "
+                                            style="font-size: 14px"
+                                    >
+                                        <i class="fa fa-exclamation-triangle"></i>
+                                        {{ 'formLogin.codeContainsNumbersOnly' | translate }}
+                                    </mat-error>
+                                    <mat-error
+                                            *ngIf="
+                        formLoginOtp.hasError('wrongCode') &&
+                        !formLoginOtp.hasError('incorrect') &&
+                        formLoginOtp.touched &&
+                        formLoginOtp.invalid
+                      "
+                                            style="font-size: 14px"
+                                    >
+                                        {{ 'validation.codeNotValid' | translate }}
+                                    </mat-error>
+                                </mat-form-field>
+                            </div>
+
+                            <div class="Login__options" style="
+width: 385px;
+    text-align: right;
+    margin-top: 20px;
+">
+                                <p
+                                        style="
+    text-align: right;
+    padding: 0;
+">
+                                    {{ 'formLogin.didNotReceiveTheCode' | translate }}
+                                </p>
+
+                                <div
+                                        style="height: 30px;display: flex;"
+                                >
+                                    <p style="
+    padding: 0;
+    color: #3898ec;
+    line-height: 29px;
+    padding-left: 11px;
+">
+                                        נסו שוב באמצעות
+                                    </p>
+                                    <p-radioButton
+                                            (onClick)="resendSms()"
+                                            [label]="'SMS'"
+                                            [value]="false"
+                                            formControlName="vms"
+                                            name="vms"
+                                    >
+                                    </p-radioButton>
+                                    <span style="padding: 0px 6px"></span>
+                                    <p-radioButton
+                                            (onClick)="resentOtpVms()"
+                                            [label]="'הודעה קולית'"
+                                            [value]="true"
+                                            formControlName="vms"
+                                            name="vms"
+                                    >
+                                    </p-radioButton>
+                                </div>
+                            </div>
+
+
+
+                        </form>
+                    </ng-template>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div *ngIf="!tokenInfo.phone" style="height: 281px">
+        <div class="loader">
+            <div class="circle"></div>
+        </div>
+    </div>
+
+    <ng-template pTemplate="footer">
+        <button
+                [disabled]="!formLoginOtp.valid || formInProgress"
+                (click)="loginOtp(formLoginOtp.value, formLoginOtp.valid)"
+                id="loginOtpSubmit">
+            <mat-spinner
+                    *ngIf="formInProgress"
+                    color="accent"
+                    diameter="20"
+            ></mat-spinner>
+            <span *ngIf="!formInProgress">כניסה</span>
+        </button>
+    </ng-template>
+
+</p-dialog>

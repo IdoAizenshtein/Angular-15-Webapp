@@ -117,7 +117,7 @@ function _show_install_dialog(ProductName, objInstallerUrl, bHTML5, iPlatform, b
 
 
     ObjString.push('<div class="scanPopUpInstall-text">' +
-        'כדי להתחיל לסרוק ישירות מהסורק שבמשרדך ל- bizobox' +
+        'כדי להתחיל לסרוק ישירות מהסורק שבמשרדך ל- bizibox' +
         '<br>' +
         'נבצע תהליך התקנה חד פעמי של תוכנה לזיהוי סורקים.' +
         '<strong>' +

@@ -35,6 +35,16 @@ export class ActivationService {
         };
         return this.httpServices.sendHttp<any>(interfaceParamHttp);
     }
+    getOfficeContactInfo(id: string): Observable<any> {
+        const interfaceParamHttp: InterfaceParamHttp<any> = {
+            method: 'get',
+            path: 'v1/office/landing-page/get-accountant-info/' + id,
+            isProtected: true,
+            isAuthorization: false
+        };
+        return this.httpServices.sendHttp<any>(interfaceParamHttp);
+    }
+
 
     updateContactInfo(request: any): Observable<any> {
         const interfaceParamHttp: InterfaceParamHttp<any> = {
@@ -44,6 +54,18 @@ export class ActivationService {
             params: request,
             isProtected: true,
             isAuthorization: false
+        };
+        return this.httpServices.sendHttp<any>(interfaceParamHttp);
+    }
+    updateOfficeContactInfo(request: any): Observable<any> {
+        const interfaceParamHttp: InterfaceParamHttp<any> = {
+            method: 'post',
+            path: 'v1/office/landing-page/accountant-agreement-confirm',
+            isJson: true,
+            params: request.params,
+            isProtected: true,
+            isAuthorization: false,
+            isAuthorizationToken: request.token
         };
         return this.httpServices.sendHttp<any>(interfaceParamHttp);
     }
@@ -59,7 +81,17 @@ export class ActivationService {
         };
         return this.httpServices.sendHttp<any>(interfaceParamHttp);
     }
-
+    sendOfficeOtp(request: any): Observable<any> {
+        const interfaceParamHttp: InterfaceParamHttp<any> = {
+            path: 'v1/office/landing-page/send-otp',
+            method: 'get',
+            isJson: true,
+            isProtected: true,
+            isAuthorization: false,
+            isAuthorizationToken: request.token
+        };
+        return this.httpServices.sendHttp<any>(interfaceParamHttp);
+    }
     sendMail(request: any): Observable<any> {
         const interfaceParamHttp: InterfaceParamHttp<any> = {
             method: 'post',
@@ -71,7 +103,16 @@ export class ActivationService {
         };
         return this.httpServices.sendHttp<any>(interfaceParamHttp);
     }
-
+    sendOfficeMail(request: any): Observable<any> {
+        const interfaceParamHttp: InterfaceParamHttp<any> = {
+            path: 'v1/office/landing-page/send-email-otp',
+            method: 'get',
+            isProtected: true,
+            isAuthorization: false,
+            isAuthorizationToken: request.token
+        };
+        return this.httpServices.sendHttp<any>(interfaceParamHttp);
+    }
     resendOtp(request: any): Observable<any> {
         const interfaceParamHttp: InterfaceParamHttp<any> = {
             method: 'post',
@@ -80,6 +121,26 @@ export class ActivationService {
             params: request,
             isProtected: true,
             isAuthorization: false
+        };
+        return this.httpServices.sendHttp<any>(interfaceParamHttp);
+    }
+    resendOfficeOtp(request: any): Observable<any> {
+        const interfaceParamHttp: InterfaceParamHttp<any> = {
+            path: 'v1/office/landing-page/resend-otp',
+            method: 'get',
+            isProtected: true,
+            isAuthorization: false,
+            isAuthorizationToken: request.token
+        };
+        return this.httpServices.sendHttp<any>(interfaceParamHttp);
+    }
+    resendOfficeVms(request: any): Observable<any> {
+        const interfaceParamHttp: InterfaceParamHttp<any> = {
+            method: 'get',
+            path: 'v1/office/landing-page/resend-vms',
+            isProtected: true,
+            isAuthorization: false,
+            isAuthorizationToken: request.token
         };
         return this.httpServices.sendHttp<any>(interfaceParamHttp);
     }
@@ -95,6 +156,15 @@ export class ActivationService {
         };
         return this.httpServices.sendHttp<any>(interfaceParamHttp);
     }
-
+    resendOfficeEmailOtp(request: any): Observable<any> {
+        const interfaceParamHttp: InterfaceParamHttp<any> = {
+            method: 'get',
+            path: 'v1/office/landing-page/resend-email-otp',
+            isProtected: true,
+            isAuthorization: false,
+            isAuthorizationToken: request.token
+        };
+        return this.httpServices.sendHttp<any>(interfaceParamHttp);
+    }
 
 }

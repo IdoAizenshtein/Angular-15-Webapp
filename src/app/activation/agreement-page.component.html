@@ -37,7 +37,7 @@
 						תוכנת bizibox ("<strong>העוסק</strong>") לגביו, לרבות עניין ווידוא
 						הסכמתו להמשך העברת המידע הפיננסי כל עוד הוא המייצג.
 					</li>
-					
+
 					<li>
 						אני מסכים כי המייצג יעשה שימוש בשירותים של התוכנה מבית חברת איי-פקט
 						בע"מ ("<strong>החברה</strong>" או "<strong>אנחנו</strong>"), לצורך
@@ -129,7 +129,7 @@
 					>
 				</div>
 			</div>
-			
+
 			<div class="button-fixed-container">
 				<div class="container button-container">
 					<button
@@ -146,7 +146,7 @@
 			</div>
 		</form>
 	</div>
-	
+
 	<div
 			*ngIf="!companyContactId"
 			class="title"
@@ -206,7 +206,7 @@
 								}})
 							</p>
 						</div>
-						
+
 						<form
 								(ngSubmit)="
                 updateContactInfo(formLoginOtp.value, formLoginOtp.valid, true, false)
@@ -242,7 +242,7 @@
 									<i class="fa fa-exclamation-triangle"></i>
 									{{ 'formLogin.codeContainsNumbersOnly' | translate }}
 								</div>
-								
+
 								<div
 										*ngIf="
                     formLoginOtp.hasError('wrongCode') &&
@@ -252,46 +252,54 @@
                   "
 										class="popup-error-message"
 								>
-									הקוד שהזנת שגוי. אנא נסה שנית
-									<ng-container
-											*ngIf="
-                      otpInfo.remainingAttempts ||
-                      otpInfo.remainingAttempts === 0
-                    "
-									>
-										<br/>
-										<strong
-												style="
-                        display: block;
-                        text-align: center;
-                        font-weight: 700;
-                        padding-top: 3px;
-                        text-decoration: underline;
-                      "
-										>
-											<ng-container *ngIf="otpInfo.remainingAttempts">
-												נותרו עוד
-												{{ otpInfo.remainingAttempts }}
-												ניסיונות
-											</ng-container>
-											<ng-container *ngIf="otpInfo.remainingAttempts === 0">
-												נחסמו אפשרויות שליחות קוד נוספות
-											</ng-container>
-										</strong>
+									<ng-container *ngIf="(otpInfo && otpInfo.remainingAttempts === 0 && !otpInfo.correctCode)">
+										הקוד שהזנת שגוי. אנא
+										<span (click)="reload()" class="link">
+                                              נסה שנית
+                                        </span>
 									</ng-container>
+									<ng-container *ngIf="!(otpInfo && otpInfo.remainingAttempts === 0 && !otpInfo.correctCode)">
+										הקוד שהזנת שגוי. אנא נסה שנית
+									</ng-container>
+<!--									<ng-container-->
+<!--											*ngIf="-->
+<!--                      otpInfo.remainingAttempts ||-->
+<!--                      otpInfo.remainingAttempts === 0-->
+<!--                    "-->
+<!--									>-->
+<!--										<br/>-->
+<!--										<strong-->
+<!--												style="-->
+<!--                        display: block;-->
+<!--                        text-align: center;-->
+<!--                        font-weight: 700;-->
+<!--                        padding-top: 3px;-->
+<!--                        text-decoration: underline;-->
+<!--                      "-->
+<!--										>-->
+<!--											<ng-container *ngIf="otpInfo.remainingAttempts">-->
+<!--												נותרו עוד-->
+<!--												{{ otpInfo.remainingAttempts }}-->
+<!--												ניסיונות-->
+<!--											</ng-container>-->
+<!--											<ng-container *ngIf="otpInfo.remainingAttempts === 0">-->
+<!--												נחסמו אפשרויות שליחות קוד נוספות-->
+<!--											</ng-container>-->
+<!--										</strong>-->
+<!--									</ng-container>-->
 								</div>
-								
+
 								<div *ngIf="resendOtpCode" class="popup-resend-message">
 									הקוד נשלח אליך שוב
 								</div>
 							</div>
-							
+
 							<div class="Login__submit" style="padding-top: 0">
 								<button
 										[disabled]="
                     !formLoginOtp.valid ||
                     formInProgress ||
-                    (otpInfo && otpInfo.remainingAttempts === 0)
+                    (otpInfo && otpInfo.remainingAttempts === 0 && !otpInfo.correctCode)
                   "
 										color="primary"
 										id="loginOtpSubmit"
@@ -325,7 +333,7 @@
 									<span *ngIf="!formInProgress">המשך</span>
 								</button>
 							</div>
-							
+
 							<div
 									*ngIf="
                   !formInProgress &&
@@ -371,7 +379,7 @@
 								}})
 							</p>
 						</div>
-						
+
 						<form
 								(ngSubmit)="
                 updateContactInfo(formLoginOtp.value, formLoginOtp.valid, true, true)
@@ -407,7 +415,7 @@
 									<i class="fa fa-exclamation-triangle"></i>
 									{{ 'formLogin.codeContainsNumbersOnly' | translate }}
 								</div>
-								
+
 								<div
 										*ngIf="
                     formLoginOtp.hasError('wrongCode') &&
@@ -417,7 +425,15 @@
                   "
 										class="popup-error-message"
 								>
-									הקוד שהזנת שגוי. אנא נסה שנית
+									<ng-container *ngIf="(mailInfo && mailInfo.remainingAttempts === 0 && !mailInfo.correctCode)">
+										הקוד שהזנת שגוי. אנא
+										<span (click)="reload()" class="link">
+                                              נסה שנית
+                                        </span>
+									</ng-container>
+									<ng-container *ngIf="!(mailInfo && mailInfo.remainingAttempts === 0 && !mailInfo.correctCode)">
+										הקוד שהזנת שגוי. אנא נסה שנית
+									</ng-container>
 									<ng-container
 											*ngIf="
                       mailInfo.remainingAttempts ||
@@ -445,18 +461,19 @@
 										</strong>
 									</ng-container>
 								</div>
-								
+
 								<div *ngIf="resendOtpCode" class="popup-resend-message">
 									הקוד נשלח אליך שוב
 								</div>
 							</div>
-							
+
 							<div class="Login__submit" style="padding-top: 0">
 								<button
 										[disabled]="
                     !formLoginOtp.valid ||
                     formInProgress ||
-                    (mailInfo && mailInfo.remainingAttempts === 0)
+                                                            (mailInfo && mailInfo.remainingAttempts === 0 && !mailInfo.correctCode)
+
                   "
 										color="primary"
 										id="loginOtpSubmit"
@@ -490,7 +507,7 @@
 									<span *ngIf="!formInProgress">המשך</span>
 								</button>
 							</div>
-							
+
 							<div
 									*ngIf="
                   !formInProgress &&

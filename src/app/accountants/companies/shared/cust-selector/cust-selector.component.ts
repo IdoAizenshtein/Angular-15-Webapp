@@ -42,7 +42,7 @@ export class CustSelectorComponent implements OnInit {
     }
 
     @Input()
-    set companyCustomerDetailsArr(companyCustomerDetails: any) {
+    set zCompanyCustomerDetailsArr(companyCustomerDetails: any) {
         // this.companyCustomerDetails = companyCustomerDetails.filter(it => it.cartisCodeId === 1300 || it.cartisCodeId === 1400 || it.cartisCodeId === 3 || it.cartisCodeId === 7 || it.cartisCodeId === 1000 || it.cartisCodeId === 1011).map(it => {
         //     return {
         //         custId: it.custId,
@@ -58,7 +58,7 @@ export class CustSelectorComponent implements OnInit {
         //     id: null
         // });
         // console.log(this.companyCustomerDetails);
-        if (companyCustomerDetails) {
+        if (companyCustomerDetails && (!!this.rowForMatchCust || !!this.showFloatNav)) {
             companyCustomerDetails.forEach((it) => {
                 it.disabled = this.rowForMatchCust
                     ? this.rowForMatchCust[this.fileStatus].izuCustId === it.custId

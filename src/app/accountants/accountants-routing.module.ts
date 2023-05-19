@@ -4,6 +4,7 @@ import {RouterModule, Routes} from '@angular/router';
 import {SharedComponent} from '@app/shared/component/shared.component';
 import {AuthGuard} from '../login/auth-guard.service';
 import {EmptyComponent} from '@app/accountants/companies/empty.component';
+import {AdminGuard} from '@app/admin/admin-guard.service';
 
 const accountantsRoutes: Routes = [
     {
@@ -23,6 +24,11 @@ const accountantsRoutes: Routes = [
                     {
                         path: 'companies',
                         loadChildren: () => import('./companies/accountants-companies.module').then(m => m.AccountantsCompaniesModule)
+                    },
+                    {
+                        path: 'admin',
+                        loadChildren: () => import('@app/admin/admin.module').then(m => m.AdminModule),
+                        canLoad: [AdminGuard]
                     },
                     {
                         path: 'main',
