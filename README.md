@@ -1,4 +1,4 @@
-# Bizibox
+# Angular Webapp
 <p align="center">
   <img src="angular.svg" height="50" title="Angular">
   <img src="Typescript_logo_2020.svg.png" height="50" alt="TypeScript">
