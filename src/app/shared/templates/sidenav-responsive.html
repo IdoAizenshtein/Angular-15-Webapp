@@ -576,13 +576,10 @@
 
 	<main
 			#mainSection
-			[class.isClose]="
-      !isOpen || (userService.appData && userService.appData.station_id)
-    "
-			[class.isInFullScreenMode]="
-      userService?.appData && userService.appData.inFullScreenMode
-    "
+			[class.isClose]="!isOpen || (userService.appData && userService.appData.station_id)"
+			[class.isInFullScreenMode]="userService?.appData && userService.appData.inFullScreenMode"
 			[class.station_id]="userService.appData && userService.appData.station_id"
+			[class.addProductsScreen]="router.url.includes('addProducts')"
 			id="main"
 	>
 		<ng-container *ngIf="!userService.appData?.station_id">

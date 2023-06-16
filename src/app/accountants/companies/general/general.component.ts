@@ -5,6 +5,7 @@ import {filter, map, startWith, takeUntil, tap} from 'rxjs/operators';
 import {Observable, Subject} from 'rxjs';
 import {SharedComponent} from '@app/shared/component/shared.component';
 import {OcrService} from '@app/accountants/companies/shared/ocr.service';
+import {StorageService} from '@app/shared/services/storage.service';
 
 @Component({
     templateUrl: './general.component.html',
@@ -50,6 +51,7 @@ export class GeneralComponent implements OnInit, OnDestroy {
         public userService: UserService,
         public sharedComponent: SharedComponent,
         private ocrService: OcrService,
+        public storageService: StorageService,
         public sharedService: SharedService
     ) {
         // this.personalInfo = new FormGroup({

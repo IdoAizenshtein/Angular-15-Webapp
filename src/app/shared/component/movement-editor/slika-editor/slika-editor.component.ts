@@ -1,4 +1,4 @@
-import {Component, Input, OnChanges, OnDestroy, SimpleChange, ViewChild, ViewEncapsulation} from '@angular/core';
+import {Component, Input, OnChanges, OnDestroy, OnInit, SimpleChange, ViewChild, ViewEncapsulation} from '@angular/core';
 import {FormBuilder, FormControl, Validators} from '@angular/forms';
 import {TranslateService} from '@ngx-translate/core';
 import {UserService} from '@app/core/user.service';
@@ -13,7 +13,7 @@ import {Subscription} from 'rxjs/internal/Subscription';
     encapsulation: ViewEncapsulation.None,
     preserveWhitespaces: false
 })
-export class SlikaEditorComponent implements OnChanges, OnDestroy {
+export class SlikaEditorComponent implements OnChanges, OnDestroy, OnInit {
     EditingType = EditingType;
 
     @Input() form: any;
@@ -102,121 +102,6 @@ export class SlikaEditorComponent implements OnChanges, OnDestroy {
         private translateService: TranslateService
     ) {
         this.today = this.userService.appData.moment().toDate();
-
-        this.fields = [
-            {
-                name: 'companyAccountId',
-                control: this.fb.control(null, [Validators.required]) // ,
-                // options:
-            },
-            {
-                name: 'transName',
-                control: this.fb.control(null, [Validators.required])
-            },
-            {
-                name: 'transTypeId',
-                control: this.fb.control(null, [Validators.required])
-            },
-            {
-                name: 'paymentDesc',
-                control: this.fb.control(null, [Validators.required]),
-                // options: ['Checks', 'BankTransfer', 'Other']
-                options: Object.keys(
-                    this.translateService.instant('paymentTypes') as any
-                ).map((val) => {
-                    return {
-                        label: this.translateService.instant('paymentTypes.' + val),
-                        value: val
-                    };
-                })
-            },
-            {
-                name: 'transFrequencyName',
-                control: this.fb.control(null, []),
-                options: Object.entries(
-                    this.translateService.instant('transactionFrequencyTypes')
-                )
-                    .filter(([k, v]) => ['MONTH', 'WEEK', 'DAY'].includes(k))
-                    .map(([k, v]) => {
-                        return {
-                            label: (v as any).text,
-                            value: k
-                        };
-                    })
-            },
-            {
-                name: 'autoUpdateTypeName',
-                control: this.fb.control('AVG_3_MONTHS', [Validators.required]),
-                options: [
-                    'AVG_3_MONTHS',
-                    'USER_DEFINED_TOTAL',
-                    'USER_CURRENT_TOTAL'
-                ].map((val, idx) => {
-                    switch (val) {
-                        case 'USER_DEFINED_TOTAL':
-                            return {
-                                label: 'קבוע', // idx === 1 ? 'קבוע, חודשי:' : 'קבוע, שבועי:',
-                                value: val
-                                // val + (val !== 'USER_DEFINED_TOTAL' ? ''
-                                // : (idx === 1 ? '$MONTH' : '$WEEK'))
-                            };
-                        case 'USER_CURRENT_TOTAL':
-                            return {
-                                label: 'לפי זיכויים בפועל',
-                                value: val
-                            };
-                        default:
-                            return {
-                                label: this.translateService.instant('autoUpdateTypes.' + val),
-                                value: val
-                            };
-                    }
-                })
-            },
-            // {
-            //     name: 'total$MONTH',
-            //     control: this.fb.control(
-            //         null,
-            //         [Validators.pattern(/^[\d\-.]+$/)])
-            // },
-            // {
-            //     name: 'total$WEEK',
-            //     control: this.fb.control(
-            //         null,
-            //         [Validators.pattern(/^[\d\-.]+$/)])
-            // },
-            // {
-            //     name: 'asmachta',
-            //     control: this.fb.control(
-            //         null,
-            //         [Validators.pattern(/^[\d\-.]+$/)])
-            // },
-            {
-                name: 'transDate',
-                control: new FormControl(new Date(), [Validators.required])
-            },
-            // {
-            //     name: 'expirationDate',
-            //     control: this.fb.control(
-            //         null,
-            //         [])
-            // }
-            {
-                name: 'total',
-                control: this.fb.control(null, [
-                    Validators.required,
-                    Validators.pattern(/^[\d\-.]+$/)
-                ])
-            },
-            {
-                name: 'frequencyAutoUpdateTypeName',
-                control: this.fb.control(
-                    null, // 'AVG_3_MONTHS',
-                    [Validators.required]
-                )
-            }
-        ];
-
         this.frequencyDayOfMonth = {
             name: 'frequencyDay$MONTH',
             control: this.fb.control(null, [Validators.required]),
@@ -244,8 +129,125 @@ export class SlikaEditorComponent implements OnChanges, OnDestroy {
         };
     }
 
+    ngOnInit() {
+
+    }
+
     ngOnChanges(changes: { [propKey: string]: SimpleChange }) {
         if (changes['form']) {
+            this.fields = [
+                {
+                    name: 'companyAccountId',
+                    control: this.fb.control(null, [Validators.required]) // ,
+                    // options:
+                },
+                {
+                    name: 'transName',
+                    control: this.fb.control(null, [Validators.required])
+                },
+                {
+                    name: 'transTypeId',
+                    control: this.fb.control(null, [Validators.required])
+                },
+                {
+                    name: 'paymentDesc',
+                    control: this.fb.control(null, [Validators.required]),
+                    // options: ['Checks', 'BankTransfer', 'Other']
+                    options: Object.keys(
+                        this.translateService.instant('paymentTypes') as any
+                    ).map((val) => {
+                        return {
+                            label: this.translateService.instant('paymentTypes.' + val),
+                            value: val
+                        };
+                    })
+                },
+                {
+                    name: 'transFrequencyName',
+                    control: this.fb.control(null, []),
+                    options: Object.entries(
+                        this.translateService.instant('transactionFrequencyTypes')
+                    )
+                        .filter(([k, v]) => ['MONTH', 'WEEK', 'DAY'].includes(k))
+                        .map(([k, v]) => {
+                            return {
+                                label: (v as any).text,
+                                value: k
+                            };
+                        })
+                },
+                {
+                    name: 'autoUpdateTypeName',
+                    control: this.fb.control('AVG_3_MONTHS', [Validators.required]),
+                    options: [
+                        'AVG_3_MONTHS',
+                        'USER_DEFINED_TOTAL',
+                        'USER_CURRENT_TOTAL'
+                    ].map((val, idx) => {
+                        switch (val) {
+                            case 'USER_DEFINED_TOTAL':
+                                return {
+                                    label: 'קבוע', // idx === 1 ? 'קבוע, חודשי:' : 'קבוע, שבועי:',
+                                    value: val
+                                    // val + (val !== 'USER_DEFINED_TOTAL' ? ''
+                                    // : (idx === 1 ? '$MONTH' : '$WEEK'))
+                                };
+                            case 'USER_CURRENT_TOTAL':
+                                return {
+                                    label: 'לפי זיכויים בפועל',
+                                    value: val
+                                };
+                            default:
+                                return {
+                                    label: this.translateService.instant('autoUpdateTypes.' + val),
+                                    value: val
+                                };
+                        }
+                    })
+                },
+                // {
+                //     name: 'total$MONTH',
+                //     control: this.fb.control(
+                //         null,
+                //         [Validators.pattern(/^[\d\-.]+$/)])
+                // },
+                // {
+                //     name: 'total$WEEK',
+                //     control: this.fb.control(
+                //         null,
+                //         [Validators.pattern(/^[\d\-.]+$/)])
+                // },
+                // {
+                //     name: 'asmachta',
+                //     control: this.fb.control(
+                //         null,
+                //         [Validators.pattern(/^[\d\-.]+$/)])
+                // },
+                {
+                    name: 'transDate',
+                    control: new FormControl(new Date(), [Validators.required])
+                },
+                // {
+                //     name: 'expirationDate',
+                //     control: this.fb.control(
+                //         null,
+                //         [])
+                // }
+                {
+                    name: 'total',
+                    control: this.fb.control(null, [
+                        Validators.required,
+                        Validators.pattern(/^[\d\-.]+$/)
+                    ])
+                },
+                {
+                    name: 'frequencyAutoUpdateTypeName',
+                    control: this.fb.control(
+                        null, // 'AVG_3_MONTHS',
+                        [Validators.required]
+                    )
+                }
+            ];
             this.populateForm();
         }
 
@@ -287,6 +289,16 @@ export class SlikaEditorComponent implements OnChanges, OnDestroy {
                 this.form
                     .get('autoUpdateTypeName')
                     .valueChanges.subscribe((val: string) => {
+
+                    if (this.form.controls['transFrequencyName']) { //this.form.get('frequencyAutoUpdateTypeName').value === 'USER_DEFINED_TOTAL'
+                        if (val === 'AVG_3_MONTHS' || val === 'USER_DEFINED_TOTAL') {
+                            this.form.controls['transFrequencyName'].addValidators([Validators.required]);
+                        } else {
+                            this.form.controls['transFrequencyName'].clearValidators();
+                        }
+                        this.form.controls['transFrequencyName'].updateValueAndValidity();
+                    }
+
                     if (this.mode === EditingType.Single) {
                         this.form.get('total').enable();
                     } else {
@@ -319,6 +331,7 @@ export class SlikaEditorComponent implements OnChanges, OnDestroy {
                         });
                 })
             ];
+
 
             // this.form.get('autoUpdateTypeName').valueChanges
             //     .subscribe((val: string) => {
@@ -402,7 +415,7 @@ export class SlikaEditorComponent implements OnChanges, OnDestroy {
 
             if (this.form.get('companyAccountId') !== null) {
                 const accToSelect = this.userService.appData.userData.accounts.find(
-                    (acc:any) => acc.companyAccountId === this.source.companyAccountId
+                    (acc: any) => acc.companyAccountId === this.source.companyAccountId
                 );
                 this.form.get('companyAccountId').setValue(accToSelect);
             }
@@ -433,6 +446,14 @@ export class SlikaEditorComponent implements OnChanges, OnDestroy {
             if (this.source.transFrequencyName === 'NONE') {
                 this.form.get('autoUpdateTypeName').setValue(null);
             }
+
+            if (this.source.transFrequencyName === '') {
+                this.form.get('transFrequencyName').patchValue(null);
+                if (this.fields) {
+                    this.fields.find(it => it.name === 'transFrequencyName').control.patchValue(null);
+                }
+            }
+
         }
     }
 
@@ -467,6 +488,15 @@ export class SlikaEditorComponent implements OnChanges, OnDestroy {
                             }
                             break;
                         case 'autoUpdateTypeName':
+                            // if (this.form.get('frequencyAutoUpdateTypeName').value === 'USER_DEFINED_TOTAL') {
+                            //     debugger
+                            //     if (this.form.get('autoUpdateTypeName').value === 'AVG_3_MONTHS' || this.form.get('autoUpdateTypeName').value === 'USER_DEFINED_TOTAL') {
+                            //         this.form.controls['transFrequencyName'].addValidators([Validators.required]);
+                            //     } else {
+                            //         this.form.controls['transFrequencyName'].clearValidators();
+                            //     }
+                            //     this.form.controls['transFrequencyName'].updateValueAndValidity();
+                            // }
                             if (
                                 this.mode === EditingType.Single ||
                                 this.form.get('frequencyAutoUpdateTypeName').value !==
@@ -526,9 +556,11 @@ export class SlikaEditorComponent implements OnChanges, OnDestroy {
             // debugger;
         }
     }
-    setDateOpt(eve:any){
+
+    setDateOpt(eve: any) {
         this.form.get('transFrequencyName').patchValue(eve.value);
     }
+
     shouldDisplay(fld: any): boolean {
         return (
             this.mode === EditingType.Series
@@ -586,3 +618,6 @@ export class SlikaEditorComponent implements OnChanges, OnDestroy {
         // debugger;
     }
 }
+
+
+

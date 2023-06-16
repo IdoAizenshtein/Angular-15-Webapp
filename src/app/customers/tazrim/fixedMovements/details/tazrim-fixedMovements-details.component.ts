@@ -1111,13 +1111,12 @@ export class TazrimFixedMovementsDetailsComponent
     }
 
     onSubmitUpdatedMovement(): void {
-        if (!this.editMovementData.form.valid) {
+        if (!this.editMovementData.form.valid && this.editMovementData.form.get('frequencyAutoUpdateTypeName').value !== 'AVG_3_MONTHS') {
             BrowserService.flattenControls(this.editMovementData.form).forEach((ac) =>
                 ac.markAsDirty()
             );
             return;
         }
-
         const dataToSubmit = this.editEditor.result; // Object.assign(this.editMovementData.source, this.editEditor.result);
         this.editMovementData.loading = true;
         this.sharedComponent.mixPanelEvent('add ' + this.editMovementData.source.targetType);

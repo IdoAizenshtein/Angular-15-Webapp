@@ -82,6 +82,8 @@ export class BankAndCreditComponent extends ReloadServices implements OnDestroy,
     public isBankAndCreditComponent = true;
     public documentsDataSave: any = false;
     public showFloatNav: any = false;
+    public showFloatNavCopy: any = false;
+
     public tooltipEditFile: any;
     public postponed: {
         action: Observable<any>;
@@ -96,7 +98,7 @@ export class BankAndCreditComponent extends ReloadServices implements OnDestroy,
     public showModalAfterSelected: any = false;
     public matchedTransSaved: any;
     public showPanelDD = false;
-
+    public recommendationsModalShow: any = false;
 
     public cashflowMatchAll: any;
     public isFutureTransesOpened = false;
@@ -247,7 +249,7 @@ export class BankAndCreditComponent extends ReloadServices implements OnDestroy,
     public filterTypesHova: any = null;
     public selcetAllFiles = false;
     public currentPage = 0;
-    public entryLimit = 20;
+    public entryLimit = 50;
     @ViewChild('paginator') paginator: Paginator;
     @ViewChild('scrollContainer') scrollContainer: ElementRef;
     @ViewChild('scrollContainerCashflowMatch')
@@ -916,10 +918,11 @@ export class BankAndCreditComponent extends ReloadServices implements OnDestroy,
                         if (response.status !== 200 || responseRest.dataReady || responseRest.dataReady === null) {
                             this.intervalAcc.unsubscribe();
                         }
+
                         if (responseRest.dataReady && !responseRest.dataReadyConfirm) {
+                            responseRest.prc = 100;
                             responseRest.dataReadyEnd = true;
                         }
-
                         // if (this.accountsBarRes && (this.accountsBarRes.dataReady !== responseRest.dataReady) && responseRest.dataReady && !responseRest.dataReadyConfirm) {
                         //     responseRest.dataReadyEnd = true;
                         //     // setTimeout(() => {
@@ -1651,6 +1654,21 @@ export class BankAndCreditComponent extends ReloadServices implements OnDestroy,
             this.currentTab = 0;
             this.filtersAllCash();
         }
+    }
+
+    getDashoffset(val: any) {
+        if (!val) {
+            return 0;
+        }
+        const c = Math.PI * (45 * 2);
+        if (val < 0) {
+            val = 0;
+        }
+        if (val > 100) {
+            val = 100;
+        }
+        const pct = ((100 - val) / 100) * c;
+        return pct;
     }
 
     getDataTables() {
@@ -3385,6 +3403,7 @@ export class BankAndCreditComponent extends ReloadServices implements OnDestroy,
             //     //this.fileStatus = 'BANK';
             // }
             this.showFloatNav = false;
+            this.showFloatNavCopy = false;
             this.queryString = '';
             this.filterInput.setValue('', {
                 emitEvent: false,
@@ -3412,7 +3431,7 @@ export class BankAndCreditComponent extends ReloadServices implements OnDestroy,
             this.filterTypesHova = null;
             this.selcetAllFiles = null;
             this.currentPage = 0;
-            this.entryLimit = 20;
+            this.entryLimit = 50;
             this.customerCustList = [];
         } else {
             // const bankAndCreditStatus = this.storageService.sessionStorageGetterItem('bankAndCreditStatus');
@@ -6996,7 +7015,7 @@ export class BankAndCreditComponent extends ReloadServices implements OnDestroy,
                             id: null,
                             isHistory: true
                         });
-                        // this.customerCustList = this.customerCustList.filter(it => !oppositeCustHistoryTrans.some(cust => cust.custId === it.custId));
+                        this.customerCustList = this.customerCustList.filter(it => !oppositeCustHistoryTrans.some(cust => cust.custId && (cust.custId === it.custId)));
                         this.customerCustList = oppositeCustHistoryTrans.concat(
                             this.customerCustList
                         );
@@ -7366,6 +7385,7 @@ export class BankAndCreditComponent extends ReloadServices implements OnDestroy,
         this.sumsTotal = false;
         this.cashflowMatchReco = null;
         this.showFloatNav = false;
+        this.showFloatNavCopy = false;
         this.bankDetails = false;
         this.bankDetailsSave = false;
         this.filterLink = 'all';
@@ -7386,7 +7406,7 @@ export class BankAndCreditComponent extends ReloadServices implements OnDestroy,
         this.filterTypesHova = null;
         this.selcetAllFiles = null;
         this.currentPage = 0;
-        this.entryLimit = 20;
+        this.entryLimit = 50;
         if (this.paginator && this.paginator.changePage) {
             this.paginator.changePage(0);
         }
@@ -7545,6 +7565,7 @@ export class BankAndCreditComponent extends ReloadServices implements OnDestroy,
                             res.body && res.body.length ? res.body[0] : null;
                     });
                 this.showFloatNav = false;
+                this.showFloatNavCopy = false;
                 const showChildren = this.journalTransData
                     .filter((fd) => fd.showChildren)
                     .map((it) => it.ocrExportFileId);
@@ -8022,8 +8043,10 @@ export class BankAndCreditComponent extends ReloadServices implements OnDestroy,
                             )
                     )
                 };
+                this.showFloatNavCopy = JSON.parse(JSON.stringify(this.showFloatNav));
             } else {
                 this.showFloatNav = false;
+                this.showFloatNavCopy = false;
             }
         } else {
             this.journalTransData = [];
@@ -8193,8 +8216,12 @@ export class BankAndCreditComponent extends ReloadServices implements OnDestroy,
                         )
                 )
             };
+            this.showFloatNavCopy = JSON.parse(JSON.stringify(this.showFloatNav));
         } else {
-            this.showFloatNav = false;
+            this.showFloatNavCopy = false;
+            setTimeout(() => {
+                this.showFloatNav = false;
+            }, 300);
         }
     }
 
@@ -9611,12 +9638,15 @@ export class BankAndCreditComponent extends ReloadServices implements OnDestroy,
                             (file) => file.status === 'CHECKED' || file.status === 'RECHECK' || file.status === 'DONE' || file.status === 'EMPTY'
                         ),
                         isReturnToCareFiles: selcetedFiles.every(
-                            (file) => file.status === 'ADD_ITEM_IGNORE' || file.status === 'CUSTOMER_IGNORE'
+                            (file) => file.status === 'ADD_ITEM_IGNORE' || file.status === 'CUSTOMER_IGNORE' || file.status === 'COMPANY_IGNORE'
                         ),
                         linkPic: selcetedFiles.every((row) => row.fileId === null)
                     };
+                    this.showFloatNavCopy = JSON.parse(JSON.stringify(this.showFloatNav));
                 } else {
                     this.showFloatNav = false;
+                    this.showFloatNavCopy = false;
+
                 }
             } else {
                 this.bankDetails = [];
@@ -9965,12 +9995,16 @@ export class BankAndCreditComponent extends ReloadServices implements OnDestroy,
                             (file) => file.status === 'CHECKED' || file.status === 'RECHECK' || file.status === 'DONE' || file.status === 'EMPTY'
                         ),
                         isReturnToCareFiles: selcetedFiles.every(
-                            (file) => file.status === 'ADD_ITEM_IGNORE' || file.status === 'CUSTOMER_IGNORE'
+                            (file) => file.status === 'ADD_ITEM_IGNORE' || file.status === 'CUSTOMER_IGNORE' || file.status === 'FUTURE_PAYMENTS_IGNORE'
                         ),
                         linkPic: selcetedFiles.every((row) => row.fileId === null)
                     };
+
+                    this.showFloatNavCopy = JSON.parse(JSON.stringify(this.showFloatNav));
                 } else {
                     this.showFloatNav = false;
+                    this.showFloatNavCopy = false;
+
                 }
             } else {
                 this.cardDetails = [];
@@ -9980,6 +10014,17 @@ export class BankAndCreditComponent extends ReloadServices implements OnDestroy,
 
             this.loader = false;
         }
+    }
+
+    recommendationsModalBtnTooltipText(): any {
+        return `<div><p>
+הסבר על 
+            <span>התאמות</span>
+            <br>
+            <span>אוטומטיות בחשבשבת</span>
+            <br>
+            לאחר יצירת קובץ
+            </p></div>`;
     }
 
     groupBy(list, keyGetter): any {
@@ -10362,12 +10407,16 @@ export class BankAndCreditComponent extends ReloadServices implements OnDestroy,
                         (file) => file.status === 'CHECKED' || file.status === 'RECHECK' || file.status === 'DONE' || file.status === 'EMPTY'
                     ),
                     isReturnToCareFiles: selcetedFiles.every(
-                        (file) => file.status === 'ADD_ITEM_IGNORE' || file.status === 'CUSTOMER_IGNORE'
+                        (file) => file.status === 'ADD_ITEM_IGNORE' || file.status === 'CUSTOMER_IGNORE' || file.status === 'COMPANY_IGNORE'
                     ),
                     linkPic: selcetedFiles.every((row) => row.fileId === null)
                 };
+                this.showFloatNavCopy = JSON.parse(JSON.stringify(this.showFloatNav));
+
             } else {
                 this.showFloatNav = false;
+                this.showFloatNavCopy = false;
+
             }
         } else if (this.fileStatus === 'CREDIT') {
             const cardDetailsSlice = this.cardDetails.slice(
@@ -10417,10 +10466,10 @@ export class BankAndCreditComponent extends ReloadServices implements OnDestroy,
             } else if (
                 this.childStatuses.statusArrCopy &&
                 this.childStatuses.statusArrCopy.length === 1 &&
-                this.childStatuses.statusArrCopy[0] === 'CUSTOMER_IGNORE'
+                (this.childStatuses.statusArrCopy[0] === 'CUSTOMER_IGNORE' || this.childStatuses.statusArrCopy[0] === 'FUTURE_PAYMENTS_IGNORE')
             ) {
                 cardDetailsSlice.forEach((row) => {
-                    if (row.status === 'CUSTOMER_IGNORE') {
+                    if (row.status === 'CUSTOMER_IGNORE' || row.status === 'FUTURE_PAYMENTS_IGNORE') {
                         row.selcetFile = this.selcetAllFiles;
                     }
                 });
@@ -10441,6 +10490,7 @@ export class BankAndCreditComponent extends ReloadServices implements OnDestroy,
                     .every(
                         (row) =>
                             row.status === 'CUSTOMER_IGNORE' ||
+                            row.status === 'FUTURE_PAYMENTS_IGNORE' ||
                             row.status === 'ADD_ITEM_IGNORE' ||
                             row.status === 'HASH_MATCH_IGNORE' ||
                             row.status === 'BIZIBOX_MATCH_IGNORE' ||
@@ -10501,12 +10551,15 @@ export class BankAndCreditComponent extends ReloadServices implements OnDestroy,
                         (file) => file.status === 'CHECKED' || file.status === 'RECHECK' || file.status === 'DONE' || file.status === 'EMPTY'
                     ),
                     isReturnToCareFiles: selcetedFiles.every(
-                        (file) => file.status === 'ADD_ITEM_IGNORE' || file.status === 'CUSTOMER_IGNORE'
+                        (file) => file.status === 'ADD_ITEM_IGNORE' || file.status === 'CUSTOMER_IGNORE' || file.status === 'FUTURE_PAYMENTS_IGNORE'
                     ),
                     linkPic: selcetedFiles.every((row) => row.fileId === null)
                 };
+                this.showFloatNavCopy = JSON.parse(JSON.stringify(this.showFloatNav));
             } else {
                 this.showFloatNav = false;
+                this.showFloatNavCopy = false;
+
             }
         }
     }
@@ -10517,6 +10570,7 @@ export class BankAndCreditComponent extends ReloadServices implements OnDestroy,
                 (this.childStatuses.statusArrCopy.length === 1 &&
                     (this.childStatuses.statusArrCopy[0] === 'ADD_ITEM_IGNORE' ||
                         this.childStatuses.statusArrCopy[0] === 'CUSTOMER_IGNORE' ||
+                        this.childStatuses.statusArrCopy[0] === 'FUTURE_PAYMENTS_IGNORE' ||
                         this.childStatuses.statusArrCopy[0] === 'HASH_MATCH_IGNORE' ||
                         this.childStatuses.statusArrCopy[0] === 'BIZIBOX_MATCH_IGNORE' ||
                         this.childStatuses.statusArrCopy[0] === 'BIZIBOX_MATCH_IGNORE_nonMatchedTrans'
@@ -10572,6 +10626,7 @@ export class BankAndCreditComponent extends ReloadServices implements OnDestroy,
                         .every(
                             (row) =>
                                 row.status === 'CUSTOMER_IGNORE' ||
+                                row.status === 'FUTURE_PAYMENTS_IGNORE' ||
                                 row.status === 'ADD_ITEM_IGNORE' ||
                                 row.status === 'HASH_MATCH_IGNORE' ||
                                 row.status === 'BIZIBOX_MATCH_IGNORE' ||
@@ -10636,12 +10691,16 @@ export class BankAndCreditComponent extends ReloadServices implements OnDestroy,
                         (file) => file.status === 'CHECKED' || file.status === 'RECHECK' || file.status === 'DONE' || file.status === 'EMPTY'
                     ),
                     isReturnToCareFiles: selcetedFiles.every(
-                        (file) => file.status === 'ADD_ITEM_IGNORE' || file.status === 'CUSTOMER_IGNORE'
+                        (file) => file.status === 'ADD_ITEM_IGNORE' || file.status === 'CUSTOMER_IGNORE' || file.status === 'COMPANY_IGNORE'
                     ),
                     linkPic: selcetedFiles.every((row) => row.fileId === null)
                 };
+                this.showFloatNavCopy = JSON.parse(JSON.stringify(this.showFloatNav));
             } else {
-                this.showFloatNav = false;
+                this.showFloatNavCopy = false;
+                setTimeout(() => {
+                    this.showFloatNav = false;
+                }, 300);
             }
         } else if (this.fileStatus === 'CREDIT') {
             const selcetedFiles = this.cardDetails.filter(
@@ -10687,12 +10746,16 @@ export class BankAndCreditComponent extends ReloadServices implements OnDestroy,
                         (file) => file.status === 'CHECKED' || file.status === 'RECHECK' || file.status === 'DONE' || file.status === 'EMPTY'
                     ),
                     isReturnToCareFiles: selcetedFiles.every(
-                        (file) => file.status === 'ADD_ITEM_IGNORE' || file.status === 'CUSTOMER_IGNORE'
+                        (file) => file.status === 'ADD_ITEM_IGNORE' || file.status === 'CUSTOMER_IGNORE' || file.status === 'FUTURE_PAYMENTS_IGNORE'
                     ),
                     linkPic: selcetedFiles.every((row) => row.fileId === null)
                 };
+                this.showFloatNavCopy = JSON.parse(JSON.stringify(this.showFloatNav));
             } else {
-                this.showFloatNav = false;
+                this.showFloatNavCopy = false;
+                setTimeout(() => {
+                    this.showFloatNav = false;
+                }, 300);
             }
         }
     }
@@ -12072,7 +12135,8 @@ export class BankAndCreditComponent extends ReloadServices implements OnDestroy,
             }
         );
     }
-    openDDCards(row:any, formDropdownsCustomerCustList:any){
+
+    openDDCards(row: any, formDropdownsCustomerCustList: any) {
         this.activeDDOpen = row.paymentId;
         setTimeout(() => {
             this.oppositeCustHistory(
@@ -12081,14 +12145,21 @@ export class BankAndCreditComponent extends ReloadServices implements OnDestroy,
             );
         }, 200);
     }
-    clickLink(clickParentLink: any, show: any) {
+
+    clickLink(clickParentLink: any, show: any, row: any) {
         const isAddOpen = document.getElementsByClassName('additional-details-container');
         const element_find = clickParentLink.getElementsByClassName('nicknameInpLink');
         if (show) {
             this.modalLoan = false;
             if (!isAddOpen || isAddOpen && !isAddOpen.length) {
                 if (element_find && element_find.length) {
-                    element_find[0].click();
+                    // element_find[0].click();
+                    setTimeout(() => {
+                        row['triggerOpenModal'] = true;
+                        setTimeout(() => {
+                            row['triggerOpenModal'] = false;
+                        }, 700);
+                    }, 500);
                 }
             }
         } else {
@@ -13580,5 +13651,24 @@ export class BankAndCreditComponent extends ReloadServices implements OnDestroy,
             this.enabledDownloadLink_paramsfile = true;
             this.exportFileFolderCreatePrompt.alertDownloadedOneFileOnly = false;
         }
+    }
+
+
+    downloadFileByPath(url: any) {
+        const a = document.createElement('a');
+        a.target = '_blank';
+        a.href = '/assets/files/' + url;
+        a.download = url.split('.')[0];
+        (document.body || document.documentElement).appendChild(a);
+        a.click();
+        a.parentNode.removeChild(a);
+
+        // var evt = new MouseEvent('click', {
+        //     'view': window,
+        //     'bubbles': true,
+        //     'cancelable': false
+        // });
+        // a.dispatchEvent(evt);
+        // (window.URL || window.webkitURL).revokeObjectURL(a.href);
     }
 }

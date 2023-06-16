@@ -29,9 +29,12 @@ export class JournalVendorAndCustomerComponent
     public isCapsLock = null;
     public isValidCellPart: boolean | null = null;
     @Input() isModal: any = false;
+    @Input() folderPlus: any;
     @Input() infoJournalVendorAndCustomerComponent: any;
     showPopUpSetRevaluationCurr = false;
     showSupplierDocOrderTypeEdit = false;
+    public loader: boolean = true;
+
     public izuAsmachtaNumCharArr = [
         {
             label: 'כל הספרות',
@@ -72,6 +75,7 @@ export class JournalVendorAndCustomerComponent
     private readonly destroyed$ = new Subject<void>();
     isYear: boolean = false;
     currencyRates: any;
+    saveValues:any;
     setCurrDef: any = {};
 
     constructor(
@@ -137,6 +141,10 @@ export class JournalVendorAndCustomerComponent
                     //     value: true,
                     //     disabled: false
                     // }),
+                    folderPlus: this.isModal ? this.folderPlus : new FormControl({
+                        value: false,
+                        disabled: false
+                    }),
                     expenseOnly: new FormControl({
                         value: true,
                         disabled: false
@@ -431,12 +439,14 @@ export class JournalVendorAndCustomerComponent
         } else {
             this.sharedService
                 .supplierJournal({
-                    uuid: this.isModal.companyId
+                    uuid: this.isModal.companyId,
+                    wizard:true
                 })
                 .subscribe((response: any) => {
                     const responseRest = response ? response['body'] : response;
                     this.isYear = responseRest.yearlyProgram;
                     this.currencyRates = responseRest.currencyRates;
+                    this.saveValues = responseRest;
 
                     // const responseRest = {
                     //     'supplierAsmachtaNumChar': null,
@@ -592,6 +602,8 @@ export class JournalVendorAndCustomerComponent
                         const def = this.asExportFileVatPeriodWithDefault();
                         this.updateValues('exportFileVatPeriod', def);
                     }
+
+                    this.loader = false;
                 });
             // if (!this.infoJournalVendorAndCustomerComponent) {
             //
@@ -600,6 +612,46 @@ export class JournalVendorAndCustomerComponent
             //     this.updateValues('exportFileVatPeriod', def);
             // }
         }
+    }
+
+    restoreSettings(){
+        const responseRest = this.saveValues;
+        this.info.patchValue({
+            supplierAsmachtaNumChar: responseRest.supplierAsmachtaNumChar
+                ? String(responseRest.supplierAsmachtaNumChar)
+                : '0',
+            expenseAsmachtaType: responseRest.expenseAsmachtaType
+                ? responseRest.expenseAsmachtaType
+                : '2',
+            incomeAsmachtaType: responseRest.incomeAsmachtaType
+                ? responseRest.incomeAsmachtaType
+                : '1',
+            expenseOnly:
+                responseRest.expenseOnly !== null
+                    ? responseRest.expenseOnly
+                    : true,
+            invoicePayment:
+                responseRest.invoicePayment !== null
+                    ? responseRest.invoicePayment
+                    : false,
+            invertedCreditInvoice:
+                responseRest.invertedCreditInvoice !== null &&
+                responseRest.invertedCreditInvoice !== undefined
+                    ? responseRest.invertedCreditInvoice
+                    : true,
+            thirdDate:
+                this.isModal.esderMaam === 'NONE'
+                    ? '1'
+                    : responseRest.thirdDate
+                        ? responseRest.thirdDate
+                        : '0',
+            unitedMailFiles: responseRest.unitedMailFiles
+                ? responseRest.unitedMailFiles
+                : '0',
+            supplierDocOrderType: responseRest.supplierDocOrderType
+                ? responseRest.supplierDocOrderType.toString()
+                : '1'
+        });
     }
 
     getKey(obj) {
@@ -613,6 +665,8 @@ export class JournalVendorAndCustomerComponent
             const findMatchCode = this.currencyList.find((it) => it.code === key[0]);
             if (findMatchCode) {
                 return findMatchCode;
+            } else {
+                return {};
             }
         }
         return {};
@@ -909,14 +963,14 @@ export class JournalVendorAndCustomerComponent
                 )
         };
         console.log('params: ', params);
-        const idxToDelete = this.arr.value.findIndex((it) => {
-            const code = Object.keys(it)[0];
-            return it[code].delete === true;
-        });
-        if (idxToDelete !== -1) {
-            this.arr.removeAt(idxToDelete);
-            this.arr.updateValueAndValidity();
-        }
+        // const idxToDelete = this.arr.value.findIndex((it) => {
+        //     const code = Object.keys(it)[0];
+        //     return it[code].delete === true;
+        // });
+        // if (idxToDelete !== -1) {
+        //     this.arr.removeAt(idxToDelete);
+        //     this.arr.updateValueAndValidity();
+        // }
         if (!this.isModal) {
             if(exportFileVatPeriod){
                 this.generalComponent.startCounter();

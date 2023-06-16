@@ -16,9 +16,7 @@
 			<div
 					[style.width]="
           companyNameColumn.getBoundingClientRect().width +
-          (izuBankColumn.getBoundingClientRect().width * 3) / 4 +
-          'px'
-        "
+          (izuBankColumn.getBoundingClientRect().width * 3) / 4 +'px' "
 					class="search"
 			>
 				<input
@@ -317,7 +315,7 @@
 						/>
 
 						<img
-								(click)="selectedCompany = company"
+								(click)="storageService.localStorageSetter('companyId_selectProduct',company.companyId); selectedCompany = company"
 								*ngIf="!company.hasAllTheProducts"
 								[routerLinkActiveOptions]="{ exact: true }"
 								[routerLink]="['./addProducts']"

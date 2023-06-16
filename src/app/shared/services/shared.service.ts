@@ -5013,6 +5013,18 @@ export class SharedService implements OnDestroy {
         };
         return this.httpServices.sendHttp<any>(request);
     }
+
+    getHashBankInfo(params: any): Observable<any> {
+        const request: InterfaceParamHttp<any> = {
+            method: 'post',
+            path: 'v1/adm/get-hash-bank-info',
+            params: params,
+            isJson: true,
+            isProtected: true,
+            isAuthorization: true
+        };
+        return this.httpServices.sendHttp<any>(request);
+    }
 }
 
 export class SearchkeyCategory {

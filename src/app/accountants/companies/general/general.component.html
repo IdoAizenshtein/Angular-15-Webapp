@@ -94,6 +94,7 @@
 		</p>
 
 		<button
+				(click)="storageService.localStorageSetter('companyId_selectProduct',userService.appData.userData.companySelect.companyId)"
 				[routerLinkActiveOptions]="{ exact: true }"
 				[routerLink]="['/accountants/companies/companyProducts/addProducts']"
 				class="addCompanyBtn"

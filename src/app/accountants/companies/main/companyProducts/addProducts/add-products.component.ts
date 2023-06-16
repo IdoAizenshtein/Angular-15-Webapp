@@ -1,5 +1,5 @@
 /* tslint:disable:max-line-length */
-import {Component, OnDestroy, OnInit, ViewChild, ViewEncapsulation} from '@angular/core';
+import {Component, ElementRef, OnDestroy, OnInit, ViewChild, ViewEncapsulation} from '@angular/core';
 import {DomSanitizer} from '@angular/platform-browser';
 import {UserService} from '@app/core/user.service';
 import {SharedComponent} from '@app/shared/component/shared.component';
@@ -61,6 +61,8 @@ export class AddProductsComponent
     public generalResponse;
     public query = '';
     public products: any = false;
+    public productsSteps: any = false;
+    public showModalAddDependencies: any = false;
     public showModalTransType: any = false;
     public progressSend: boolean = false;
     public sendWizardMail: any = false;
@@ -79,6 +81,8 @@ export class AddProductsComponent
     public notExportIncomesInput: any = false;
     private readonly destroyed$ = new Subject<void>();
     private readonly dtPipe: DatePipe;
+
+    @ViewChild('scrollMainContent') scrollMainContent: ElementRef;
 
     constructor(
         public userService: UserService,
@@ -121,26 +125,37 @@ export class AddProductsComponent
         if (!this.userService.appData.userData.companies) {
             this.sharedComponent.getDataEvent.subscribe((companiesExist) => {
                 if (companiesExist) {
+                    const companyId_selectProduct = this.storageService.localStorageGetterItem(
+                        'companyId_selectProduct'
+                    );
+                    if (companyId_selectProduct) {
+                        const selectedCompany = this.userService.appData.userData.companies.find((it) => {
+                            return it.companyId === companyId_selectProduct;
+                        });
+                        if (selectedCompany) {
+                            this.selectedCompany = selectedCompany;
+                        }
+                    }
+                    if (this.selectedCompany) {
+                        this.selectCompany();
+                    }
                 }
             });
         } else {
-        }
-        const companyId_selectProduct = this.storageService.localStorageGetterItem(
-            'companyId_selectProduct'
-        );
-        if (companyId_selectProduct) {
-            const selectedCompany = this.userService.appData.userData.companies.find((it) => {
-                return it.companyId === companyId_selectProduct;
-            });
-            if (selectedCompany) {
-                this.selectedCompany = selectedCompany;
-            }
-            this.storageService.localStorageRemoveItem(
+            const companyId_selectProduct = this.storageService.localStorageGetterItem(
                 'companyId_selectProduct'
             );
-        }
-        if (this.selectedCompany) {
-            this.selectCompany();
+            if (companyId_selectProduct) {
+                const selectedCompany = this.userService.appData.userData.companies.find((it) => {
+                    return it.companyId === companyId_selectProduct;
+                });
+                if (selectedCompany) {
+                    this.selectedCompany = selectedCompany;
+                }
+            }
+            if (this.selectedCompany) {
+                this.selectCompany();
+            }
         }
     }
 
@@ -148,6 +163,22 @@ export class AddProductsComponent
         if (disabled) {
             event.stopPropagation();
         }
+    }
+
+    addProducts(num: any) {
+        if (num === 4) {
+            this.products.creditJournal = true;
+            this.products.bankJournal = true;
+        }
+        if (num === 5) {
+            this.products.creditJournal = true;
+            this.products.bankJournal = true;
+        }
+    }
+
+    unSelectJournalProducts() {
+        this.products.creditJournal = false;
+        this.products.bankJournal = false;
     }
 
     filterCompanies(event) {
@@ -193,6 +224,7 @@ export class AddProductsComponent
             this.childJournalBankAndCreditComponent.notExportIncomes;
     }
 
+
     selectCompany() {
         this.progressSend = false;
         console.log(this.selectedCompany);
@@ -213,6 +245,14 @@ export class AddProductsComponent
                 if (this.products.saved.bankJournal) {
                     this.products.bankJournal = false;
                 }
+
+                // this.products.saved.creditJournal = false;
+                // this.products.creditJournal = false;
+                // this.products.saved.bankJournal = false;
+                // this.products.bankJournal = false;
+                // this.products.saved.supplierJournal = false;
+                // this.products.supplierJournal = false;
+
                 // bankExport: false
                 // bankJournal: false
                 // creditExport: false
@@ -220,6 +260,113 @@ export class AddProductsComponent
                 // supplierJournal: false
             });
         this.info = null;
+    }
+
+    setDefStepsPerProduct() {
+        this.productsSteps = {};
+        if (this.products.supplierJournal) {
+            this.productsSteps['supplierJournal'] = {
+                step: 1,
+                total_steps: 3,
+                active: true,
+                completed: false
+            };
+            this.getGeneral();
+        }
+        if (this.products.bankJournal) {
+            this.productsSteps['bankJournal'] = {
+                step: 1,
+                total_steps: 2,
+                active: !this.products.supplierJournal,
+                completed: false
+            };
+            if (this.productsSteps['bankJournal'].active) {
+                this.startBank();
+            }
+        }
+        if (this.products.creditJournal) {
+            this.productsSteps['creditJournal'] = {
+                step: 1,
+                total_steps: 1,
+                active: !this.products.bankJournal && !this.products.supplierJournal,
+                completed: false
+            };
+            if (this.productsSteps['creditJournal'].active) {
+                this.startBank();
+            }
+        }
+
+        this.scrollMainTop();
+    }
+
+    startBank() {
+        // this.sharedService
+        //     .general({
+        //         uuid: this.selectedCompany.companyId
+        //     })
+        //     .subscribe((response: any) => {
+        //         const responseRest = response ? response['body'] : response;
+        //         responseRest.otherOseknumArray = [
+        //             responseRest.otherOseknum1,
+        //             responseRest.otherOseknum2,
+        //             responseRest.otherOseknum3
+        //         ];
+        //         responseRest.otherOseknumArray =
+        //             responseRest.otherOseknumArray.filter((it) => it !== null);
+        //
+        //         this.info.patchValue({
+        //             yearlyProgram: !responseRest.yearlyProgram
+        //                 ? false
+        //                 : responseRest.yearlyProgram,
+        //             vatReportType:
+        //                 responseRest.vatReportType === undefined
+        //                     ? null
+        //                     : responseRest.vatReportType,
+        //             esderMaam:
+        //                 responseRest.esderMaam === undefined
+        //                     ? null
+        //                     : responseRest.esderMaam,
+        //             report856:
+        //                 responseRest.report856 === null ? true : responseRest.report856
+        //         });
+        //         if (this.products.supplierJournal) {
+        //             responseRest.otherOseknumArray.forEach((cur, idx) => {
+        //                 // @ts-ignore
+        //                 if (idx === 0) {
+        //                     this.otherOseknumArray.controls[0].patchValue(cur);
+        //                 } else {
+        //                     if (cur) {
+        //                         this.otherOseknumArray.push(
+        //                             new FormControl(
+        //                                 {
+        //                                     value: cur,
+        //                                     disabled: false
+        //                                 },
+        //                                 [
+        //                                     Validators.maxLength(9),
+        //                                     Validators.pattern('\\d+'),
+        //                                     ValidatorsFactory.idValidatorIL
+        //                                 ]
+        //                             )
+        //                         );
+        //                     }
+        //                 }
+        //             });
+        //             console.log(this.otherOseknumArray);
+        //         }
+        //
+        //         // if (responseRest.manager) {
+        //         //     this.info.get('vatReportType').enable();
+        //         //     this.info.get('esderMaam').enable();
+        //         // }
+        //         this.generalResponse = responseRest;
+        //     });
+    }
+
+    scrollMainTop() {
+        if (this.scrollMainContent && this.scrollMainContent.nativeElement) {
+            this.scrollMainContent.nativeElement.scrollTop = 0;
+        }
     }
 
     getGeneral() {
@@ -244,26 +391,24 @@ export class AddProductsComponent
                         value: null,
                         disabled: false
                     },
-                    this.products.supplierJournal
-                        ? {
-                            validators: [Validators.required]
-                        }
-                        : {}
+                    {
+                        validators: [Validators.required]
+                    }
                 ),
                 esderMaam: new FormControl(
                     {
                         value: null,
                         disabled: false
                     },
-                    this.products.supplierJournal
-                        ? {
-                            validators: [Validators.required]
-                        }
-                        : {}
+                    {
+                        validators: [Validators.required]
+                    }
                 ),
                 report856: new FormControl({
                     value: true,
                     disabled: false
+                }, {
+                    validators: [Validators.required]
                 }),
                 interested: new FormControl({
                     value: false,
@@ -271,6 +416,10 @@ export class AddProductsComponent
                 }),
                 bankProcessTransType: new FormControl({
                     value: '',
+                    disabled: false
+                }),
+                folderPlus: new FormControl({
+                    value: false,
                     disabled: false
                 }),
                 otherOseknumArray: new FormArray([
@@ -310,6 +459,9 @@ export class AddProductsComponent
                         yearlyProgram: !responseRest.yearlyProgram
                             ? false
                             : responseRest.yearlyProgram,
+                        folderPlus: !responseRest.folderPlus
+                            ? false
+                            : responseRest.folderPlus,
                         vatReportType:
                             responseRest.vatReportType === undefined
                                 ? null
@@ -388,35 +540,35 @@ export class AddProductsComponent
                     });
             }
 
-            if (
-                this.products &&
-                !this.products.supplierJournal &&
-                ((this.products.bankJournal && !this.products.creditJournal) ||
-                    (!this.products.bankJournal && this.products.creditJournal) ||
-                    (this.products.bankJournal && this.products.creditJournal))
-            ) {
-                this.sharedService
-                    .bankJournal({
-                        uuid: this.selectedCompany.companyId
-                    })
-                    .subscribe((response: any) => {
-                        const responseRest = response ? response['body'] : response;
-                        this.savedParam = responseRest;
-
-                        this.updateValues_interested(
-                            'bankProcessTransType',
-                            responseRest.bankProcessTransType
-                        );
-                        /*
-                                this.info.patchValue({
-                                    bankProcessTransType: responseRest.bankProcessTransType
-                                });
-            */
-                        if (responseRest.transTypeStatus === 'NOT_INTERESTED') {
-                            this.info.get('bankProcessTransType').disable();
-                        }
-                    });
-            }
+            // if (
+            //     this.products &&
+            //     !this.products.supplierJournal &&
+            //     ((this.products.bankJournal && !this.products.creditJournal) ||
+            //         (!this.products.bankJournal && this.products.creditJournal) ||
+            //         (this.products.bankJournal && this.products.creditJournal))
+            // ) {
+            //     this.sharedService
+            //         .bankJournal({
+            //             uuid: this.selectedCompany.companyId
+            //         })
+            //         .subscribe((response: any) => {
+            //             const responseRest = response ? response['body'] : response;
+            //             this.savedParam = responseRest;
+            //
+            //             this.updateValues_interested(
+            //                 'bankProcessTransType',
+            //                 responseRest.bankProcessTransType
+            //             );
+            //             /*
+            //                     this.info.patchValue({
+            //                         bankProcessTransType: responseRest.bankProcessTransType
+            //                     });
+            // */
+            //             if (responseRest.transTypeStatus === 'NOT_INTERESTED') {
+            //                 this.info.get('bankProcessTransType').disable();
+            //             }
+            //         });
+            // }
 
             // if(this.products.bankJournal || this.products.creditJournal){
             //     this.sharedService.firstConstruction({
@@ -425,6 +577,7 @@ export class AddProductsComponent
             //
             //     });
             // }
+
         }
     }
 
@@ -456,16 +609,40 @@ export class AddProductsComponent
         );
     }
 
-    processContacts() {
-        this.contacts = this.childContactsComponent.contacts;
-        if (this.arr && this.arr.controls && this.arr.controls.length) {
-            this.arr.controls.forEach((contact, idx) => {
-                if (!contact.valid && idx > 0) {
-                    this.arr.removeAt(idx);
-                    this.arr.updateValueAndValidity();
-                }
-            });
+    processContacts(send: boolean) {
+        if (send) {
+            this.contacts = this.childContactsComponent.contacts;
+            if (this.arr && this.arr.controls && this.arr.controls.length) {
+                this.arr.controls.forEach((contact, idx) => {
+                    if (!contact.valid && idx > 0) {
+                        this.arr.removeAt(idx);
+                        this.arr.updateValueAndValidity();
+                    }
+                });
+            }
         }
+    }
+
+    isContactValid() {
+        if (this.childContactsComponent && this.childContactsComponent.contacts) {
+            const arr = this.childContactsComponent.contacts.get('contactsRows');
+            // this.contacts = this.childContactsComponent.contacts;
+            if (arr && arr.controls && arr.controls.length) {
+                return arr.controls.some((contact, idx) => {
+                    const isEqu =
+                        Object.keys(contact.value).length &&
+                        Object.keys(contact.value).every((key) => {
+                            if (key === 'joinApp') {
+                                return contact.value[key] === false;
+                            } else {
+                                return (contact.value[key] === null || contact.value[key] === '');
+                            }
+                        });
+                    return (!contact.valid && contact.touched && !isEqu);
+                });
+            }
+        }
+        return false;
     }
 
     updateValues(param: string, val: any) {
@@ -637,68 +814,504 @@ export class AddProductsComponent
         });
     }
 
-    updateSupplierJournal() {
-        return new Promise((resolve, reject) => {
-            // debugger;
-            if (this.infoJournalVendorAndCustomerComponent.invalid) {
-                BrowserService.flattenControls(
-                    this.infoJournalVendorAndCustomerComponent
-                ).forEach((ac) => ac.markAsDirty());
-                resolve(null);
-                return;
+    addItem(type: any, finished: boolean) {
+        if(finished){
+            this.loader = true;
+        }
+        this.sharedService
+            .addItem({
+                companyId: this.selectedCompany.companyId,
+                bankExport: false,
+                creditExport: false,
+                supplierJournal: type === 1 ? true : null,
+                bankJournal: type === 2 || type === 3 ? true : null,
+                creditJournal: type === 2 || type === 4 ? true : null
+            })
+            .subscribe(() => {
+                if (finished) {
+                    this.userService.appData.userData.companies = null;
+                    this.sharedService.getCompanies().subscribe((companies: any) => {
+                        this.userService.appData.userData.companies = companies.body;
+                        this.userService.appData.userData.companies.forEach(
+                            (companyData) => {
+                                companyData.METZALEM =
+                                    this.userService.appData.userData.accountant === false &&
+                                    (companyData.privs.includes('METZALEM') ||
+                                        (companyData.privs.includes('METZALEM') &&
+                                            companyData.privs.includes('KSAFIM')) ||
+                                        (companyData.privs.includes('METZALEM') &&
+                                            companyData.privs.includes('ANHALATHESHBONOT')) ||
+                                        (companyData.privs.includes('METZALEM') &&
+                                            companyData.privs.includes('KSAFIM') &&
+                                            companyData.privs.includes('ANHALATHESHBONOT')));
+                                if (companyData.METZALEM) {
+                                    if (
+                                        companyData.privs.includes('METZALEM') &&
+                                        companyData.privs.includes('KSAFIM') &&
+                                        companyData.privs.includes('ANHALATHESHBONOT')
+                                    ) {
+                                        companyData.METZALEM_TYPE = 'KSAFIM_ANHALATHESHBONOT';
+                                    } else if (
+                                        companyData.privs.includes('METZALEM') &&
+                                        companyData.privs.includes('KSAFIM')
+                                    ) {
+                                        companyData.METZALEM_TYPE = 'KSAFIM';
+                                    } else if (
+                                        companyData.privs.includes('METZALEM') &&
+                                        companyData.privs.includes('ANHALATHESHBONOT')
+                                    ) {
+                                        companyData.METZALEM_TYPE = 'ANHALATHESHBONOT';
+                                    } else if (companyData.privs.includes('METZALEM')) {
+                                        companyData.METZALEM_TYPE = 'METZALEM';
+                                    }
+                                }
+                                companyData.METZALEM_deskTrialExpired =
+                                    companyData.METZALEM && !companyData.deskTrialExpired;
+                            }
+                        );
+                        if (this.userService.appData.userData.companySelect) {
+                            const companySelect = this.userService.appData.userData.companies.find(
+                                (co) => co.companyId === this.selectedCompany.companyId
+                            );
+                            this.sharedComponent.setNameOfCompany(
+                                companySelect,
+                                this.userService.appData.userData.companies
+                            );
+                        }
+
+                    });
+
+                    if (this.products.supplierJournal) {
+                        this.sharedService
+                            .countStatus({
+                                uuid: this.selectedCompany.companyId
+                            })
+                            .subscribe((response: any) => {
+                                const countStatusDataFixed = response
+                                    ? response['body']
+                                    : response;
+                                setTimeout(() => {
+                                    this.goToCompanyProducts();
+                                }, 800);
+                            });
+                    }
+
+                    if (
+                        this.products &&
+                        !this.products.supplierJournal &&
+                        ((this.products.bankJournal && !this.products.creditJournal) ||
+                            (!this.products.bankJournal && this.products.creditJournal) ||
+                            (this.products.bankJournal && this.products.creditJournal))
+                    ) {
+                        this.sharedService
+                            .countStatus({
+                                uuid: this.selectedCompany.companyId
+                            })
+                            .subscribe((response: any) => {
+                                const countStatusDataFixed = response
+                                    ? response['body']
+                                    : response;
+                                setTimeout(() => {
+                                    this.goToCompanyProducts();
+                                }, 800);
+                            });
+                    }
+                }
+            });
+    }
+
+    async updateSupplierJournal() {
+        this.productsSteps.supplierJournal.completed = true;
+        // this.supplierJournal_updateTransTypeStatus();
+        // const params = {
+        //     companyId: this.selectedCompany.companyId,
+        //     pettyCashCustId: this.infoAccountingCards.get('pettyCashCustId').value
+        //         ? this.infoAccountingCards.get('pettyCashCustId').value.custId
+        //         : null,
+        //     cancelBalanceCustId: this.infoAccountingCards.get('cancelBalanceCustId')
+        //         .value
+        //         ? this.infoAccountingCards.get('cancelBalanceCustId').value.custId
+        //         : null,
+        //     custMaamTsumot: this.infoAccountingCards.get('custMaamTsumot').value
+        //         ? this.infoAccountingCards.get('custMaamTsumot').value.custId
+        //         : null,
+        //     custMaamYevu: this.infoAccountingCards.get('custMaamYevu').value
+        //         ? this.infoAccountingCards.get('custMaamYevu').value.custId
+        //         : null,
+        //     custMaamIska: this.infoAccountingCards.get('custMaamIska').value
+        //         ? this.infoAccountingCards.get('custMaamIska').value.custId
+        //         : null,
+        //     custMaamNechasim: this.infoAccountingCards.get('custMaamNechasim').value
+        //         ? this.infoAccountingCards.get('custMaamNechasim').value.custId
+        //         : null,
+        //     supplierTaxDeductionCustId: this.infoAccountingCards.get(
+        //         'supplierTaxDeductionCustId'
+        //     ).value
+        //         ? this.infoAccountingCards.get('supplierTaxDeductionCustId').value
+        //             .custId
+        //         : null,
+        //     customerTaxDeductionCustId: this.infoAccountingCards.get(
+        //         'customerTaxDeductionCustId'
+        //     ).value
+        //         ? this.infoAccountingCards.get('customerTaxDeductionCustId').value
+        //             .custId
+        //         : null,
+        //     openingBalanceCustId: this.infoAccountingCards.get(
+        //         'openingBalanceCustId'
+        //     ).value
+        //         ? this.infoAccountingCards.get('openingBalanceCustId').value.custId
+        //         : null,
+        //     incomeCustId: this.infoAccountingCards.get('incomeCustId').value
+        //         ? this.infoAccountingCards.get('incomeCustId').value.custId
+        //         : null,
+        //     expenseCustId: this.infoAccountingCards.get('expenseCustId').value
+        //         ? this.infoAccountingCards.get('expenseCustId').value.custId
+        //         : null
+        // };
+        // if (
+        //     this.infoJournalBankAndCreditComponent &&
+        //     this.infoJournalBankAndCreditComponent.get('bankProcessTransType')
+        // ) {
+        //     params['bankProcessTransType'] =
+        //         this.infoJournalBankAndCreditComponent.get(
+        //             'bankProcessTransType'
+        //         ).value;
+        // }
+        // const params11 = {
+        //     wizard: true,
+        //     companyId: this.selectedCompany.companyId,
+        //     supplierAsmachtaNumChar: Number(
+        //         this.infoJournalVendorAndCustomerComponent.get(
+        //             'supplierAsmachtaNumChar'
+        //         ).value
+        //     ),
+        //
+        //     incomeAsmachtaType: Number(
+        //         this.infoJournalVendorAndCustomerComponent.get('incomeAsmachtaType')
+        //             .value
+        //     ),
+        //     thirdDate: Number(
+        //         this.infoJournalVendorAndCustomerComponent.get('thirdDate').value
+        //     ),
+        //     // manualApprove: this.infoJournalVendorAndCustomerComponent.get('manualApprove').value,
+        //     expenseOnly:
+        //     this.infoJournalVendorAndCustomerComponent.get('expenseOnly').value,
+        //     revaluationCurr:
+        //     this.infoJournalVendorAndCustomerComponent.get('revaluationCurr')
+        //         .value,
+        //     revaluationCurrCode: this.infoJournalVendorAndCustomerComponent.get(
+        //         'revaluationCurrCode'
+        //     ).value,
+        //     invoicePayment:
+        //     this.infoJournalVendorAndCustomerComponent.get('invoicePayment')
+        //         .value,
+        //     exportFileVatPeriod: this.infoJournalVendorAndCustomerComponent.get(
+        //         'exportFileVatPeriod'
+        //     ).value,
+        //     supplierDocOrderType: Number(
+        //         this.infoJournalVendorAndCustomerComponent.get('supplierDocOrderType')
+        //             .value
+        //     ),
+        //     supplierIncomeOrderType: Number(
+        //         this.infoJournalVendorAndCustomerComponent.get(
+        //             'supplierIncomeOrderType'
+        //         ).value
+        //     ),
+        //     supplierExpenseOrderType: Number(
+        //         this.infoJournalVendorAndCustomerComponent.get(
+        //             'supplierExpenseOrderType'
+        //         ).value
+        //     ),
+        //     invertedCreditInvoice: this.infoJournalVendorAndCustomerComponent.get(
+        //         'invertedCreditInvoice'
+        //     ).value,
+        //     currencyRates: this.infoJournalVendorAndCustomerComponent
+        //         .get('currencyRates')
+        //         .value.map((it) => {
+        //             const code = Object.keys(it)[0];
+        //             return {
+        //                 fixedRate:
+        //                     it[code].type === 'FIXED' ? Number(it[code].fixedRate) : 0,
+        //                 hashCodeId: it[code].hashCodeId ? Number(it[code].hashCodeId) : 0,
+        //                 code: code,
+        //                 type: it[code].type,
+        //                 delete: it[code].delete === true
+        //             };
+        //         })
+        //         .filter(
+        //             (obj) =>
+        //                 (obj.type === 'FIXED' && obj.fixedRate) ||
+        //                 obj.type === 'BANK' ||
+        //                 obj.delete === true
+        //         )
+        // };
+        const params222 = {
+            wizard: true,
+            companyId: this.selectedCompany.companyId,
+            esderMaam: this.info.get('esderMaam').value,
+            vatReportType: this.info.get('vatReportType').value,
+            assessor: this.generalResponse.assessor,
+            snifMaam: this.generalResponse.snifMaam,
+            sourceProgramId: this.generalResponse.sourceProgramId,
+            dbName: this.generalResponse.dbName,
+            report856: this.info.get('report856').value,
+            mikdamotPrc: this.generalResponse.mikdamotPrc,
+            hiring: this.generalResponse.hiring,
+            nikuiMasNum: this.generalResponse.nikuiMasNum,
+            nikuiExpirationDate: this.generalResponse.nikuiExpirationDate,
+            expenseAsmachtaType: Number(
+                this.infoJournalVendorAndCustomerComponent.get('expenseAsmachtaType')
+                    .value
+            ),
+            currencyRates: this.infoJournalVendorAndCustomerComponent
+                .get('currencyRates')
+                .value.map((it) => {
+                    const code = Object.keys(it)[0];
+                    return {
+                        fixedRate:
+                            it[code].type === 'FIXED' ? Number(it[code].fixedRate) : 0,
+                        hashCodeId: it[code].hashCodeId ? Number(it[code].hashCodeId) : 0,
+                        code: code,
+                        type: it[code].type,
+                        delete: it[code].delete === true
+                    };
+                })
+                .filter(
+                    (obj) =>
+                        (obj.type === 'FIXED' && obj.fixedRate) ||
+                        obj.type === 'BANK' ||
+                        obj.delete === true
+                ),
+            expenseOnly:
+            this.infoJournalVendorAndCustomerComponent.get('expenseOnly').value,
+            exportFileVatPeriod: this.infoJournalVendorAndCustomerComponent.get(
+                'exportFileVatPeriod'
+            ).value,
+            incomeAsmachtaType: Number(
+                this.infoJournalVendorAndCustomerComponent.get('incomeAsmachtaType')
+                    .value
+            ),
+            invertedCreditInvoice: this.infoJournalVendorAndCustomerComponent.get(
+                'invertedCreditInvoice'
+            ).value,
+            invoicePayment:
+            this.infoJournalVendorAndCustomerComponent.get('invoicePayment')
+                .value,
+            'manager': true,
+            revaluationCurr:
+            this.infoJournalVendorAndCustomerComponent.get('revaluationCurr')
+                .value,
+            revaluationCurrCode: this.infoJournalVendorAndCustomerComponent.get(
+                'revaluationCurrCode'
+            ).value,
+            supplierAsmachtaNumChar: Number(
+                this.infoJournalVendorAndCustomerComponent.get(
+                    'supplierAsmachtaNumChar'
+                ).value
+            ),
+            supplierDocOrderType: Number(
+                this.infoJournalVendorAndCustomerComponent.get('supplierDocOrderType')
+                    .value
+            ),
+            supplierExpenseOrderType: Number(
+                this.infoJournalVendorAndCustomerComponent.get(
+                    'supplierExpenseOrderType'
+                ).value
+            ),
+            supplierIncomeOrderType: Number(
+                this.infoJournalVendorAndCustomerComponent.get(
+                    'supplierIncomeOrderType'
+                ).value
+            ),
+            thirdDate: Number(
+                this.infoJournalVendorAndCustomerComponent.get('thirdDate').value
+            ),
+            transType: this.info.get('interested').value,
+            unitedMailFiles: this.infoJournalVendorAndCustomerComponent.get('unitedMailFiles').value === '1',
+            yearlyProgram: this.info.get('yearlyProgram').value,
+            folderPlus: this.info.get('folderPlus').value
+        };
+        const otherOseknumArray = [];
+        const values = this.otherOseknumArray.value;
+        if (values && values.length) {
+            this.otherOseknumArray.controls.forEach((it, idx) => {
+                const value = it.value;
+                const invalid = it.invalid;
+                if (
+                    !invalid &&
+                    value !== '' &&
+                    !this.otherOseknumArray.controls.some(
+                        (val, index) =>
+                            index !== idx && val.value.toString() === value.toString()
+                    )
+                ) {
+                    otherOseknumArray.push(Number(value));
+                }
+            });
+        }
+        for (let idxOsek = 0; idxOsek < 3; idxOsek++) {
+            params222['otherOsekNum' + (idxOsek + 1)] = otherOseknumArray[idxOsek]
+                ? otherOseknumArray[idxOsek]
+                : null;
+        }
+        await this.addContact();
+        // console.log(params222, params, params11, this.infoJournalVendorAndCustomerComponent, this.infoAccountingCards);
+        this.sharedService.updateSupplierJournal(params222).subscribe(() => {
+            this.addItem(1, !this.productsSteps.bankJournal && !this.productsSteps.creditJournal);
+        });
+        if (this.productsSteps.bankJournal) {
+            this.productsSteps.supplierJournal.active = false;
+            this.productsSteps.bankJournal.active = true;
+            this.startBank();
+        } else {
+            if (this.productsSteps.creditJournal) {
+                this.productsSteps.supplierJournal.active = false;
+                this.productsSteps.creditJournal.active = true;
+                this.startBank();
             }
+        }
+
+        //
+
+
+        // return new Promise((resolve, reject) => {
+        //     // debugger;
+        //     if (this.infoJournalVendorAndCustomerComponent.invalid) {
+        //         BrowserService.flattenControls(
+        //             this.infoJournalVendorAndCustomerComponent
+        //         ).forEach((ac) => ac.markAsDirty());
+        //         resolve(null);
+        //         return;
+        //     }
+        //     const params = {
+        //         wizard: true,
+        //         companyId: this.selectedCompany.companyId,
+        //         supplierAsmachtaNumChar: Number(
+        //             this.infoJournalVendorAndCustomerComponent.get(
+        //                 'supplierAsmachtaNumChar'
+        //             ).value
+        //         ),
+        //         expenseAsmachtaType: Number(
+        //             this.infoJournalVendorAndCustomerComponent.get('expenseAsmachtaType')
+        //                 .value
+        //         ),
+        //         incomeAsmachtaType: Number(
+        //             this.infoJournalVendorAndCustomerComponent.get('incomeAsmachtaType')
+        //                 .value
+        //         ),
+        //         thirdDate: Number(
+        //             this.infoJournalVendorAndCustomerComponent.get('thirdDate').value
+        //         ),
+        //         // manualApprove: this.infoJournalVendorAndCustomerComponent.get('manualApprove').value,
+        //         expenseOnly:
+        //         this.infoJournalVendorAndCustomerComponent.get('expenseOnly').value,
+        //         revaluationCurr:
+        //         this.infoJournalVendorAndCustomerComponent.get('revaluationCurr')
+        //             .value,
+        //         revaluationCurrCode: this.infoJournalVendorAndCustomerComponent.get(
+        //             'revaluationCurrCode'
+        //         ).value,
+        //         invoicePayment:
+        //         this.infoJournalVendorAndCustomerComponent.get('invoicePayment')
+        //             .value,
+        //         exportFileVatPeriod: this.infoJournalVendorAndCustomerComponent.get(
+        //             'exportFileVatPeriod'
+        //         ).value,
+        //         supplierDocOrderType: Number(
+        //             this.infoJournalVendorAndCustomerComponent.get('supplierDocOrderType')
+        //                 .value
+        //         ),
+        //         supplierIncomeOrderType: Number(
+        //             this.infoJournalVendorAndCustomerComponent.get(
+        //                 'supplierIncomeOrderType'
+        //             ).value
+        //         ),
+        //         supplierExpenseOrderType: Number(
+        //             this.infoJournalVendorAndCustomerComponent.get(
+        //                 'supplierExpenseOrderType'
+        //             ).value
+        //         ),
+        //         invertedCreditInvoice: this.infoJournalVendorAndCustomerComponent.get(
+        //             'invertedCreditInvoice'
+        //         ).value,
+        //         currencyRates: this.infoJournalVendorAndCustomerComponent
+        //             .get('currencyRates')
+        //             .value.map((it) => {
+        //                 const code = Object.keys(it)[0];
+        //                 return {
+        //                     fixedRate:
+        //                         it[code].type === 'FIXED' ? Number(it[code].fixedRate) : 0,
+        //                     hashCodeId: it[code].hashCodeId ? Number(it[code].hashCodeId) : 0,
+        //                     code: code,
+        //                     type: it[code].type,
+        //                     delete: it[code].delete === true
+        //                 };
+        //             })
+        //             .filter(
+        //                 (obj) =>
+        //                     (obj.type === 'FIXED' && obj.fixedRate) ||
+        //                     obj.type === 'BANK' ||
+        //                     obj.delete === true
+        //             )
+        //     };
+        //     console.log('params: ', params);
+        //     // const idxToDelete = this.infoJournalVendorAndCustomerComponent.get('currencyRates').value.findIndex(it => {
+        //     //     const code = Object.keys(it)[0];
+        //     //     return it[code].delete === true;
+        //     // });
+        //     // if (idxToDelete !== -1) {
+        //     //     this.childJournalVendorAndCustomerComponent.arr.removeAt(idxToDelete);
+        //     // }
+        //     resolve(params);
+        //     // this.sharedService.updateSupplierJournal(params).subscribe(() => {
+        //     //     resolve(true);
+        //     // });
+        // });
+    }
+
+    goToCreditJournal() {
+        this.productsSteps.bankJournal.completed = true;
+        if (this.productsSteps.creditJournal) {
+            this.productsSteps.bankJournal.active = false;
+            this.productsSteps.creditJournal.active = true;
+
+            const bookKeepingCustParams =
+                this.childJournalBankAndCreditComponent.bookKeepingCustParams;
             const params = {
                 wizard: true,
+                accountantOfficeId: this.userService.appData.isAdmin
+                    ? this.userService.appData.userDataAdmin.accountantOfficeId
+                    : this.userService.appData.userData.accountantOfficeId,
                 companyId: this.selectedCompany.companyId,
-                supplierAsmachtaNumChar: Number(
-                    this.infoJournalVendorAndCustomerComponent.get(
-                        'supplierAsmachtaNumChar'
-                    ).value
-                ),
-                expenseAsmachtaType: Number(
-                    this.infoJournalVendorAndCustomerComponent.get('expenseAsmachtaType')
-                        .value
-                ),
-                incomeAsmachtaType: Number(
-                    this.infoJournalVendorAndCustomerComponent.get('incomeAsmachtaType')
-                        .value
-                ),
-                thirdDate: Number(
-                    this.infoJournalVendorAndCustomerComponent.get('thirdDate').value
-                ),
-                // manualApprove: this.infoJournalVendorAndCustomerComponent.get('manualApprove').value,
-                expenseOnly:
-                this.infoJournalVendorAndCustomerComponent.get('expenseOnly').value,
-                revaluationCurr:
-                this.infoJournalVendorAndCustomerComponent.get('revaluationCurr')
-                    .value,
-                revaluationCurrCode: this.infoJournalVendorAndCustomerComponent.get(
-                    'revaluationCurrCode'
-                ).value,
-                invoicePayment:
-                this.infoJournalVendorAndCustomerComponent.get('invoicePayment')
-                    .value,
-                exportFileVatPeriod: this.infoJournalVendorAndCustomerComponent.get(
-                    'exportFileVatPeriod'
-                ).value,
-                supplierDocOrderType: Number(
-                    this.infoJournalVendorAndCustomerComponent.get('supplierDocOrderType')
-                        .value
-                ),
-                supplierIncomeOrderType: Number(
-                    this.infoJournalVendorAndCustomerComponent.get(
-                        'supplierIncomeOrderType'
-                    ).value
-                ),
-                supplierExpenseOrderType: Number(
-                    this.infoJournalVendorAndCustomerComponent.get(
-                        'supplierExpenseOrderType'
-                    ).value
-                ),
-                invertedCreditInvoice: this.infoJournalVendorAndCustomerComponent.get(
-                    'invertedCreditInvoice'
-                ).value,
-                currencyRates: this.infoJournalVendorAndCustomerComponent
+                pettyCashCustId: bookKeepingCustParams.pettyCashCustId,
+                cancelBalanceCustId: bookKeepingCustParams.cancelBalanceCustId,
+                custMaamTsumot: bookKeepingCustParams.custMaamTsumot,
+                custMaamYevu: bookKeepingCustParams.custMaamYevu,
+                custMaamIska: bookKeepingCustParams.custMaamIska,
+                custMaamNechasim: bookKeepingCustParams.custMaamNechasim,
+                supplierTaxDeductionCustId: this.infoJournalBankAndCreditComponent.get(
+                    'supplierTaxDeductionCustId'
+                ).value
+                    ? this.infoJournalBankAndCreditComponent.get(
+                        'supplierTaxDeductionCustId'
+                    ).value.custId
+                    : null,
+                customerTaxDeductionCustId: bookKeepingCustParams.customerTaxDeductionCustId,
+                openingBalanceCustId: bookKeepingCustParams.openingBalanceCustId,
+                incomeCustId: bookKeepingCustParams.incomeCustId,
+                expenseCustId: bookKeepingCustParams.expenseCustId,
+                report856: this.infoJournalBankAndCreditComponent.get('report856').value ? (this.infoJournalBankAndCreditComponent.get('report856').value) : null,
+                bankAsmachtaNumChar: this.infoJournalBankAndCreditComponent.get('bankAsmachtaNumChar').value ? Number(this.infoJournalBankAndCreditComponent.get('bankAsmachtaNumChar').value) : null,
+                bankAutoJournalTrans: this.infoJournalBankAndCreditComponent.get('bankAutoJournalTrans').value ? (this.infoJournalBankAndCreditComponent.get('bankAutoJournalTrans').value) : null,
+                exportFileBankPeriod: this.infoJournalBankAndCreditComponent.get('exportFileBankPeriod').value ? Number(this.infoJournalBankAndCreditComponent.get('exportFileBankPeriod').value) : null,
+                exportFileTypeId: this.infoJournalBankAndCreditComponent.get('exportFileTypeId').value ? Number(this.infoJournalBankAndCreditComponent.get('exportFileTypeId').value) : null,
+                manager: true,
+                folderPlus: this.infoJournalBankAndCreditComponent.get('folderPlus').value ? (this.infoJournalBankAndCreditComponent.get('folderPlus').value) : null,
+                oppositeCustForChecks: this.infoJournalBankAndCreditComponent.get('oppositeCustForChecks').value ? (this.infoJournalBankAndCreditComponent.get('oppositeCustForChecks').value.custId) : null,
+                revaluationCurr: this.infoJournalBankAndCreditComponent.get('revaluationCurr').value ? (this.infoJournalBankAndCreditComponent.get('revaluationCurr').value) : null,
+                revaluationCurrCode: this.infoJournalBankAndCreditComponent.get('revaluationCurrCode').value ? (this.infoJournalBankAndCreditComponent.get('revaluationCurrCode').value) : null,
+                uniteJournalForPayments: this.infoJournalBankAndCreditComponent.get('uniteJournalForPayments').value ? (this.infoJournalBankAndCreditComponent.get('uniteJournalForPayments').value) : null,
+                currencyRates: this.infoJournalBankAndCreditComponent
                     .get('currencyRates')
                     .value.map((it) => {
                         const code = Object.keys(it)[0];
@@ -714,66 +1327,9 @@ export class AddProductsComponent
                     .filter(
                         (obj) =>
                             (obj.type === 'FIXED' && obj.fixedRate) ||
-                            obj.type === 'BANK' ||
-                            obj.delete === true
+                            obj.type === 'BANK' || obj.delete === true
                     )
-            };
-            console.log('params: ', params);
-            // const idxToDelete = this.infoJournalVendorAndCustomerComponent.get('currencyRates').value.findIndex(it => {
-            //     const code = Object.keys(it)[0];
-            //     return it[code].delete === true;
-            // });
-            // if (idxToDelete !== -1) {
-            //     this.childJournalVendorAndCustomerComponent.arr.removeAt(idxToDelete);
-            // }
-            resolve(params);
-            // this.sharedService.updateSupplierJournal(params).subscribe(() => {
-            //     resolve(true);
-            // });
-        });
-    }
-
-    updateBankJournal() {
-        return new Promise((resolve, reject) => {
-            // debugger;
-
-            if (this.infoJournalBankAndCreditComponent.invalid) {
-                BrowserService.flattenControls(
-                    this.infoJournalBankAndCreditComponent
-                ).forEach((ac) => ac.markAsDirty());
-                resolve(null);
-                return;
             }
-
-            const notExportIncomes = {};
-            this.notExportIncomesInput.notExportIncomes
-                .filter((it) => it.name !== 'all')
-                .forEach((it) => {
-                    notExportIncomes[it.name] = it.value;
-                });
-            const params = {
-                companyId: this.selectedCompany.companyId,
-                bankAsmachtaNumChar: Number(
-                    this.infoJournalBankAndCreditComponent.get('bankAsmachtaNumChar')
-                        .value
-                ),
-                exportFileTypeId: Number(
-                    this.infoJournalBankAndCreditComponent.get('exportFileTypeId').value
-                ),
-                exportFileBankPeriod: Number(
-                    this.infoJournalBankAndCreditComponent.get('exportFileBankPeriod')
-                        .value
-                ),
-                bankAutoJournalTrans: true,
-                oppositeCustForChecks: this.infoJournalBankAndCreditComponent.get(
-                    'oppositeCustForChecks'
-                ).value
-                    ? this.infoJournalBankAndCreditComponent.get('oppositeCustForChecks')
-                        .value.custId
-                    : null,
-                notExportIncomes: notExportIncomes,
-                uniteJournalForPayments: this.infoJournalBankAndCreditComponent.get('uniteJournalForPayments').value
-            };
             if (
                 this.infoJournalBankAndCreditComponent &&
                 this.infoJournalBankAndCreditComponent.get('bankProcessTransType')
@@ -782,32 +1338,202 @@ export class AddProductsComponent
                     this.infoJournalBankAndCreditComponent.get(
                         'bankProcessTransType'
                     ).value;
-            } else {
-                if (this.products &&
-                    !this.products.supplierJournal &&
-                    ((this.products.bankJournal &&
-                            !this.products.creditJournal) ||
-                        (!this.products.bankJournal &&
-                            this.products.creditJournal) ||
-                        (this.products.bankJournal &&
-                            this.products.creditJournal))) {
-                    if (
-                        this.info &&
-                        this.info.get('bankProcessTransType')
-                    ) {
-                        params['bankProcessTransType'] =
-                            this.info.get(
-                                'bankProcessTransType'
-                            ).value;
-                    }
-                }
+                params['transType'] =
+                    this.infoJournalBankAndCreditComponent.get(
+                        'bankProcessTransType'
+                    ).value;
             }
+            const notExportIncomes = {};
+            this.notExportIncomesInput.notExportIncomes
+                .filter((it) => it.name !== 'all')
+                .forEach((it) => {
+                    notExportIncomes[it.name] = it.value;
+                });
+            params['notExportIncomes'] = notExportIncomes;
+            this.sharedService.updateBankJournal(params).subscribe(() => {
+                this.addItem(3, false);
+            });
+        } else {
+            this.updateBankJournal(true);
+        }
+    }
 
-            console.log('params: ', params);
-            resolve(params);
-            // this.sharedService.updateBankJournal(params).subscribe(() => {
-            // });
+    async updateBankJournal(addItemBank?: any) {
+        if (this.productsSteps.creditJournal) {
+            this.productsSteps.creditJournal.completed = true;
+        }
+        const bookKeepingCustParams =
+            this.childJournalBankAndCreditComponent.bookKeepingCustParams;
+        const params = {
+            wizard: true,
+            accountantOfficeId: this.userService.appData.isAdmin
+                ? this.userService.appData.userDataAdmin.accountantOfficeId
+                : this.userService.appData.userData.accountantOfficeId,
+            companyId: this.selectedCompany.companyId,
+            pettyCashCustId: bookKeepingCustParams.pettyCashCustId,
+            cancelBalanceCustId: bookKeepingCustParams.cancelBalanceCustId,
+            custMaamTsumot: bookKeepingCustParams.custMaamTsumot,
+            custMaamYevu: bookKeepingCustParams.custMaamYevu,
+            custMaamIska: bookKeepingCustParams.custMaamIska,
+            custMaamNechasim: bookKeepingCustParams.custMaamNechasim,
+            supplierTaxDeductionCustId: this.infoJournalBankAndCreditComponent.get(
+                'supplierTaxDeductionCustId'
+            ).value
+                ? this.infoJournalBankAndCreditComponent.get(
+                    'supplierTaxDeductionCustId'
+                ).value.custId
+                : null,
+            customerTaxDeductionCustId: bookKeepingCustParams.customerTaxDeductionCustId,
+            openingBalanceCustId: bookKeepingCustParams.openingBalanceCustId,
+            incomeCustId: bookKeepingCustParams.incomeCustId,
+            expenseCustId: bookKeepingCustParams.expenseCustId,
+            report856: this.infoJournalBankAndCreditComponent.get('report856').value ? (this.infoJournalBankAndCreditComponent.get('report856').value) : null,
+            bankAsmachtaNumChar: this.infoJournalBankAndCreditComponent.get('bankAsmachtaNumChar').value ? Number(this.infoJournalBankAndCreditComponent.get('bankAsmachtaNumChar').value) : null,
+            bankAutoJournalTrans: this.infoJournalBankAndCreditComponent.get('bankAutoJournalTrans').value ? (this.infoJournalBankAndCreditComponent.get('bankAutoJournalTrans').value) : null,
+            exportFileBankPeriod: this.infoJournalBankAndCreditComponent.get('exportFileBankPeriod').value ? Number(this.infoJournalBankAndCreditComponent.get('exportFileBankPeriod').value) : null,
+            exportFileTypeId: this.infoJournalBankAndCreditComponent.get('exportFileTypeId').value ? Number(this.infoJournalBankAndCreditComponent.get('exportFileTypeId').value) : null,
+            manager: true,
+            folderPlus: this.infoJournalBankAndCreditComponent.get('folderPlus').value ? (this.infoJournalBankAndCreditComponent.get('folderPlus').value) : null,
+            oppositeCustForChecks: this.infoJournalBankAndCreditComponent.get('oppositeCustForChecks').value ? (this.infoJournalBankAndCreditComponent.get('oppositeCustForChecks').value.custId) : null,
+            revaluationCurr: this.infoJournalBankAndCreditComponent.get('revaluationCurr').value ? (this.infoJournalBankAndCreditComponent.get('revaluationCurr').value) : null,
+            revaluationCurrCode: this.infoJournalBankAndCreditComponent.get('revaluationCurrCode').value ? (this.infoJournalBankAndCreditComponent.get('revaluationCurrCode').value) : null,
+            uniteJournalForPayments: this.infoJournalBankAndCreditComponent.get('uniteJournalForPayments').value ? (this.infoJournalBankAndCreditComponent.get('uniteJournalForPayments').value) : null,
+            currencyRates: this.infoJournalBankAndCreditComponent
+                .get('currencyRates')
+                .value.map((it) => {
+                    const code = Object.keys(it)[0];
+                    return {
+                        fixedRate:
+                            it[code].type === 'FIXED' ? Number(it[code].fixedRate) : 0,
+                        hashCodeId: it[code].hashCodeId ? Number(it[code].hashCodeId) : 0,
+                        code: code,
+                        type: it[code].type,
+                        delete: it[code].delete === true
+                    };
+                })
+                .filter(
+                    (obj) =>
+                        (obj.type === 'FIXED' && obj.fixedRate) ||
+                        obj.type === 'BANK' ||
+                        obj.delete === true
+                )
+        };
+        if (
+            this.infoJournalBankAndCreditComponent &&
+            this.infoJournalBankAndCreditComponent.get('bankProcessTransType')
+        ) {
+            params['bankProcessTransType'] =
+                this.infoJournalBankAndCreditComponent.get(
+                    'bankProcessTransType'
+                ).value;
+            params['transType'] =
+                this.infoJournalBankAndCreditComponent.get(
+                    'bankProcessTransType'
+                ).value;
+        }
+        const notExportIncomes = {};
+        this.notExportIncomesInput.notExportIncomes
+            .filter((it) => it.name !== 'all')
+            .forEach((it) => {
+                notExportIncomes[it.name] = it.value;
+            });
+        params['notExportIncomes'] = notExportIncomes;
+
+        // if(!this.products.bankJournal){
+        //     const responseRest = await this.sharedService
+        //         .bankJournal({
+        //             uuid: this.selectedCompany.companyId
+        //         })
+        //     const bankJournalRest = responseRest ? responseRest['body'] : responseRest;
+        // }
+
+        // console.log(params, this.infoJournalBankAndCreditComponent, bookKeepingCustParams);
+        // debugger
+        // this.productsSteps.creditJournal.active = false;
+        this.sharedService.updateBankJournal(params).subscribe(() => {
+            if (this.productsSteps.creditJournal) {
+                this.addItem(4, true);
+            }
+            if (addItemBank) {
+                this.addItem(3, true);
+            }
         });
+
+
+        // return new Promise((resolve, reject) => {
+        //     // debugger;
+        //
+        //     if (this.infoJournalBankAndCreditComponent.invalid) {
+        //         BrowserService.flattenControls(
+        //             this.infoJournalBankAndCreditComponent
+        //         ).forEach((ac) => ac.markAsDirty());
+        //         resolve(null);
+        //         return;
+        //     }
+        //
+        //     const notExportIncomes = {};
+        //     this.notExportIncomesInput.notExportIncomes
+        //         .filter((it) => it.name !== 'all')
+        //         .forEach((it) => {
+        //             notExportIncomes[it.name] = it.value;
+        //         });
+        //     const params = {
+        //         companyId: this.selectedCompany.companyId,
+        //         bankAsmachtaNumChar: Number(
+        //             this.infoJournalBankAndCreditComponent.get('bankAsmachtaNumChar')
+        //                 .value
+        //         ),
+        //         exportFileTypeId: Number(
+        //             this.infoJournalBankAndCreditComponent.get('exportFileTypeId').value
+        //         ),
+        //         exportFileBankPeriod: Number(
+        //             this.infoJournalBankAndCreditComponent.get('exportFileBankPeriod')
+        //                 .value
+        //         ),
+        //         bankAutoJournalTrans: true,
+        //         oppositeCustForChecks: this.infoJournalBankAndCreditComponent.get(
+        //             'oppositeCustForChecks'
+        //         ).value
+        //             ? this.infoJournalBankAndCreditComponent.get('oppositeCustForChecks')
+        //                 .value.custId
+        //             : null,
+        //         notExportIncomes: notExportIncomes,
+        //         uniteJournalForPayments: this.infoJournalBankAndCreditComponent.get('uniteJournalForPayments').value
+        //     };
+        //     if (
+        //         this.infoJournalBankAndCreditComponent &&
+        //         this.infoJournalBankAndCreditComponent.get('bankProcessTransType')
+        //     ) {
+        //         params['bankProcessTransType'] =
+        //             this.infoJournalBankAndCreditComponent.get(
+        //                 'bankProcessTransType'
+        //             ).value;
+        //     } else {
+        //         if (this.products &&
+        //             !this.products.supplierJournal &&
+        //             ((this.products.bankJournal &&
+        //                     !this.products.creditJournal) ||
+        //                 (!this.products.bankJournal &&
+        //                     this.products.creditJournal) ||
+        //                 (this.products.bankJournal &&
+        //                     this.products.creditJournal))) {
+        //             if (
+        //                 this.info &&
+        //                 this.info.get('bankProcessTransType')
+        //             ) {
+        //                 params['bankProcessTransType'] =
+        //                     this.info.get(
+        //                         'bankProcessTransType'
+        //                     ).value;
+        //             }
+        //         }
+        //     }
+        //
+        //     console.log('params: ', params);
+        //     resolve(params);
+        //     // this.sharedService.updateBankJournal(params).subscribe(() => {
+        //     // });
+        // });
     }
 
     addContact() {
@@ -917,79 +1643,137 @@ export class AddProductsComponent
     }
 
     updateBookKeepingCust() {
-        return new Promise((resolve, reject) => {
-            // debugger;
-            // if (this.info.invalid) {
-            //     BrowserService.flattenControls(this.info).forEach(ac => ac.markAsDirty());
-            //     return;
-            // }
-            // pettyCashCustId
-            // custMaamIska
-            // custMaamNechasim
-            // customerTaxDeductionCustId
-            // custMaamTsumot
-            // supplierTaxDeductionCustId
-            const params = {
-                companyId: this.selectedCompany.companyId,
-                pettyCashCustId: this.infoAccountingCards.get('pettyCashCustId').value
-                    ? this.infoAccountingCards.get('pettyCashCustId').value.custId
-                    : null,
-                cancelBalanceCustId: this.infoAccountingCards.get('cancelBalanceCustId')
-                    .value
-                    ? this.infoAccountingCards.get('cancelBalanceCustId').value.custId
-                    : null,
-                custMaamTsumot: this.infoAccountingCards.get('custMaamTsumot').value
-                    ? this.infoAccountingCards.get('custMaamTsumot').value.custId
-                    : null,
-                custMaamYevu: this.infoAccountingCards.get('custMaamYevu').value
-                    ? this.infoAccountingCards.get('custMaamYevu').value.custId
-                    : null,
-                custMaamIska: this.infoAccountingCards.get('custMaamIska').value
-                    ? this.infoAccountingCards.get('custMaamIska').value.custId
-                    : null,
-                custMaamNechasim: this.infoAccountingCards.get('custMaamNechasim').value
-                    ? this.infoAccountingCards.get('custMaamNechasim').value.custId
-                    : null,
-                supplierTaxDeductionCustId: this.infoAccountingCards.get(
-                    'supplierTaxDeductionCustId'
-                ).value
-                    ? this.infoAccountingCards.get('supplierTaxDeductionCustId').value
-                        .custId
-                    : null,
-                customerTaxDeductionCustId: this.infoAccountingCards.get(
-                    'customerTaxDeductionCustId'
-                ).value
-                    ? this.infoAccountingCards.get('customerTaxDeductionCustId').value
-                        .custId
-                    : null,
-                openingBalanceCustId: this.infoAccountingCards.get(
-                    'openingBalanceCustId'
-                ).value
-                    ? this.infoAccountingCards.get('openingBalanceCustId').value.custId
-                    : null,
-                incomeCustId: this.infoAccountingCards.get('incomeCustId').value
-                    ? this.infoAccountingCards.get('incomeCustId').value.custId
-                    : null,
-                expenseCustId: this.infoAccountingCards.get('expenseCustId').value
-                    ? this.infoAccountingCards.get('expenseCustId').value.custId
-                    : null
-            };
-            if (
-                this.infoJournalBankAndCreditComponent &&
-                this.infoJournalBankAndCreditComponent.get('bankProcessTransType')
-            ) {
-                params['bankProcessTransType'] =
-                    this.infoJournalBankAndCreditComponent.get(
-                        'bankProcessTransType'
-                    ).value;
-            }
+        const params = {
+            companyId: this.selectedCompany.companyId,
+            pettyCashCustId: this.infoAccountingCards.get('pettyCashCustId').value
+                ? this.infoAccountingCards.get('pettyCashCustId').value.custId
+                : null,
+            cancelBalanceCustId: this.infoAccountingCards.get('cancelBalanceCustId')
+                .value
+                ? this.infoAccountingCards.get('cancelBalanceCustId').value.custId
+                : null,
+            custMaamTsumot: this.infoAccountingCards.get('custMaamTsumot').value
+                ? this.infoAccountingCards.get('custMaamTsumot').value.custId
+                : null,
+            custMaamYevu: this.infoAccountingCards.get('custMaamYevu').value
+                ? this.infoAccountingCards.get('custMaamYevu').value.custId
+                : null,
+            custMaamIska: this.infoAccountingCards.get('custMaamIska').value
+                ? this.infoAccountingCards.get('custMaamIska').value.custId
+                : null,
+            custMaamNechasim: this.infoAccountingCards.get('custMaamNechasim').value
+                ? this.infoAccountingCards.get('custMaamNechasim').value.custId
+                : null,
+            supplierTaxDeductionCustId: this.infoAccountingCards.get(
+                'supplierTaxDeductionCustId'
+            ).value
+                ? this.infoAccountingCards.get('supplierTaxDeductionCustId').value
+                    .custId
+                : null,
+            customerTaxDeductionCustId: this.infoAccountingCards.get(
+                'customerTaxDeductionCustId'
+            ).value
+                ? this.infoAccountingCards.get('customerTaxDeductionCustId').value
+                    .custId
+                : null,
+            openingBalanceCustId: this.infoAccountingCards.get(
+                'openingBalanceCustId'
+            ).value
+                ? this.infoAccountingCards.get('openingBalanceCustId').value.custId
+                : null,
+            incomeCustId: this.infoAccountingCards.get('incomeCustId').value
+                ? this.infoAccountingCards.get('incomeCustId').value.custId
+                : null,
+            expenseCustId: this.infoAccountingCards.get('expenseCustId').value
+                ? this.infoAccountingCards.get('expenseCustId').value.custId
+                : null
+        };
+        // if (
+        //     this.infoJournalBankAndCreditComponent &&
+        //     this.infoJournalBankAndCreditComponent.get('bankProcessTransType')
+        // ) {
+        //     params['bankProcessTransType'] =
+        //         this.infoJournalBankAndCreditComponent.get(
+        //             'bankProcessTransType'
+        //         ).value;
+        // }
 
-            console.log('params: ', params);
-            resolve(params);
-
-            // this.sharedService.updateBookKeepingCust(params).subscribe(() => {
-            // });
+        console.log('params: ', params);
+        this.sharedService.updateBookKeepingCust(params).subscribe(() => {
         });
+        // return new Promise((resolve, reject) => {
+        //     // debugger;
+        //     // if (this.info.invalid) {
+        //     //     BrowserService.flattenControls(this.info).forEach(ac => ac.markAsDirty());
+        //     //     return;
+        //     // }
+        //     // pettyCashCustId
+        //     // custMaamIska
+        //     // custMaamNechasim
+        //     // customerTaxDeductionCustId
+        //     // custMaamTsumot
+        //     // supplierTaxDeductionCustId
+        //     const params = {
+        //         companyId: this.selectedCompany.companyId,
+        //         pettyCashCustId: this.infoAccountingCards.get('pettyCashCustId').value
+        //             ? this.infoAccountingCards.get('pettyCashCustId').value.custId
+        //             : null,
+        //         cancelBalanceCustId: this.infoAccountingCards.get('cancelBalanceCustId')
+        //             .value
+        //             ? this.infoAccountingCards.get('cancelBalanceCustId').value.custId
+        //             : null,
+        //         custMaamTsumot: this.infoAccountingCards.get('custMaamTsumot').value
+        //             ? this.infoAccountingCards.get('custMaamTsumot').value.custId
+        //             : null,
+        //         custMaamYevu: this.infoAccountingCards.get('custMaamYevu').value
+        //             ? this.infoAccountingCards.get('custMaamYevu').value.custId
+        //             : null,
+        //         custMaamIska: this.infoAccountingCards.get('custMaamIska').value
+        //             ? this.infoAccountingCards.get('custMaamIska').value.custId
+        //             : null,
+        //         custMaamNechasim: this.infoAccountingCards.get('custMaamNechasim').value
+        //             ? this.infoAccountingCards.get('custMaamNechasim').value.custId
+        //             : null,
+        //         supplierTaxDeductionCustId: this.infoAccountingCards.get(
+        //             'supplierTaxDeductionCustId'
+        //         ).value
+        //             ? this.infoAccountingCards.get('supplierTaxDeductionCustId').value
+        //                 .custId
+        //             : null,
+        //         customerTaxDeductionCustId: this.infoAccountingCards.get(
+        //             'customerTaxDeductionCustId'
+        //         ).value
+        //             ? this.infoAccountingCards.get('customerTaxDeductionCustId').value
+        //                 .custId
+        //             : null,
+        //         openingBalanceCustId: this.infoAccountingCards.get(
+        //             'openingBalanceCustId'
+        //         ).value
+        //             ? this.infoAccountingCards.get('openingBalanceCustId').value.custId
+        //             : null,
+        //         incomeCustId: this.infoAccountingCards.get('incomeCustId').value
+        //             ? this.infoAccountingCards.get('incomeCustId').value.custId
+        //             : null,
+        //         expenseCustId: this.infoAccountingCards.get('expenseCustId').value
+        //             ? this.infoAccountingCards.get('expenseCustId').value.custId
+        //             : null
+        //     };
+        //     if (
+        //         this.infoJournalBankAndCreditComponent &&
+        //         this.infoJournalBankAndCreditComponent.get('bankProcessTransType')
+        //     ) {
+        //         params['bankProcessTransType'] =
+        //             this.infoJournalBankAndCreditComponent.get(
+        //                 'bankProcessTransType'
+        //             ).value;
+        //     }
+        //
+        //     console.log('params: ', params);
+        //     resolve(params);
+        //
+        //     // this.sharedService.updateBookKeepingCust(params).subscribe(() => {
+        //     // });
+        // });
     }
 
     async sendAll() {
@@ -1264,6 +2048,11 @@ export class AddProductsComponent
         }
     }
 
+    showModalAddDependenciesFiveAndDisableCreditJournal() {
+        this.products.creditJournal = false;
+        this.showModalAddDependencies = 5;
+    }
+
     updateTransTypeStatus() {
         this.showModalTransType = false;
         this.goToCompanyProducts();
@@ -1304,6 +2093,9 @@ export class AddProductsComponent
         //     this.router.navigate(['../'], navigationExtras);
 
         // }
+        this.storageService.localStorageRemoveItem(
+            'companyId_selectProduct'
+        );
         if (this.selectedCompany && this.selectedCompany.companyId) {
             this.storageService.localStorageSetter(
                 'goToCompanyProducts',

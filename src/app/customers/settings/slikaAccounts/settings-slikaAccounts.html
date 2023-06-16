@@ -71,14 +71,14 @@
             <ng-template #nonDeletedSolkimOnly let-tokenGroup>
                 <div
                         (click)="
-            tokenGroup.children.length && toggleExpandedFor(tokenGroup.id)
+            tokenGroup.children.length && toggleExpandedFor(tokenGroup.key)
           "
                         [class.pointer]="tokenGroup.children.length > 0"
                 >
                     <i
                             *ngIf="tokenGroup.children.length"
                             [ngClass]="
-              groupExpanded[tokenGroup.id] ? 'fa-caret-up' : 'fa-caret-down'
+              groupExpanded[tokenGroup.key] ? 'fa-caret-up' : 'fa-caret-down'
             "
                             class="fa fa-fw"
                     ></i>
@@ -91,7 +91,7 @@
                     <div
                             (click)="
               (tokenGroup.children.length || deletedSolkim[tokenGroup.id]) &&
-                toggleExpandedFor(tokenGroup.id)
+                toggleExpandedFor(tokenGroup.key)
             "
                             [class.pointer]="
               tokenGroup.children.length || deletedSolkim[tokenGroup.id]
@@ -100,7 +100,7 @@
                         <i
                                 *ngIf="tokenGroup.children.length || deletedSolkim[tokenGroup.id]"
                                 [ngClass]="
-                groupExpanded[tokenGroup.id] ? 'fa-caret-up' : 'fa-caret-down'
+                groupExpanded[tokenGroup.key] ? 'fa-caret-up' : 'fa-caret-down'
               "
                                 class="fa fa-fw"
                         ></i>
@@ -166,7 +166,7 @@
                     </div>
 
                     <ng-container
-                            *ngIf="tokenGroup.children.length && groupExpanded[tokenGroup.id]"
+                            *ngIf="tokenGroup.children.length && groupExpanded[tokenGroup.key]"
                     >
                         <div
                                 (blur)="selectedSolek = null"

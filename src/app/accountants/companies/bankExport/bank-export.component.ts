@@ -19,7 +19,7 @@ import {SharedComponent} from '@app/shared/component/shared.component';
 import {ActivatedRoute, Router} from '@angular/router';
 import {fromEvent, interval, lastValueFrom, Observable, Subject, Subscription, timer, zip} from 'rxjs';
 import {AbstractControl, FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators} from '@angular/forms';
-import {debounceTime, distinctUntilChanged, retry, startWith, switchMap} from 'rxjs/operators';
+import {debounceTime, distinctUntilChanged, retry, startWith, switchMap, take} from 'rxjs/operators';
 import {SortPipe} from '@app/shared/pipes/sort.pipe';
 import {StorageService} from '@app/shared/services/storage.service';
 import {SharedService} from '@app/shared/services/shared.service';
@@ -129,6 +129,9 @@ export class BankExportComponent extends ReloadServices
     public isSearch: boolean = false;
     public allIsFolderPlus: any = null;
     public paramsForExport: any = false;
+    public hashBankDetails: any = false;
+    public synced: any = null;
+    public show_unsynced_companies: any = false;
 
     public filterExportInput: FormControl = new FormControl();
     @ViewChildren('tooltipEdit') tooltipEditRef: OverlayPanel;
@@ -185,6 +188,7 @@ export class BankExportComponent extends ReloadServices
     public subjectsForCompany: any;
     public subjectsForCompanyWhatsApp: any;
     public showExportPage: any = false;
+    public companyForHashBankPopup: any;
     readonly docToSend: {
         visible: boolean;
         form: any;
@@ -949,7 +953,8 @@ export class BankExportComponent extends ReloadServices
 
         this.sharedComponent.getCompaniesEvent
             .pipe(
-                startWith(true)
+                startWith(true),
+                take(1)
             )
             .subscribe((companiesExist: any) => {
                 if (companiesExist) {
@@ -1233,6 +1238,7 @@ export class BankExportComponent extends ReloadServices
                                 if (foundCartis) {
                                     company['izuCustId'] = foundCartis.custId;
                                 }
+                                console.log(company['izuCustId'])
                             }
                             company.companyCustomerDetailsExport.banksCardsExport = this.disabledData(company.companyCustomerDetailsExport.banksCardsExport, company, parent.companyId);
                             this.loaderGetList = false;
@@ -1547,6 +1553,8 @@ export class BankExportComponent extends ReloadServices
 
     setActiveIndexCompany(idx: any, scrollable: any) {
         this.activeIndexCompany = idx;
+        this.activeCompanyDetails = this.userService.appData.userData.companies
+            .find(co => co.companyId === this.allIzuData[idx].companyId);
         if (scrollable) {
             this.setCompanyIndex = true;
             // let size = 0;
@@ -1577,8 +1585,6 @@ export class BankExportComponent extends ReloadServices
                 this.setCompanyIndex = false;
             }, 1000);
         }
-        this.activeCompanyDetails = this.userService.appData.userData.companies
-            .find(co => co.companyId === this.activeCompany.companyId);
     }
 
     setActiveCompany(company: any) {
@@ -1694,6 +1700,10 @@ export class BankExportComponent extends ReloadServices
                                 this.userService.appData.moment().isAfter(fd.dataReceiveDate, 'day'));
                     }
                     if (this.izuSrc && this.izuSrc.length) {
+                        const syncedAll = this.izuSrc.every(it => it.synced);
+                        const syncedSome = !syncedAll ? (this.izuSrc.some(it => it.synced) ? this.izuSrc.filter(it => !it.synced) : false): false;
+                        this.synced = syncedAll ? true : syncedSome;
+
                         this.allIsFolderPlus = this.izuSrc.every(it => it.folderPlus);
                         this.filterExportInput.enable();
                     } else {
@@ -2207,7 +2217,9 @@ export class BankExportComponent extends ReloadServices
         // // console.log(ids)
         return val.idRow;
     }
-
+    trackByCompanyId(index: number, val: any): any {
+        return val.companyId;
+    }
     trackByUniqueId(index: number, val: any): any {
         return val.uniqueId + '_' + index;
     }
@@ -4253,7 +4265,7 @@ export class BankExportComponent extends ReloadServices
             parent: parent
         };
         this.exportPopupType = false;
-        if (parent.folderPlus && itemChild.fullCardSelected && itemChild.fullCardSelected.lName && (itemChild.fullCardSelected.lName.includes('-') || itemChild.fullCardSelected.lName.includes(';'))) {
+        if (parent.folderPlus && itemChild.fullCardSelected && itemChild.fullCardSelected.custId && (itemChild.fullCardSelected.custId.includes('-') || itemChild.fullCardSelected.custId.includes(';'))) {
             this.showPopupSpecialCharacters = true;
             setTimeout(() => {
                 this.resetDDCustId(this.resetParamDDCust);
@@ -4829,7 +4841,7 @@ export class BankExportComponent extends ReloadServices
                 companyId: this.exportPopupType['item'].parent.companyId,
                 custId: typeof this.exportPopupType['item'].izuCustId === 'string' ? this.exportPopupType['item'].izuCustId : this.exportPopupType['item'].izuCustId.custId,
                 fixTrans:
-                    (this.exportPopupType.popupType === 'NO_MATCH' || this.exportPopupType.popupType === 'LAST_DAY_MATCHED')
+                    (this.exportPopupType.popupType === 'HB_DELETE' || this.exportPopupType.popupType === 'NO_MATCH' || this.exportPopupType.popupType === 'LAST_DAY_MATCHED')
                         ? this.exportPopupType.fixTrans
                         : null,
                 izuDateFrom: this.exportPopupType.oldestTransIzuDate,
@@ -5301,6 +5313,34 @@ export class BankExportComponent extends ReloadServices
     shouldShowBalanceCheckAdmin(company): boolean {
         return company.izuCustId && company.izuCustId !== "לא משוייך כרטיס" &&
             company.lastExportStatus && company.lastExportStatus !== "OK" &&
-            company.lastExportStatus !== "WAIT_TO_EXPORT";
+            company.lastExportStatus !== "WAIT_TO_EXPORT" &&
+            company.lastExportStatus !== "IN_TEST";
+    }
+
+    hashBankPopup(company, companyParent) {
+        this.sharedService
+            .getHashBankInfo({
+                companyId: companyParent.companyId,
+                accountKey: company.izuCustId,
+                pageNum: 0
+            })
+            .subscribe((response) => {
+                this.hashBankDetails = response ? response['body'] : response;
+            })
+        this.companyForHashBankPopup = company;
+        this.companyForHashBankPopup.companyName = companyParent.companyName;
+        this.companyForHashBankPopup.companyHp = companyParent.companyHp;
+    }
+    paginateHashBankPopup(event: any, companyId: string) {
+        const nextRequestPage = event.page;
+        this.sharedService
+            .getHashBankInfo({
+                companyId: companyId,
+                accountKey: this.companyForHashBankPopup.izuCustId,
+                pageNum: nextRequestPage
+            })
+            .subscribe((response) => {
+                this.hashBankDetails = response ? response['body'] : response;
+            })
     }
 }

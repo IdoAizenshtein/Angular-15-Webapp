@@ -16,6 +16,7 @@ import {BrowserService} from '@app/shared/services/browser.service';
 export class StatusesComponent implements AfterViewInit {
     public showPanelDD = false;
     public parentNode: ElementRef;
+
     public statuses = {
         name: 'כל התנועות',
         checked: false,
@@ -102,6 +103,7 @@ export class StatusesComponent implements AfterViewInit {
     storageKey: string;
     @Input() type: string;
 
+
     constructor(
         public translate: TranslateService,
         public userService: UserService,
@@ -129,6 +131,13 @@ export class StatusesComponent implements AfterViewInit {
     ngAfterViewInit(): void {
         this.parentNode = this._element.nativeElement;
         this.storageKey = 'storageKey_statuses_' + this.type;
+        if(this.type === 'credit' && !this.statuses.children[2].children.some(it=> it.value === 'FUTURE_PAYMENTS_IGNORE')){
+            this.statuses.children[2].children.push({
+                name: 'לא לטיפול מעסקת תשלומים',
+                value: 'FUTURE_PAYMENTS_IGNORE',
+                checked: false
+            })
+        }
         const storageKey_statuses = this.storageService.sessionStorageGetterItem(this.storageKey);
         if (storageKey_statuses) {
             this.statuses = JSON.parse(storageKey_statuses);
@@ -168,7 +177,7 @@ export class StatusesComponent implements AfterViewInit {
         });
         this.storeSelection();
         this.statusArrCopy = JSON.parse(JSON.stringify(this.statusArr));
-        if (this.statusArr.length === 10) {
+        if ((this.type === 'bank' && this.statusArr.length === 10) || (this.type === 'credit' && this.statusArr.length === 11)) {
             this.redPointFilter = false;
             this.statusArr = null;
         } else {

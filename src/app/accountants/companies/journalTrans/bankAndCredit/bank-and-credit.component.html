@@ -5,14 +5,27 @@
      class="sq_dataReady_wr">
     <div (click)="$event.stopPropagation()" [class.hideShadow]="!accountsBarRes" class="sq_dataReady_pr">
         <div class="icon">
-            <img *ngIf="(accountsBarRes && accountsBarRes.dataReadyEnd)" src="/assets/images/dataReadyEnd.png"/>
-
-            <img *ngIf="!(accountsBarRes && accountsBarRes.dataReadyEnd)" src="/assets/images/dataReadyLoader.gif"/>
-
-            <!--            <div *ngIf="!(accountsBarRes && accountsBarRes.dataReadyEnd)"-->
-            <!--                 class="loader">-->
-            <!--                <div class="circle"></div>-->
-            <!--            </div>-->
+            <div [attr.data-pct]="accountsBarRes?.prc || 0"
+                 [class.dataReadyEnd]="(accountsBarRes && accountsBarRes.dataReadyEnd)"
+                 [class.dataReadyLoader]="!(accountsBarRes && accountsBarRes.dataReadyEnd)"
+                 id="cont">
+                <svg height="100" id="svg" version="1.1" viewPort="0 0 50 50" width="100"
+                     xmlns="http://www.w3.org/2000/svg"
+                >
+                    <circle cx="50" cy="50" fill="transparent" r="45" stroke-dasharray="282.74"
+                            stroke-dashoffset="0"></circle>
+                    <circle [ngStyle]="{ 'stroke-dashoffset': getDashoffset(accountsBarRes?.prc)  + 'px'}" cx="50"
+                            cy="50" fill="transparent" id="bar" r="45"
+                            stroke-dasharray="282.74"></circle>
+                    <svg *ngIf="(accountsBarRes && accountsBarRes.dataReadyEnd)"
+                         fill="none"
+                         height="35"
+                         viewBox="0 0 35 35" width="35" x="32" xmlns="http://www.w3.org/2000/svg" y="34">
+                        <path d="M3.20062 18.2601L15.5011 29.782L31.877 3.30428" stroke="#02225C" stroke-linecap="round"
+                              stroke-width="6"/>
+                    </svg>
+                </svg>
+            </div>
         </div>
 
         <div *ngIf="accountsBarRes" class="text">
@@ -69,6 +82,13 @@ border-radius: 4px;">
   ">
         <div style="display: flex">
             <ul class="tabs bankAndCreditTabs">
+                <li
+                        (click)="sharedComponent.mixPanelEvent('hatamot'); tabMatched = 1; setStatus('BANK_MATCH');"
+                        *ngIf="!accountsBarDataError"
+                        [class.active]="fileStatus === 'BANK_MATCH' && tabMatched === 1"
+                >
+                    הכנה לפקודות
+                </li>
                 <li (click)="sharedComponent.mixPanelEvent('bank');setStatus('BANK')"
                     [class.active]="fileStatus === 'BANK'">
                     בנק
@@ -78,20 +98,6 @@ border-radius: 4px;">
                         [class.active]="fileStatus === 'CREDIT'"
                 >
                     אשראי
-                </li>
-                <li
-                        (click)="sharedComponent.mixPanelEvent('hatamot'); tabMatched = 1; setStatus('BANK_MATCH');"
-                        *ngIf="!accountsBarDataError"
-                        [class.active]="fileStatus === 'BANK_MATCH' && tabMatched === 1"
-                >
-                    התאמות בנק ואשראי
-                </li>
-                <li
-                        (click)="sharedComponent.mixPanelEvent('hutam'); tabMatched = 2; setStatus('BANK_MATCH')"
-                        *ngIf="!accountsBarDataError"
-                        [class.active]="fileStatus === 'BANK_MATCH' && tabMatched === 2"
-                >
-                    תנועות שהותאמו
                 </li>
                 <li
                         (click)="sharedComponent.mixPanelEvent('pkudotYoman'); setStatus('CREATE_JOURNAL_TRANS')"
@@ -108,8 +114,15 @@ border-radius: 4px;">
                         ?.creditJournalItem)) ? countStatusData?.journalBankCredit : '0' }})
                     </ng-container>
                 </li>
-
+                <li
+                        (click)="sharedComponent.mixPanelEvent('hutam'); tabMatched = 2; setStatus('BANK_MATCH')"
+                        *ngIf="!accountsBarDataError"
+                        [class.active]="fileStatus === 'BANK_MATCH' && tabMatched === 2"
+                >
+                    תנועות שהותאמו
+                </li>
             </ul>
+
             <ng-container *ngIf="fileStatus === 'CREATE_JOURNAL_TRANS'">
                 <div
                         (click)="handleClick($event)"
@@ -158,9 +171,23 @@ border-radius: 4px;">
         </div>
         <ng-container *ngIf="fileStatus === 'CREATE_JOURNAL_TRANS'">
             <div class="btnNav_exportFileStatusFilter">
+                <button (click)="recommendationsModalShow = true"
+                        [escape]="false"
+                        [pTooltip]="recommendationsModalBtnTooltipText()"
+                        class="recommendationsModalBtn"
+                        tooltipPosition="top"
+                        tooltipStyleClass="recommendationsModalTooltip">
+                    <svg fill="none" height="15" viewBox="0 0 7 15" width="7" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M4.60451 0.160768C4.10219 0.331847 3.67189 0.751227 3.51173 1.22053C3.47299 1.32531 3.44543 1.57387 3.44543 1.77797C3.44543 3.21863 5.33849 3.94715 6.44791 2.93159C6.84519 2.56733 6.99417 2.24727 6.99989 1.75041C7.00535 1.25927 6.81217 0.834167 6.44245 0.514107C5.97315 0.0944672 5.20615 -0.0490525 4.60451 0.160768Z"
+                              fill="white"/>
+                        <path d="M3.22858 5.4336C2.90306 5.4778 2.38956 5.62678 1.72734 5.87508C1.06512 6.11792 1.04848 6.12884 0.993362 6.32202C0.916142 6.59242 0.861023 6.9403 0.894043 6.9403C0.910683 6.9403 1.06512 6.89064 1.24738 6.82434C1.65038 6.68628 2.31806 6.6699 2.61628 6.79678C2.87004 6.90156 2.98054 7.14466 2.98054 7.60252C2.98054 8.0661 2.87576 8.52968 2.3789 10.2959C1.88204 12.0345 1.79936 12.4871 1.83238 13.1327C1.84902 13.5079 1.8875 13.646 2.01438 13.8833C2.31806 14.4462 2.83676 14.7775 3.58738 14.8934C4.3822 15.0149 5.12736 14.8768 6.37458 14.3747L6.81606 14.1982L6.91538 13.823C6.9705 13.6132 7.00924 13.4312 6.99806 13.42C6.98714 13.4091 6.81606 13.453 6.62288 13.5139C6.2035 13.6465 5.35902 13.6408 5.14374 13.5084C4.95602 13.3815 4.8567 13.1166 4.8567 12.7191C4.8567 12.2334 4.95056 11.8249 5.4638 10.0036C5.92738 8.36432 6.04334 7.75722 6.0046 7.16676C5.93856 6.2617 5.34238 5.6325 4.38194 5.4557C4.07306 5.39486 3.56528 5.3894 3.22858 5.4336Z"
+                              fill="white"/>
+                    </svg>
+                </button>
                 <button (click)="exportFileStatusFilter !== 'IN_PROCESS' ? exportFileStatusFilterClick('IN_PROCESS') : null"
                         [class.active]="exportFileStatusFilter === 'IN_PROCESS'"
-                        class="btnNav">
+                        class="btnNav"
+                        style="margin-left: 15px">
                     קבצים בתהליך
                 </button>
                 <button #elementDD
@@ -1216,11 +1243,11 @@ cardsSelector.creditCardsSrc.length
                                                             </ng-template>
                                                         </p-dropdown>
                                                     </ng-container>
-<div *ngIf="
+                                                    <div *ngIf="
                        activeDD !== row.paymentId
                         ">
-    <div
-            [class.p-disabled]="
+                                                        <div
+                                                                [class.p-disabled]="
                             row['status'] === 'TEMP_COMMAND' ||
                             row['status'] === 'PERMANENT_COMMAND' ||
                             row['status'] === 'ADD_ITEM_IGNORE' ||
@@ -1230,25 +1257,28 @@ cardsSelector.creditCardsSrc.length
                             row['status'] === 'CUSTOMER_IGNORE' || row['status'] === 'COMPANY_IGNORE'
                           "
 
-            class="p-dropdown cardsDDInputStyle">
+                                                                class="p-dropdown cardsDDInputStyle">
 
                                                         <span class="p-element p-dropdown-label p-inputtext">
-                                                            <span class="p-element"
-                                                                  style="vertical-align: middle; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
-                                                                  #nicknameInp2
-
+                                                            <span #nicknameInp2
                                                                   [innerHTML]="
                             row['transTypeCode'] || 'בחירה' | highlight: queryString
                           "
                                                                   [pTooltip]="row['transTypeCode']"
+
                                                                   [tooltipDisabled]="nicknameInp2.clientWidth >= nicknameInp2.scrollWidth"
+                                                                  class="p-element"
+                                                                  style="vertical-align: middle; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
                                                                   tooltipPosition="top"
                                                             ></span>
 </span>
 
-        <div role="button"  class="p-dropdown-trigger" aria-expanded="true"><span class="p-dropdown-trigger-icon fa fa-fw fa-caret-down"></span></div>
-    </div>
-</div>
+                                                            <div aria-expanded="true" class="p-dropdown-trigger"
+                                                                 role="button"><span
+                                                                    class="p-dropdown-trigger-icon fa fa-fw fa-caret-down"></span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
 
                                                 </div>
                                             </ng-template>
@@ -1318,19 +1348,15 @@ cardsSelector.creditCardsSrc.length
                                     <div class="text-ellipsis">
                                         <ng-container
                                                 *ngIf="
-                      row.linkId || row.pictureLink || row.splitArrayBase;
+                      row.linkId || row.pictureLink || row.splitArrayBase || row.loanId;
                       else oldOne
                     "
                                         >
                                             <div
                                                 #nicknameInpLink
                                                 (refresh)="handler($event)"
-                                                (showArchiveModalFromTransactionAdditional)="
-                        showArchiveModalFromTransactionAdditional($event)
-                      "
-                                                *ngIf="
-                        row.linkId || row.pictureLink || row.splitArrayBase
-                      "
+                                                (showArchiveModalFromTransactionAdditional)="showArchiveModalFromTransactionAdditional($event)"
+                                                *ngIf="row.linkId || row.pictureLink || row.splitArrayBase || row.loanId"
                                                 [appTransactionAdditionalTrigger]="row"
                                                 [class.link]="!(row['partialChild'] ||
                         row['status'] === 'ADD_ITEM_IGNORE' ||
@@ -1339,8 +1365,7 @@ cardsSelector.creditCardsSrc.length
                         row['status'] === 'BIZIBOX_MATCH_IGNORE_nonMatchedTrans' ||
                         row['status'] === 'CUSTOMER_IGNORE' || row['status'] === 'COMPANY_IGNORE')"
                                                 [companyCustomerDetailsArr]="customerCustList"
-                                                [disabledClick]="
-                                                row['partialChild'] ||
+                                                [disabledClick]="row['partialChild'] ||
                         row['status'] === 'ADD_ITEM_IGNORE' ||
                         row['status'] === 'HASH_MATCH_IGNORE' ||
                         row['status'] === 'BIZIBOX_MATCH_IGNORE' ||
@@ -1351,6 +1376,7 @@ cardsSelector.creditCardsSrc.length
                                                 [isJournal]="true"
                                                 [pTooltip]="row.paymentDescTranslate"
                                                 [tooltipDisabled]="nicknameInpLink.clientWidth >= nicknameInpLink.scrollWidth"
+                                                [triggerOpenModal]="row.triggerOpenModal"
                                                 class="text-ellipsis bank-acc-details-link nicknameInpLink"
                                                 style="min-width: 0; display: inline-block;"
                                                 tooltipPosition="top"
@@ -1360,26 +1386,6 @@ cardsSelector.creditCardsSrc.length
                                         <ng-template #oldOne>
                                             <div
                                                 #nicknameInpLink
-                                                (click)="
-                                                   !row['partialChild'] &&
-                        row['status'] !== 'ADD_ITEM_IGNORE' &&
-                        row['status'] !== 'HASH_MATCH_IGNORE' &&
-                        row['status'] !== 'BIZIBOX_MATCH_IGNORE' &&
-                                                row['status'] !== 'BIZIBOX_MATCH_IGNORE_nonMatchedTrans' &&
-                        row['status'] !== 'CUSTOMER_IGNORE' && row['status'] !== 'COMPANY_IGNORE' &&
-                        row.loanId !== null
-                          ? loanDetails(row.loanId, row.companyAccountId)
-                          : null
-                      "
-                                                [class.link]="
-                                                       !row['partialChild'] &&
-                        row['status'] !== 'ADD_ITEM_IGNORE' &&
-                        row['status'] !== 'HASH_MATCH_IGNORE' &&
-                        row['status'] !== 'BIZIBOX_MATCH_IGNORE' &&
-                                                row['status'] !== 'BIZIBOX_MATCH_IGNORE_nonMatchedTrans' &&
-                        row['status'] !== 'CUSTOMER_IGNORE' && row['status'] !== 'COMPANY_IGNORE' &&
-                        row.loanId !== null
-                      "
                                                 [innerHTML]="
                         row.paymentDescTranslate | highlight: queryString
                       "
@@ -1414,7 +1420,7 @@ cardsSelector.creditCardsSrc.length
                                                 [ngStyle]="{ 'margin-right': row['hova'] ? '15px' : '0' }"
                                                 [sum]="row.total"
                                         ></app-sum-view>
-                                        {{userService.appData.userData.accountSelect ? (userService.appData.userData.accountSelect[0].currencyId | currencySymbol) : ''}}
+                                        {{userService.appData.userData.accountSelect ? (userService.appData.userData.accountSelect[0].currency | currencySymbol) : ''}}
                                     </div>
 
                                     <div
@@ -1465,6 +1471,7 @@ cardsSelector.creditCardsSrc.length
                                                 [isJournal]="true"
                                                 [pTooltip]="row['custName']"
                                                 [tooltipDisabled]="nicknameInp.clientWidth >= nicknameInp.scrollWidth"
+                                                [triggerOpenModal]="row.triggerOpenModal"
                                                 [updateTrans]="updateTransParam"
                                                 class="text-ellipsis bank-acc-details-link link"
                                                 style="min-width: 0; display: inline-block;"
@@ -1496,7 +1503,7 @@ cardsSelector.creditCardsSrc.length
                                                 <div
                                                         *ngIf="
                           (!customerCustList.length ||
-                            activeDD !== row.paymentId) &&
+                            (activeDD !== row.paymentId && !row['activeDD'])) &&
                           !row['custInactive']
                         "
                                                         style="
@@ -1539,18 +1546,15 @@ cardsSelector.creditCardsSrc.length
                                                 <ng-container
                                                         *ngIf="
                           customerCustList.length &&
-                          activeDD === row.paymentId &&
+                          (activeDD === row.paymentId || row['activeDD']) &&
                           !row['custInactive']
                         "
                                                 >
                                                     <app-dropdown-wrap
                                                         #formDropdownsCustomerCustList
                                                         (onChange)="selectCust(row['cust'])"
-                                                        (onHide)="clickLink(clickParentLink, false); hideDropCartis(); activeDDOpen = false"
-                                                        (onShow)="
-														clickLink(clickParentLink, true);
-														openDDCards(row, formDropdownsCustomerCustList)
-                          "
+                                                        (onHide)="clickLink(clickParentLink, false, row); hideDropCartis(); activeDDOpen = false"
+                                                        (onShow)="clickLink(clickParentLink, true, row);openDDCards(row, formDropdownsCustomerCustList)"
                                                         [(ngModel)]="row['cust']"
                                                         [autoDisplayFirst]="false"
                                                         [disabled]="
@@ -2849,7 +2853,7 @@ cardsSelector.creditCardsSrc.length
                     #paginator
                     (onPageChange)="paginate($event)"
                     [alwaysShow]="false"
-                    [rowsPerPageOptions]="[20, 30, 40]"
+                    [rowsPerPageOptions]="[20,50,100,200]"
                     [rows]="entryLimit"
                     [totalRecords]="bankDetails.length"
                 >
@@ -2868,69 +2872,89 @@ cardsSelector.creditCardsSrc.length
             </ng-template>
 
 
-            <div
-                    [class.show]="showFloatNav"
-                    class="bottomNavAction"
-                    style="height: 41px"
+            <div #bottomNavAction_new
+                 [class.show]="showFloatNavCopy"
+                 [ngStyle]="{'margin-left': -(bottomNavAction_new && bottomNavAction_new.offsetWidth ?  (bottomNavAction_new.offsetWidth / 2) : 171.5) +'px'}"
+                 class="bottomNavAction bottomNavAction_new"
             >
                 <div
+                        (click)="companyGetCustomer()"
                         *ngIf="
           showFloatNav && showFloatNav.isNotDisabled && showFloatNav.isNotIGNORE
         "
+                        matTooltip="{{'שיוך '+ '\n' +' כרטיס נגדי'}}"
+                        matTooltipClass="bottomNavActionTooltip"
+                        matTooltipHideDelay="0"
+                        matTooltipPosition="above"
+                        matTooltipShowDelay="0"
                 >
                     <mat-icon
-                            (click)="companyGetCustomer()"
-                            [pTooltip]="'שיוך כרטיס נגדי'"
-                            style="color: #ffffff; height: 100%; width: 21px"
-                            svgIcon="custId"
-                            tooltipPosition="top"
+                            style="color: #022258; height: 100%; width: 14px"
+                            svgIcon="union"
+
                     ></mat-icon>
                 </div>
                 <div
+                        (click)="updateIgnore(showFloatNav)"
                         *ngIf="
           showFloatNav && showFloatNav.isNotIGNORE && showFloatNav.isNotDisabled
         "
+                        matTooltip="{{'סימון '+ '\n' +' שלא לטיפול'}}"
+                        matTooltipClass="bottomNavActionTooltip"
+                        matTooltipHideDelay="0"
+                        matTooltipPosition="above"
+                        matTooltipShowDelay="0"
                 >
                     <mat-icon
-                            (click)="updateIgnore(showFloatNav)"
-                            [pTooltip]="'לא לטיפול'"
-                            style="color: #ffffff; height: 100%; width: 19px"
+                            style="color: #022258; height: 100%; width: 12px"
                             svgIcon="closeIcon"
-                            tooltipPosition="top"
-                    ></mat-icon>
-                </div>
-                <div>
-                    <mat-icon
-                            (click)="journalTransComponent.docToSend.show(null, showFloatNav)"
-                            [pTooltip]="'שליחת הודעה ללקוח'"
-                            style="color: #ffffff; height: 100%; width: 19px"
-                            svgIcon="send"
-                            tooltipPosition="top"
-                    ></mat-icon>
-                </div>
-                <div *ngIf="showFloatNav && showFloatNav.isReturnToCareFiles">
-                    <mat-icon
-                            (click)="backToCare()"
-                            [pTooltip]="'חזרה לטיפול'"
-                            style="color: #ffffff; height: 100%; width: 19px"
-                            svgIcon="cancel"
-                            tooltipPosition="top"
+
                     ></mat-icon>
                 </div>
                 <div
+                        (click)="journalTransComponent.docToSend.show(null, showFloatNav)"
+                        matTooltip="{{'שליחת '+ '\n' +' הודעה ללקוח'}}"
+                        matTooltipClass="bottomNavActionTooltip"
+                        matTooltipHideDelay="0"
+                        matTooltipPosition="above"
+                        matTooltipShowDelay="0">
+                    <mat-icon
+                            style="color: #022258; height: 100%; width: 19px"
+                            svgIcon="send"
+
+                    ></mat-icon>
+                </div>
+                <div (click)="backToCare()"
+                     *ngIf="showFloatNav && showFloatNav.isReturnToCareFiles"
+                     matTooltip="חזרה לטיפול"
+                     matTooltipClass="bottomNavActionTooltip"
+                     matTooltipHideDelay="0"
+                     matTooltipPosition="above"
+                     matTooltipShowDelay="0">
+                    <mat-icon
+                            style="color: #022258; height: 100%; width: 19px"
+                            svgIcon="cancel"
+
+                    ></mat-icon>
+                </div>
+                <div
+                        (click)="showArchiveModal = showFloatNav?.selcetedFiles"
                         *ngIf="
           showFloatNav &&
           showFloatNav.linkPic &&
           showFloatNav.isNotDisabled &&
           showFloatNav.isNotIGNORE
         "
+                        matTooltip="קישור תמונה"
+                        matTooltipClass="bottomNavActionTooltip"
+                        matTooltipHideDelay="0"
+                        matTooltipPosition="above"
+                        matTooltipShowDelay="0"
                 >
                     <mat-icon
-                            (click)="showArchiveModal = showFloatNav?.selcetedFiles"
-                            [pTooltip]="'קישור תמונה'"
-                            style="color: #ffffff; height: 100%; width: 19px"
+                            style="color: #022258; height: 100%; width: 19px"
                             svgIcon="doc"
-                            tooltipPosition="top"
+
                     ></mat-icon>
                 </div>
                 <!--			<div>-->
@@ -2942,13 +2966,19 @@ cardsSelector.creditCardsSrc.length
                 <!--				>-->
                 <!--				</mat-icon>-->
                 <!--			</div>-->
-                <div>
+                <div
+                        (click)="showOpenTicket()"
+                        matTooltip="{{'פתיחת '+ '\n' +' קריאת שירות'}}"
+                        matTooltipClass="bottomNavActionTooltip"
+                        matTooltipHideDelay="0"
+
+                        matTooltipPosition="above"
+                        matTooltipShowDelay="0">
                     <mat-icon
-                            (click)="showOpenTicket()"
-                            [pTooltip]="'פתיחת קריאת שירות'"
-                            style="width: 21px; color: #ffffff"
+
+                            style="width: 21px; color: #022258"
                             svgIcon="icon_support"
-                            tooltipPosition="top">
+                    >
                     </mat-icon>
                 </div>
             </div>
@@ -3272,8 +3302,7 @@ cardsSelector.creditCardsSrc.length
                   : currentPage * entryLimit + entryLimit;
               let i = index;
               trackBy: trackById
-            "
-                        >
+            ">
                             <div
                                     (click)="
                 activeDD = row['ccardTransId'];
@@ -3303,7 +3332,9 @@ cardsSelector.creditCardsSrc.length
                 row['status'] === 'HASH_MATCH_IGNORE' ||
                 row['status'] === 'BIZIBOX_MATCH_IGNORE' ||
                                 row['status'] === 'BIZIBOX_MATCH_IGNORE_nonMatchedTrans' ||
-                row['status'] === 'CUSTOMER_IGNORE' || row['status'] === 'COMPANY_IGNORE'
+                row['status'] === 'CUSTOMER_IGNORE'
+                || row['status'] === 'COMPANY_IGNORE'
+                || row['status'] === 'FUTURE_PAYMENTS_IGNORE'
               "
                                     [class.activeBg]="activeDD === row['ccardTransId']"
                                     [class.active]="selectedTransaction === row"
@@ -3374,7 +3405,6 @@ cardsSelector.creditCardsSrc.length
                                             tooltipPosition="bottom"
                                     ></i>
                                 </div>
-
                                 <div class="text-ellipsis">
                                     <div
                                         #transDesc
@@ -3383,7 +3413,10 @@ cardsSelector.creditCardsSrc.length
                     row['status'] !== 'HASH_MATCH_IGNORE' &&
                     row['status'] !== 'BIZIBOX_MATCH_IGNORE' &&
                                         row['status'] !== 'BIZIBOX_MATCH_IGNORE_nonMatchedTrans' &&
-                    row['status'] !== 'CUSTOMER_IGNORE' && row['status'] !== 'COMPANY_IGNORE' &&
+                    row['status'] !== 'CUSTOMER_IGNORE'  &&
+                      row['status'] !== 'FUTURE_PAYMENTS_IGNORE'  &&
+
+                    row['status'] !== 'COMPANY_IGNORE' &&
                     row['status'] !== 'TEMP_COMMAND' &&
                     row['status'] !== 'PERMANENT_COMMAND'
                   "
@@ -3404,7 +3437,9 @@ cardsSelector.creditCardsSrc.length
                     row['status'] !== 'HASH_MATCH_IGNORE' &&
                     row['status'] !== 'BIZIBOX_MATCH_IGNORE' &&
                                         row['status'] !== 'BIZIBOX_MATCH_IGNORE_nonMatchedTrans' &&
-                    row['status'] !== 'CUSTOMER_IGNORE' && row['status'] !== 'COMPANY_IGNORE' &&
+                    row['status'] !== 'CUSTOMER_IGNORE' &&
+                                           row['status'] !== 'FUTURE_PAYMENTS_IGNORE'  &&
+                     row['status'] !== 'COMPANY_IGNORE' &&
                     row['status'] !== 'TEMP_COMMAND' &&
                     row['status'] !== 'PERMANENT_COMMAND'
                   "
@@ -3477,7 +3512,9 @@ cardsSelector.creditCardsSrc.length
                           row['status'] === 'HASH_MATCH_IGNORE' ||
                           row['status'] === 'BIZIBOX_MATCH_IGNORE' ||
                                                     row['status'] === 'BIZIBOX_MATCH_IGNORE_nonMatchedTrans' ||
-                          row['status'] === 'CUSTOMER_IGNORE' || row['status'] === 'COMPANY_IGNORE'
+                          row['status'] === 'CUSTOMER_IGNORE' ||
+                                                     row['status'] === 'FUTURE_PAYMENTS_IGNORE' ||
+                           row['status'] === 'COMPANY_IGNORE'
                         "
                                                     [dropdownIcon]="'fa fa-fw fa-caret-down'"
 
@@ -3629,7 +3666,6 @@ cardsSelector.creditCardsSrc.length
                                     &nbsp;
                                     {{row.currencyId | currencySymbol}}
                                 </div>
-
                                 <div class="text-ellipsis dropdownflex" style="justify-content: space-between">
                                     <!--                            <div class="text-ellipsis btnDDArrowAfter btnDDArrow"-->
                                     <!--                                 (click)="(row['status']!=='DISABLED' && row['status']!=='IGNORE') ? companyGetCustomer(row) : null"-->
@@ -3656,7 +3692,7 @@ cardsSelector.creditCardsSrc.length
                                             <div
                                                     *ngIf="
                         !customerCustList.length ||
-                        activeDD !== row['ccardTransId']
+                        (activeDD !== row['ccardTransId'] && !row['activeDD'])
                       "
                                                     style="
                         flex: 1;
@@ -3694,7 +3730,7 @@ cardsSelector.creditCardsSrc.length
                       "
                                                 *ngIf="
                         customerCustList.length &&
-                        activeDD === row['ccardTransId']
+                        (activeDD === row['ccardTransId'] || row['activeDD'])
                       "
                                                 [(ngModel)]="row['cust']"
                                                 [autoDisplayFirst]="false"
@@ -3707,6 +3743,8 @@ cardsSelector.creditCardsSrc.length
                         row['status'] === 'BIZIBOX_MATCH_IGNORE' ||
                                                 row['status'] === 'BIZIBOX_MATCH_IGNORE_nonMatchedTrans' ||
                         row['status'] === 'CUSTOMER_IGNORE' || row['status'] === 'COMPANY_IGNORE'
+                        || row['status'] === 'FUTURE_PAYMENTS_IGNORE'
+
                       "
                                                 [dropdownIcon]="'fa fa-fw fa-caret-down'"
                                                 [filter]="true"
@@ -4143,6 +4181,22 @@ cardsSelector.creditCardsSrc.length
                       vertical-align: middle;
                     "
                                         />
+                                        <img
+                                                *ngIf="
+                      row['status'] === 'FUTURE_PAYMENTS_IGNORE'
+                    "
+                                                [tooltipStyleClass]="'p-tooltip-one-line'"
+                                                appendTo="body"
+                                                class="left-space"
+                                                pTooltip="לא לטיפול מעסקת תשלומים"
+                                                src="/assets/images/CUSTOMER_IGNORE.png"
+                                                style="
+                      height: 18px !important;
+                      width: 18px !important;
+                      vertical-align: middle;
+                    "
+                                        />
+
 
                                         <mat-icon
                                                 *ngIf="
@@ -4150,6 +4204,7 @@ cardsSelector.creditCardsSrc.length
                       row['status'] !== 'RECHECK' &&
                       row['status'] !== 'CHECKED' &&
                       row['status'] !== 'CUSTOMER_IGNORE' &&
+                             row['status'] !== 'FUTURE_PAYMENTS_IGNORE' &&
                       row['status'] !== 'BIZIBOX_MATCH_IGNORE' &&
                            row['status'] !== 'BIZIBOX_MATCH_IGNORE_nonMatchedTrans' &&
                       row['status'] !== 'COMPANY_IGNORE'
@@ -4204,6 +4259,7 @@ cardsSelector.creditCardsSrc.length
                       row['status'] !== 'BIZIBOX_MATCH_IGNORE' &&
                                             row['status'] !== 'BIZIBOX_MATCH_IGNORE_nonMatchedTrans' &&
                       row['status'] !== 'CUSTOMER_IGNORE' &&
+                                            row['status'] !== 'FUTURE_PAYMENTS_IGNORE' &&
                       row['status'] !== 'COMPANY_IGNORE')
                       ||
                       (row['journalPaymentPrompt'] && row['splitMultiPayment'] && !row['transTypeCode'] &&(row['status'] === 'TEMP_COMMAND' || row['status'] === 'PERMANENT_COMMAND'))
@@ -4559,7 +4615,7 @@ position: absolute;left: 1px;top: 2px;color: #fff;font-size: 12px;font-weight: 6
                     #paginator
                     (onPageChange)="paginate($event)"
                     [alwaysShow]="false"
-                    [rowsPerPageOptions]="[20, 30, 40]"
+                    [rowsPerPageOptions]="[20,50,100,200]"
                     [rows]="entryLimit"
                     [totalRecords]="cardDetails.length"
                 >
@@ -4589,86 +4645,121 @@ cardsSelector.creditCardsSrc &&
             </ng-template>
 
             <div
-                    [class.show]="showFloatNav"
-                    class="bottomNavAction"
-                    style="height: 41px"
+                #bottomNavAction_new
+                [class.show]="showFloatNavCopy"
+                [ngStyle]="{'margin-left': -(bottomNavAction_new && bottomNavAction_new.offsetWidth ?  (bottomNavAction_new.offsetWidth / 2) : 171.5) +'px'}"
+                class="bottomNavAction bottomNavAction_new"
             >
                 <div
+                        (click)="companyGetCustomer()"
                         *ngIf="
           showFloatNav && showFloatNav.isNotDisabled && showFloatNav.isNotIGNORE
         "
+                        matTooltip="{{'שיוך '+ '\n' +' כרטיס נגדי'}}"
+                        matTooltipClass="bottomNavActionTooltip"
+                        matTooltipHideDelay="0"
+                        matTooltipPosition="above"
+                        matTooltipShowDelay="0"
                 >
                     <mat-icon
-                            (click)="companyGetCustomer()"
-                            [pTooltip]="'שיוך כרטיס נגדי'"
-                            style="color: #ffffff; height: 100%; width: 21px"
-                            svgIcon="custId"
-                            tooltipPosition="top"
+
+                            style="color: #022258; height: 100%; width: 14px"
+                            svgIcon="union"
+
                     ></mat-icon>
                 </div>
                 <div
+                        (click)="updateIgnore(showFloatNav)"
                         *ngIf="
           showFloatNav && showFloatNav.isNotIGNORE && showFloatNav.isNotDisabled
         "
+                        matTooltip="{{'סימון '+ '\n' +' שלא לטיפול'}}"
+                        matTooltipClass="bottomNavActionTooltip"
+                        matTooltipHideDelay="0"
+                        matTooltipPosition="above"
+                        matTooltipShowDelay="0"
                 >
                     <mat-icon
-                            (click)="updateIgnore(showFloatNav)"
-                            [pTooltip]="'לא לטיפול'"
-                            style="color: #ffffff; height: 100%; width: 19px"
+                            style="color: #022258; height: 100%; width: 12px"
                             svgIcon="closeIcon"
-                            tooltipPosition="top"
-                    ></mat-icon>
-                </div>
-                <div>
-                    <mat-icon
-                            (click)="journalTransComponent.docToSend.show(null, showFloatNav)"
-                            [pTooltip]="'שליחת הודעה ללקוח'"
-                            style="color: #ffffff; height: 100%; width: 19px"
-                            svgIcon="send"
-                            tooltipPosition="top"
-                    ></mat-icon>
-                </div>
-                <div *ngIf="showFloatNav && showFloatNav.isReturnToCareFiles">
-                    <mat-icon
-                            (click)="backToCare()"
-                            [pTooltip]="'חזרה לטיפול'"
-                            style="color: #ffffff; height: 100%; width: 19px"
-                            svgIcon="cancel"
-                            tooltipPosition="top"
+
                     ></mat-icon>
                 </div>
                 <div
+                        (click)="journalTransComponent.docToSend.show(null, showFloatNav)"
+                        matTooltip="{{'שליחת '+ '\n' +' הודעה ללקוח'}}"
+                        matTooltipClass="bottomNavActionTooltip"
+                        matTooltipHideDelay="0"
+
+                        matTooltipPosition="above"
+                        matTooltipShowDelay="0">
+                    <mat-icon
+
+                            style="color: #022258; height: 100%; width: 19px"
+                            svgIcon="send"
+                    ></mat-icon>
+                </div>
+                <div (click)="backToCare()"
+                     *ngIf="showFloatNav && showFloatNav.isReturnToCareFiles"
+                     [matTooltip]="'חזרה לטיפול'"
+                     matTooltipClass="bottomNavActionTooltip"
+                     matTooltipHideDelay="0"
+
+                     matTooltipPosition="above"
+                     matTooltipShowDelay="0">
+                    <mat-icon
+
+                            style="color: #022258; height: 100%; width: 19px"
+                            svgIcon="cancel"
+                    ></mat-icon>
+                </div>
+                <div
+                        (click)="showArchiveModal = showFloatNav?.selcetedFiles"
                         *ngIf="
           showFloatNav &&
           showFloatNav.linkPic &&
           showFloatNav.isNotDisabled &&
           showFloatNav.isNotIGNORE
         "
+                        [matTooltip]="'קישור תמונה'"
+
+                        matTooltipClass="bottomNavActionTooltip"
+                        matTooltipHideDelay="0"
+                        matTooltipPosition="above"
+                        matTooltipShowDelay="0"
                 >
                     <mat-icon
-                            (click)="showArchiveModal = showFloatNav?.selcetedFiles"
-                            [pTooltip]="'קישור תמונה'"
-                            style="color: #ffffff; height: 100%; width: 19px"
+
+                            style="color: #022258; height: 100%; width: 19px"
                             svgIcon="doc"
-                            tooltipPosition="top"
                     ></mat-icon>
                 </div>
-                <div>
+                <div
+                        [matTooltip]="'הדפסה'"
+                        matTooltipClass="bottomNavActionTooltip"
+                        matTooltipHideDelay="0"
+                        matTooltipPosition="above"
+                        matTooltipShowDelay="0">
                     <mat-icon
-                            [pTooltip]="'הדפסה'"
-                            style="width: 21px; color: #ffffff"
+
+                            style="width: 21px; color: #022258"
                             svgIcon="print"
-                            tooltipPosition="top"
                     >
                     </mat-icon>
                 </div>
-                <div>
+                <div
+                        (click)="showOpenTicket()"
+                        matTooltip="{{'פתיחת '+ '\n' +' קריאת שירות'}}"
+                        matTooltipClass="bottomNavActionTooltip"
+                        matTooltipHideDelay="0"
+
+                        matTooltipPosition="above"
+                        matTooltipShowDelay="0">
                     <mat-icon
-                            (click)="showOpenTicket()"
-                            [pTooltip]="'פתיחת קריאת שירות'"
-                            style="width: 21px; color: #ffffff"
+
+                            style="width: 21px; color: #022258"
                             svgIcon="icon_support"
-                            tooltipPosition="top">
+                    >
                     </mat-icon>
                 </div>
             </div>
@@ -5358,7 +5449,6 @@ cardsSelector.creditCardsSrc &&
                     <!--                    </div>-->
                     <ng-container
                             *ngIf="journalTransData && journalTransData.length && journalTransData[indexSelectedJournal] && journalTransData[indexSelectedJournal]?.transData && journalTransData[indexSelectedJournal]?.transData.length">
-
                         <ng-scrollbar
                                 class="custom-scrollbar"
                                 thumbClass="scrollbar-thumb"
@@ -6532,23 +6622,36 @@ cardsSelector.creditCardsSrc &&
                 </div>
             </div>
 
-            <div [class.show]="showFloatNav" class="bottomNavAction">
-                <div [class.disabled]="!showFloatNav?.selcetedFilesEnabled">
+            <div #bottomNavAction_new [class.show]="showFloatNavCopy"
+                 [ngStyle]="{'margin-left': -(bottomNavAction_new && bottomNavAction_new.offsetWidth ?  (bottomNavAction_new.offsetWidth / 2) : 171.5) +'px'}"
+                 class="bottomNavAction bottomNavAction_new">
+                <div (click)="showFloatNav?.selcetedFilesEnabled ? backToCare() : null"
+                     [class.disabled]="!showFloatNav?.selcetedFilesEnabled"
+                     matTooltip="{{'ניכוי כרטיס '+ '\n' +' וחזרה לטיפול'}}"
+                     matTooltipClass="bottomNavActionTooltip"
+                     matTooltipHideDelay="0"
+
+                     matTooltipPosition="above"
+                     matTooltipShowDelay="0">
                     <mat-icon
-                            (click)="showFloatNav?.selcetedFilesEnabled ? backToCare() : null"
-                            [pTooltip]="'ניכוי כרטיס וחזרה לטיפול'"
-                            style="color: #ffffff; height: 100%; width: 19px"
+
+                            style="color: #022258; height: 100%; width: 19px"
                             svgIcon="cancel"
-                            tooltipPosition="top"
+
                     ></mat-icon>
                 </div>
-                <div>
+                <div
+                        (click)="showArchiveModal = showFloatNav?.selcetedFiles"
+                        [matTooltip]="'קישור חשבונית'"
+                        matTooltipClass="bottomNavActionTooltip"
+                        matTooltipHideDelay="0"
+
+                        matTooltipPosition="above"
+                        matTooltipShowDelay="0">
                     <mat-icon
-                            (click)="showArchiveModal = showFloatNav?.selcetedFiles"
-                            [pTooltip]="'קישור חשבונית'"
-                            style="color: #ffffff; height: 100%; width: 19px"
+
+                            style="color: #022258; height: 100%; width: 19px"
                             svgIcon="doc"
-                            tooltipPosition="top"
                     ></mat-icon>
                 </div>
                 <!--            <div>-->
@@ -6560,24 +6663,35 @@ cardsSelector.creditCardsSrc &&
                 <!--            height: 100%;-->
                 <!--            width: 19px;"></mat-icon>-->
                 <!--            </div>-->
-                <div [class.disabled]="!showFloatNav?.selcetedFilesEnabled">
-                    <i
-                            (click)="
+                <div (click)="
             showFloatNav?.selcetedFilesEnabled ? (fileToRemove = true) : null
           "
-                            [pTooltip]="'מחיקה'"
-                            class="fas fa-trash"
-                            style="color: #ffffff; font-size: 20px"
-                            tooltipPosition="top"
-                    ></i>
-                </div>
-                <div>
+                     [class.disabled]="!showFloatNav?.selcetedFilesEnabled"
+                     [matTooltip]="'מחיקה'"
+                     matTooltipClass="bottomNavActionTooltip"
+                     matTooltipHideDelay="0"
+                     matTooltipPosition="above"
+                     matTooltipShowDelay="0">
                     <mat-icon
-                            (click)="showOpenTicket()"
-                            [pTooltip]="'פתיחת קריאת שירות'"
-                            style="width: 21px; color: #ffffff"
+
+                            style="color: #022258; height: 100%; width: 19px"
+                            svgIcon="trash_new"
+                    ></mat-icon>
+                </div>
+                <div
+                        (click)="showOpenTicket()"
+                        matTooltip="{{'פתיחת '+ '\n' +' קריאת שירות'}}"
+                        matTooltipClass="bottomNavActionTooltip"
+                        matTooltipHideDelay="0"
+
+                        matTooltipPosition="above"
+                        matTooltipShowDelay="0">
+
+                    <mat-icon
+
+                            style="width: 21px; color: #022258"
                             svgIcon="icon_support"
-                            tooltipPosition="top">
+                    >
                     </mat-icon>
                 </div>
             </div>
@@ -12959,13 +13073,11 @@ editReceiptModalShow
                                     *ngIf="srcCurrencyId !== 1 || (srcCurrencyId === 1 && currencyIdDD && currencyIdDD['id'] !== 1)">
                                 <div class="border"></div>
                                 <ng-container
-                                        *ngTemplateOutlet="rowToSplit?.hova ? (i > 0 && journalPaymentPrompt ? emptyColTemp : incomeTempILS) :
-                                    (i === 0 && journalPaymentPrompt ? emptyColTemp : expenseTempILS)"
+                                        *ngTemplateOutlet="rowToSplit?.hova ? incomeTempILS : expenseTempILS"
                                 >
                                 </ng-container>
                                 <ng-container
-                                        *ngTemplateOutlet="rowToSplit?.hova ? (i > 0 && journalPaymentPrompt ? emptyColTemp : expenseTempILS) :
-                                    (i === 0 && journalPaymentPrompt ? emptyColTemp : incomeTempILS)"
+                                        *ngTemplateOutlet="rowToSplit?.hova ? expenseTempILS : incomeTempILS"
                                 >
                                 </ng-container>
                             </ng-container>
@@ -12973,13 +13085,11 @@ editReceiptModalShow
                                     *ngIf="srcCurrencyId !== 1 || (srcCurrencyId === 1 && currencyIdDD && currencyIdDD['id'] !== 1)">
                                 <div class="border"></div>
                                 <ng-container
-                                        *ngTemplateOutlet="rowToSplit?.hova ? (i > 0 && journalPaymentPrompt ? emptyColTemp : incomeTempMatah) :
-                                    (i === 0 && journalPaymentPrompt ? emptyColTemp : expenseTempMatah)"
+                                        *ngTemplateOutlet="rowToSplit?.hova ? incomeTempMatah : expenseTempMatah"
                                 >
                                 </ng-container>
                                 <ng-container
-                                        *ngTemplateOutlet="rowToSplit?.hova ? (i > 0 && journalPaymentPrompt ? emptyColTemp : expenseTempMatah) :
-                                    (i === 0 && journalPaymentPrompt ? emptyColTemp : incomeTempMatah)"
+                                        *ngTemplateOutlet="rowToSplit?.hova ? expenseTempMatah : incomeTempMatah"
                                 >
                                 </ng-container>
                             </ng-container>
@@ -14278,7 +14388,7 @@ editReceiptModalShow
 
                                             <p
                                                     *ngIf="
-                          !arrReceipt.controls[i].get('paymentTotal').value
+                          !arrReceipt.controls[i].get('paymentTotal').value && !journalPaymentPrompt
                         "
                                                     class="text-item text-ellipsis"
                                             >
@@ -14338,7 +14448,7 @@ editReceiptModalShow
                                             ></app-sum-view>
 
                                             <p
-                                                    *ngIf="!arrReceipt.controls[i].get('total').value"
+                                                    *ngIf="!arrReceipt.controls[i].get('total').value && !journalPaymentPrompt"
                                                     class="text-item text-ellipsis"
                                             >
                                                 0
@@ -14388,7 +14498,7 @@ editReceiptModalShow
 
                                                 <p
                                                         *ngIf="
-                            !arrReceipt.controls[i].get('paymentNikui').value
+                            !arrReceipt.controls[i].get('paymentNikui').value && !journalPaymentPrompt
                           "
                                                         class="text-item text-ellipsis"
                                                 >
@@ -14461,7 +14571,7 @@ editReceiptModalShow
 
                                             <p
                                                     *ngIf="
-                          !arrReceipt.controls[i].get('paymentTotal').value
+                          !arrReceipt.controls[i].get('paymentTotal').value && !journalPaymentPrompt
                         "
                                                     class="text-item text-ellipsis"
                                             >
@@ -14504,7 +14614,7 @@ editReceiptModalShow
                                             ></app-sum-view>
 
                                             <p
-                                                    *ngIf="!arrReceipt.controls[i].get('totalMatah').value"
+                                                    *ngIf="!arrReceipt.controls[i].get('totalMatah').value && !journalPaymentPrompt"
                                                     class="text-item text-ellipsis"
                                             >
                                                 0
@@ -14554,7 +14664,7 @@ editReceiptModalShow
 
                                                 <p
                                                         *ngIf="
-                            !arrReceipt.controls[i].get('paymentNikuiMatah').value
+                            !arrReceipt.controls[i].get('paymentNikuiMatah').value && !journalPaymentPrompt
                           "
                                                         class="text-item text-ellipsis"
                                                 >
@@ -14654,7 +14764,7 @@ editReceiptModalShow
 
                                             <p
                                                     *ngIf="
-                          !arrReceipt.controls[i].get('paymentTotalMatah').value
+                          !arrReceipt.controls[i].get('paymentTotalMatah').value && !journalPaymentPrompt
                         "
                                                     class="text-item text-ellipsis"
                                             >
@@ -16852,7 +16962,6 @@ responseRestPath && showModalCheckFolderFile === 'SYNC_ERROR'
     </p-dialog>
 </ng-container>
 
-
 <ng-container *ngIf="showNotUpToDatePopup">
     <p-dialog (onHide)="showNotUpToDatePopup = false;"
               (visibleChange)="showNotUpToDatePopup = false"
@@ -17557,4 +17666,104 @@ color: #02225C;">
     </p-dialog>
 </ng-container>
 
+<ng-container *ngIf="recommendationsModalShow">
+    <p-dialog (onHide)="recommendationsModalShow = false"
+              (visibleChange)="recommendationsModalShow = false"
+              [draggable]="false"
+              [modal]="true"
+              [resizable]="false"
+              [visible]="recommendationsModalShow"
+              appendTo="body"
+              styleClass="recommendationsModal">
+        <h1>
+            <div class="recommendationsModalBtn">
+                <svg fill="none" height="27" viewBox="0 0 11 27" width="11" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M6.6868 0.378328C5.78871 0.684198 5.01938 1.434 4.73304 2.27305C4.66378 2.46038 4.6145 2.90478 4.6145 3.26969C4.6145 5.84541 7.99906 7.14792 9.98257 5.33222C10.6929 4.68097 10.9592 4.10874 10.9694 3.22041C10.9792 2.34231 10.6338 1.58229 9.97281 1.01006C9.13376 0.259791 7.76245 0.00319529 6.6868 0.378328Z"
+                          fill="white"/>
+                    <path d="M4.22673 9.80548C3.64474 9.88451 2.72667 10.1509 1.5427 10.5948C0.35873 11.029 0.328979 11.0485 0.230431 11.3939C0.0923712 11.8773 -0.0061764 12.4993 0.0528594 12.4993C0.0826097 12.4993 0.358729 12.4105 0.684588 12.292C1.4051 12.0451 2.59883 12.0158 3.13202 12.2427C3.58571 12.43 3.78327 12.8647 3.78327 13.6833C3.78327 14.5121 3.59594 15.3409 2.70761 18.4986C1.81928 21.6071 1.67146 22.4164 1.7305 23.5706C1.76025 24.2414 1.82904 24.4882 2.05589 24.9126C2.59883 25.919 3.52621 26.5112 4.86822 26.7185C6.28927 26.9356 7.62152 26.6888 9.8514 25.7912L10.6407 25.4755L10.8183 24.8048C10.9168 24.4296 10.9861 24.1042 10.9661 24.0842C10.9466 24.0647 10.6407 24.1433 10.2953 24.252C9.54553 24.4891 8.0357 24.4789 7.65081 24.2423C7.31519 24.0154 7.13762 23.5418 7.13762 22.831C7.13762 21.9627 7.30543 21.2324 8.22304 17.9761C9.05186 15.0453 9.25918 13.9598 9.18992 12.9042C9.07185 11.286 8.00595 10.1611 6.2888 9.845C5.73656 9.73622 4.82871 9.72646 4.22673 9.80548Z"
+                          fill="white"/>
+                </svg>
+            </div>
+            המלצה להתאמות אוטומטיות בחשבשבת
+        </h1>
 
+        <ng-container *ngIf="!userService?.appData?.userData?.companySelect?.folderPlus">
+            <div class="pathCopy">
+                <div>
+                    <h3>
+                        שימו לב!
+                    </h3>
+                </div>
+                <div>
+                    <p>
+                        קובץ הפקודות ירד לתיקיית - C:/bizibox/Agent/Folder
+                    </p>
+                    <p style="display: flex;align-items: center;">
+                        ניתן להעתיק את הנתיב בלחיצה על האייקון
+
+                        <i (click)="copyText('C:/bizibox/Agent/Folder')" style="cursor: pointer;height: 24px;margin: 0px 7px;">
+                            <svg width="22" height="24" viewBox="0 0 22 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <rect x="5.77527" y="5.75" width="14.6006" height="17.5" stroke="#009CDE" stroke-width="1.5"/>
+                                <path d="M3.86163 20H1V1H14.0817V4" stroke="#009CDE" stroke-width="1.5"/>
+                            </svg>
+                        </i>
+
+                        ולהדביקו בחשבשבת.
+                    </p>
+
+                </div>
+            </div>
+        </ng-container>
+
+        <div style="height: 600px;">
+            <ng-scrollbar
+                    [autoHeightDisabled]="false"
+                    class="custom-scrollbar"
+                    pointerEventsMethod="scrollbar"
+                    thumbClass="scrollbar-thumb"
+                    track="all"
+                    trackClass="scrollbar">
+                <p class="info">
+                    על מנת לקבל התאמה מיטבית לנתונים שנוצרו ע”י ביזיבוקס, נדרש להגדיר את ההתאמות האוטומטיות
+                    <br>
+                    בחשבשבת באופן הבא:
+                </p>
+                <div class="sub_info">
+                    <div>
+                        <i>
+                            <b>1</b>
+                        </i>
+                    </div>
+
+
+                    <p>
+                        לאחר קליטת המנה למנה קבועה יש להיכנס להתאמות וניתוחי כרטיסים אוטומטיים.
+                    </p>
+                </div>
+                <img src="/assets/images/recommendationsModalImg.jpg"/>
+                <ng-container *ngIf="userService?.appData?.userData?.companySelect?.folderPlus">
+                    <div class="sub_info" style="align-items: baseline;">
+                        <div>
+                            <i>
+                                <b>2</b>
+                            </i>
+                        </div>
+                        <p>
+                            יש לבחור בפתיחת התאמת בנק ולקלוט את קובץ ההגדרות. להורדת קובץ ההגדרות
+                            <span (click)="downloadFileByPath('הגדרת התאמות אוטומטיות ביזיבוקס.rcb')">
+                    לחצו כאן
+                </span>
+
+                            להסבר על ההגדרה באופן ידני
+                            <span (click)="downloadFileByPath('המלצה להתאמות אוטומטיות בחשבשבת.pdf')">
+                    לחצו כאן
+                </span>
+                        </p>
+
+                    </div>
+                </ng-container>
+            </ng-scrollbar>
+        </div>
+
+    </p-dialog>
+</ng-container>

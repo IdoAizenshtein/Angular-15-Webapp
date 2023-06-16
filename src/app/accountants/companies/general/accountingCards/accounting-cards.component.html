@@ -1,5 +1,5 @@
 <div
-		[appScrollHeight]="!isModal ? 330 : 440"
+		[appScrollHeight]="!isModal ? 330 : null"
 		class="scrollPage scrollbar-dynamic"
 >
 	<div *ngIf="loader" class="loader">
@@ -9,12 +9,6 @@
 			[ngStyle]="{ 'margin-top': isModal ? '0px' : '40px' }"
 			class="infoCompanyForm"
 	>
-		<div
-				*ngIf="isModal"
-				style="font-size: 14px; padding-bottom: 20px; color: #022258"
-		>
-			שדה חובה <i style="color: #df0000">*</i>
-		</div>
 		<form [formGroup]="info" novalidate>
 			<div class="columns">
 				<div class="sett-table">

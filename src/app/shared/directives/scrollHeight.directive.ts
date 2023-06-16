@@ -203,7 +203,7 @@ export type ContainerType = 'body' | 'parent';
     selector: '[appScrollHeight]'
 })
 export class ScrollHeightDirective implements OnInit, OnDestroy, OnChanges {
-    @Input() appScrollHeight: string | number;
+    @Input() appScrollHeight: string | number | null;
     @Input() appWithoutScroll: boolean = true;
     @Input() appScrollByChildrenContent: boolean = false;
 
@@ -276,29 +276,31 @@ export class ScrollHeightDirective implements OnInit, OnDestroy, OnChanges {
     }
 
     private getScrollSize(size: any = 75): void {
-        if (
-            this.appScrollByChildrenContent &&
-            this.el.nativeElement &&
-            this.el.nativeElement.children
-        ) {
-            this.offsetHeightContent = Array.from(
+        if(size !== null){
+            if (
+                this.appScrollByChildrenContent &&
+                this.el.nativeElement &&
                 this.el.nativeElement.children
-            ).reduce((total, item, currentIndex) => {
-                return total + item['offsetHeight'];
-            }, 0);
-        }
-        if (this.appendTo === 'parent') {
-            this.setScrollSize(size);
-        } else {
-            this.setScrollSize(typeof size === 'string' ? size
-                :
-                (window.innerHeight ||
-                    document.documentElement.clientHeight ||
-                    document.body.clientHeight) -
-                size -
-                // + ((this.userService.appData && this.userService.appData.inFullScreenMode) ? 75 : 0)
-                1
-            );
+            ) {
+                this.offsetHeightContent = Array.from(
+                    this.el.nativeElement.children
+                ).reduce((total, item, currentIndex) => {
+                    return total + item['offsetHeight'];
+                }, 0);
+            }
+            if (this.appendTo === 'parent') {
+                this.setScrollSize(size);
+            } else {
+                this.setScrollSize(typeof size === 'string' ? size
+                    :
+                    (window.innerHeight ||
+                        document.documentElement.clientHeight ||
+                        document.body.clientHeight) -
+                    size -
+                    // + ((this.userService.appData && this.userService.appData.inFullScreenMode) ? 75 : 0)
+                    1
+                );
+            }
         }
     }
 

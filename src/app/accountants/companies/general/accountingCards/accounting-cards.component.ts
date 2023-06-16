@@ -481,86 +481,88 @@ export class AccountingCardsComponent
                             this.maamCustIds13 = this.maamCustIds.filter(it => it.hashCartisCodeId === '13');
                             this.maamCustIds14 = this.maamCustIds.filter(it => it.hashCartisCodeId === '14');
 
+                            let custMaamTsumot = responseRest.custMaamTsumot;
+                            if (custMaamTsumot) {
+                                custMaamTsumot = this.maamCustIds.find(
+                                    (it) => it.custId === responseRest.custMaamTsumot
+                                );
+                                if (custMaamTsumot && !this.maamCustIds13.some(it => it.custId === responseRest.custMaamTsumot)) {
+                                    this.maamCustIds13.push(custMaamTsumot);
+                                }
+                            }
+                            let custMaamNechasim = responseRest.custMaamNechasim;
+                            if (custMaamNechasim) {
+                                custMaamNechasim = this.maamCustIds.find(
+                                    (it) => it.custId === responseRest.custMaamNechasim
+                                );
+                                if (custMaamNechasim && !this.maamCustIds14.some(it => it.custId === responseRest.custMaamNechasim)) {
+                                    this.maamCustIds14.push(custMaamNechasim);
+                                }
+                            }
+                            let custMaamIska = responseRest.custMaamIska;
+                            if (custMaamIska) {
+                                custMaamIska = this.maamCustIds.find(
+                                    (it) => it.custId === responseRest.custMaamIska
+                                );
+                                if (custMaamIska && !this.maamCustIds12.some(it => it.custId === responseRest.custMaamIska)) {
+                                    this.maamCustIds12.push(custMaamIska);
+                                }
+                            }
+                            let custMaamYevu = responseRest.custMaamYevu;
+                            if (custMaamYevu) {
+                                custMaamYevu = this.maamCustIds.find(
+                                    (it) => it.custId === responseRest.custMaamYevu
+                                );
+                                if (custMaamYevu && !this.maamCustIds13.some(it => it.custId === responseRest.custMaamYevu)) {
+                                    this.maamCustIds13.push(custMaamYevu);
+                                }
+                            }
                             if (!this.infoAccountingCards) {
-                                let custMaamTsumot = responseRest.custMaamTsumot;
-                                if (custMaamTsumot) {
-                                    custMaamTsumot = this.maamCustIds.find(
-                                        (it) => it.custId === responseRest.custMaamTsumot
-                                    );
-                                    if (custMaamTsumot && !this.maamCustIds13.some(it => it.custId === responseRest.custMaamTsumot)) {
-                                        this.maamCustIds13.push(custMaamTsumot);
-                                    }
-                                }
-                                let custMaamNechasim = responseRest.custMaamNechasim;
-                                if (custMaamNechasim) {
-                                    custMaamNechasim = this.maamCustIds.find(
-                                        (it) => it.custId === responseRest.custMaamNechasim
-                                    );
-                                    if (custMaamNechasim && !this.maamCustIds14.some(it => it.custId === responseRest.custMaamNechasim)) {
-                                        this.maamCustIds14.push(custMaamNechasim);
-                                    }
-                                }
-                                let custMaamIska = responseRest.custMaamIska;
-                                if (custMaamIska) {
-                                    custMaamIska = this.maamCustIds.find(
-                                        (it) => it.custId === responseRest.custMaamIska
-                                    );
-                                    if (custMaamIska && !this.maamCustIds12.some(it => it.custId === responseRest.custMaamIska)) {
-                                        this.maamCustIds12.push(custMaamIska);
-                                    }
-                                }
-                                let custMaamYevu = responseRest.custMaamYevu;
-                                if (custMaamYevu) {
-                                    custMaamYevu = this.maamCustIds.find(
-                                        (it) => it.custId === responseRest.custMaamYevu
-                                    );
-                                    if (custMaamYevu && !this.maamCustIds13.some(it => it.custId === responseRest.custMaamYevu)) {
-                                        this.maamCustIds13.push(custMaamYevu);
-                                    }
-                                }
                                 this.info.patchValue({
                                     custMaamTsumot: null,
                                     custMaamNechasim: custMaamNechasim || null,
                                     custMaamIska: custMaamIska || null,
                                     custMaamYevu: custMaamYevu || null
                                 });
-
-                                if (this.isModal.esderMaam === 'NONE') {
-                                    this.info.get('custMaamTsumot').disable();
-                                    this.info.get('custMaamIska').disable();
-                                    this.info.get('custMaamNechasim').disable();
-                                    this.info.get('custMaamYevu').disable();
-                                    this.info.get('custMaamTsumot').setValidators(null);
-                                    this.info.get('custMaamIska').setValidators(null);
-                                    this.info.get('custMaamNechasim').setValidators(null);
-                                    this.info.get('custMaamYevu').setValidators(null);
-                                    this.info.get('custMaamTsumot').updateValueAndValidity();
-                                    this.info.get('custMaamIska').updateValueAndValidity();
-                                    this.info.get('custMaamNechasim').updateValueAndValidity();
-                                    this.info.get('custMaamYevu').updateValueAndValidity();
-                                } else {
-                                    this.info.get('custMaamTsumot').enable();
-                                    this.info.get('custMaamIska').enable();
-                                    this.info.get('custMaamNechasim').enable();
-                                    this.info.get('custMaamYevu').enable();
-                                    this.info
-                                        .get('custMaamTsumot')
-                                        .setValidators([Validators.required]);
-                                    this.info
-                                        .get('custMaamIska')
-                                        .setValidators([Validators.required]);
-                                    this.info
-                                        .get('custMaamNechasim')
-                                        .setValidators([Validators.required]);
-                                    this.info
-                                        .get('custMaamYevu')
-                                        .setValidators([Validators.required]);
-                                    this.info.get('custMaamTsumot').updateValueAndValidity();
-                                    this.info.get('custMaamIska').updateValueAndValidity();
-                                    this.info.get('custMaamNechasim').updateValueAndValidity();
-                                    this.info.get('custMaamYevu').updateValueAndValidity();
-                                }
                             }
+
+
+                            if (this.isModal.esderMaam === 'NONE') {
+                                this.info.get('custMaamTsumot').disable();
+                                this.info.get('custMaamIska').disable();
+                                this.info.get('custMaamNechasim').disable();
+                                this.info.get('custMaamYevu').disable();
+                                this.info.get('custMaamTsumot').setValidators(null);
+                                this.info.get('custMaamIska').setValidators(null);
+                                this.info.get('custMaamNechasim').setValidators(null);
+                                this.info.get('custMaamYevu').setValidators(null);
+                                this.info.get('custMaamTsumot').updateValueAndValidity();
+                                this.info.get('custMaamIska').updateValueAndValidity();
+                                this.info.get('custMaamNechasim').updateValueAndValidity();
+                                this.info.get('custMaamYevu').updateValueAndValidity();
+                            } else {
+                                this.info.get('custMaamTsumot').enable();
+                                this.info.get('custMaamIska').enable();
+                                this.info.get('custMaamNechasim').enable();
+                                this.info.get('custMaamYevu').enable();
+                                this.info
+                                    .get('custMaamTsumot')
+                                    .setValidators([Validators.required]);
+                                this.info
+                                    .get('custMaamIska')
+                                    .setValidators([Validators.required]);
+                                this.info
+                                    .get('custMaamNechasim')
+                                    .setValidators([Validators.required]);
+                                this.info
+                                    .get('custMaamYevu')
+                                    .setValidators([Validators.required]);
+                                this.info.get('custMaamTsumot').updateValueAndValidity();
+                                this.info.get('custMaamIska').updateValueAndValidity();
+                                this.info.get('custMaamNechasim').updateValueAndValidity();
+                                this.info.get('custMaamYevu').updateValueAndValidity();
+                            }
+
                         });
 
                     this.sharedService
@@ -578,61 +580,61 @@ export class AccountingCardsComponent
                             //         id: it.palCode
                             //     };
                             // });
-                            if (!this.infoAccountingCards) {
-                                let pettyCashCustId = responseRest.pettyCashCustId;
-                                if (pettyCashCustId) {
-                                    pettyCashCustId =
-                                        this.userService.appData.userData.companyCustomerDetails.all.find(
-                                            (it) => it.custId === responseRest.pettyCashCustId
-                                        );
-                                }
-                                let openingBalanceCustId = responseRest.openingBalanceCustId;
-                                if (openingBalanceCustId) {
-                                    openingBalanceCustId =
-                                        this.userService.appData.userData.companyCustomerDetails.all.find(
-                                            (it) => it.custId === responseRest.openingBalanceCustId
-                                        );
-                                }
-                                let incomeCustId = responseRest.incomeCustId;
-                                if (incomeCustId) {
-                                    incomeCustId =
-                                        this.userService.appData.userData.companyCustomerDetails.all.find(
-                                            (it) => it.custId === responseRest.incomeCustId
-                                        );
-                                }
-                                let cancelBalanceCustId = responseRest.cancelBalanceCustId;
-                                if (cancelBalanceCustId) {
-                                    cancelBalanceCustId =
-                                        this.userService.appData.userData.companyCustomerDetails.all.find(
-                                            (it) => it.custId === responseRest.cancelBalanceCustId
-                                        );
-                                }
+                            let pettyCashCustId = responseRest.pettyCashCustId;
+                            if (pettyCashCustId) {
+                                pettyCashCustId =
+                                    this.userService.appData.userData.companyCustomerDetails.all.find(
+                                        (it) => it.custId === responseRest.pettyCashCustId
+                                    );
+                            }
+                            let openingBalanceCustId = responseRest.openingBalanceCustId;
+                            if (openingBalanceCustId) {
+                                openingBalanceCustId =
+                                    this.userService.appData.userData.companyCustomerDetails.all.find(
+                                        (it) => it.custId === responseRest.openingBalanceCustId
+                                    );
+                            }
+                            let incomeCustId = responseRest.incomeCustId;
+                            if (incomeCustId) {
+                                incomeCustId =
+                                    this.userService.appData.userData.companyCustomerDetails.all.find(
+                                        (it) => it.custId === responseRest.incomeCustId
+                                    );
+                            }
+                            let cancelBalanceCustId = responseRest.cancelBalanceCustId;
+                            if (cancelBalanceCustId) {
+                                cancelBalanceCustId =
+                                    this.userService.appData.userData.companyCustomerDetails.all.find(
+                                        (it) => it.custId === responseRest.cancelBalanceCustId
+                                    );
+                            }
 
-                                let supplierTaxDeductionCustId =
-                                    responseRest.supplierTaxDeductionCustId;
-                                if (supplierTaxDeductionCustId) {
-                                    supplierTaxDeductionCustId =
-                                        this.userService.appData.userData.companyCustomerDetails.all.find(
-                                            (it) =>
-                                                it.custId === responseRest.supplierTaxDeductionCustId
-                                        );
-                                }
-                                let customerTaxDeductionCustId =
-                                    responseRest.customerTaxDeductionCustId;
-                                if (customerTaxDeductionCustId) {
-                                    customerTaxDeductionCustId =
-                                        this.userService.appData.userData.companyCustomerDetails.all.find(
-                                            (it) =>
-                                                it.custId === responseRest.customerTaxDeductionCustId
-                                        );
-                                }
-                                let expenseCustId = responseRest.expenseCustId;
-                                if (expenseCustId) {
-                                    expenseCustId =
-                                        this.userService.appData.userData.companyCustomerDetails.all.find(
-                                            (it) => it.custId === responseRest.expenseCustId
-                                        );
-                                }
+                            let supplierTaxDeductionCustId =
+                                responseRest.supplierTaxDeductionCustId;
+                            if (supplierTaxDeductionCustId) {
+                                supplierTaxDeductionCustId =
+                                    this.userService.appData.userData.companyCustomerDetails.all.find(
+                                        (it) =>
+                                            it.custId === responseRest.supplierTaxDeductionCustId
+                                    );
+                            }
+                            let customerTaxDeductionCustId =
+                                responseRest.customerTaxDeductionCustId;
+                            if (customerTaxDeductionCustId) {
+                                customerTaxDeductionCustId =
+                                    this.userService.appData.userData.companyCustomerDetails.all.find(
+                                        (it) =>
+                                            it.custId === responseRest.customerTaxDeductionCustId
+                                    );
+                            }
+                            let expenseCustId = responseRest.expenseCustId;
+                            if (expenseCustId) {
+                                expenseCustId =
+                                    this.userService.appData.userData.companyCustomerDetails.all.find(
+                                        (it) => it.custId === responseRest.expenseCustId
+                                    );
+                            }
+                            if (!this.infoAccountingCards) {
                                 this.info.patchValue({
                                     pettyCashCustId: pettyCashCustId || null,
                                     openingBalanceCustId: openingBalanceCustId || null,
@@ -644,43 +646,45 @@ export class AccountingCardsComponent
                                         customerTaxDeductionCustId || null,
                                     expenseCustId: expenseCustId || null
                                 });
-
-                                if (this.isModal.esderMaam === 'NONE') {
-                                    this.info.get('custMaamTsumot').disable();
-                                    this.info.get('custMaamIska').disable();
-                                    this.info.get('custMaamNechasim').disable();
-                                    this.info.get('custMaamYevu').disable();
-                                    this.info.get('custMaamTsumot').setValidators(null);
-                                    this.info.get('custMaamIska').setValidators(null);
-                                    this.info.get('custMaamNechasim').setValidators(null);
-                                    this.info.get('custMaamYevu').setValidators(null);
-                                    this.info.get('custMaamTsumot').updateValueAndValidity();
-                                    this.info.get('custMaamIska').updateValueAndValidity();
-                                    this.info.get('custMaamNechasim').updateValueAndValidity();
-                                    this.info.get('custMaamYevu').updateValueAndValidity();
-                                } else {
-                                    this.info.get('custMaamTsumot').enable();
-                                    this.info.get('custMaamIska').enable();
-                                    this.info.get('custMaamNechasim').enable();
-                                    this.info.get('custMaamYevu').enable();
-                                    this.info
-                                        .get('custMaamTsumot')
-                                        .setValidators([Validators.required]);
-                                    this.info
-                                        .get('custMaamIska')
-                                        .setValidators([Validators.required]);
-                                    this.info
-                                        .get('custMaamNechasim')
-                                        .setValidators([Validators.required]);
-                                    this.info
-                                        .get('custMaamYevu')
-                                        .setValidators([Validators.required]);
-                                    this.info.get('custMaamTsumot').updateValueAndValidity();
-                                    this.info.get('custMaamIska').updateValueAndValidity();
-                                    this.info.get('custMaamNechasim').updateValueAndValidity();
-                                    this.info.get('custMaamYevu').updateValueAndValidity();
-                                }
                             }
+
+
+                            if (this.isModal.esderMaam === 'NONE') {
+                                this.info.get('custMaamTsumot').disable();
+                                this.info.get('custMaamIska').disable();
+                                this.info.get('custMaamNechasim').disable();
+                                this.info.get('custMaamYevu').disable();
+                                this.info.get('custMaamTsumot').setValidators(null);
+                                this.info.get('custMaamIska').setValidators(null);
+                                this.info.get('custMaamNechasim').setValidators(null);
+                                this.info.get('custMaamYevu').setValidators(null);
+                                this.info.get('custMaamTsumot').updateValueAndValidity();
+                                this.info.get('custMaamIska').updateValueAndValidity();
+                                this.info.get('custMaamNechasim').updateValueAndValidity();
+                                this.info.get('custMaamYevu').updateValueAndValidity();
+                            } else {
+                                this.info.get('custMaamTsumot').enable();
+                                this.info.get('custMaamIska').enable();
+                                this.info.get('custMaamNechasim').enable();
+                                this.info.get('custMaamYevu').enable();
+                                this.info
+                                    .get('custMaamTsumot')
+                                    .setValidators([Validators.required]);
+                                this.info
+                                    .get('custMaamIska')
+                                    .setValidators([Validators.required]);
+                                this.info
+                                    .get('custMaamNechasim')
+                                    .setValidators([Validators.required]);
+                                this.info
+                                    .get('custMaamYevu')
+                                    .setValidators([Validators.required]);
+                                this.info.get('custMaamTsumot').updateValueAndValidity();
+                                this.info.get('custMaamIska').updateValueAndValidity();
+                                this.info.get('custMaamNechasim').updateValueAndValidity();
+                                this.info.get('custMaamYevu').updateValueAndValidity();
+                            }
+
                             this.loader = false;
 
                             this.pettyCashCustIdArr = this.addPriemerObject(
@@ -714,6 +718,7 @@ export class AccountingCardsComponent
                             );
                         });
                 });
+
         }
     }
 
@@ -782,50 +787,50 @@ export class AccountingCardsComponent
         }
 
         if (!this.isModal) {
-            const params = {
-                companyId: !this.isModal
-                    ? this.userService.appData.userData.companySelect.companyId
-                    : this.isModal.companyId,
-                pettyCashCustId: this.info.get('pettyCashCustId').value
-                    ? this.info.get('pettyCashCustId').value.custId
-                    : null,
-                cancelBalanceCustId: this.info.get('cancelBalanceCustId').value
-                    ? this.info.get('cancelBalanceCustId').value.custId
-                    : null,
-                custMaamTsumot: this.info.get('custMaamTsumot').value
-                    ? this.info.get('custMaamTsumot').value.custId
-                    : null,
-                custMaamYevu: this.info.get('custMaamYevu').value
-                    ? this.info.get('custMaamYevu').value.custId
-                    : null,
-                custMaamIska: this.info.get('custMaamIska').value
-                    ? this.info.get('custMaamIska').value.custId
-                    : null,
-                custMaamNechasim: this.info.get('custMaamNechasim').value
-                    ? this.info.get('custMaamNechasim').value.custId
-                    : null,
-                supplierTaxDeductionCustId: this.info.get('supplierTaxDeductionCustId')
-                    .value
-                    ? this.info.get('supplierTaxDeductionCustId').value.custId
-                    : null,
-                customerTaxDeductionCustId: this.info.get('customerTaxDeductionCustId')
-                    .value
-                    ? this.info.get('customerTaxDeductionCustId').value.custId
-                    : null,
-                openingBalanceCustId: this.info.get('openingBalanceCustId').value
-                    ? this.info.get('openingBalanceCustId').value.custId
-                    : null,
-                incomeCustId: this.info.get('incomeCustId').value
-                    ? this.info.get('incomeCustId').value.custId
-                    : null,
-                expenseCustId: this.info.get('expenseCustId').value
-                    ? this.info.get('expenseCustId').value.custId
-                    : null
-            };
+        const params = {
+            companyId: !this.isModal
+                ? this.userService.appData.userData.companySelect.companyId
+                : this.isModal.companyId,
+            pettyCashCustId: this.info.get('pettyCashCustId').value
+                ? this.info.get('pettyCashCustId').value.custId
+                : null,
+            cancelBalanceCustId: this.info.get('cancelBalanceCustId').value
+                ? this.info.get('cancelBalanceCustId').value.custId
+                : null,
+            custMaamTsumot: this.info.get('custMaamTsumot').value
+                ? this.info.get('custMaamTsumot').value.custId
+                : null,
+            custMaamYevu: this.info.get('custMaamYevu').value
+                ? this.info.get('custMaamYevu').value.custId
+                : null,
+            custMaamIska: this.info.get('custMaamIska').value
+                ? this.info.get('custMaamIska').value.custId
+                : null,
+            custMaamNechasim: this.info.get('custMaamNechasim').value
+                ? this.info.get('custMaamNechasim').value.custId
+                : null,
+            supplierTaxDeductionCustId: this.info.get('supplierTaxDeductionCustId')
+                .value
+                ? this.info.get('supplierTaxDeductionCustId').value.custId
+                : null,
+            customerTaxDeductionCustId: this.info.get('customerTaxDeductionCustId')
+                .value
+                ? this.info.get('customerTaxDeductionCustId').value.custId
+                : null,
+            openingBalanceCustId: this.info.get('openingBalanceCustId').value
+                ? this.info.get('openingBalanceCustId').value.custId
+                : null,
+            incomeCustId: this.info.get('incomeCustId').value
+                ? this.info.get('incomeCustId').value.custId
+                : null,
+            expenseCustId: this.info.get('expenseCustId').value
+                ? this.info.get('expenseCustId').value.custId
+                : null
+        };
 
-            console.log('params: ', params);
-            this.sharedService.updateBookKeepingCust(params).subscribe(() => {
-            });
+        console.log('params: ', params);
+        this.sharedService.updateBookKeepingCust(params).subscribe(() => {
+        });
         }
     }
 

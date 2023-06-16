@@ -172,7 +172,7 @@ export class SettingsCreditCardComponent
         newAccount: any;
         card: any;
         onApprove: () => void;
-        syncSelection: (isChanged:any) => void;
+        syncSelection: (isChanged: any) => void;
     };
     private readonly destroyed$ = new Subject<void>();
 
@@ -324,6 +324,7 @@ export class SettingsCreditCardComponent
                     cc.account = this.arrAccounts.find(
                         (acc: any) => acc.companyAccountId === cc.companyAccountId
                     );
+                    cc.bankId = cc.account.bankId;
                     cc.mayEditCreditLimit = cc.creditLimit === null;
                 });
 
@@ -342,23 +343,47 @@ export class SettingsCreditCardComponent
                     for (const property in arrayGr) {
                         // console.log(`${property}: ${arrayGr[property]}`)
                         const objAcc = arrayGr[property][0];
-                        // @ts-ignore
-                        const newObj: any = {
-                            token: objAcc.token,
-                            tokenStatus: null,
-                            tokenNickname: this.translate.instant(
-                                'banks.' + objAcc.account.bankId
-                            ),
-                            isFromAccount: true,
-                            websiteTargetTypeId: objAcc.account.bankId,
-                            screenPasswordUpdateCount: null,
-                            dateCreated: objAcc.dateCreated,
-                            tokenTargetType: 'ACCOUNT',
-                            hasPrivs: true,
-                            companyAccountId: objAcc.companyAccountId,
-                            anotherCompanyExist: false
-                        };
-                        responseTkn.push(newObj);
+                        if (objAcc.token) {
+                            // @ts-ignore
+                            const newObj: any = {
+                                token: objAcc.token,
+                                tokenStatus: null,
+                                tokenNickname: this.translate.instant(
+                                    'banks.' + objAcc.account.bankId
+                                ),
+                                isFromAccount: true,
+                                websiteTargetTypeId: objAcc.account.bankId,
+                                screenPasswordUpdateCount: null,
+                                dateCreated: objAcc.dateCreated,
+                                tokenTargetType: 'ACCOUNT',
+                                hasPrivs: true,
+                                companyAccountId: objAcc.companyAccountId,
+                                anotherCompanyExist: false
+                            };
+                            responseTkn.push(newObj);
+                        } else {
+                            const arrayGrByBankId = groupBy('creditCardTypeId')(arrayGr[property]);
+                            for (const propertySecond in arrayGrByBankId) {
+                                const objAccSecond = arrayGrByBankId[propertySecond][0];
+                                const newObjSecond: any = {
+                                    token: objAccSecond.token,
+                                    tokenStatus: null,
+                                    tokenNickname: this.translate.instant(
+                                        'banks.' + objAccSecond.account.bankId
+                                    ),
+                                    isFromAccount: true,
+                                    websiteTargetTypeId: objAccSecond.account.bankId,
+                                    screenPasswordUpdateCount: null,
+                                    dateCreated: objAccSecond.dateCreated,
+                                    tokenTargetType: 'ACCOUNT',
+                                    hasPrivs: true,
+                                    companyAccountId: objAccSecond.companyAccountId,
+                                    anotherCompanyExist: false
+                                };
+                                responseTkn.push(newObjSecond);
+                            }
+                        }
+
                     }
                 } else if (
                     responseTkn &&
@@ -384,38 +409,66 @@ export class SettingsCreditCardComponent
                         for (const property in arrayGr) {
                             // console.log(`${property}: ${arrayGr[property]}`)
                             const objAcc = arrayGr[property][0];
-                            // @ts-ignore
-                            const newObj: any = {
-                                token: objAcc.token,
-                                tokenStatus: null,
-                                tokenNickname: this.translate.instant(
-                                    'banks.' + objAcc.account.bankId
-                                ),
-                                isFromAccount: true,
-                                websiteTargetTypeId: objAcc.account.bankId,
-                                screenPasswordUpdateCount: null,
-                                dateCreated: objAcc.dateCreated,
-                                tokenTargetType: 'ACCOUNT',
-                                hasPrivs: true,
-                                companyAccountId: objAcc.companyAccountId,
-                                anotherCompanyExist: false
-                            };
-                            responseTkn.push(newObj);
+                            if (objAcc.token) {
+                                // @ts-ignore
+                                const newObj: any = {
+                                    token: objAcc.token,
+                                    tokenStatus: null,
+                                    tokenNickname: this.translate.instant(
+                                        'banks.' + objAcc.account.bankId
+                                    ),
+                                    isFromAccount: true,
+                                    websiteTargetTypeId: objAcc.account.bankId,
+                                    screenPasswordUpdateCount: null,
+                                    dateCreated: objAcc.dateCreated,
+                                    tokenTargetType: 'ACCOUNT',
+                                    hasPrivs: true,
+                                    companyAccountId: objAcc.companyAccountId,
+                                    anotherCompanyExist: false
+                                };
+                                responseTkn.push(newObj);
+                            } else {
+                                const arrayGrByBankId = groupBy('creditCardTypeId')(arrayGr[property]);
+                                for (const propertySecond in arrayGrByBankId) {
+                                    const objAccSecond = arrayGrByBankId[propertySecond][0];
+                                    const newObjSecond: any = {
+                                        token: objAccSecond.token,
+                                        tokenStatus: null,
+                                        tokenNickname: this.translate.instant(
+                                            'banks.' + objAccSecond.account.bankId
+                                        ),
+                                        isFromAccount: true,
+                                        websiteTargetTypeId: objAccSecond.creditCardTypeId, //objAccSecond.account.bankId,
+                                        screenPasswordUpdateCount: null,
+                                        dateCreated: objAccSecond.dateCreated,
+                                        tokenTargetType: 'ACCOUNT',
+                                        hasPrivs: true,
+                                        companyAccountId: objAccSecond.companyAccountId,
+                                        anotherCompanyExist: false
+                                    };
+                                    responseTkn.push(newObjSecond);
+                                }
+                            }
+
                         }
                     }
                 }
 
-                return responseTkn.map((tknSt) => {
+                const cardsArr = responseTkn.map((tknSt) => {
                     if (!(tknSt.token in this.groupExpanded)) {
-                        this.groupExpanded[tknSt.token] = this.groupExpanded.all;
+                        this.groupExpanded[tknSt.token ? tknSt.token : (tknSt.token + '_' + tknSt.websiteTargetTypeId)] = this.groupExpanded.all;
                     }
-
+                    const filterCards = cCards.filter((cc) => {
+                        return cc.token ? cc.token === tknSt.token : ((cc.token + '_' + cc.creditCardTypeId) === (tknSt.token + '_' + tknSt.websiteTargetTypeId));
+                    })
                     return {
                         id: tknSt.token,
+                        key: tknSt.token ? tknSt.token : (tknSt.token + '_' + tknSt.websiteTargetTypeId),
                         status: tknSt,
-                        children: cCards.filter((cc) => cc.token === tknSt.token)
+                        children: filterCards
                     } as ByTokenGroup;
                 });
+                return cardsArr;
             }),
             tap(() => {
                 this.loader = false;
@@ -501,16 +554,15 @@ export class SettingsCreditCardComponent
         this.showDeletedCards.patchValue(!storageVal || 'true' === storageVal);
         this.showDeletedCards.valueChanges
             .pipe(takeUntil(this.destroyed$))
-            .subscribe((val: any) =>{
-                    if(!val){
+            .subscribe((val: any) => {
+                    if (!val) {
                         this.sharedComponent.mixPanelEvent('unshow deleted credits');
                     }
                     this.storageService.localStorageSetter(
                         'settings-creditCard.showDeleted',
                         val
-                    )
-            }
-
+                    );
+                }
             );
     }
 
@@ -658,9 +710,9 @@ export class SettingsCreditCardComponent
                         );
                     });
             },
-            syncSelection: (isChanged:any) => {
-                if(!isChanged){
-                    this.changeCardLinkedAccountPrompt.card.account =this.changeCardLinkedAccountPrompt.card.accountSaved;
+            syncSelection: (isChanged: any) => {
+                if (!isChanged) {
+                    this.changeCardLinkedAccountPrompt.card.account = this.changeCardLinkedAccountPrompt.card.accountSaved;
                 }
                 accChangeTrigger.updateSelectedOption(isChanged ?
                     this.changeCardLinkedAccountPrompt.card.account : this.changeCardLinkedAccountPrompt.card.accountSaved

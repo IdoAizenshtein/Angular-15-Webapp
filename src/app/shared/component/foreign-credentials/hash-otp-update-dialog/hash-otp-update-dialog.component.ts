@@ -49,25 +49,16 @@ export class HashOtpUpdateDialogComponent implements OnInit {
     otpCodeApply$: Observable<any>;
     monitoring$: Observable<Array<TokenStatusResponse>>;
 
-    constructor(private tokenService: TokenService, public userService: UserService) {
-    }
+    constructor(private tokenService: TokenService, public userService: UserService) {}
 
     ngOnInit() {
-        if (
-            [
-                'NOT_UP_TO_DATE',
-                'WRONG_OTP_CODE',
-                'TECHNICALPROBLEM',
-                'UP_TO_DATE'
-            ].includes(this.tokenData.tokenStatus)
-        ) {
+        if (['NOT_UP_TO_DATE', 'WRONG_OTP_CODE', 'TECHNICALPROBLEM', 'UP_TO_DATE'].includes(this.tokenData.tokenStatus)) {
             this.step = OtpUpdateDialogStep.PROMPT;
             this.createAwaitConnectionObs();
         } else {
             this.step = OtpUpdateDialogStep.CODE_PROMPT;
-            this.createAwaitConnectionObs();
+            // this.createAwaitConnectionObs();
         }
-
         this.otpForm = new FormGroup({
             code: new FormControl('', [Validators.required]),
             pending: new FormControl(false)

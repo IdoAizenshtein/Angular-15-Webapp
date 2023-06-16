@@ -16,7 +16,9 @@
 		<mat-icon [svgIcon]="(redPointFilter) ? 'filter_active' : 'filter'"></mat-icon>
 	</button>
 
-	<div class="panelDD accountsPanel cardsPanelCurreny accPanelCurreny statusesPanelArr" *ngIf="showPanelDD" [@slideInOutDD]>
+	<div class="panelDD accountsPanel cardsPanelCurreny accPanelCurreny statusesPanelArr"
+		 [class.isCredit]="type === 'credit'"
+		 *ngIf="showPanelDD" [@slideInOutDD]>
 		<div class="currenciesList" [class.active]="statuses.checked">
 			<p-checkbox checkboxIcon="fa fa-check"
 						[inputId]="'all'"

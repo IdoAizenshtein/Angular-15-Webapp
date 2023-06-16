@@ -789,6 +789,43 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
             'filterIconBtnBaseActive',
             _sanitizer.bypassSecurityTrustResourceUrl('../assets/images/filterIconBtnBaseActive.svg')
         );
+        this.matIconRegistry.addSvgIcon(
+            'union',
+            _sanitizer.bypassSecurityTrustResourceUrl('../assets/images/union.svg')
+        );
+
+        this.matIconRegistry.addSvgIcon(
+            'productExists',
+            _sanitizer.bypassSecurityTrustResourceUrl('../assets/images/productExists.svg')
+        );
+        this.matIconRegistry.addSvgIcon(
+            'addProduct',
+            _sanitizer.bypassSecurityTrustResourceUrl('../assets/images/addProduct.svg')
+        );
+        this.matIconRegistry.addSvgIcon(
+            'selectedProduct',
+            _sanitizer.bypassSecurityTrustResourceUrl('../assets/images/selectedProduct.svg')
+        );
+        this.matIconRegistry.addSvgIcon(
+            'arrowPrev',
+            _sanitizer.bypassSecurityTrustResourceUrl('../assets/images/arrowPrev.svg')
+        );
+        this.matIconRegistry.addSvgIcon(
+            'arrowNext',
+            _sanitizer.bypassSecurityTrustResourceUrl('../assets/images/arrowNext.svg')
+        );
+        this.matIconRegistry.addSvgIcon(
+            'bgLogo',
+            _sanitizer.bypassSecurityTrustResourceUrl('../assets/images/bgLogo.svg')
+        );
+        this.matIconRegistry.addSvgIcon(
+            'circle',
+            _sanitizer.bypassSecurityTrustResourceUrl('../assets/images/circle.svg')
+        );
+        this.matIconRegistry.addSvgIcon(
+            'trash_new',
+            _sanitizer.bypassSecurityTrustResourceUrl('../assets/images/trash_new.svg')
+        );
     }
 
     public initTranslate(): void {

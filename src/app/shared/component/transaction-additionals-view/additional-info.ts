@@ -16,24 +16,25 @@ import {Observable} from 'rxjs';
 @Directive()
 export class AdditionalInfo implements OnChanges, AfterViewInit, OnDestroy {
     private _transaction: {
-        companyAccountId: string;
-        hova: boolean;
+        companyAccountId?: string;
+        hova?: boolean;
         expence?: any;
-        transDate: number;
-        account: {
-            bankId: string;
-            bankSnifId: string;
-            bankAccountId: string;
-            accountNickname: string;
+        loanId?: any;
+        transDate?: number;
+        account?: {
+            bankId?: string;
+            bankSnifId?: string;
+            bankAccountId?: string;
+            accountNickname?: string;
         };
-        pictureLink: string;
-        linkId: string;
-        total: number;
-        bankTransId: string;
-        transId: string;
-        unionId: string;
+        pictureLink?: string;
+        linkId?: string;
+        total?: number;
+        bankTransId?: string;
+        transId?: string;
+        unionId?: string;
         // originalDate: number
-        kvuaDateFrom: number;
+        kvuaDateFrom?: number;
         source?: string;
         depositDate?: number;
         chequeAccountNumber?: number;
@@ -82,24 +83,25 @@ export class AdditionalInfo implements OnChanges, AfterViewInit, OnDestroy {
 
     @Input()
     set transaction(val: {
-        companyAccountId: string;
-        hova: boolean;
+        companyAccountId?: string;
+        hova?: boolean;
         expence?: any;
-        transDate: number;
-        account: {
-            bankId: string;
-            bankSnifId: string;
-            bankAccountId: string;
-            accountNickname: string;
+        loanId?: any;
+        transDate?: number;
+        account?: {
+            bankId?: string;
+            bankSnifId?: string;
+            bankAccountId?: string;
+            accountNickname?: string;
         };
-        pictureLink: string;
-        linkId: string;
-        total: number;
-        bankTransId: string;
-        transId: string;
-        unionId: string;
+        pictureLink?: string;
+        linkId?: string;
+        total?: number;
+        bankTransId?: string;
+        transId?: string;
+        unionId?: string;
         // originalDate: number
-        kvuaDateFrom: number;
+        kvuaDateFrom?: number;
         source?: string;
         depositDate?: number;
         chequeAccountNumber?: number;
@@ -110,7 +112,7 @@ export class AdditionalInfo implements OnChanges, AfterViewInit, OnDestroy {
         imageNameKey?: string;
         image?: string;
         splitArrayBase?: any;
-    }) {
+    } | any) {
         this._transaction = val;
         this.isFutureTransaction =
             val &&

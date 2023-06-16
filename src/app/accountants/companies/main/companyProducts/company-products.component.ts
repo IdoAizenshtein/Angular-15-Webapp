@@ -79,7 +79,7 @@ export class CompanyProductsComponent
         private httpClient: HttpClient,
         private route: ActivatedRoute,
         public translate: TranslateService,
-        private storageService: StorageService,
+        public storageService: StorageService,
         private sumPipe: SumPipe,
         public snackBar: MatSnackBar,
         private domSanitizer: DomSanitizer,

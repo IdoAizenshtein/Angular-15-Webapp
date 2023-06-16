@@ -3256,7 +3256,7 @@ export class ArchivesComponent
                                             filesFromFolderSave.length
                                         ) {
                                             const newFile = filesFromFolderSave.find((file) =>
-                                                urlUpload.includes(file.fileId)
+                                                urlUpload.s3UploadUrl.includes(file.fileId)
                                             );
                                             if (newFile) {
                                                 this.interGetFiles.unsubscribe();
@@ -3463,6 +3463,7 @@ export class ArchivesComponent
                             }
                         }
 
+                        console.log(this.files)
                         this.uploadFromModalArchive();
                     } else if (
                         item.type.includes('image/') &&
@@ -3471,7 +3472,7 @@ export class ArchivesComponent
                         const reader: any = new FileReader();
                         reader.onload = () => {
                             item.src = this.sanitizeImageUrl(reader.result);
-                            // this.files.push(item);
+                            this.files.push(item);
                             this.filesBeforeOrder.push(item);
                             this.filesOriginal.push(item);
                             this.uploadFromModalArchive();

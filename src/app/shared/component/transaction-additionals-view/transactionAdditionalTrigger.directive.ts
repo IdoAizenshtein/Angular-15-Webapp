@@ -19,6 +19,9 @@ import {combineLatest} from 'rxjs';
 import {SharedService} from '@app/shared/services/shared.service';
 import {UserService} from '@app/core/user.service';
 import {TodayRelativeHumanizePipe} from '../../pipes/todayRelativeHumanize.pipe';
+import {
+    LoanDetailsOverlayPromptComponent
+} from '@app/shared/component/transaction-additionals-view/loan-details-overlay/loan-details-overlay-prompt.component';
 
 @Directive({
     selector: '[appTransactionAdditionalTrigger]'
@@ -66,6 +69,42 @@ export class TransactionAdditionalTriggerDirective {
             this.componentRef.instance.updateTrans = data;
         }
     }
+    @Input()
+    set triggerOpenModal(data: any) {
+        if (data) {
+            if (!this.disabledClick) {
+                // document.body.click();
+                if (window['mixpanel']) {
+                    if (this.appTransactionAdditionalTrigger.paymentDesc) {
+                        window['mixpanel'].track('payment type', {
+                            'type': this.appTransactionAdditionalTrigger.paymentDesc
+                        });
+                    }
+                    if (
+                        this.appTransactionAdditionalTrigger.pictureLink ||
+                        (this.appTransactionAdditionalTrigger.splitArrayBase &&
+                            this.appTransactionAdditionalTrigger.splitArrayBase.paymentDesc === 'Checks')
+                    ) {
+                        window['mixpanel'].track('perut check');
+                        // factory = ChecksViewComponent;
+                    } else if (this.appTransactionAdditionalTrigger.unionId) {
+                        // factory = UnionViewComponent;
+                    }  else if (this.appTransactionAdditionalTrigger.linkId) {
+                        window['mixpanel'].track('payment type', {
+                            'type': 'Loan'
+                        })
+                        window['mixpanel'].track('perut loan');
+                        // factory = UnionViewComponent;
+                    } else {
+                        window['mixpanel'].track('perut bank transfer');
+                        // factory = TransferViewComponent;
+                    }
+                }
+
+                this.toggleAdditionals();
+            }
+        }
+    }
 
     // @HostListener('mouseenter') onMouseEnter() {
     //     this.toggleAdditionals();
@@ -78,7 +117,7 @@ export class TransactionAdditionalTriggerDirective {
         if (!this.disabledClick) {
             document.body.click();
             if (window['mixpanel']) {
-                if(this.appTransactionAdditionalTrigger.paymentDesc){
+                if (this.appTransactionAdditionalTrigger.paymentDesc) {
                     window['mixpanel'].track('payment type', {
                         'type': this.appTransactionAdditionalTrigger.paymentDesc
                     });
@@ -91,6 +130,12 @@ export class TransactionAdditionalTriggerDirective {
                     window['mixpanel'].track('perut check');
                     // factory = ChecksViewComponent;
                 } else if (this.appTransactionAdditionalTrigger.unionId) {
+                    // factory = UnionViewComponent;
+                }  else if (this.appTransactionAdditionalTrigger.linkId) {
+                    window['mixpanel'].track('payment type', {
+                        'type': 'Loan'
+                    })
+                    window['mixpanel'].track('perut loan');
                     // factory = UnionViewComponent;
                 } else {
                     window['mixpanel'].track('perut bank transfer');
@@ -180,6 +225,7 @@ export class TransactionAdditionalTriggerDirective {
             !this.appTransactionAdditionalTrigger ||
             (!this.appTransactionAdditionalTrigger.pictureLink &&
                 !this.appTransactionAdditionalTrigger.linkId &&
+                !this.appTransactionAdditionalTrigger.loanId &&
                 !this.appTransactionAdditionalTrigger.unionId &&
                 !this.appTransactionAdditionalTrigger.splitArrayBase)
         ) {
@@ -196,6 +242,8 @@ export class TransactionAdditionalTriggerDirective {
             factory = ChecksViewComponent;
         } else if (this.appTransactionAdditionalTrigger.unionId) {
             factory = UnionViewComponent;
+        } else if (this.appTransactionAdditionalTrigger.loanId) {
+            factory = LoanDetailsOverlayPromptComponent;
         } else {
             factory = TransferViewComponent;
         }
@@ -252,9 +300,9 @@ export class TransactionAdditionalTriggerDirective {
             }
             this.changes.disconnect();
             this.componentRef.destroy();
-            setTimeout(()=>{
+            setTimeout(() => {
                 this.componentRef = undefined;
-            }, 10)
+            }, 10);
         }
     }
 

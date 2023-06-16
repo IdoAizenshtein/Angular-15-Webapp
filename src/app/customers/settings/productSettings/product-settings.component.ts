@@ -161,6 +161,10 @@ export class ProductSettingsComponent
                 value: false,
                 disabled: true
             }),
+            bankinFolderPlus: new FormControl({
+                value: false,
+                disabled: true
+            }),
             supplierAsmachtaNumChar: new FormControl({
                 value: '0',
                 disabled: true
@@ -269,6 +273,8 @@ export class ProductSettingsComponent
                             : true,
                     folderPlus:
                         responseRest.folderPlus ? responseRest.folderPlus : false,
+                    bankinFolderPlus:
+                        responseRest.bankinFolderPlus ? responseRest.bankinFolderPlus : false,
                     invertedCreditInvoice:
                         responseRest.supplierJournal.invertedCreditInvoice !== null &&
                         responseRest.supplierJournal.invertedCreditInvoice !== undefined
@@ -354,6 +360,7 @@ export class ProductSettingsComponent
                     this.info.get('incomeAsmachtaType').enable();
                     this.info.get('expenseOnly').enable();
                     this.info.get('folderPlus').enable();
+                    this.info.get('bankinFolderPlus').enable();
                     this.info.get('invertedCreditInvoice').enable();
                     this.info.get('invoicePayment').enable();
                     // this.info.get('exportFileVatPeriod').enable();
@@ -447,6 +454,7 @@ export class ProductSettingsComponent
             return;
         }
         this.params.folderPlus = this.info.get('folderPlus').value;
+        this.params.bankinFolderPlus = this.info.get('bankinFolderPlus').value;
 
         this.params.supplierJournal['supplierAsmachtaNumChar'] = Number(this.info.get('supplierAsmachtaNumChar').value);
         this.params.supplierJournal['expenseAsmachtaType'] = Number(this.info.get('expenseAsmachtaType').value);

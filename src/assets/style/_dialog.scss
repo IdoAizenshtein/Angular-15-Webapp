@@ -242,9 +242,11 @@
     .p-dialog-content {
       border: none;
       overflow: hidden;
-      .p-datepicker{
+
+      .p-datepicker {
         position: relative;
       }
+
       .p-datepicker-inline {
         width: 100%;
 
@@ -329,6 +331,7 @@
   .bank-credentials-update,
   .otp-credentials-update {
     margin-top: 39px !important;
+
     p-header {
       display: flex;
       display: -ms-flex;
@@ -619,7 +622,7 @@
   .match-list-prompt {
     &.p-dialog {
       box-shadow: 0 0 30px 5px rgba(0, 0, 0, 0.11),
-        0 0 15px 5px rgba(0, 0, 0, 0.08) !important;
+      0 0 15px 5px rgba(0, 0, 0, 0.08) !important;
       border-color: transparent;
     }
 
@@ -782,7 +785,7 @@
     &.p-dialog-content {
       border: none;
       box-shadow: 0 15px 30px 0 rgba(0, 0, 0, 0.12),
-        0 5px 15px 0 rgba(0, 0, 0, 0.08), inset 0 2px 4px 0 rgba(0, 0, 0, 0.12) !important;
+      0 5px 15px 0 rgba(0, 0, 0, 0.08), inset 0 2px 4px 0 rgba(0, 0, 0, 0.12) !important;
     }
 
     .p-sidebar-close {
@@ -854,7 +857,7 @@
       @include font(semi-bold, 1rem, 3rem);
       padding-#{$left}: 1em;
       box-shadow: 0 -2px 4px 0 rgba(0, 0, 0, 0.08),
-        0 -1px 2px 0 rgba(0, 0, 0, 0.04);
+      0 -1px 2px 0 rgba(0, 0, 0, 0.04);
 
       display: flex;
       display: -ms-flexbox;
@@ -924,6 +927,7 @@
 
   .knowledgeBaseIntroductionDialog {
     margin-top: 100px !important;
+
     .p-dialog-title {
       text-align: center;
       padding: 0.5em 0;
@@ -1747,8 +1751,7 @@
       height: 546px;
       padding: 0;
       margin: 0;
-      background: center / cover no-repeat
-        url(/assets/images/app-dowload-popup-bg_fix.png);
+      background: center / cover no-repeat url(/assets/images/app-dowload-popup-bg_fix.png);
       display: -ms-flexbox;
       display: flex;
 
@@ -1805,7 +1808,7 @@
             font-weight: getFont(semi-bold);
             background: #6cbae7 !important;
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
-              0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            0 10px 10px -5px rgba(0, 0, 0, 0.04);
           }
         }
       }
@@ -1958,11 +1961,11 @@
   .beneficiarySelectionGuideDialog {
     &:not(.alertBeforeSplitOvP) {
       @include arrow-top(
-        $left,
-        10px,
-        $dialog-header-bg-color,
-        1px,
-        $border-gray
+                      $left,
+                      10px,
+                      $dialog-header-bg-color,
+                      1px,
+                      $border-gray
       );
     }
 
@@ -2212,8 +2215,7 @@
   }
 
   .beneficiariesAdvertisePrompt {
-    background: center / cover no-repeat
-      url(/assets/images/beneficiaries-promo.png);
+    background: center / cover no-repeat url(/assets/images/beneficiaries-promo.png);
 
     .p-dialog-content {
       width: 699px;
@@ -2255,6 +2257,7 @@
       display: -ms-flexbox;
       flex-flow: column nowrap;
       height: auto !important;
+
       > * {
         min-height: 0;
         flex: 1;
@@ -2756,11 +2759,13 @@
     .p-sidebar-close {
       display: none;
     }
-    .p-sidebar-content{
+
+    .p-sidebar-content {
       height: 51px;
       align-items: center;
       @include flexbox;
       margin: 0 15px;
+
       > h1 {
         flex: 100%;
         text-align: center;
@@ -2779,7 +2784,6 @@
     }
 
 
-
   }
   .postponed-action-bottom {
     height: auto;
@@ -2791,11 +2795,13 @@
     .p-sidebar-close {
       display: none;
     }
-    .p-sidebar-content{
+
+    .p-sidebar-content {
       height: auto;
       @include flexbox;
       align-items: center;
       margin: 0 15px;
+
       > h1 {
         flex: 100%;
         text-align: center;
@@ -2853,15 +2859,17 @@
   }
 
   .exportFileFolderCreatePrompt {
-    &.exportFileFolderCreatePromptContentFlex{
+    &.exportFileFolderCreatePromptContentFlex {
       .p-dialog-content {
         width: auto;
       }
+
       .p-dialog-header-icons {
         align-self: center;
         margin-top: 0px;
       }
     }
+
     .p-dialog-content {
       width: 54ch;
       padding: 1.5em 1.5em 1em;
@@ -3023,6 +3031,59 @@ body {
         cursor: default;
         pointer-events: none;
       }
+    }
+
+
+    &.bottomNavAction_new {
+      height: 79px;
+      background: #02225C;
+      border: 8px solid #FFFFFF;
+      box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.25), 0px 20px 25px rgba(0, 0, 0, 0.25);
+      border-radius: 120px;
+      width: auto;
+      bottom: 80px;
+      transition-timing-function: ease-in;
+      transition: 0.3s;
+      transform: translateY(250%);
+      display: flex;
+      opacity: 0;
+
+      &.show{
+        transition-timing-function: ease-out;
+        transition: 0.3s;
+        transform: translateY(0);
+        opacity: 1;
+      }
+
+
+      > div {
+        width: 41px;
+        height: 41px;
+        background: #ffffff;
+        border-radius: 50%;
+        margin-left: 15px;
+        flex: none;
+
+        &:last-child {
+          margin-left: 0px;
+        }
+
+        > mat-icon {
+          display: block;
+
+          path {
+            fill: #02225C;
+          }
+        }
+
+        &.disabled {
+          opacity: 0.4;
+          cursor: default;
+          pointer-events: none;
+        }
+      }
+
+
     }
   }
 }

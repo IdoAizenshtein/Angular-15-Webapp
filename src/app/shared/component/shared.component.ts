@@ -44,6 +44,7 @@ import Player from '@vimeo/player';
 import {ReportService} from '@app/core/report.service';
 import {Location} from '@angular/common';
 import {AddCompanyDialogComponent} from '@app/shared/component/add-company-dialog/add-company-dialog-component';
+import {LoanDetailsOverlayPromptComponent} from '@app/shared/component/transaction-additionals-view/loan-details-overlay/loan-details-overlay-prompt.component';
 
 // import {sharedService} from './accountants.service';
 
@@ -2567,7 +2568,7 @@ export class SharedComponent implements OnInit, AfterViewInit, OnDestroy {
         if (!componentRef) {
             return;
         }
-
+        // LoanDetailsOverlayPromptComponent
         componentRef.instance.dynamicalyApply(
             [param.companyAccountId],
             param.loanId

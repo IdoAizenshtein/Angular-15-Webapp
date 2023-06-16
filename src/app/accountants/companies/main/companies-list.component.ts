@@ -605,7 +605,7 @@ export class CompaniesListComponent
                     .sendClientMessage(
                         this.docToSend.form.value.sendType === 'WHATSAPP'
                             ? {
-                                gRecaptcha:gRecaptcha,
+                                gRecaptcha: gRecaptcha,
                                 fileIds: [],
                                 details:
                                     !this.docToSend.form.value.subject ||
@@ -624,7 +624,7 @@ export class CompaniesListComponent
                                 targetUserId: this.docToSend.form.value.targetUserId
                             }
                             : {
-                                gRecaptcha:gRecaptcha,
+                                gRecaptcha: gRecaptcha,
                                 targetUserId: this.docToSend.form.value.targetUserId,
                                 fileIds: [],
                                 details:
@@ -1304,7 +1304,7 @@ export class CompaniesListComponent
                         this.companiesSrc = journalTrans.companyPageDtos ? JSON.parse(JSON.stringify(journalTrans.companyPageDtos)) : [];
                         if (!this.userService.appData.userData.companies) {
                             this.sharedService.getCompanies()
-                                .subscribe(companies => this.userService.appData.userData.companies = companies.body)
+                                .subscribe(companies => this.userService.appData.userData.companies = companies.body);
                         }
                         this.companiesSrc.forEach((company, idx) => {
                             // const additional = this.userService.appData.userData.companies.find(
@@ -1317,11 +1317,13 @@ export class CompaniesListComponent
                             // );
                             this.companiesSrc[idx]['automaticIntakeText'] = company.intakeText ? company.intakeText : company.automaticIntake ? 'אוטומטי' : 'ידני';
                             this.companiesSrc[idx]['automaticIntakeDisabled'] = company.automaticIntake === null;
+                            this.companiesSrc[idx]['automaticBankinIntakeDisabled'] = company.automaticBankinIntake === null;
+                            this.companiesSrc[idx]['automaticBankinIntake'] = company.automaticBankinIntake === null ? false : company.automaticBankinIntake;
                             this.companiesSrc[idx]['automaticIntake'] = !!company.automaticIntake;
                             this.companiesSrc[idx]['authorized'] = this.companiesSrc[idx].companyId ?
                                 this.userService.appData.userData.companies.find(
-                                companyFromUserData =>
-                                    companyFromUserData.companyId === company.companyId)['authorized']
+                                    companyFromUserData =>
+                                        companyFromUserData.companyId === company.companyId)['authorized']
                                 : true;
                             switch (company.contactAgreementStatus) {
                                 case 'SENT': {
@@ -1333,7 +1335,7 @@ export class CompaniesListComponent
                                     break;
                                 }
                                 default: {
-                                    this.companiesSrc[idx]['contactAgreementStatusText'] = '-'
+                                    this.companiesSrc[idx]['contactAgreementStatusText'] = '-';
                                 }
                             }
                             if (company.companyId && !company.authorizedSignerName) {
@@ -1516,7 +1518,10 @@ export class CompaniesListComponent
     }
 
     automaticIntakeChanged(event: any, company: any) {
-        company.automaticIntake = event.checked;
+        company.automaticIntake = event.target.checked;
+        company.automaticIntakeMove = true;
+        company.automaticBankinIntakeMove = false;
+
         if (company.automaticIntake) {//automatic
             this.showReceivingFilesModal = company;
         } else {//manual
@@ -1524,12 +1529,27 @@ export class CompaniesListComponent
         }
     }
 
+    automaticBankinIntakeChanged(event: any, company: any) {
+        company.automaticBankinIntake = event.target.checked;
+        company.automaticIntakeMove = false;
+        company.automaticBankinIntakeMove = true;
+        if (company.automaticBankinIntake) {//automatic
+            this.showReceivingFilesModal = company;
+        } else {//manual
+            this.showUpdateFolderPlusModal = company;
+        }
+    }
 
     hideReceivingFilesModal($event) {
         if (!$event) {
             const getCompany = this.companies.find(it => it.companyId === this.showReceivingFilesModal.companyId);
             if (getCompany) {
-                getCompany.automaticIntake = false;
+                if (getCompany.automaticIntakeMove) {
+                    getCompany.automaticIntake = false;
+                }
+                if (getCompany.automaticBankinIntakeMove) {
+                    getCompany.automaticBankinIntake = false;
+                }
             }
             this.showReceivingFilesModal = false;
         }
@@ -1539,7 +1559,12 @@ export class CompaniesListComponent
         if (!$event) {
             const getCompany = this.companies.find(it => it.companyId === this.showUpdateFolderPlusModal.companyId);
             if (getCompany) {
-                getCompany.automaticIntake = true;
+                if (getCompany.automaticIntakeMove) {
+                    getCompany.automaticIntake = true;
+                }
+                if (getCompany.automaticBankinIntakeMove) {
+                    getCompany.automaticBankinIntake = true;
+                }
             }
             this.showUpdateFolderPlusModal = false;
         }
@@ -1549,10 +1574,14 @@ export class CompaniesListComponent
         this.sharedService
             .updateFolderPlusStatus({
                 companyId: this.showReceivingFilesModal.companyId,
-                folderPlus: this.showReceivingFilesModal.automaticIntake
+                folderPlus: this.showReceivingFilesModal.automaticIntake,
+                bankinFolderPlus: this.showReceivingFilesModal.automaticBankinIntake
             })
             .subscribe(() => {
                 this.showReceivingFilesModal = false;
+                this.userService.appData.userData.companies = null;
+                this.sharedService.getCompanies()
+                    .subscribe(companies => this.userService.appData.userData.companies = companies.body);
                 this.reload();
             });
     }
@@ -1561,10 +1590,14 @@ export class CompaniesListComponent
         this.sharedService
             .updateFolderPlusStatus({
                 companyId: this.showUpdateFolderPlusModal.companyId,
-                folderPlus: this.showUpdateFolderPlusModal.automaticIntake
+                folderPlus: this.showUpdateFolderPlusModal.automaticIntake,
+                bankinFolderPlus: this.showUpdateFolderPlusModal.automaticBankinIntake
             })
             .subscribe(() => {
                 this.showUpdateFolderPlusModal = false;
+                this.userService.appData.userData.companies = null;
+                this.sharedService.getCompanies()
+                    .subscribe(companies => this.userService.appData.userData.companies = companies.body);
                 this.reload();
             });
     }
@@ -2599,7 +2632,7 @@ export class CompaniesListComponent
             this.filesOriginal = [];
             this.fileDropRef.nativeElement.type = 'text';
             setTimeout(() => {
-                if(this.fileDropRef && this.fileDropRef.nativeElement){
+                if (this.fileDropRef && this.fileDropRef.nativeElement) {
                     this.fileDropRef.nativeElement.type = 'file';
                 }
             }, 200);
@@ -2662,7 +2695,7 @@ export class CompaniesListComponent
                     this.filesOriginal = [];
                     this.fileDropRef.nativeElement.type = 'text';
                     setTimeout(() => {
-                        if(this.fileDropRef && this.fileDropRef.nativeElement){
+                        if (this.fileDropRef && this.fileDropRef.nativeElement) {
                             this.fileDropRef.nativeElement.type = 'file';
                         }
                     }, 200);
@@ -2699,7 +2732,7 @@ export class CompaniesListComponent
         this.filesOriginal = [];
         this.fileDropRef.nativeElement.type = 'text';
         setTimeout(() => {
-            if(this.fileDropRef && this.fileDropRef.nativeElement){
+            if (this.fileDropRef && this.fileDropRef.nativeElement) {
                 this.fileDropRef.nativeElement.type = 'file';
             }
         }, 200);
@@ -2723,7 +2756,7 @@ export class CompaniesListComponent
         if (this.fileDropRef && this.fileDropRef.nativeElement) {
             this.fileDropRef.nativeElement.type = 'text';
             setTimeout(() => {
-                if(this.fileDropRef && this.fileDropRef.nativeElement){
+                if (this.fileDropRef && this.fileDropRef.nativeElement) {
                     this.fileDropRef.nativeElement.type = 'file';
                 }
             }, 200);
@@ -3428,7 +3461,7 @@ export class CompaniesListComponent
         }
         this.fileDropRef.nativeElement.type = 'text';
         setTimeout(() => {
-            if(this.fileDropRef && this.fileDropRef.nativeElement){
+            if (this.fileDropRef && this.fileDropRef.nativeElement) {
                 this.fileDropRef.nativeElement.type = 'file';
             }
         }, 200);

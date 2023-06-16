@@ -73,7 +73,7 @@
         <ng-template #nonDeletedAccountsOnly let-tokenGroup>
           <div
             (click)="
-              tokenGroup.children.length && toggleExpandedFor(tokenGroup.id)
+              tokenGroup.children.length && toggleExpandedFor(tokenGroup.key)
             "
             [class.pointer]="tokenGroup.children.length > 0"
           >
@@ -81,7 +81,7 @@
               *ngIf="tokenGroup.children.length"
               class="fa fa-fw"
               [ngClass]="
-                groupExpanded[tokenGroup.id] ? 'fa-caret-up' : 'fa-caret-down'
+                groupExpanded[tokenGroup.key] ? 'fa-caret-up' : 'fa-caret-down'
               "
             ></i>
             <i *ngIf="!tokenGroup.children.length" class="fa fa-fw">&nbsp;</i>
@@ -94,7 +94,7 @@
               (click)="
                 (tokenGroup.children.length ||
                   deletedAccounts[tokenGroup.id]) &&
-                  toggleExpandedFor(tokenGroup.id)
+                  toggleExpandedFor(tokenGroup.key)
               "
               [class.pointer]="
                 tokenGroup.children.length || deletedAccounts[tokenGroup.id]
@@ -106,7 +106,7 @@
                 "
                 class="fa fa-fw"
                 [ngClass]="
-                  groupExpanded[tokenGroup.id] ? 'fa-caret-up' : 'fa-caret-down'
+                  groupExpanded[tokenGroup.key] ? 'fa-caret-up' : 'fa-caret-down'
                 "
               ></i>
               <i
@@ -159,7 +159,7 @@
           </div>
 
           <ng-container
-            *ngIf="tokenGroup.children.length && groupExpanded[tokenGroup.id]"
+            *ngIf="tokenGroup.children.length && groupExpanded[tokenGroup.key]"
           >
             <ng-container *ngFor="let itemChild of tokenGroup.children">
               <div
@@ -469,7 +469,7 @@
             </ng-container>
           </ng-container>
           <ng-container
-            *ngIf="showDeletedAccounts.value && groupExpanded[tokenGroup.id]"
+            *ngIf="showDeletedAccounts.value && groupExpanded[tokenGroup.key]"
           >
             <ng-container *ngIf="deletedAccounts$ | async as deletedAccounts">
               <div

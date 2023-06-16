@@ -299,7 +299,6 @@ export class SettingsSlikaAccountsComponent
                             (acc: any) => acc.companyAccountId === slkAcc.companyAccountId
                         ))
                 );
-
                 if (
                     responseTkn &&
                     !responseTkn.length &&
@@ -320,23 +319,48 @@ export class SettingsSlikaAccountsComponent
                     for (const property in arrayGr) {
                         // console.log(`${property}: ${arrayGr[property]}`)
                         const objAcc = arrayGr[property][0];
-                        // @ts-ignore
-                        const newObj: any = {
-                            token: objAcc.token,
-                            tokenStatus: null,
-                            tokenNickname: this.translate.instant(
-                                'clearingAgencies.' + objAcc.solekBankId
-                            ),
-                            isFromAccount: true,
-                            websiteTargetTypeId: objAcc.solekBankId,
-                            screenPasswordUpdateCount: null,
-                            dateCreated: objAcc.dateCreated,
-                            tokenTargetType: 'SLIKA',
-                            hasPrivs: true,
-                            companyAccountId: objAcc.companyAccountId,
-                            anotherCompanyExist: false
-                        };
-                        responseTkn.push(newObj);
+                        if(objAcc.token){
+                            // @ts-ignore
+                            const newObj: any = {
+                                token: objAcc.token,
+                                tokenStatus: null,
+                                tokenNickname: this.translate.instant(
+                                    'clearingAgencies.' + objAcc.solekBankId
+                                ),
+                                isFromAccount: true,
+                                websiteTargetTypeId: objAcc.solekBankId,
+                                screenPasswordUpdateCount: null,
+                                dateCreated: objAcc.dateCreated,
+                                tokenTargetType: 'SLIKA',
+                                hasPrivs: true,
+                                companyAccountId: objAcc.companyAccountId,
+                                anotherCompanyExist: false
+                            };
+                            responseTkn.push(newObj);
+                        }else{
+                            const arrayGrByBankId = groupBy('solekBankId')(arrayGr[property]);
+
+                            for (const propertySecond in arrayGrByBankId) {
+                                const objAccSecond = arrayGrByBankId[propertySecond][0];
+                                const newObjSecond: any = {
+                                    token: objAccSecond.token,
+                                    tokenStatus: null,
+                                    tokenNickname: this.translate.instant(
+                                        'clearingAgencies.' + objAccSecond.solekBankId
+                                    ),
+                                    isFromAccount: true,
+                                    websiteTargetTypeId: objAccSecond.solekBankId,
+                                    screenPasswordUpdateCount: null,
+                                    dateCreated: objAccSecond.dateCreated,
+                                    tokenTargetType: 'SLIKA',
+                                    hasPrivs: true,
+                                    companyAccountId: objAccSecond.companyAccountId,
+                                    anotherCompanyExist: false
+                                };
+                                responseTkn.push(newObjSecond);
+                            }
+                        }
+
                     }
                 } else if (
                     responseTkn &&
@@ -362,36 +386,61 @@ export class SettingsSlikaAccountsComponent
                         for (const property in arrayGr) {
                             // console.log(`${property}: ${arrayGr[property]}`)
                             const objAcc = arrayGr[property][0];
-                            // @ts-ignore
-                            const newObj: any = {
-                                token: objAcc.token,
-                                tokenStatus: null,
-                                tokenNickname: this.translate.instant(
-                                    'clearingAgencies.' + objAcc.solekBankId
-                                ),
-                                isFromAccount: true,
-                                websiteTargetTypeId: objAcc.solekBankId,
-                                screenPasswordUpdateCount: null,
-                                dateCreated: objAcc.dateCreated,
-                                tokenTargetType: 'SLIKA',
-                                hasPrivs: true,
-                                companyAccountId: objAcc.companyAccountId,
-                                anotherCompanyExist: false
-                            };
-                            responseTkn.push(newObj);
+                            if(objAcc.token){
+                                // @ts-ignore
+                                const newObj: any = {
+                                    token: objAcc.token,
+                                    tokenStatus: null,
+                                    tokenNickname: this.translate.instant(
+                                        'clearingAgencies.' + objAcc.solekBankId
+                                    ),
+                                    isFromAccount: true,
+                                    websiteTargetTypeId: objAcc.solekBankId,
+                                    screenPasswordUpdateCount: null,
+                                    dateCreated: objAcc.dateCreated,
+                                    tokenTargetType: 'SLIKA',
+                                    hasPrivs: true,
+                                    companyAccountId: objAcc.companyAccountId,
+                                    anotherCompanyExist: false
+                                };
+                                responseTkn.push(newObj);
+                            }else{
+                                const arrayGrByBankId = groupBy('solekBankId')(arrayGr[property]);
+
+                                for (const propertySecond in arrayGrByBankId) {
+                                    const objAccSecond = arrayGrByBankId[propertySecond][0];
+                                    const newObjSecond: any = {
+                                        token: objAccSecond.token,
+                                        tokenStatus: null,
+                                        tokenNickname: this.translate.instant(
+                                            'clearingAgencies.' + objAccSecond.solekBankId
+                                        ),
+                                        isFromAccount: true,
+                                        websiteTargetTypeId: objAccSecond.solekBankId,
+                                        screenPasswordUpdateCount: null,
+                                        dateCreated: objAccSecond.dateCreated,
+                                        tokenTargetType: 'SLIKA',
+                                        hasPrivs: true,
+                                        companyAccountId: objAccSecond.companyAccountId,
+                                        anotherCompanyExist: false
+                                    };
+                                    responseTkn.push(newObjSecond);
+                                }
+                            }
                         }
                     }
                 }
                 // debugger;
                 return responseTkn.map((tknSt) => {
                     if (!(tknSt.token in this.groupExpanded)) {
-                        this.groupExpanded[tknSt.token] = this.groupExpanded.all;
+                        this.groupExpanded[(tknSt.token + '_' + tknSt.websiteTargetTypeId)] = this.groupExpanded.all;
                     }
 
                     return {
                         id: tknSt.token,
+                        key: (tknSt.token + '_' + tknSt.websiteTargetTypeId),
                         status: tknSt,
-                        children: solekAccs.filter((acc: any) => acc.token === tknSt.token)
+                        children: solekAccs.filter((acc: any) => (acc.token + '_' + acc.solekBankId) === (tknSt.token + '_' + tknSt.websiteTargetTypeId))
                     } as ByTokenGroup;
                 });
             }),

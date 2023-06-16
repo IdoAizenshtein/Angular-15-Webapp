@@ -1,10 +1,1168 @@
-<div
-		[appScrollHeight]="!isModal ? 330 : 440"
-		class="scrollPage scrollbar-dynamic"
->
+<ng-container *ngIf="!isModal">
+	<div
+			[appScrollHeight]="!isModal ? 330 : 440"
+			class="scrollPage scrollbar-dynamic">
+		<div class="infoCompanyForm journalVendorAndCustomerForm">
+			<form [formGroup]="info" novalidate>
+				<div class="columns">
+					<div class="sett-table">
+						<div>
+							<div
+									[matTooltip]="'כמות ספרות באסמכתא לתוכנת הנה״ח'"
+									matTooltipClass="allow-cr"
+									matTooltipPosition="above"
+									style="cursor: pointer"
+							>
+								מספר ספרות באסמכתא
+							</div>
+							<div>
+								<p-dropdown
+										#dd11
+										(onChange)="updateSupplierJournal()"
+										(onFocus)="clearFilter(dd11)"
+										[dropdownIcon]="'p-dropdown-icon'"
+										[options]="izuAsmachtaNumCharArr"
+										[scrollHeight]="'135px'"
+										[style]="{ width: '275px' }"
+										appendTo="body"
+										formControlName="supplierAsmachtaNumChar"
+										name="supplierAsmachtaNumChar"
+
+										placeholder="בחירה"
+										styleClass="ddInfoCompanyForm"
+								>
+								</p-dropdown>
+							</div>
+						</div>
+					</div>
+					<!--                <div class="sett-table">-->
+					<!--                    <div>-->
+					<!--                        <div>-->
+					<!--                            אישור ידני לחשבוניות-->
+					<!--                        </div>-->
+
+					<!--                        <div>-->
+					<!--                            <div style="padding: 0px 10px;height: 30px;">-->
+					<!--                                <p-radioButton-->
+					<!--                                        (onClick)="updateValues('manualApprove', true)"-->
+					<!--                                        name="radioGroup_manualApprove"-->
+					<!--                                        [value]="true"-->
+					<!--                                        formControlName="manualApprove"-->
+					<!--                                        [label]="'כן'"-->
+					<!--                                        inputId="radio3">-->
+					<!--                                </p-radioButton>-->
+					<!--                                <span style="padding: 0px 8px"></span>-->
+					<!--                                <p-radioButton-->
+					<!--                                        (onClick)="updateValues('manualApprove', false)"-->
+					<!--                                        name="radioGroup_manualApprove"-->
+					<!--                                        [value]="false"-->
+					<!--                                        formControlName="manualApprove"-->
+					<!--                                        [label]="'לא'"-->
+					<!--                                        inputId="radio4">-->
+					<!--                                </p-radioButton>-->
+					<!--                            </div>-->
+					<!--                        </div>-->
+					<!--                    </div>-->
+					<!--                    &lt;!&ndash;                    <div>&ndash;&gt;-->
+					<!--                    &lt;!&ndash;                        <div>&ndash;&gt;-->
+					<!--                    &lt;!&ndash;                            פקודת יומן לחשבונית זיכוי&ndash;&gt;-->
+					<!--                    &lt;!&ndash;                        </div>&ndash;&gt;-->
+
+					<!--                    &lt;!&ndash;                        <div>&ndash;&gt;-->
+					<!--                    &lt;!&ndash;                            <div style="padding: 0px 10px;height: 30px;">&ndash;&gt;-->
+					<!--                    &lt;!&ndash;                                <p-radioButton&ndash;&gt;-->
+					<!--                    &lt;!&ndash;                                        (onClick)="updateValues('journalInvoiceCreditMemo', true)"&ndash;&gt;-->
+					<!--                    &lt;!&ndash;                                        name="radioGroup_journalInvoiceCreditMemo"&ndash;&gt;-->
+					<!--                    &lt;!&ndash;                                        [value]="true"&ndash;&gt;-->
+					<!--                    &lt;!&ndash;                                        formControlName="journalInvoiceCreditMemo"&ndash;&gt;-->
+					<!--                    &lt;!&ndash;                                        [label]="'הפוכה'"&ndash;&gt;-->
+					<!--                    &lt;!&ndash;                                        inputId="radio5">&ndash;&gt;-->
+					<!--                    &lt;!&ndash;                                </p-radioButton>&ndash;&gt;-->
+					<!--                    &lt;!&ndash;                                <span style="padding: 0px 8px"></span>&ndash;&gt;-->
+					<!--                    &lt;!&ndash;                                <p-radioButton&ndash;&gt;-->
+					<!--                    &lt;!&ndash;                                        (onClick)="updateValues('journalInvoiceCreditMemo', false)"&ndash;&gt;-->
+					<!--                    &lt;!&ndash;                                        name="radioGroup_journalInvoiceCreditMemo"&ndash;&gt;-->
+					<!--                    &lt;!&ndash;                                        [value]="false"&ndash;&gt;-->
+					<!--                    &lt;!&ndash;                                        formControlName="journalInvoiceCreditMemo"&ndash;&gt;-->
+					<!--                    &lt;!&ndash;                                        [label]="'במינוס'"&ndash;&gt;-->
+					<!--                    &lt;!&ndash;                                        inputId="radio6">&ndash;&gt;-->
+					<!--                    &lt;!&ndash;                                </p-radioButton>&ndash;&gt;-->
+					<!--                    &lt;!&ndash;                            </div>&ndash;&gt;-->
+					<!--                    &lt;!&ndash;                        </div>&ndash;&gt;-->
+					<!--                    &lt;!&ndash;                    </div>&ndash;&gt;-->
+
+					<!--                </div>-->
+
+					<div class="sett-table">
+						<div>
+							<div>קליטת חשבוניות</div>
+
+							<div>
+								<div style="padding: 0px 10px; height: 30px">
+									<p-radioButton
+											(onClick)="updateValues('expenseOnly', true)"
+											[label]="'הוצאות בלבד'"
+											[value]="true"
+											formControlName="expenseOnly"
+											inputId="radioexpenseOnly3"
+											name="expenseOnly"
+									>
+									</p-radioButton>
+									<span style="padding: 0px 8px"></span>
+									<p-radioButton
+											(onClick)="updateValues('expenseOnly', false)"
+											[label]="'הוצאות והכנסות'"
+											[value]="false"
+											formControlName="expenseOnly"
+											inputId="radioexpenseOnly4"
+											name="expenseOnly"
+									>
+									</p-radioButton>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div class="sett-table">
+						<div>
+							<div
+									[matTooltip]="'אסמכתא לרישום פקודת יומן הוצאה'"
+									matTooltipClass="allow-cr"
+									matTooltipPosition="above"
+									style="cursor: pointer"
+							>
+								אסמכתא לרישום הוצאה
+							</div>
+
+							<div>
+								<div style="padding: 0px 10px; height: 30px">
+									<p-radioButton
+											(onClick)="updateValues('expenseAsmachtaType', '1')"
+											[label]="'אסמכתא 1'"
+											formControlName="expenseAsmachtaType"
+											inputId="radio7"
+											name="expenseAsmachtaType"
+											value="1"
+									>
+									</p-radioButton>
+									<span style="padding: 0px 8px"></span>
+									<p-radioButton
+											(onClick)="updateValues('expenseAsmachtaType', '2')"
+											[label]="'אסמכתא 2'"
+											formControlName="expenseAsmachtaType"
+											inputId="radio8"
+											name="expenseAsmachtaType"
+											value="2"
+									>
+									</p-radioButton>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div class="sett-table">
+						<div>
+							<div
+									[matTooltip]="'אסמכתא לרישום פקודת יומן הכנסה'"
+									matTooltipClass="allow-cr"
+									matTooltipPosition="above"
+									style="cursor: pointer"
+							>
+								אסמכתא לרישום הכנסה
+							</div>
+
+							<div>
+								<div style="padding: 0px 10px; height: 30px">
+									<p-radioButton
+											(onClick)="updateValues('incomeAsmachtaType', '1')"
+											[label]="'אסמכתא 1'"
+											formControlName="incomeAsmachtaType"
+											inputId="radio122"
+											name="incomeAsmachtaType"
+											value="1"
+									>
+									</p-radioButton>
+									<span style="padding: 0px 8px"></span>
+									<p-radioButton
+											(onClick)="updateValues('incomeAsmachtaType', '2')"
+											[label]="'אסמכתא 2'"
+											formControlName="incomeAsmachtaType"
+											inputId="radio2331"
+											name="incomeAsmachtaType"
+											value="2"
+									>
+									</p-radioButton>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div class="sett-table">
+						<div>
+							<div>פקודות יומן לחשבונית זיכוי</div>
+
+							<div>
+								<div style="padding: 0px 10px; height: 30px">
+									<p-radioButton
+											(onClick)="updateValues('invertedCreditInvoice', true)"
+											[label]="'הפוכה'"
+											[value]="true"
+											formControlName="invertedCreditInvoice"
+											inputId="radio44443"
+											name="invertedCreditInvoice"
+									>
+									</p-radioButton>
+									<span style="padding: 0px 8px"></span>
+									<p-radioButton
+											(onClick)="updateValues('invertedCreditInvoice', false)"
+											[label]="'במינוס'"
+											[value]="false"
+											formControlName="invertedCreditInvoice"
+											inputId="radio33334"
+											name="invertedCreditInvoice"
+									>
+									</p-radioButton>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div class="sett-table">
+						<div>
+							<div
+									[matTooltip]="
+                'קובץ לקליטה בהנה״ח, לפי תקופות הדיווח למע״מ או מצטבר שנתי'
+              "
+									matTooltipClass="allow-cr"
+									matTooltipPosition="above"
+									style="cursor: pointer"
+							>
+								יצירת קובץ פ.יומן ספקים ולקוחות
+							</div>
+							<div>
+								<div style="padding: 0px 10px; height: 30px">
+									<p-radioButton
+											*ngIf="(isModal
+								? isModal.esderMaam
+								: userService.appData?.userData?.companySelect
+								?.esderMaam) === 'MONTH' || (isModal
+								? isModal.esderMaam
+								: userService.appData?.userData?.companySelect
+								?.esderMaam) !== 'TWO_MONTH'"
+											(onClick)="
+                    updateValues(
+                      'exportFileVatPeriod',
+                      (isModal
+                        ? isModal.esderMaam
+                        : userService.appData?.userData?.companySelect
+                            ?.esderMaam) !== 'TWO_MONTH'
+                        ? 'MONTH'
+                        : 'TWO_MONTH'
+                    )
+                  "
+											[label]="
+         (isModal
+								? isModal.esderMaam
+								: userService.appData?.userData?.companySelect
+								?.esderMaam) === 'MONTH' ? 'חודשי (קובץ לכל חודש)' : (isModal
+								? isModal.esderMaam
+								: userService.appData?.userData?.companySelect
+								?.esderMaam) === 'TWO_MONTH' ? 'דו חודשי (קובץ לכל חודשיים)' : 'חודשי (קובץ לכל חודש)'
+                  "
+											[value]="'MONTH'"
+											formControlName="exportFileVatPeriod"
+											inputId="radio123"
+											name="exportFileVatPeriod"
+									>
+									</p-radioButton>
+									<p-radioButton
+											*ngIf="(isModal
+								? isModal.esderMaam
+								: userService.appData?.userData?.companySelect
+								?.esderMaam) === 'TWO_MONTH'"
+											(onClick)="
+                    updateValues(
+                      'exportFileVatPeriod',
+                      (isModal
+                        ? isModal.esderMaam
+                        : userService.appData?.userData?.companySelect
+                            ?.esderMaam) !== 'TWO_MONTH'
+                        ? 'MONTH'
+                        : 'TWO_MONTH'
+                    )
+                  "
+											[label]="
+         (isModal
+								? isModal.esderMaam
+								: userService.appData?.userData?.companySelect
+								?.esderMaam) === 'MONTH' ? 'חודשי (קובץ לכל חודש)' : (isModal
+								? isModal.esderMaam
+								: userService.appData?.userData?.companySelect
+								?.esderMaam) === 'TWO_MONTH' ? 'דו חודשי (קובץ לכל חודשיים)' : 'חודשי (קובץ לכל חודש)'
+                  "
+											[value]="'TWO_MONTH'"
+											formControlName="exportFileVatPeriod"
+											inputId="radio123"
+											name="exportFileVatPeriod"
+									>
+									</p-radioButton>
+									<span style="padding: 0px 8px"></span>
+									<p-radioButton
+											*ngIf="!isYear"
+											(onClick)="updateValues('exportFileVatPeriod', (isYear ? 'YEAR' : 'NONE'))"
+											[label]="
+												isYear ? 'שנתי (קובץ לכל שנה)'
+												:
+
+(
+(isModal
+								? isModal.esderMaam
+								: userService.appData?.userData?.companySelect
+								?.esderMaam) === 'MONTH' ? 'מצטבר (קובץ אחד)' : (isModal
+								? isModal.esderMaam
+								: userService.appData?.userData?.companySelect
+								?.esderMaam) === 'TWO_MONTH' ?
+								'מצטבר (קובץ אחד)' :
+
+								isYear ? 'שנתי (קובץ לכל שנה)'
+								:
+
+								'מצטבר (קובץ אחד)'
+)
+
+"
+											formControlName="exportFileVatPeriod"
+											inputId="radio245"
+											name="exportFileVatPeriod"
+											[value]="'NONE'"
+									>
+									</p-radioButton>
+									<p-radioButton
+											*ngIf="isYear"
+											(onClick)="updateValues('exportFileVatPeriod', (isYear ? 'YEAR' : 'NONE'))"
+											[label]="
+														isYear ? 'שנתי (קובץ לכל שנה)'
+												:
+((isModal
+								? isModal.esderMaam
+								: userService.appData?.userData?.companySelect
+								?.esderMaam) === 'MONTH' ? 'מצטבר (קובץ אחד)' : (isModal
+								? isModal.esderMaam
+								: userService.appData?.userData?.companySelect
+								?.esderMaam) === 'TWO_MONTH' ?
+								'מצטבר (קובץ אחד)' :
+
+								isYear ? 'שנתי (קובץ לכל שנה)'
+								:
+								'מצטבר (קובץ אחד)')
+"
+											formControlName="exportFileVatPeriod"
+											inputId="radio245"
+											name="exportFileVatPeriod"
+											[value]="'YEAR'"
+									>
+									</p-radioButton>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div class="sett-table">
+						<div>
+							<div>פקודה לחשבונית מס קבלה</div>
+
+							<div>
+								<div style="padding: 0px 10px; height: 30px">
+									<p-radioButton
+											(onClick)="updateValues('invoicePayment', false)"
+											[label]="'לא כולל קבלה'"
+											[value]="false"
+											formControlName="invoicePayment"
+											inputId="radio44"
+											name="invoicePayment"
+									>
+									</p-radioButton>
+									<span style="padding: 0px 8px"></span>
+									<p-radioButton
+											(onClick)="updateValues('invoicePayment', true)"
+											[label]="'כולל קבלה'"
+											[value]="true"
+											formControlName="invoicePayment"
+											inputId="radio33"
+											name="invoicePayment"
+									>
+									</p-radioButton>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div class="sett-table">
+						<div>
+							<div
+									[matTooltip]="'בהתאם למוגדר בתוכנת הנה״ח'"
+									matTooltipClass="allow-cr"
+									matTooltipPosition="above"
+									style="cursor: pointer"
+							>
+								תכולת תאריך נוסף (3) בפקודה
+							</div>
+
+							<div>
+								<div style="padding: 0px 10px; height: 30px">
+									<p-radioButton
+											(onClick)="updateValues('thirdDate', '0')"
+											[label]="'חודש דיווח מע״מ'"
+											formControlName="thirdDate"
+											inputId="radio72"
+											name="thirdDate"
+											value="0"
+									>
+									</p-radioButton>
+									<span style="padding: 0px 8px"></span>
+									<p-radioButton
+											(onClick)="updateValues('thirdDate', '1')"
+											[label]="'תאריך מסמך'"
+											formControlName="thirdDate"
+											inputId="radio82"
+											name="thirdDate"
+											value="1"
+									>
+									</p-radioButton>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div class="sett-table">
+						<div>
+							<div>מיון תנועות המסמכים בקובץ הנה”ח</div>
+							<div>
+								<div
+										class="supplierDocOrderType_row"
+										style="
+                  padding: 0px 10px;
+                  height: 30px;
+                  align-items: flex-start;
+                  align-content: center;
+                  justify-content: flex-start;
+                  display: flex;
+                  padding-left: 0;
+                "
+								>
+									<p-radioButton
+											(onClick)="updateValues('supplierDocOrderType', '1')"
+											[label]="'סדר העלאה'"
+											[value]="'1'"
+											formControlName="supplierDocOrderType"
+											inputId="radio_supplierDocOrderType1"
+											name="supplierDocOrderType"
+									>
+									</p-radioButton>
+									<span style="padding: 0px 8px"></span>
+									<p-radioButton
+											(onClick)="updateValues('supplierDocOrderType', '2')"
+											[label]="'סדר אישור'"
+											[value]="'2'"
+											formControlName="supplierDocOrderType"
+											inputId="radio_supplierDocOrderType2"
+											name="supplierDocOrderType"
+									>
+									</p-radioButton>
+									<span style="padding: 0px 8px"></span>
+									<div style="position: relative">
+										<p-radioButton
+												(onClick)="updateValues('supplierDocOrderType', '3')"
+												[label]="'הכנסות ואז הוצאות'"
+												[value]="'3'"
+												formControlName="supplierDocOrderType"
+												inputId="radio_supplierDocOrderType3"
+												name="supplierDocOrderType"
+										>
+										</p-radioButton>
+
+										<div
+												(click)="
+                      info.get('supplierDocOrderType').value !== '3'
+                        ? null
+                        : (showSupplierDocOrderTypeEdit = true)
+                    "
+												[class.disabled]="
+                      info.get('supplierDocOrderType').value !== '3'
+                    "
+												class="edit_supplierDocOrderType"
+										>
+											עריכה
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div class="sett-table">
+						<div>
+							<div
+									[matTooltip]="'כול פקודות היומן בש״ח, ירשמו גם במט״ח'"
+									matTooltipClass="allow-cr"
+									matTooltipPosition="above"
+									style="cursor: pointer; display: flex"
+							>
+								שיערוך כל פקודות היומן למט"ח
+
+								<div style="margin-top: -9px; margin-right: 10px">
+									<p-dropdown
+											#dd11
+											(onClick)="setCurrDefFunc('revaluationCurrCode')"
+											(onChange)="openModalBeforeContinue('revaluationCurrCode')"
+											(onFocus)="clearFilter(dd11)"
+											[dropdownIcon]="'p-dropdown-icon'"
+											[options]="revaluationCurrCodeArr"
+											[scrollHeight]="'135px'"
+											[style]="{ width: '100px' }"
+											appendTo="body"
+											formControlName="revaluationCurrCode"
+											placeholder="בחירה"
+											styleClass="ddInfoCompanyForm"
+											name="revaluationCurrCode"
+
+									>
+									</p-dropdown>
+								</div>
+							</div>
+
+							<div>
+								<div style="padding: 0px 10px; height: 30px">
+									<p-radioButton
+											(onClick)="openModalBeforeContinue('revaluationCurrFalse')"
+											[label]="'לא'"
+											[value]="false"
+											formControlName="revaluationCurr"
+											inputId="radio9"
+											name="revaluationCurr"
+									>
+									</p-radioButton>
+									<span style="padding: 0px 8px"></span>
+
+									<p-radioButton
+											(onClick)="openModalBeforeContinue('revaluationCurrTrue')"
+											[label]="'כן'"
+											[value]="true"
+											formControlName="revaluationCurr"
+											inputId="radio10"
+											name="revaluationCurr"
+									>
+									</p-radioButton>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<ng-container
+							*ngFor="let item of arr.controls; let i = index"
+							formArrayName="currencyRates"
+					>
+						<div [formGroupName]="i" class="sett-table"
+							 *ngIf="!info.get('currencyRates').value[i][getKeyName(item.value)].delete">
+							<div [formGroupName]="getKeyName(item.value)">
+								<div style="display: flex">
+									<ng-container
+											*ngIf="getKey(item.value) as currency; else empty"
+									>
+										שער חליפין להמרת
+										{{ currency.name }}
+										({{ currency.sign }})
+									</ng-container>
+									<ng-template #empty> שער חליפין להמרת</ng-template>
+
+									<div
+											*ngIf="!getKey(item.value).indDefault"
+											class="hashCodeId_part"
+									>
+										קוד מטבע
+
+										<input
+												(change)="
+                      item.get(getKeyName(item.value)).get('hashCodeId').value
+                        ? updateSupplierJournal()
+                        : null
+                    "
+												appNumbersOnly="regexPositiveInt"
+												formControlName="hashCodeId"
+												type="text"
+										/>
+									</div>
+								</div>
+								<div>
+									<div style="padding: 0px 10px;height: 30px;display: flex;align-items: center;">
+										<ng-container *ngIf="getKey(item.value).bankIsrael">
+											<p-radioButton
+													(onClick)="
+                        updateValuesCurrencyRatesTypesInit(item, 'BANK', 'type')
+                      "
+													[label]="'שער יציג (בנק ישראל)'"
+													formControlName="type"
+													inputId="radio{{ i }}_BANK"
+													name="type"
+													value="BANK"
+											>
+											</p-radioButton>
+											<span style="padding: 0px 8px"></span>
+										</ng-container>
+										<p-radioButton
+												(onClick)="
+                      updateValuesCurrencyRatesTypesInit(item, 'FIXED', 'type')
+                    "
+												[label]="'שער קבוע'"
+												formControlName="type"
+												inputId="radio{{ i }}_FIXED"
+												name="type"
+												value="FIXED"
+										>
+										</p-radioButton>
+										<input
+												(blur)="
+                      !item.get(getKeyName(item.value)).get('fixedRate')
+                        .value && !getKey(item.value).bankIsrael
+                        ? updateValuesCurrencyRatesTypesInit(item, true, 'delete')
+                        : null
+                    "
+												(change)="
+                      item.get(getKeyName(item.value)).get('fixedRate').value
+                        ? updateSupplierJournal()
+                        : null
+                    "
+												(click)="item.get(getKeyName(item.value)).get('type').value === 'BANK' ?
+                      updateValuesCurrencyRatesTypesInit(item, 'FIXED', 'type') : null
+                    "
+												(keyup)="setMaxDigitsAfterDec(item)"
+												[class.err]="
+                      item.get(getKeyName(item.value)).get('fixedRate')
+                        .touched &&
+                      !item.get(getKeyName(item.value)).get('fixedRate')
+                        .value &&
+                      item.get(getKeyName(item.value)).get('type').value ===
+                        'FIXED'
+                    "
+												appNumbersOnly="positive"
+												formControlName="fixedRate"
+												type="text"
+										/>
+									</div>
+								</div>
+							</div>
+							<div
+									*ngIf="
+                (!getKey(item.value).bankIsrael &&
+                  !item.get(getKeyName(item.value)).get('fixedRate').value) ||
+                getKeyName(item.value) === 'EUR' ||
+                (getKeyName(item.value) !== 'USD' &&
+                  getKeyName(item.value) !== 'EUR')
+              "
+									class="comments"
+									style="display: block"
+							>
+								<div
+										*ngIf="
+                  !getKey(item.value).bankIsrael &&
+                  !item.get(getKeyName(item.value)).get('fixedRate').value
+                "
+										class="alert"
+										style="color: #df0000"
+								>
+									חובה להזין ערך, אחרת המטבע ימחק
+								</div>
+								<div
+										(click)="openModalAddCurrency()"
+										*ngIf="getKeyName(item.value) === 'EUR'"
+										class="link"
+										style="
+                  display: flex;
+                  color: #038ed6;
+                  font-size: 15px !important;
+                  font-weight: 400;
+                "
+								>
+									<img
+											src="/assets/images/addFolder.png"
+											style="align-self: center; margin-left: 4px"
+									/>
+									הוספת מט"ח
+								</div>
+								<div
+										(click)="updateValuesCurrencyRatesTypesInit(item, true, 'delete')"
+										*ngIf="
+                  getKeyName(item.value) !== 'USD' &&
+                  getKeyName(item.value) !== 'EUR'
+                "
+										class="link"
+										style="
+                  display: flex;
+                  color: #038ed6;
+                  font-size: 15px !important;
+                  font-weight: 400;
+                "
+								>
+									<img
+											src="/assets/images/trashCurr.png"
+											style="align-self: center; margin-left: 4px"
+									/>
+									מחיקת המטבע
+								</div>
+							</div>
+						</div>
+					</ng-container>
+
+					<div class="sett-table">
+						<div>
+							<div>בהעלאת קבצים ממייל</div>
+							<div>
+								<div
+										class="supplierDocOrderType_row"
+										style="
+                  padding: 0px 10px;
+                  height: 30px;
+                  align-items: flex-start;
+                  align-content: center;
+                  justify-content: flex-start;
+                  display: flex;
+                  padding-left: 0;
+                "
+								>
+									<p-radioButton
+											(onClick)="updateValues('unitedMailFiles', '0')"
+											[label]="'פצל'"
+											[value]="'0'"
+											formControlName="unitedMailFiles"
+											inputId="radio_unitedMailFiles1"
+											name="unitedMailFiles"
+									>
+									</p-radioButton>
+									<span style="padding: 0px 8px"></span>
+									<p-radioButton
+											(onClick)="updateValues('unitedMailFiles', '1')"
+											[label]="'שמור על העלאה מקורית'"
+											[value]="'1'"
+											formControlName="unitedMailFiles"
+											inputId="radio_unitedMailFiles2"
+											name="unitedMailFiles"
+									>
+									</p-radioButton>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</form>
+		</div>
+	</div>
+</ng-container>
+<ng-container *ngIf="isModal">
 	<div class="infoCompanyForm journalVendorAndCustomerForm">
+		<div *ngIf="loader" class="loader">
+			<div class="circle"></div>
+		</div>
 		<form [formGroup]="info" novalidate>
 			<div class="columns">
+				<div class="sett-table">
+					<div>
+						<div
+								[matTooltip]="'כול פקודות היומן בש״ח, ירשמו גם במט״ח'"
+								matTooltipClass="allow-cr"
+								matTooltipPosition="above"
+								style="cursor: pointer; display: flex"
+						>
+							שיערוך כל פקודות היומן למט"ח
+
+							<div style="margin-top: -9px; margin-right: 10px">
+								<p-dropdown
+										#dd11
+										(onClick)="setCurrDefFunc('revaluationCurrCode')"
+										(onChange)="openModalBeforeContinue('revaluationCurrCode')"
+										(onFocus)="clearFilter(dd11)"
+										[dropdownIcon]="'p-dropdown-icon'"
+										[options]="revaluationCurrCodeArr"
+										[scrollHeight]="'135px'"
+										[style]="{ width: '100px' }"
+										appendTo="body"
+										formControlName="revaluationCurrCode"
+										placeholder="בחירה"
+										styleClass="ddInfoCompanyForm"
+										name="revaluationCurrCode"
+
+								>
+								</p-dropdown>
+							</div>
+						</div>
+
+						<div>
+							<div style="padding: 0px;" class="column">
+								<p-radioButton
+										(onClick)="openModalBeforeContinue('revaluationCurrFalse')"
+										[label]="'לא'"
+										[value]="false"
+										formControlName="revaluationCurr"
+										inputId="radio9"
+										name="revaluationCurr"
+								>
+								</p-radioButton>
+								<p-radioButton
+										(onClick)="openModalBeforeContinue('revaluationCurrTrue')"
+										[label]="'כן'"
+										[value]="true"
+										formControlName="revaluationCurr"
+										inputId="radio10"
+										name="revaluationCurr"
+								>
+								</p-radioButton>
+							</div>
+							<div
+									class="comments"
+									style="display: block"
+							>
+								<div
+										(click)="openModalAddCurrency()"
+										class="link"
+										style="
+                  display: flex;
+                  color: #038ed6;
+                  align-items: center;
+                  font-size: 15px !important;
+                  font-weight: 400;
+                "
+								>
+									<img
+											src="/assets/images/otherOseknumArrayLink.png"
+											style="align-self: center; margin-left: 4px"
+									/>
+									הוספת מט"ח
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<ng-container
+						*ngFor="let item of arr.controls; let i = index"
+						formArrayName="currencyRates"
+				>
+					<div [formGroupName]="i" class="sett-table"
+						 *ngIf="!info.get('currencyRates').value[i][getKeyName(item.value)].delete">
+						<div [formGroupName]="getKeyName(item.value)">
+							<div style="display: flex">
+								<ng-container
+										*ngIf="getKey(item.value) as currency; else empty"
+								>
+									שער חליפין להמרת
+									{{ currency.name }}
+									({{ currency.sign }})
+								</ng-container>
+								<ng-template #empty> שער חליפין להמרת</ng-template>
+
+								<div
+										*ngIf="!getKey(item.value).indDefault"
+										class="hashCodeId_part"
+								>
+									קוד מטבע
+
+									<input
+											(change)="
+                      item.get(getKeyName(item.value)).get('hashCodeId').value
+                        ? updateSupplierJournal()
+                        : null
+                    "
+											appNumbersOnly="regexPositiveInt"
+											formControlName="hashCodeId"
+											type="text"
+									/>
+								</div>
+							</div>
+							<div>
+								<div style="padding: 0px;" class="column">
+								<ng-container *ngIf="getKey(item.value).bankIsrael">
+										<p-radioButton
+												(onClick)="
+                        updateValuesCurrencyRatesTypesInit(item, 'BANK', 'type')
+                      "
+												[label]="'שער יציג (בנק ישראל)'"
+												formControlName="type"
+												inputId="radio{{ i }}_BANK"
+												name="type"
+												value="BANK"
+										>
+										</p-radioButton>
+									</ng-container>
+
+									<div style="position: relative; display: flex; align-items: baseline">
+										<p-radioButton
+												(onClick)="
+                      updateValuesCurrencyRatesTypesInit(item, 'FIXED', 'type')
+                    "
+												[label]="'שער קבוע'"
+												formControlName="type"
+												inputId="radio{{ i }}_FIXED"
+												name="type"
+												value="FIXED"
+										>
+										</p-radioButton>
+										<input
+												(blur)="
+                      !item.get(getKeyName(item.value)).get('fixedRate')
+                        .value && !getKey(item.value).bankIsrael
+                        ? updateValuesCurrencyRatesTypesInit(item, true, 'delete')
+                        : null
+                    "
+												(change)="
+                      item.get(getKeyName(item.value)).get('fixedRate').value
+                        ? updateSupplierJournal()
+                        : null
+                    "
+												(click)="item.get(getKeyName(item.value)).get('type').value === 'BANK' ?
+                      updateValuesCurrencyRatesTypesInit(item, 'FIXED', 'type') : null
+                    "
+												(keyup)="setMaxDigitsAfterDec(item)"
+												[class.err]="
+                      item.get(getKeyName(item.value)).get('fixedRate')
+                        .touched &&
+                      !item.get(getKeyName(item.value)).get('fixedRate')
+                        .value &&
+                      item.get(getKeyName(item.value)).get('type').value ===
+                        'FIXED'
+                    "
+												appNumbersOnly="positive"
+												formControlName="fixedRate"
+												type="text"
+										/>
+										<div
+												*ngIf="
+                  !getKey(item.value).bankIsrael &&
+                  !item.get(getKeyName(item.value)).get('fixedRate').value
+                "
+												class="alert"
+												style="color: #df0000; margin-right: 10px;line-height: 20px;"
+										>
+											חובה להזין ערך, אחרת המטבע ימחק
+										</div>
+									</div>
+
+								</div>
+							</div>
+							<div
+									*ngIf="
+                (!getKey(item.value).bankIsrael &&
+                  !item.get(getKeyName(item.value)).get('fixedRate').value) ||
+                getKeyName(item.value) === 'EUR' ||
+                (getKeyName(item.value) !== 'USD' &&
+                  getKeyName(item.value) !== 'EUR')
+              "
+									class="comments static"
+									style="display: block"
+							>
+
+								<!--							<div-->
+								<!--									(click)="openModalAddCurrency()"-->
+								<!--									*ngIf="getKeyName(item.value) === 'EUR'"-->
+								<!--									class="link"-->
+								<!--									style="-->
+								<!--                  display: flex;-->
+								<!--                  color: #038ed6;-->
+								<!--                  align-items: center;-->
+								<!--                  font-size: 15px !important;-->
+								<!--                  font-weight: 400;-->
+								<!--                "-->
+								<!--							>-->
+								<!--								<img-->
+								<!--										src="/assets/images/otherOseknumArrayLink.png"-->
+								<!--										style="align-self: center; margin-left: 4px"-->
+								<!--								/>-->
+								<!--								הוספת מט"ח-->
+								<!--							</div>-->
+								<div
+										(click)="updateValuesCurrencyRatesTypesInit(item, true, 'delete')"
+										*ngIf="
+                  getKeyName(item.value) !== 'USD' &&
+                  getKeyName(item.value) !== 'EUR'
+                "
+										class="link"
+										style="
+                  display: flex;
+                  color: #038ed6;
+                  align-items: center;
+                  font-size: 15px !important;
+                  font-weight: 400;
+                "
+								>
+									<img
+											src="/assets/images/trashCurr.png"
+											style="align-self: center;margin-left: 9px;width: 17px;"
+									/>
+									מחיקת המטבע
+								</div>
+							</div>
+
+						</div>
+					</div>
+				</ng-container>
+
+				<div class="sett-table">
+					<div>
+						<div
+								[matTooltip]="
+                'קובץ לקליטה בהנה״ח, לפי תקופות הדיווח למע״מ או מצטבר שנתי'
+              "
+								matTooltipClass="allow-cr"
+								matTooltipPosition="above"
+								style="cursor: pointer"
+						>
+							יצירת קובץ פ.יומן ספקים ולקוחות
+						</div>
+						<div>
+							<div style="padding: 0px;" class="column">
+							<p-radioButton
+										*ngIf="(isModal
+								? isModal.esderMaam
+								: userService.appData?.userData?.companySelect
+								?.esderMaam) === 'MONTH' || (isModal
+								? isModal.esderMaam
+								: userService.appData?.userData?.companySelect
+								?.esderMaam) !== 'TWO_MONTH'"
+										(onClick)="
+                    updateValues(
+                      'exportFileVatPeriod',
+                      (isModal
+                        ? isModal.esderMaam
+                        : userService.appData?.userData?.companySelect
+                            ?.esderMaam) !== 'TWO_MONTH'
+                        ? 'MONTH'
+                        : 'TWO_MONTH'
+                    )
+                  "
+										[label]="
+         (isModal
+								? isModal.esderMaam
+								: userService.appData?.userData?.companySelect
+								?.esderMaam) === 'MONTH' ? 'חודשי (קובץ לכל חודש)' : (isModal
+								? isModal.esderMaam
+								: userService.appData?.userData?.companySelect
+								?.esderMaam) === 'TWO_MONTH' ? 'דו חודשי (קובץ לכל חודשיים)' : 'חודשי (קובץ לכל חודש)'
+                  "
+										[value]="'MONTH'"
+										formControlName="exportFileVatPeriod"
+										inputId="radio123"
+										name="exportFileVatPeriod"
+								>
+								</p-radioButton>
+								<p-radioButton
+										*ngIf="(isModal
+								? isModal.esderMaam
+								: userService.appData?.userData?.companySelect
+								?.esderMaam) === 'TWO_MONTH'"
+										(onClick)="
+                    updateValues(
+                      'exportFileVatPeriod',
+                      (isModal
+                        ? isModal.esderMaam
+                        : userService.appData?.userData?.companySelect
+                            ?.esderMaam) !== 'TWO_MONTH'
+                        ? 'MONTH'
+                        : 'TWO_MONTH'
+                    )
+                  "
+										[label]="
+         (isModal
+								? isModal.esderMaam
+								: userService.appData?.userData?.companySelect
+								?.esderMaam) === 'MONTH' ? 'חודשי (קובץ לכל חודש)' : (isModal
+								? isModal.esderMaam
+								: userService.appData?.userData?.companySelect
+								?.esderMaam) === 'TWO_MONTH' ? 'דו חודשי (קובץ לכל חודשיים)' : 'חודשי (קובץ לכל חודש)'
+                  "
+										[value]="'TWO_MONTH'"
+										formControlName="exportFileVatPeriod"
+										inputId="radio123"
+										name="exportFileVatPeriod"
+								>
+								</p-radioButton>
+								<p-radioButton
+										*ngIf="!isYear"
+										(onClick)="updateValues('exportFileVatPeriod', (isYear ? 'YEAR' : 'NONE'))"
+										[label]="
+												isYear ? 'שנתי (קובץ לכל שנה)'
+												:
+
+(
+(isModal
+								? isModal.esderMaam
+								: userService.appData?.userData?.companySelect
+								?.esderMaam) === 'MONTH' ? 'מצטבר (קובץ אחד)' : (isModal
+								? isModal.esderMaam
+								: userService.appData?.userData?.companySelect
+								?.esderMaam) === 'TWO_MONTH' ?
+								'מצטבר (קובץ אחד)' :
+
+								isYear ? 'שנתי (קובץ לכל שנה)'
+								:
+
+								'מצטבר (קובץ אחד)'
+)
+
+"
+										formControlName="exportFileVatPeriod"
+										inputId="radio245"
+										name="exportFileVatPeriod"
+										[value]="'NONE'"
+								>
+								</p-radioButton>
+								<p-radioButton
+										*ngIf="isYear"
+										(onClick)="updateValues('exportFileVatPeriod', (isYear ? 'YEAR' : 'NONE'))"
+										[label]="
+														isYear ? 'שנתי (קובץ לכל שנה)'
+												:
+((isModal
+								? isModal.esderMaam
+								: userService.appData?.userData?.companySelect
+								?.esderMaam) === 'MONTH' ? 'מצטבר (קובץ אחד)' : (isModal
+								? isModal.esderMaam
+								: userService.appData?.userData?.companySelect
+								?.esderMaam) === 'TWO_MONTH' ?
+								'מצטבר (קובץ אחד)' :
+
+								isYear ? 'שנתי (קובץ לכל שנה)'
+								:
+								'מצטבר (קובץ אחד)')
+"
+										formControlName="exportFileVatPeriod"
+										inputId="radio245"
+										name="exportFileVatPeriod"
+										[value]="'YEAR'"
+								>
+								</p-radioButton>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="title" style="margin-top: 30px">
+			<h3>הגדרות התחלתיות</h3>
+				<p>
+					שדות אלה הוגדרו בעת הקמת משרד עבור כל החברות.
+					<span style="text-decoration: underline; padding: 0px 5px"> לשינוי הגדרות לחברה זו בלבד </span>
+					ניתן לסמן בשדות המופיעים למטה.
+				</p>
+				<img
+						(click)="restoreSettings()"
+						[matTooltip]="'לשחזור הגדרות\n'+
+'התחלתיות'"
+						matTooltipClass="bottomNavActionTooltip"
+						matTooltipHideDelay="0"
+						matTooltipPosition="above"
+						matTooltipShowDelay="0"
+						src="/assets/images/restoreSettings.png" style="cursor: pointer; margin-right: 5px"/>
+			</div>
+
+			<div class="columns widthFixed">
 				<div class="sett-table">
 					<div>
 						<div
@@ -23,11 +1181,10 @@
 									[dropdownIcon]="'p-dropdown-icon'"
 									[options]="izuAsmachtaNumCharArr"
 									[scrollHeight]="'135px'"
-									[style]="{ width: '275px' }"
+									[style]="{ width: '245px' }"
 									appendTo="body"
 									formControlName="supplierAsmachtaNumChar"
 									name="supplierAsmachtaNumChar"
-
 									placeholder="בחירה"
 									styleClass="ddInfoCompanyForm"
 							>
@@ -95,36 +1252,6 @@
 
 				<div class="sett-table">
 					<div>
-						<div>קליטת חשבוניות</div>
-
-						<div>
-							<div style="padding: 0px 10px; height: 30px">
-								<p-radioButton
-										(onClick)="updateValues('expenseOnly', true)"
-										[label]="'הוצאות בלבד'"
-										[value]="true"
-										formControlName="expenseOnly"
-										inputId="radioexpenseOnly3"
-										name="expenseOnly"
-								>
-								</p-radioButton>
-								<span style="padding: 0px 8px"></span>
-								<p-radioButton
-										(onClick)="updateValues('expenseOnly', false)"
-										[label]="'הוצאות והכנסות'"
-										[value]="false"
-										formControlName="expenseOnly"
-										inputId="radioexpenseOnly4"
-										name="expenseOnly"
-								>
-								</p-radioButton>
-							</div>
-						</div>
-					</div>
-				</div>
-
-				<div class="sett-table">
-					<div>
 						<div
 								[matTooltip]="'אסמכתא לרישום פקודת יומן הוצאה'"
 								matTooltipClass="allow-cr"
@@ -135,7 +1262,8 @@
 						</div>
 
 						<div>
-							<div style="padding: 0px 10px; height: 30px">
+							<div style="padding: 0px;" class="column">
+
 								<p-radioButton
 										(onClick)="updateValues('expenseAsmachtaType', '1')"
 										[label]="'אסמכתא 1'"
@@ -145,7 +1273,6 @@
 										value="1"
 								>
 								</p-radioButton>
-								<span style="padding: 0px 8px"></span>
 								<p-radioButton
 										(onClick)="updateValues('expenseAsmachtaType', '2')"
 										[label]="'אסמכתא 2'"
@@ -172,7 +1299,8 @@
 						</div>
 
 						<div>
-							<div style="padding: 0px 10px; height: 30px">
+							<div style="padding: 0px;" class="column">
+
 								<p-radioButton
 										(onClick)="updateValues('incomeAsmachtaType', '1')"
 										[label]="'אסמכתא 1'"
@@ -182,7 +1310,6 @@
 										value="1"
 								>
 								</p-radioButton>
-								<span style="padding: 0px 8px"></span>
 								<p-radioButton
 										(onClick)="updateValues('incomeAsmachtaType', '2')"
 										[label]="'אסמכתא 2'"
@@ -199,167 +1326,27 @@
 
 				<div class="sett-table">
 					<div>
-						<div>פקודות יומן לחשבונית זיכוי</div>
+						<div>קליטת חשבוניות</div>
 
 						<div>
-							<div style="padding: 0px 10px; height: 30px">
-								<p-radioButton
-										(onClick)="updateValues('invertedCreditInvoice', true)"
-										[label]="'הפוכה'"
+							<div style="padding: 0px;" class="column">
+
+							<p-radioButton
+										(onClick)="updateValues('expenseOnly', true)"
+										[label]="'הוצאות בלבד'"
 										[value]="true"
-										formControlName="invertedCreditInvoice"
-										inputId="radio44443"
-										name="invertedCreditInvoice"
+										formControlName="expenseOnly"
+										inputId="radioexpenseOnly3"
+										name="expenseOnly"
 								>
 								</p-radioButton>
-								<span style="padding: 0px 8px"></span>
 								<p-radioButton
-										(onClick)="updateValues('invertedCreditInvoice', false)"
-										[label]="'במינוס'"
+										(onClick)="updateValues('expenseOnly', false)"
+										[label]="'הוצאות והכנסות'"
 										[value]="false"
-										formControlName="invertedCreditInvoice"
-										inputId="radio33334"
-										name="invertedCreditInvoice"
-								>
-								</p-radioButton>
-							</div>
-						</div>
-					</div>
-				</div>
-
-				<div class="sett-table">
-					<div>
-						<div
-								[matTooltip]="
-                'קובץ לקליטה בהנה״ח, לפי תקופות הדיווח למע״מ או מצטבר שנתי'
-              "
-								matTooltipClass="allow-cr"
-								matTooltipPosition="above"
-								style="cursor: pointer"
-						>
-							יצירת קובץ פ.יומן ספקים ולקוחות
-						</div>
-						<div>
-							<div style="padding: 0px 10px; height: 30px">
-								<p-radioButton
-										*ngIf="(isModal
-								? isModal.esderMaam
-								: userService.appData?.userData?.companySelect
-								?.esderMaam) === 'MONTH' || (isModal
-								? isModal.esderMaam
-								: userService.appData?.userData?.companySelect
-								?.esderMaam) !== 'TWO_MONTH'"
-										(onClick)="
-                    updateValues(
-                      'exportFileVatPeriod',
-                      (isModal
-                        ? isModal.esderMaam
-                        : userService.appData?.userData?.companySelect
-                            ?.esderMaam) !== 'TWO_MONTH'
-                        ? 'MONTH'
-                        : 'TWO_MONTH'
-                    )
-                  "
-										[label]="
-         (isModal
-								? isModal.esderMaam
-								: userService.appData?.userData?.companySelect
-								?.esderMaam) === 'MONTH' ? 'חודשי (קובץ לכל חודש)' : (isModal
-								? isModal.esderMaam
-								: userService.appData?.userData?.companySelect
-								?.esderMaam) === 'TWO_MONTH' ? 'דו חודשי (קובץ לכל חודשיים)' : 'חודשי (קובץ לכל חודש)'
-                  "
-										[value]="'MONTH'"
-										formControlName="exportFileVatPeriod"
-										inputId="radio123"
-										name="exportFileVatPeriod"
-								>
-								</p-radioButton>
-								<p-radioButton
-										*ngIf="(isModal
-								? isModal.esderMaam
-								: userService.appData?.userData?.companySelect
-								?.esderMaam) === 'TWO_MONTH'"
-										(onClick)="
-                    updateValues(
-                      'exportFileVatPeriod',
-                      (isModal
-                        ? isModal.esderMaam
-                        : userService.appData?.userData?.companySelect
-                            ?.esderMaam) !== 'TWO_MONTH'
-                        ? 'MONTH'
-                        : 'TWO_MONTH'
-                    )
-                  "
-										[label]="
-         (isModal
-								? isModal.esderMaam
-								: userService.appData?.userData?.companySelect
-								?.esderMaam) === 'MONTH' ? 'חודשי (קובץ לכל חודש)' : (isModal
-								? isModal.esderMaam
-								: userService.appData?.userData?.companySelect
-								?.esderMaam) === 'TWO_MONTH' ? 'דו חודשי (קובץ לכל חודשיים)' : 'חודשי (קובץ לכל חודש)'
-                  "
-										[value]="'TWO_MONTH'"
-										formControlName="exportFileVatPeriod"
-										inputId="radio123"
-										name="exportFileVatPeriod"
-								>
-								</p-radioButton>
-								<span style="padding: 0px 8px"></span>
-								<p-radioButton
-										*ngIf="!isYear"
-										(onClick)="updateValues('exportFileVatPeriod', (isYear ? 'YEAR' : 'NONE'))"
-										[label]="
-												isYear ? 'שנתי (קובץ לכל שנה)'
-												:
-
-(
-(isModal
-								? isModal.esderMaam
-								: userService.appData?.userData?.companySelect
-								?.esderMaam) === 'MONTH' ? 'מצטבר (קובץ אחד)' : (isModal
-								? isModal.esderMaam
-								: userService.appData?.userData?.companySelect
-								?.esderMaam) === 'TWO_MONTH' ?
-								'מצטבר (קובץ אחד)' :
-
-								isYear ? 'שנתי (קובץ לכל שנה)'
-								:
-
-								'מצטבר (קובץ אחד)'
-)
-
-"
-										formControlName="exportFileVatPeriod"
-										inputId="radio245"
-										name="exportFileVatPeriod"
-										[value]="'NONE'"
-								>
-								</p-radioButton>
-								<p-radioButton
-										*ngIf="isYear"
-										(onClick)="updateValues('exportFileVatPeriod', (isYear ? 'YEAR' : 'NONE'))"
-										[label]="
-														isYear ? 'שנתי (קובץ לכל שנה)'
-												:
-((isModal
-								? isModal.esderMaam
-								: userService.appData?.userData?.companySelect
-								?.esderMaam) === 'MONTH' ? 'מצטבר (קובץ אחד)' : (isModal
-								? isModal.esderMaam
-								: userService.appData?.userData?.companySelect
-								?.esderMaam) === 'TWO_MONTH' ?
-								'מצטבר (קובץ אחד)' :
-
-								isYear ? 'שנתי (קובץ לכל שנה)'
-								:
-								'מצטבר (קובץ אחד)')
-"
-										formControlName="exportFileVatPeriod"
-										inputId="radio245"
-										name="exportFileVatPeriod"
-										[value]="'YEAR'"
+										formControlName="expenseOnly"
+										inputId="radioexpenseOnly4"
+										name="expenseOnly"
 								>
 								</p-radioButton>
 							</div>
@@ -372,7 +1359,8 @@
 						<div>פקודה לחשבונית מס קבלה</div>
 
 						<div>
-							<div style="padding: 0px 10px; height: 30px">
+							<div style="padding: 0px;" class="column">
+
 								<p-radioButton
 										(onClick)="updateValues('invoicePayment', false)"
 										[label]="'לא כולל קבלה'"
@@ -382,7 +1370,6 @@
 										name="invoicePayment"
 								>
 								</p-radioButton>
-								<span style="padding: 0px 8px"></span>
 								<p-radioButton
 										(onClick)="updateValues('invoicePayment', true)"
 										[label]="'כולל קבלה'"
@@ -397,6 +1384,39 @@
 					</div>
 				</div>
 
+
+				<div class="sett-table">
+					<div>
+						<div>פקודות יומן לחשבונית זיכוי</div>
+
+						<div>
+							<div style="padding: 0px;" class="column">
+
+							<p-radioButton
+										(onClick)="updateValues('invertedCreditInvoice', true)"
+										[label]="'הפוכה'"
+										[value]="true"
+										formControlName="invertedCreditInvoice"
+										inputId="radio44443"
+										name="invertedCreditInvoice"
+								>
+								</p-radioButton>
+								<p-radioButton
+										(onClick)="updateValues('invertedCreditInvoice', false)"
+										[label]="'במינוס'"
+										[value]="false"
+										formControlName="invertedCreditInvoice"
+										inputId="radio33334"
+										name="invertedCreditInvoice"
+								>
+								</p-radioButton>
+							</div>
+						</div>
+					</div>
+				</div>
+
+
+
 				<div class="sett-table">
 					<div>
 						<div
@@ -409,25 +1429,23 @@
 						</div>
 
 						<div>
-							<div style="padding: 0px 10px; height: 30px">
-								<p-radioButton
+							<div style="padding: 0px;" class="column">
+
+							<p-radioButton
 										(onClick)="updateValues('thirdDate', '0')"
 										[label]="'חודש דיווח מע״מ'"
 										formControlName="thirdDate"
 										inputId="radio72"
 										name="thirdDate"
-										value="0"
-								>
+										value="0">
 								</p-radioButton>
-								<span style="padding: 0px 8px"></span>
 								<p-radioButton
 										(onClick)="updateValues('thirdDate', '1')"
 										[label]="'תאריך מסמך'"
 										formControlName="thirdDate"
 										inputId="radio82"
 										name="thirdDate"
-										value="1"
-								>
+										value="1">
 								</p-radioButton>
 							</div>
 						</div>
@@ -436,41 +1454,51 @@
 
 				<div class="sett-table">
 					<div>
+						<div>בהעלאת קבצים ממייל</div>
+						<div>
+							<div style="padding: 0px;" class="supplierDocOrderType_row column">
+								<p-radioButton
+										(onClick)="updateValues('unitedMailFiles', '0')"
+										[label]="'פצל'"
+										[value]="'0'"
+										formControlName="unitedMailFiles"
+										inputId="radio_unitedMailFiles1"
+										name="unitedMailFiles">
+								</p-radioButton>
+								<p-radioButton
+										(onClick)="updateValues('unitedMailFiles', '1')"
+										[label]="'שמור על העלאה מקורית'"
+										[value]="'1'"
+										formControlName="unitedMailFiles"
+										inputId="radio_unitedMailFiles2"
+										name="unitedMailFiles">
+								</p-radioButton>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="sett-table">
+					<div>
 						<div>מיון תנועות המסמכים בקובץ הנה”ח</div>
 						<div>
-							<div
-									class="supplierDocOrderType_row"
-									style="
-                  padding: 0px 10px;
-                  height: 30px;
-                  align-items: flex-start;
-                  align-content: center;
-                  justify-content: flex-start;
-                  display: flex;
-                  padding-left: 0;
-                "
-							>
+							<div style="padding: 0px;" class="supplierDocOrderType_row column">
 								<p-radioButton
 										(onClick)="updateValues('supplierDocOrderType', '1')"
 										[label]="'סדר העלאה'"
 										[value]="'1'"
 										formControlName="supplierDocOrderType"
 										inputId="radio_supplierDocOrderType1"
-										name="supplierDocOrderType"
-								>
+										name="supplierDocOrderType">
 								</p-radioButton>
-								<span style="padding: 0px 8px"></span>
 								<p-radioButton
 										(onClick)="updateValues('supplierDocOrderType', '2')"
 										[label]="'סדר אישור'"
 										[value]="'2'"
 										formControlName="supplierDocOrderType"
 										inputId="radio_supplierDocOrderType2"
-										name="supplierDocOrderType"
-								>
+										name="supplierDocOrderType">
 								</p-radioButton>
-								<span style="padding: 0px 8px"></span>
-								<div style="position: relative">
+								<div style="position: relative; display: flex; align-items: center">
 									<p-radioButton
 											(onClick)="updateValues('supplierDocOrderType', '3')"
 											[label]="'הכנסות ואז הוצאות'"
@@ -490,7 +1518,7 @@
 											[class.disabled]="
                       info.get('supplierDocOrderType').value !== '3'
                     "
-											class="edit_supplierDocOrderType"
+											class="edit_supplierDocOrderType_new"
 									>
 										עריכה
 									</div>
@@ -500,252 +1528,33 @@
 					</div>
 				</div>
 
-				<div class="sett-table">
+				<div class="sett-table" *ngIf="userService.appData?.isAdmin">
 					<div>
-						<div
-								[matTooltip]="'כול פקודות היומן בש״ח, ירשמו גם במט״ח'"
-								matTooltipClass="allow-cr"
-								matTooltipPosition="above"
-								style="cursor: pointer; display: flex"
-						>
-							שיערוך כל פקודות היומן למט"ח
+						<div [matTooltip]="'שינוי הגדרה זו תחול גם\n'+
+'על שאר מוצרי פקודות יומן'"
+							 matTooltipClass="bottomNavActionTooltip"
+							 matTooltipHideDelay="0"
+							 matTooltipPosition="above"
+							 matTooltipShowDelay="0">
+							<i style="color: #df0000">*</i>
 
-							<div style="margin-top: -9px; margin-right: 10px">
-								<p-dropdown
-										#dd11
-										(onClick)="setCurrDefFunc('revaluationCurrCode')"
-										(onChange)="openModalBeforeContinue('revaluationCurrCode')"
-										(onFocus)="clearFilter(dd11)"
-										[dropdownIcon]="'p-dropdown-icon'"
-										[options]="revaluationCurrCodeArr"
-										[scrollHeight]="'135px'"
-										[style]="{ width: '100px' }"
-										appendTo="body"
-										formControlName="revaluationCurrCode"
-										placeholder="בחירה"
-										styleClass="ddInfoCompanyForm"
-										name="revaluationCurrCode"
-
-								>
-								</p-dropdown>
-							</div>
+							קליטת קבצים לפקודות יומן
 						</div>
-
 						<div>
-							<div style="padding: 0px 10px; height: 30px">
+							<div style="padding: 0px;" class="column">
 								<p-radioButton
-										(onClick)="openModalBeforeContinue('revaluationCurrFalse')"
-										[label]="'לא'"
+										[label]="'ידני'"
 										[value]="false"
-										formControlName="revaluationCurr"
-										inputId="radio9"
-										name="revaluationCurr"
-								>
+										formControlName="folderPlus"
+										inputId="radio_supplierDocOrderType1"
+										name="folderPlus">
 								</p-radioButton>
-								<span style="padding: 0px 8px"></span>
-
 								<p-radioButton
-										(onClick)="openModalBeforeContinue('revaluationCurrTrue')"
-										[label]="'כן'"
+										[label]="'אוטומטי'"
 										[value]="true"
-										formControlName="revaluationCurr"
-										inputId="radio10"
-										name="revaluationCurr"
-								>
-								</p-radioButton>
-							</div>
-						</div>
-					</div>
-				</div>
-
-				<ng-container
-						*ngFor="let item of arr.controls; let i = index"
-						formArrayName="currencyRates"
-				>
-					<div [formGroupName]="i" class="sett-table">
-						<div [formGroupName]="getKeyName(item.value)">
-							<div style="display: flex">
-								<ng-container
-										*ngIf="getKey(item.value) as currency; else empty"
-								>
-									שער חליפין להמרת
-									{{ currency.name }}
-									({{ currency.sign }})
-								</ng-container>
-								<ng-template #empty> שער חליפין להמרת</ng-template>
-
-								<div
-										*ngIf="!getKey(item.value).indDefault"
-										class="hashCodeId_part"
-								>
-									קוד מטבע
-
-									<input
-											(change)="
-                      item.get(getKeyName(item.value)).get('hashCodeId').value
-                        ? updateSupplierJournal()
-                        : null
-                    "
-											appNumbersOnly="regexPositiveInt"
-											formControlName="hashCodeId"
-											type="text"
-									/>
-								</div>
-							</div>
-							<div>
-								<div style="padding: 0px 10px;height: 30px;display: flex;align-items: center;">
-									<ng-container *ngIf="getKey(item.value).bankIsrael">
-										<p-radioButton
-												(onClick)="
-                        updateValuesCurrencyRatesTypesInit(item, 'BANK', 'type')
-                      "
-												[label]="'שער יציג (בנק ישראל)'"
-												formControlName="type"
-												inputId="radio{{ i }}_BANK"
-												name="type{{ i }}"
-												value="BANK"
-										>
-										</p-radioButton>
-										<span style="padding: 0px 8px"></span>
-									</ng-container>
-									<p-radioButton
-											(onClick)="
-                      updateValuesCurrencyRatesTypesInit(item, 'FIXED', 'type')
-                    "
-											[label]="'שער קבוע'"
-											formControlName="type"
-											inputId="radio{{ i }}_FIXED"
-											name="type{{ i }}"
-											value="FIXED"
-									>
-									</p-radioButton>
-									<input
-											(blur)="
-                      !item.get(getKeyName(item.value)).get('fixedRate')
-                        .value && !getKey(item.value).bankIsrael
-                        ? updateValuesCurrencyRatesTypesInit(item, true, 'delete')
-                        : null
-                    "
-											(change)="
-                      item.get(getKeyName(item.value)).get('fixedRate').value
-                        ? updateSupplierJournal()
-                        : null
-                    "
-											(click)="item.get(getKeyName(item.value)).get('type').value === 'BANK' ?
-                      updateValuesCurrencyRatesTypesInit(item, 'FIXED', 'type') : null
-                    "
-											(keyup)="setMaxDigitsAfterDec(item)"
-											[class.err]="
-                      item.get(getKeyName(item.value)).get('fixedRate')
-                        .touched &&
-                      !item.get(getKeyName(item.value)).get('fixedRate')
-                        .value &&
-                      item.get(getKeyName(item.value)).get('type').value ===
-                        'FIXED'
-                    "
-											appNumbersOnly="positive"
-											formControlName="fixedRate"
-											type="text"
-									/>
-								</div>
-							</div>
-						</div>
-						<div
-								*ngIf="
-                (!getKey(item.value).bankIsrael &&
-                  !item.get(getKeyName(item.value)).get('fixedRate').value) ||
-                getKeyName(item.value) === 'EUR' ||
-                (getKeyName(item.value) !== 'USD' &&
-                  getKeyName(item.value) !== 'EUR')
-              "
-								class="comments"
-								style="display: block"
-						>
-							<div
-									*ngIf="
-                  !getKey(item.value).bankIsrael &&
-                  !item.get(getKeyName(item.value)).get('fixedRate').value
-                "
-									class="alert"
-									style="color: #df0000"
-							>
-								חובה להזין ערך, אחרת המטבע ימחק
-							</div>
-							<div
-									(click)="openModalAddCurrency()"
-									*ngIf="getKeyName(item.value) === 'EUR'"
-									class="link"
-									style="
-                  display: flex;
-                  color: #038ed6;
-                  font-size: 15px !important;
-                  font-weight: 400;
-                "
-							>
-								<img
-										src="/assets/images/addFolder.png"
-										style="align-self: center; margin-left: 4px"
-								/>
-								הוספת מט"ח
-							</div>
-							<div
-									(click)="updateValuesCurrencyRatesTypesInit(item, true, 'delete')"
-									*ngIf="
-                  getKeyName(item.value) !== 'USD' &&
-                  getKeyName(item.value) !== 'EUR'
-                "
-									class="link"
-									style="
-                  display: flex;
-                  color: #038ed6;
-                  font-size: 15px !important;
-                  font-weight: 400;
-                "
-							>
-								<img
-										src="/assets/images/trashCurr.png"
-										style="align-self: center; margin-left: 4px"
-								/>
-								מחיקת המטבע
-							</div>
-						</div>
-					</div>
-				</ng-container>
-
-				<div class="sett-table">
-					<div>
-						<div>בהעלאת קבצים ממייל</div>
-						<div>
-							<div
-									class="supplierDocOrderType_row"
-									style="
-                  padding: 0px 10px;
-                  height: 30px;
-                  align-items: flex-start;
-                  align-content: center;
-                  justify-content: flex-start;
-                  display: flex;
-                  padding-left: 0;
-                "
-							>
-								<p-radioButton
-										(onClick)="updateValues('unitedMailFiles', '0')"
-										[label]="'פצל'"
-										[value]="'0'"
-										formControlName="unitedMailFiles"
-										inputId="radio_unitedMailFiles1"
-										name="unitedMailFiles"
-								>
-								</p-radioButton>
-								<span style="padding: 0px 8px"></span>
-								<p-radioButton
-										(onClick)="updateValues('unitedMailFiles', '1')"
-										[label]="'שמור על העלאה מקורית'"
-										[value]="'1'"
-										formControlName="unitedMailFiles"
-										inputId="radio_unitedMailFiles2"
-										name="unitedMailFiles"
-								>
+										formControlName="folderPlus"
+										inputId="radio_supplierDocOrderType2"
+										name="folderPlus">
 								</p-radioButton>
 							</div>
 						</div>
@@ -754,7 +1563,7 @@
 			</div>
 		</form>
 	</div>
-</div>
+</ng-container>
 
 
 

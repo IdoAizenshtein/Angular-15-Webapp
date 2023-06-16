@@ -13,6 +13,7 @@ import {Dropdown} from 'primeng/dropdown/dropdown';
 import {ReloadServices} from '@app/shared/services/reload.services';
 import {OcrService} from '@app/accountants/companies/shared/ocr.service';
 import {GeneralComponent} from '@app/accountants/companies/general/general.component';
+import {StorageService} from '@app/shared/services/storage.service';
 
 @Component({
     selector: 'app-journal-bank-and-credit',
@@ -29,10 +30,13 @@ export class JournalBankAndCreditComponent
     public isValidCellPart: boolean | null = null;
     public modalUpdateValuesExportFileTypeId: any = false;
     @Input() isModal: any = false;
+    @Input() step: any = 1;
     @Input() infoJournalBankAndCreditComponent: any;
     @Input() hide_bankProcessTransType: any = false;
     @Input() report856: any = false;
     @Input() notExportIncomesInput: any = false;
+    public loader: boolean = true;
+
     public notExportIncomes: any = {
         title: 'בחירה',
         notExportIncomes: [
@@ -163,8 +167,11 @@ export class JournalBankAndCreditComponent
     public selectedCurrency: any = false;
     public type_currencyRates_modal: any;
     currencyRates: any;
+    saveValues: any;
+    saveValues_bookKeepingCust: any;
     setCurrDef: any = {};
     showPopUpSetRevaluationCurr = false;
+    public showModalScreenTransTypes: any = false;
 
     constructor(
         public userService: UserService,
@@ -173,6 +180,7 @@ export class JournalBankAndCreditComponent
         public sharedService: SharedService,
         public translate: TranslateService,
         public snackBar: MatSnackBar,
+        private storageService: StorageService,
         public router: Router,
         public generalComponent: GeneralComponent
     ) {
@@ -240,18 +248,22 @@ export class JournalBankAndCreditComponent
                         {
                             bankAsmachtaNumChar: new FormControl({
                                 value: '0',
-                                disabled: !this.isModal
+                                disabled: false
                             }),
                             exportFileTypeId: new FormControl({
                                 value: '1',
-                                disabled: !this.isModal
+                                disabled: false
                             }),
                             exportFileBankPeriod: new FormControl({
                                 value: '1',
-                                disabled: !this.isModal
+                                disabled: false
                             }),
                             bankAutoJournalTrans: new FormControl({
                                 value: true,
+                                disabled: false
+                            }),
+                            folderPlus: new FormControl({
+                                value: false,
                                 disabled: false
                             }),
                             uniteJournalForPayments: new FormControl({
@@ -267,9 +279,7 @@ export class JournalBankAndCreditComponent
                                     value: '',
                                     disabled: false
                                 },
-                                this.isModal &&
-                                this.report856 &&
-                                this.hide_bankProcessTransType
+                                this.isModal
                                     ? {
                                         validators: [Validators.required]
                                     }
@@ -277,6 +287,10 @@ export class JournalBankAndCreditComponent
                             ),
                             revaluationCurr: new FormControl({
                                 value: false,
+                                disabled: false
+                            }),
+                            report856: new FormControl({
+                                value: true,
                                 disabled: false
                             }),
                             revaluationCurrCode: new FormControl({
@@ -466,10 +480,14 @@ export class JournalBankAndCreditComponent
                                         exportFileTypeId: responseRest.exportFileTypeId
                                             ? responseRest.exportFileTypeId
                                             : '1',
+                                        folderPlus: responseRest.folderPlus
+                                            ? responseRest.folderPlus
+                                            : false,
                                         uniteJournalForPayments: responseRest.uniteJournalForPayments !== null
                                             ? responseRest.uniteJournalForPayments
                                             : false,
-                                        bankProcessTransType: responseRest.bankProcessTransType,
+                                        bankProcessTransType: responseRest.transTypeStatus ?
+                                            responseRest.transTypeStatus !== 'NOT_INTERESTED' : false,
                                         oppositeCustForChecks: oppositeCustForChecks
                                             ? oppositeCustForChecks
                                             : null
@@ -535,13 +553,17 @@ export class JournalBankAndCreditComponent
             if (!this.infoJournalBankAndCreditComponent) {
                 this.sharedService
                     .bankJournal({
-                        uuid: this.isModal.companyId
+                        uuid: this.isModal.companyId,
+                        wizard: true
                     })
                     .subscribe((response: any) => {
                         this.isReady = true;
                         const responseRest = response ? response['body'] : response;
+                        this.saveValues = responseRest;
                         this.currencyRates = responseRest.currencyRates;
                         this.info.patchValue({
+                            report856:
+                                responseRest.report856 === null ? true : responseRest.report856,
                             revaluationCurr:
                                 responseRest.revaluationCurr !== null
                                     ? responseRest.revaluationCurr
@@ -624,6 +646,9 @@ export class JournalBankAndCreditComponent
                                 exportFileTypeId: responseRest.exportFileTypeId
                                     ? responseRest.exportFileTypeId
                                     : '1',
+                                folderPlus: responseRest.folderPlus
+                                    ? responseRest.folderPlus
+                                    : false,
                                 oppositeCustForChecks: oppositeCustForChecks
                                     ? oppositeCustForChecks
                                     : null,
@@ -631,14 +656,14 @@ export class JournalBankAndCreditComponent
                                     ? responseRest.uniteJournalForPayments
                                     : false
                             });
-                            if (responseRest.manager) {
-                                this.info.get('bankAsmachtaNumChar').enable();
-                                this.info.get('exportFileTypeId').enable();
-                                this.info.get('exportFileBankPeriod').enable();
-                            }
-                            if (responseRest.yearlyProgram) {
-                                this.info.get('exportFileBankPeriod').disable();
-                            }
+                            // if (responseRest.manager) {
+                            this.info.get('bankAsmachtaNumChar').enable();
+                            this.info.get('exportFileTypeId').enable();
+                            this.info.get('exportFileBankPeriod').enable();
+                            // }
+                            // if (responseRest.yearlyProgram) {
+                            //     this.info.get('exportFileBankPeriod').disable();
+                            // }
                         } else {
                             this.info.patchValue({
                                 bankAsmachtaNumChar: responseRest.bankAsmachtaNumChar
@@ -650,7 +675,11 @@ export class JournalBankAndCreditComponent
                                 exportFileTypeId: responseRest.exportFileTypeId
                                     ? responseRest.exportFileTypeId
                                     : '1',
-                                bankProcessTransType: responseRest.bankProcessTransType,
+                                folderPlus: responseRest.folderPlus
+                                    ? responseRest.folderPlus
+                                    : false,
+                                bankProcessTransType: responseRest.transTypeStatus ?
+                                    responseRest.transTypeStatus !== 'NOT_INTERESTED' : false,
                                 oppositeCustForChecks: oppositeCustForChecks
                                     ? oppositeCustForChecks
                                     : null,
@@ -658,16 +687,40 @@ export class JournalBankAndCreditComponent
                                     ? responseRest.uniteJournalForPayments
                                     : false
                             });
-                            if (responseRest.transTypeStatus === 'NOT_INTERESTED') {
-                                this.info.get('bankProcessTransType').disable();
+                            // if (responseRest.transTypeStatus === 'NOT_INTERESTED') {
+                            //     this.info.get('bankProcessTransType').disable();
+                            // }
+                            // if (responseRest.manager) {
+                            this.info.get('bankAsmachtaNumChar').enable();
+                            this.info.get('exportFileTypeId').enable();
+                            this.info.get('exportFileBankPeriod').enable();
+                            // }
+                            // if (responseRest.yearlyProgram) {
+                            //     this.info.get('exportFileBankPeriod').disable();
+                            // }
+
+                            if (this.info.get('report856').value) {
+                                this.info
+                                    .get('supplierTaxDeductionCustId')
+                                    .setValidators([Validators.required]);
+                            } else {
+                                if (
+                                    this.info.get(
+                                        'supplierTaxDeductionCustId'
+                                    )
+                                ) {
+                                    this.info
+                                        .get('supplierTaxDeductionCustId')
+                                        .setValidators(null);
+                                }
                             }
-                            if (responseRest.manager) {
-                                this.info.get('bankAsmachtaNumChar').enable();
-                                this.info.get('exportFileTypeId').enable();
-                                this.info.get('exportFileBankPeriod').enable();
-                            }
-                            if (responseRest.yearlyProgram) {
-                                this.info.get('exportFileBankPeriod').disable();
+
+                            if (
+                                this.info.get('supplierTaxDeductionCustId')
+                            ) {
+                                this.info
+                                    .get('supplierTaxDeductionCustId')
+                                    .updateValueAndValidity();
                             }
                         }
                         this.oppositeCustForChecksArr = this.addPriemerObject(
@@ -706,16 +759,21 @@ export class JournalBankAndCreditComponent
                                             ? 'כל סוגי התשלום'
                                             : 'נבחרו ' + allSelected.length + ' סוגי תשלום';
                         }
+
+                        this.loader = false;
                     });
+            } else {
+                this.loader = false;
             }
 
-            if (this.isModal && this.report856 && this.hide_bankProcessTransType) {
+            if (this.isModal) {
                 this.sharedService
                     .bookKeepingCust({
                         uuid: this.isModal.companyId
                     })
                     .subscribe((response: any) => {
                         const responseRest = response ? response['body'] : response;
+                        this.saveValues_bookKeepingCust = responseRest;
                         this.bookKeepingCustParams = responseRest;
                         this.sharedService
                             .companyGetCustomer({
@@ -732,9 +790,12 @@ export class JournalBankAndCreditComponent
                                                 it.custId === responseRest.supplierTaxDeductionCustId
                                         );
                                 }
-                                this.info.patchValue({
-                                    supplierTaxDeductionCustId: supplierTaxDeductionCustId || null
-                                });
+                                if (!this.infoJournalBankAndCreditComponent) {
+                                    this.info.patchValue({
+                                        supplierTaxDeductionCustId: supplierTaxDeductionCustId || null
+                                    });
+                                }
+
                                 this.supplierTaxDeductionCustIdArr = this.userService.appData
                                     .userData.companyCustomerDetails
                                     ? this.userService.appData.userData.companyCustomerDetails
@@ -744,6 +805,29 @@ export class JournalBankAndCreditComponent
                             });
                     });
             }
+        }
+    }
+
+    restoreSettings() {
+        const responseRest = this.saveValues;
+        // const saveValues_bookKeepingCust = this.saveValues_bookKeepingCust;
+        this.info.patchValue({
+            exportFileBankPeriod: responseRest.exportFileBankPeriod
+                ? responseRest.exportFileBankPeriod
+                : '1',
+            exportFileTypeId: responseRest.exportFileTypeId
+                ? responseRest.exportFileTypeId
+                : '1',
+            folderPlus: responseRest.folderPlus
+                ? responseRest.folderPlus
+                : false,
+        });
+    }
+
+    showModalScreenTransTypes_bankProcessTransType() {
+        if (this.info.get('bankProcessTransType').value) {
+            this.storageService.sessionStorageSetter('onChangeValInterested', 'true');
+            this.showModalScreenTransTypes = true;
         }
     }
 
@@ -758,6 +842,8 @@ export class JournalBankAndCreditComponent
             const findMatchCode = this.currencyList.find((it) => it.code === key[0]);
             if (findMatchCode) {
                 return findMatchCode;
+            } else {
+                return {};
             }
         }
         return {};
@@ -910,6 +996,31 @@ export class JournalBankAndCreditComponent
         const pbj = {};
         pbj[param] = val;
         this.info.patchValue(pbj);
+        if (param === 'report856') {
+            if (this.info.get('report856').value) {
+                this.info
+                    .get('supplierTaxDeductionCustId')
+                    .setValidators([Validators.required]);
+            } else {
+                if (
+                    this.info.get(
+                        'supplierTaxDeductionCustId'
+                    )
+                ) {
+                    this.info
+                        .get('supplierTaxDeductionCustId')
+                        .setValidators(null);
+                }
+            }
+
+            if (
+                this.info.get('supplierTaxDeductionCustId')
+            ) {
+                this.info
+                    .get('supplierTaxDeductionCustId')
+                    .updateValueAndValidity();
+            }
+        }
         this.updateBankJournal(param === 'exportFileBankPeriod' || param === 'oppositeCustForChecks' || param === 'exportFileTypeId');
     }
 
@@ -964,6 +1075,7 @@ export class JournalBankAndCreditComponent
 
     preliminaryModalApproval() {
         if (this.modalBeforeContinue.type === 'updateValuesCurrencyRatesTypes') {
+            // debugger
             this.updateValuesCurrencyRatesTypes(this.modalBeforeContinue.item, this.modalBeforeContinue.val, this.modalBeforeContinue.param);
         }
         if (this.modalBeforeContinue.type === 'revaluationCurrCode') {
@@ -1036,12 +1148,16 @@ export class JournalBankAndCreditComponent
     }
 
     updateValuesExportFileTypeId(val: number) {
-        setTimeout(() => {
-            const pbj = {};
-            pbj['exportFileTypeId'] = val === 2 ? 1 : 2;
-            this.info.patchValue(pbj);
-        }, 500);
-        this.modalUpdateValuesExportFileTypeId = val;
+        if (!this.isModal) {
+            setTimeout(() => {
+                const pbj = {};
+                pbj['exportFileTypeId'] = val === 2 ? 1 : 2;
+                this.info.patchValue(pbj);
+            }, 500);
+            this.modalUpdateValuesExportFileTypeId = val;
+        } else {
+            this.updateValues('exportFileTypeId', val);
+        }
     }
 
     setAllCompanyCustomerDetails(formDropdowns?: any) {
@@ -1121,63 +1237,62 @@ export class JournalBankAndCreditComponent
             );
             return;
         }
-
-        if (!this.isModal) {
-            if (startCounter) {
-                this.generalComponent.startCounter();
-            }
-            const notExportIncomes = {};
-            this.notExportIncomes.notExportIncomes
-                .filter((it) => it.name !== 'all')
-                .forEach((it) => {
-                    notExportIncomes[it.name] = it.value;
-                });
-            const params = {
-                companyId: !this.isModal
-                    ? this.userService.appData.userData.companySelect.companyId
-                    : this.isModal.companyId,
-                bankAsmachtaNumChar: Number(this.info.get('bankAsmachtaNumChar').value),
-                exportFileTypeId: Number(this.info.get('exportFileTypeId').value),
-                exportFileBankPeriod: Number(
-                    this.info.get('exportFileBankPeriod').value
-                ),
-                revaluationCurr: this.info.get('revaluationCurr').value,
-                revaluationCurrCode: this.info.get('revaluationCurrCode').value,
-                bankProcessTransType: this.info.get('bankProcessTransType').value,
-                uniteJournalForPayments: this.info.get('uniteJournalForPayments').value,
-                bankAutoJournalTrans: true,
-                oppositeCustForChecks: this.info.get('oppositeCustForChecks').value
-                    ? this.info.get('oppositeCustForChecks').value.custId
-                    : null,
-                notExportIncomes: notExportIncomes,
-                currencyRates: this.arr.value
-                    .map((it) => {
-                        const code = Object.keys(it)[0];
-                        return {
-                            fixedRate:
-                                it[code].type === 'FIXED' ? Number(it[code].fixedRate) : 0,
-                            hashCodeId: it[code].hashCodeId ? Number(it[code].hashCodeId) : 0,
-                            code: code,
-                            type: it[code].type,
-                            delete: it[code].delete === true
-                        };
-                    })
-                    .filter(
-                        (obj) =>
-                            (obj.type === 'FIXED' && obj.fixedRate) ||
-                            obj.type === 'BANK' ||
-                            obj.delete === true
-                    )
-            };
-            console.log('params: ', params);
-            const idxToDelete = this.arr.value.findIndex((it) => {
-                const code = Object.keys(it)[0];
-                return it[code].delete === true;
+        if (startCounter && !this.isModal) {
+            this.generalComponent.startCounter();
+        }
+        const notExportIncomes = {};
+        this.notExportIncomes.notExportIncomes
+            .filter((it) => it.name !== 'all')
+            .forEach((it) => {
+                notExportIncomes[it.name] = it.value;
             });
-            if (idxToDelete !== -1) {
-                this.arr.removeAt(idxToDelete);
-                this.arr.updateValueAndValidity();
-            }
+        const params = {
+            companyId: !this.isModal
+                ? this.userService.appData.userData.companySelect.companyId
+                : this.isModal.companyId,
+            bankAsmachtaNumChar: Number(this.info.get('bankAsmachtaNumChar').value),
+            exportFileTypeId: Number(this.info.get('exportFileTypeId').value),
+            exportFileBankPeriod: Number(
+                this.info.get('exportFileBankPeriod').value
+            ),
+            revaluationCurr: this.info.get('revaluationCurr').value,
+            revaluationCurrCode: this.info.get('revaluationCurrCode').value,
+            bankProcessTransType: this.info.get('bankProcessTransType').value,
+            uniteJournalForPayments: this.info.get('uniteJournalForPayments').value,
+            bankAutoJournalTrans: true,
+            oppositeCustForChecks: this.info.get('oppositeCustForChecks').value
+                ? this.info.get('oppositeCustForChecks').value.custId
+                : null,
+            notExportIncomes: notExportIncomes,
+            currencyRates: this.arr.value
+                .map((it) => {
+                    const code = Object.keys(it)[0];
+                    return {
+                        fixedRate:
+                            it[code].type === 'FIXED' ? Number(it[code].fixedRate) : 0,
+                        hashCodeId: it[code].hashCodeId ? Number(it[code].hashCodeId) : 0,
+                        code: code,
+                        type: it[code].type,
+                        delete: it[code].delete === true
+                    };
+                })
+                .filter(
+                    (obj) =>
+                        (obj.type === 'FIXED' && obj.fixedRate) ||
+                        obj.type === 'BANK' ||
+                        obj.delete === true
+                )
+        };
+        console.log('params: ', params);
+        // const idxToDelete = this.arr.value.findIndex((it) => {
+        //     const code = Object.keys(it)[0];
+        //     return it[code].delete === true;
+        // });
+        // if (idxToDelete !== -1) {
+        //     this.arr.removeAt(idxToDelete);
+        //     this.arr.updateValueAndValidity();
+        // }
+        if (!this.isModal) {
             this.sharedService.updateBankJournal(params).subscribe(() => {
                 if (startCounter) {
                     this.generalComponent.resReceived();

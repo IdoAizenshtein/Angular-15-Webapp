@@ -70,6 +70,7 @@
 					</div>
 					<div class="separator">&nbsp;</div>
 					<div>צרוף לאפליקציה</div>
+					<div>מורשה חתימה</div>
 					<div>&nbsp;</div>
 				</ng-container>
 				<ng-container *ngIf="!isModal && isModalFromCompaniesScreen">
@@ -522,7 +523,7 @@
 											(blur)="updateContact(contact)"
 											(keyup.enter)="updateContact(contact)"
 											[class.error]="
-                      contact.touched && !contact.get('firstName').value
+                      contact.touched && !contact.get('firstName').value && isContactValid()
                     "
 											[pTooltip]="contact.get('firstName').value"
 											[tooltipDisabled]="
@@ -534,7 +535,7 @@
 											type="text"
 									/>
 									<div
-											*ngIf="contact.touched && !contact.get('firstName').value"
+											*ngIf="contact.touched && !contact.get('firstName').value && isContactValid()"
 											class="invalidAlert"
 									>
 										שדה חובה
@@ -547,7 +548,7 @@
 											(blur)="updateContact(contact)"
 											(keyup.enter)="updateContact(contact)"
 											[class.error]="
-                      contact.touched && !contact.get('lastName').value
+                      contact.touched && !contact.get('lastName').value&& isContactValid()
                     "
 											[pTooltip]="contact.get('lastName').value"
 											[tooltipDisabled]="
@@ -559,7 +560,7 @@
 											type="text"
 									/>
 									<div
-											*ngIf="contact.touched && !contact.get('lastName').value"
+											*ngIf="contact.touched && !contact.get('lastName').value && isContactValid()"
 											class="invalidAlert"
 									>
 										שדה חובה
@@ -575,7 +576,7 @@
 											[class.error]="
                       contact.touched &&
                       (contact.get('email').invalid ||
-                        contact.get('email').hasError('forbiddenMail'))
+                        contact.get('email').hasError('forbiddenMail')) && isContactValid()
                     "
 											[disabled]="contact.get('joinApp').value"
 											[pTooltip]="contact.get('email').value"
@@ -589,17 +590,18 @@
 									/>
 
 									<div
-											*ngIf="contact.touched && !contact.get('email').value"
+											*ngIf="contact.touched && !contact.get('email').value && isContactValid()"
 											class="invalidAlert"
 									>
 										שדה חובה
 									</div>
 									<div
 											*ngIf="
+
                       contact.get('email').dirty &&
                       contact.get('email').value &&
                       contact.get('email').invalid &&
-                      !contact.get('email').hasError('forbiddenMail')
+                      !contact.get('email').hasError('forbiddenMail') && isContactValid()
                     "
 											class="invalidAlert"
 									>
@@ -610,7 +612,7 @@
                       contact.get('email').dirty &&
                       contact.get('email').value &&
                       contact.get('email').invalid &&
-                      contact.get('email').hasError('forbiddenMail')
+                      contact.get('email').hasError('forbiddenMail') && isContactValid()
                     "
 											class="invalidAlert"
 									>
@@ -627,7 +629,7 @@
 											[class.error]="
                       contact.touched &&
                       (contact.get('cellPhone').invalid ||
-                        contact.get('cellPhone').hasError('forbiddenCellPhone'))
+                        contact.get('cellPhone').hasError('forbiddenCellPhone')) && isContactValid()
                     "
 											[pTooltip]="contact.get('cellPhone').value"
 											[tooltipDisabled]="
@@ -640,7 +642,7 @@
 											type="text"
 									/>
 									<div
-											*ngIf="contact.touched && !contact.get('cellPhone').value"
+											*ngIf="contact.touched && !contact.get('cellPhone').value && isContactValid()"
 											class="invalidAlert"
 									>
 										שדה חובה
@@ -650,7 +652,7 @@
                       contact.get('cellPhone').dirty &&
                       contact.get('cellPhone').value &&
                       contact.get('cellPhone').invalid &&
-                      !contact.get('cellPhone').hasError('forbiddenCellPhone')
+                      !contact.get('cellPhone').hasError('forbiddenCellPhone') && isContactValid()
                     "
 											class="invalidAlert"
 									>
@@ -661,7 +663,7 @@
                       contact.get('cellPhone').dirty &&
                       contact.get('cellPhone').value &&
                       contact.get('cellPhone').invalid &&
-                      contact.get('cellPhone').hasError('forbiddenCellPhone')
+                      contact.get('cellPhone').hasError('forbiddenCellPhone') && isContactValid()
                     "
 											class="invalidAlert"
 									>
@@ -692,6 +694,16 @@
 									            [disabled]="contact.invalid"
 									            checkboxIcon="fa fa-check"
 									            formControlName="joinApp"
+									>
+									</p-checkbox>
+								</div>
+								<div>
+									<p-checkbox (onChange)="
+                    contact.markAsTouched(); authorizedSignerContact(contact, i)
+                  "
+												[binary]="true"
+												checkboxIcon="fa fa-check"
+												formControlName="authorizedSigner"
 									>
 									</p-checkbox>
 								</div>
@@ -966,17 +978,35 @@
 						(click)="addContact()"
 						[disabled]="isModal && contacts.invalid"
 						class="linkAdd"
+						style="align-items: center;"
 				>
-					<img
-							src="/assets/images/add.png"
-							style="
+					<ng-container *ngIf="isModal">
+						<img
+								src="/assets/images/otherOseknumArrayLink.png"
+								style="
               align-self: center;
               flex: 0 0 auto;
               -ms-flex: 0 0 auto;
               margin: 0 0px 0px 4px;
             "
-					/>
-					<label> הוספת איש קשר חדש </label>
+						/>
+
+						<label> איש קשר חדש </label>
+					</ng-container>
+					<ng-container *ngIf="!isModal">
+						<img
+								src="/assets/images/add.png"
+								style="
+              align-self: center;
+              flex: 0 0 auto;
+              -ms-flex: 0 0 auto;
+              margin: 0 0px 0px 4px;
+            "
+						/>
+
+						<label> הוספת איש קשר חדש </label>
+					</ng-container>
+
 				</button>
 
 				<!--                <ng-container *ngIf="!isModal && isModalFromCompaniesScreen">-->

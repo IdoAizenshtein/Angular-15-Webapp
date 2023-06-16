@@ -202,6 +202,7 @@ import {UnionViewComponent} from './component/transaction-additionals-view/union
 import {BeneficiaryMultiSelectComponent} from './component/beneficiary/beneficiary-multi-select/beneficiary-multi-select.component';
 import {TooitipIfEllipsisDirective} from './directives/tooitipIfEllipsis.directive';
 import {LoanDetailsPromptComponent} from './component/loan-details/loan-details-prompt.component';
+import {LoanDetailsOverlayPromptComponent} from '@app/shared/component/transaction-additionals-view/loan-details-overlay/loan-details-overlay-prompt.component';
 import {DisableControlDirective} from './directives/disableControl.directive';
 import {ServiceCallDialogComponent} from './component/service-call-dialog/service-call-dialog.component';
 import {SharedComponent} from './component/shared.component';
@@ -450,6 +451,7 @@ export function createTranslateLoader(http: HttpClient) {
         BeneficiaryMultiSelectComponent,
         TooitipIfEllipsisDirective,
         LoanDetailsPromptComponent,
+        LoanDetailsOverlayPromptComponent,
         DisableControlDirective,
         SortIconPipe,
         ProgressComponent,
@@ -636,6 +638,7 @@ export function createTranslateLoader(http: HttpClient) {
         BeneficiaryMultiSelectComponent,
         TooitipIfEllipsisDirective,
         LoanDetailsPromptComponent,
+        LoanDetailsOverlayPromptComponent,
         DisableControlDirective,
         SortIconPipe,
         ProgressComponent,

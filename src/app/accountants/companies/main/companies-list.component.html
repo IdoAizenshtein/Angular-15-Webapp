@@ -883,7 +883,9 @@
         </div>
     </div>
 
-    <div class="comapniesTable showNewCompaniesPage" [class.hideCompanyName]="userService?.appData?.hideCompanyName">
+    <div [class.hideCompanyName]="userService?.appData?.hideCompanyName"
+         [class.notAdmin]="!userService?.appData?.isAdmin"
+         class="comapniesTable showNewCompaniesPage">
         <div #header class="header">
             <div (click)="toggleCompanyFilesOrderTo('companyName')">
                 שם החברה
@@ -941,15 +943,27 @@
                         title="שם תוכנה">
                 </app-tooltip-category>
             </div>
-            <div>
-                <app-tooltip-category
-                        (changed)="filterCategory($event)"
-                        [data]="automaticIntakeArr"
-                        [isNewLine]="false"
-                        [isSorted]="false"
-                        [type]="'automaticIntake'"
-                        title="שיטת קליטת נתונים">
-                </app-tooltip-category>
+            <div *ngIf="userService?.appData?.isAdmin" style="text-align: right; justify-content: flex-start;">
+                שיטת קליטת נתונים
+                אוטומטית
+                <!--                <app-tooltip-category-->
+                <!--                        (changed)="filterCategory($event)"-->
+                <!--                        [data]="automaticIntakeArr"-->
+                <!--                        [isNewLine]="false"-->
+                <!--                        [isSorted]="false"-->
+                <!--                        [type]="'automaticIntake'"-->
+                <!--                        title="שיטת קליטת נתונים">-->
+                <!--                </app-tooltip-category>-->
+            </div>
+            <div *ngIf="!userService?.appData?.isAdmin">
+                קליטת נתוני
+                <br>
+                פ.יומן
+            </div>
+            <div *ngIf="!userService?.appData?.isAdmin">
+                קליטת נתוני
+                <br>
+                ייצוא
             </div>
             <div>
                 שם מסד נתונים
@@ -998,19 +1012,18 @@
                     thumbClass="scrollbar-thumb"
                     trackClass="scrollbar">
 
-                    <cdk-virtual-scroll-viewport #virtualScroll itemSize="45" scrollViewport>
-                        <div *cdkVirtualFor="let company of companies     | slice
+                    <div *ngFor="let company of companies     | slice
               : currentPage * entryLimit
               : currentPage * entryLimit + entryLimit;  let i = index;">
-                            <div
-                                    class="row"
-                            >
-                                <div class="text-ellipsis" style="display: block">
-                                    <div [ngStyle]="{
+                        <div
+                                class="row"
+                        >
+                            <div class="text-ellipsis" style="display: block">
+                                <div [ngStyle]="{
                   'margin-right': company.companyName !== null ? '0' : '12%'
                 }"
-                                         class="text-ellipsis"
-                                    >
+                                     class="text-ellipsis"
+                                >
                                         <span
                                             #companyName
                                             (click)="(!company.billingItemExists || !company.companyId) ? null : sharedComponent.selectCompanyParam(company, 'general')"
@@ -1030,295 +1043,349 @@
                                             style="display: block"
                                             tooltipPosition="top"
                                         ></span>
-                                    </div>
                                 </div>
-                                <div class="text-ellipsis">
-                                    <div
-                                            *ngIf="!userService.appData?.hideCompanyName"
-                                        #transDesc
-                                        [innerHTML]="
+                            </div>
+                            <div class="text-ellipsis">
+                                <div
+                                    #transDesc
+                                    *ngIf="!userService.appData?.hideCompanyName"
+                                    [innerHTML]="
                   (company.companyHp !== null ? company.companyHp : '-')
                     | highlight: queryString
                 "
-                                        [ngStyle]="{
+                                    [ngStyle]="{
                   'margin-right': company.companyHp !== null ? '0' : '12%'
                 }"
-                                        [pTooltip]="company.companyHp"
-                                        [tooltipDisabled]="
+                                    [pTooltip]="company.companyHp"
+                                    [tooltipDisabled]="
                   transDesc.clientWidth >= transDesc.scrollWidth
                 "
 
-                                        class="text-ellipsis left-space"
-                                        tooltipPosition="top"
-                                    ></div>
+                                    class="text-ellipsis left-space"
+                                    tooltipPosition="top"
+                                ></div>
 
 
-                                    <span
-                                            *ngIf="userService.appData?.hideCompanyName"
-                                            #transDesc
-                                        (click)="(!company.billingItemExists || !company.companyId || !!!company.authorized)
+                                <span
+                                    #transDesc
+                                    (click)="(!company.billingItemExists || !company.companyId || !!!company.authorized)
                                          ? null : sharedComponent.selectCompanyParam(company, 'general')"
-                                        [class.link]="(company.billingItemExists && company.companyId && !!company.authorized)"
-                                            [innerHTML]="
+                                    *ngIf="userService.appData?.hideCompanyName"
+                                    [class.link]="(company.billingItemExists && company.companyId && !!company.authorized)"
+                                    [innerHTML]="
                   (company.companyHp !== null ? company.companyHp : '-')
                     | highlight: queryString
                 "
-                                        [ngStyle]="
+                                    [ngStyle]="
                     (!company.billingItemExists || !company.companyId || !!!company.authorized) ? { opacity: '0.4', cursor: 'default' } : ''
                   "
-                                            [pTooltip]="company.companyHp"
-                                            [tooltipDisabled]="
+                                    [pTooltip]="company.companyHp"
+                                    [tooltipDisabled]="
                   transDesc.clientWidth >= transDesc.scrollWidth
                 "
 
-                                        class="text-ellipsis left-space"
-                                        tooltipPosition="top"
-                                    ></span>
-                                </div>
-                                <div>
-                                    <ng-container *ngIf="company.billingItemExists">
-                                        <mat-icon
-                                                [svgIcon]="'billingItemExists'"
-                                                style="width: 21.81px;height: auto; display: block;">
-                                        </mat-icon>
-                                    </ng-container>
-                                    <ng-container *ngIf="!company.billingItemExists">
-                                        -
-                                    </ng-container>
-                                </div>
-                                <div class="text-ellipsis" style="display: flex; justify-content: space-between">
-                                    <div
-                                        #sourceProgramName
-                                        [innerHTML]="
+                                    class="text-ellipsis left-space"
+                                    tooltipPosition="top"
+                                ></span>
+                            </div>
+                            <div>
+                                <ng-container *ngIf="company.billingItemExists">
+                                    <mat-icon
+                                            [svgIcon]="'billingItemExists'"
+                                            style="width: 21.81px;height: auto; display: block;">
+                                    </mat-icon>
+                                </ng-container>
+                                <ng-container *ngIf="!company.billingItemExists">
+                                    -
+                                </ng-container>
+                            </div>
+                            <div class="text-ellipsis" style="display: flex; justify-content: space-between">
+                                <div
+                                    #sourceProgramName
+                                    [innerHTML]="
                   (company.sourceProgramName !== null ? company.sourceProgramName : '-')
                     | highlight: queryString
                 "
-                                        [ngStyle]="{
+                                    [ngStyle]="{
                   'margin-right': company.sourceProgramName !== null ? '0' : '12%'
                 }"
-                                        [pTooltip]="company.sourceProgramName"
-                                        [tooltipDisabled]="
+                                    [pTooltip]="company.sourceProgramName"
+                                    [tooltipDisabled]="
                   sourceProgramName.clientWidth >= sourceProgramName.scrollWidth
                 "
 
-                                        class="text-ellipsis left-space"
-                                        tooltipPosition="top"
-                                    ></div>
-                                    <img *ngIf="company.intakeErrorMessage"
-                                         [pTooltip]="company.intakeErrorMessage"
-                                         height="15"
-                                         src="/assets/images/exclamation-triangle.png"
-                                         style="margin-left: 4px"
-                                         tooltipPosition="top"
-                                         width="17"
-                                    />
-                                </div>
-                                <div class="text-ellipsis slide-toogle-wrapper">
-                                    <ng-container *ngIf="!!userService?.appData?.isAdmin && company.sourceProgramName === 'חשבשבת'; else notAdmin">
-                                        <div [class.disabled]="company.automaticIntake === false"
-                                             class="slide-toggle-label">
-                                            אוטומטי
-                                        </div>
-                                        <mat-slide-toggle
-                                                (change)="automaticIntakeChanged($event, company)"
-                                                [(ngModel)]="company.automaticIntake"
-                                                [checked]="company.automaticIntake"
-                                                [disableRipple]="true"
-                                                [disabled]="company.automaticIntakeDisabled || !!!company.authorized"
-                                        ></mat-slide-toggle>
-                                        <div [class.disabled]="company.automaticIntake === true"
-                                             class="slide-toggle-label">
-                                            ידני
-                                        </div>
-                                    </ng-container>
-                                    <ng-template #notAdmin>
-                                        <ng-container *ngIf="company.intakeText" #notAdmin>
-                                            <div
-                                                #intakeText
-                                                [innerHTML]="(company.intakeText)| highlight: queryString"
-                                                [pTooltip]="company.intakeText"
-                                                [tooltipDisabled]="intakeText.clientWidth >= intakeText.scrollWidth"
-                                                class="text-ellipsis left-space"
-                                                tooltipPosition="top"></div>
-                                        </ng-container>
-                                        <ng-container *ngIf="!company.intakeText">
-                                            <div [class.disabled]="company.automaticIntake === false"
-                                                 class="slide-toggle-label">
-                                                אוטומטי
-                                            </div>
-                                            <mat-slide-toggle
-                                                    (change)="automaticIntakeChanged($event, company)"
-                                                    [(ngModel)]="company.automaticIntake"
-                                                    [checked]="company.automaticIntake"
-                                                    [disableRipple]="true"
-                                                    [disabled]="company.automaticIntakeDisabled"
-                                            ></mat-slide-toggle>
-                                            <div [class.disabled]="company.automaticIntake === true"
-                                                 class="slide-toggle-label">
-                                                ידני
-                                            </div>
-                                        </ng-container>
-                                    </ng-template>
-                                </div>
-                                <div class="text-ellipsis">
-                                    <div
-                                        #dbName
-                                        [innerHTML]="
+                                    class="text-ellipsis left-space"
+                                    tooltipPosition="top"
+                                ></div>
+                                <img *ngIf="company.intakeErrorMessage"
+                                     [pTooltip]="company.intakeErrorMessage"
+                                     height="15"
+                                     src="/assets/images/exclamation-triangle.png"
+                                     style="margin-left: 4px"
+                                     tooltipPosition="top"
+                                     width="17"
+                                />
+                            </div>
+                            <div *ngIf="userService?.appData?.isAdmin" class="text-ellipsis slide-toogle-wrapper">
+                                <ng-container
+                                        *ngIf="!!userService?.appData?.isAdmin && company.sourceProgramName === 'חשבשבת'; else notAdmin">
+                                    <div class="label-toggle" [class.disabled]="company.automaticIntakeDisabled || !!!company.authorized">
+                                        פ. יומן
+                                    </div>
+
+                                    <label class="switch first">
+                                        <input (change)="automaticIntakeChanged($event, company)"
+                                               [(ngModel)]="company.automaticIntake"
+                                               [checked]="company.automaticIntake"
+                                               [disabled]="company.automaticIntakeDisabled || !!!company.authorized"
+                                               type="checkbox">
+                                        <span class="slider round"></span>
+                                    </label>
+                                    <div class="label-toggle" [class.disabled]="company.automaticBankinIntakeDisabled">
+                                        ייצוא
+                                    </div>
+                                    <label class="switch">
+                                        <input (change)="automaticBankinIntakeChanged($event, company)"
+                                               [(ngModel)]="company.automaticBankinIntake"
+                                               [checked]="company.automaticBankinIntake"
+                                               [disabled]="company.automaticBankinIntakeDisabled"
+                                               type="checkbox">
+                                        <span class="slider round"></span>
+                                    </label>
+                                </ng-container>
+                                <ng-template #notAdmin>
+                                    <!--                                        <ng-container *ngIf="company.intakeText" #notAdmin>-->
+                                    <!--                                            <div-->
+                                    <!--                                                #intakeText-->
+                                    <!--                                                [innerHTML]="(company.intakeText)| highlight: queryString"-->
+                                    <!--                                                [pTooltip]="company.intakeText"-->
+                                    <!--                                                [tooltipDisabled]="intakeText.clientWidth >= intakeText.scrollWidth"-->
+                                    <!--                                                class="text-ellipsis left-space"-->
+                                    <!--                                                tooltipPosition="top"></div>-->
+                                    <!--                                        </ng-container>-->
+                                    <!--                                        <ng-container *ngIf="!company.intakeText">-->
+                                    <!--                                            <div [class.disabled]="company.automaticIntake === false"-->
+                                    <!--                                                 class="slide-toggle-label">-->
+                                    <!--                                                אוטומטי-->
+                                    <!--                                            </div>-->
+                                    <!--                                            <mat-slide-toggle-->
+                                    <!--                                                    (change)="automaticIntakeChanged($event, company)"-->
+                                    <!--                                                    [(ngModel)]="company.automaticIntake"-->
+                                    <!--                                                    [checked]="company.automaticIntake"-->
+                                    <!--                                                    [disableRipple]="true"-->
+                                    <!--                                                    [disabled]="company.automaticIntakeDisabled"-->
+                                    <!--                                            ></mat-slide-toggle>-->
+                                    <!--                                            <div [class.disabled]="company.automaticIntake === true"-->
+                                    <!--                                                 class="slide-toggle-label">-->
+                                    <!--                                                ידני-->
+                                    <!--                                            </div>-->
+                                    <!--                                        </ng-container>-->
+                                </ng-template>
+                            </div>
+                            <div *ngIf="!userService?.appData?.isAdmin">
+                                <div
+                                    #intakeText
+                                    [innerHTML]="(company.intakeText)| highlight: queryString"
+                                    [pTooltip]="company.intakeText"
+                                    [tooltipDisabled]="intakeText.clientWidth >= intakeText.scrollWidth"
+                                    class="text-ellipsis"
+                                    tooltipPosition="top"></div>
+                            </div>
+                            <div *ngIf="!userService?.appData?.isAdmin">
+                                <div
+                                    #bankinIntakeText
+                                    [innerHTML]="(company.bankinIntakeText)| highlight: queryString"
+                                    [pTooltip]="company.bankinIntakeText"
+                                    [tooltipDisabled]="bankinIntakeText.clientWidth >= bankinIntakeText.scrollWidth"
+                                    class="text-ellipsis"
+                                    tooltipPosition="top"></div>
+                            </div>
+                            <div class="text-ellipsis">
+                                <div
+                                    #dbName
+                                    [innerHTML]="
                   (company.dbName !== null ? company.dbName : '-')
                     | highlight: queryString
                 "
-                                        [ngStyle]="{
+                                    [ngStyle]="{
                   'margin-right': company.dbName !== null ? '0' : '12%'
                 }"
-                                        [pTooltip]="company.dbName"
-                                        [tooltipDisabled]="
+                                    [pTooltip]="company.dbName"
+                                    [tooltipDisabled]="
                   dbName.clientWidth >= dbName.scrollWidth
+                "
+
+                                    class="text-ellipsis left-space"
+                                    tooltipPosition="top"
+                                ></div>
+                            </div>
+                            <div class="text-ellipsis">
+                                <ng-container *ngIf="company.authorizedSignerName">
+                                    <div
+                                        #authorizedSignerName
+                                        [innerHTML]="
+                  (company.authorizedSignerName !== null ? company.authorizedSignerName : '-')
+                    | highlight: queryString
+                "
+                                        [pTooltip]="company.authorizedSignerName"
+                                        [tooltipDisabled]="
+                  authorizedSignerName.clientWidth >= authorizedSignerName.scrollWidth
                 "
 
                                         class="text-ellipsis left-space"
                                         tooltipPosition="top"
                                     ></div>
-                                </div>
-                                <div class="text-ellipsis">
-                                    <ng-container *ngIf="company.authorizedSignerName">
-                                        <div
-                                            #authorizedSignerName
-                                            [innerHTML]="
-                  (company.authorizedSignerName !== null ? company.authorizedSignerName : '-')
-                    | highlight: queryString
-                "
-                                            [pTooltip]="company.authorizedSignerName"
-                                            [tooltipDisabled]="
-                  authorizedSignerName.clientWidth >= authorizedSignerName.scrollWidth
-                "
-
-                                            class="text-ellipsis left-space"
-                                            tooltipPosition="top"
-                                        ></div>
-                                    </ng-container>
-                                    <ng-container *ngIf="!company.authorizedSignerName">
-                                        <p-dropdown #dd
-                                                    [disabled]="!!!company.authorized"
-                                                    (onChange)="updateContactSelected(company, dd)"
-                                                    (onClick)="getContactList(company)"
-                                                    (onFocus)="clearFilter(dd)"
-                                                    [(ngModel)]="company.contactSelected"
-                                                    [dropdownIcon]="'p-dropdown-icon'"
-                                                    [options]="company.contactList"
-                                                    [scrollHeight]="'135px'"
-                                                    [style]="{'width': '100%'}"
-                                                    appendTo="body"
-                                                    dataKey="value"
-                                                    filter="true"
-                                                    filterBy="label"
-                                                    optionDisabled="inactive"
-                                                    optionLabel="label"
-                                                    panelStyleClass="panelContactListClass"
-                                                    placeholder="בחר/י איש קשר"
-                                                    styleClass="contactList_showNewCompaniesPage">
-                                            <ng-template pTemplate="empty">
-                                                <div style="
+                                </ng-container>
+                                <ng-container *ngIf="!company.authorizedSignerName">
+                                    <p-dropdown #dd
+                                                (onChange)="updateContactSelected(company, dd)"
+                                                (onClick)="getContactList(company)"
+                                                (onFocus)="clearFilter(dd)"
+                                                [(ngModel)]="company.contactSelected"
+                                                [disabled]="!!!company.authorized"
+                                                [dropdownIcon]="'p-dropdown-icon'"
+                                                [options]="company.contactList"
+                                                [scrollHeight]="'135px'"
+                                                [style]="{'width': '100%'}"
+                                                appendTo="body"
+                                                dataKey="value"
+                                                filter="true"
+                                                filterBy="label"
+                                                optionDisabled="inactive"
+                                                optionLabel="label"
+                                                panelStyleClass="panelContactListClass"
+                                                placeholder="בחר/י איש קשר"
+                                                styleClass="contactList_showNewCompaniesPage">
+                                        <ng-template pTemplate="empty">
+                                            <div style="
     padding: 3px 4px 7px 0px;
     font-weight: 600;
 ">
-                                                    <div *ngIf="loaderGetContactList"
-                                                         class="loaderPercent"
-                                                         style="background: transparent;opacity: 1;height: 35px;position: static;"
-                                                    >
-                                                        <div class="circle"></div>
-                                                    </div>
-                                                    <div *ngIf="!loaderGetContactList">לא נמצאו אנשי קשר לחברה זו</div>
+                                                <div *ngIf="loaderGetContactList"
+                                                     class="loaderPercent"
+                                                     style="background: transparent;opacity: 1;height: 35px;position: static;"
+                                                >
+                                                    <div class="circle"></div>
                                                 </div>
-                                            </ng-template>
-                                            <ng-template pTemplate="emptyfilter">
-                                                <div style="
+                                                <div *ngIf="!loaderGetContactList">לא נמצאו אנשי קשר לחברה זו</div>
+                                            </div>
+                                        </ng-template>
+                                        <ng-template pTemplate="emptyfilter">
+                                            <div style="
     padding: 3px 4px 7px 0px;
     font-weight: 600;
 ">
-                                                    <div>לא נמצאו אנשי קשר לחיפוש</div>
-                                                </div>
-                                            </ng-template>
-                                            <ng-template let-item pTemplate="selectedItem">
-                                                {{item.label}}
-                                            </ng-template>
-                                            <ng-template let-option pTemplate="item">
-                                                <div class="ui-helper-clearfix">
-                                                    {{option.label}}
-                                                </div>
-                                            </ng-template>
-                                            <ng-template pTemplate="footer">
-                                                <div (click)="addContact($event, company, (!company.companyId && company.potentialCompanyId))"
-                                                     class="ui-helper-clearfix linkAddContact">
-                                                    <img fill
-                                                         ngSrc="/assets/images/add.png"
-                                                         style="height: auto; width: auto; position: relative;align-self: center; flex: 0 0 auto;-ms-flex:0 0 auto; margin: 0 0px 0px 4px;"
-                                                    />
-                                                    הוספת איש קשר חדש
-                                                </div>
-                                            </ng-template>
+                                                <div>לא נמצאו אנשי קשר לחיפוש</div>
+                                            </div>
+                                        </ng-template>
+                                        <ng-template let-item pTemplate="selectedItem">
+                                            {{item.label}}
+                                        </ng-template>
+                                        <ng-template let-option pTemplate="item">
+                                            <div class="ui-helper-clearfix">
+                                                {{option.label}}
+                                            </div>
+                                        </ng-template>
+                                        <ng-template pTemplate="footer">
+                                            <div (click)="addContact($event, company, (!company.companyId && company.potentialCompanyId))"
+                                                 class="ui-helper-clearfix linkAddContact">
+                                                <img fill
+                                                     ngSrc="/assets/images/add.png"
+                                                     style="height: auto; width: auto; position: relative;align-self: center; flex: 0 0 auto;-ms-flex:0 0 auto; margin: 0 0px 0px 4px;"
+                                                />
+                                                הוספת איש קשר חדש
+                                            </div>
+                                        </ng-template>
 
-                                        </p-dropdown>
-                                    </ng-container>
-                                </div>
-                                <div class="text-ellipsis">
-                                    <img
-                                            *ngIf="company.contactAgreementStatus && company.contactAgreementStatusText !== '-'"
-                                            [src]="'/assets/images/'+company.contactAgreementStatus +'.png'"
-                                            style="margin-left: 6px"
-                                    />
-                                    <span
-                                        #contactAgreementStatusText
-                                        [class.SENT]="company.contactAgreementStatus === 'SENT'"
-                                        [class.SIGNED]="company.contactAgreementStatus === 'SIGNED'"
-                                        [innerHTML]="(company.contactAgreementStatus !== null ? company.contactAgreementStatusText : '-') | highlight: queryString"
-                                        [ngStyle]="{
+                                    </p-dropdown>
+                                </ng-container>
+                            </div>
+                            <div class="text-ellipsis">
+                                <img
+                                        *ngIf="company.contactAgreementStatus && company.contactAgreementStatusText !== '-'"
+                                        [src]="'/assets/images/'+company.contactAgreementStatus +'.png'"
+                                        style="margin-left: 6px"
+                                />
+                                <span
+                                    #contactAgreementStatusText
+                                    [class.SENT]="company.contactAgreementStatus === 'SENT'"
+                                    [class.SIGNED]="company.contactAgreementStatus === 'SIGNED'"
+                                    [innerHTML]="(company.contactAgreementStatus !== null ? company.contactAgreementStatusText : '-') | highlight: queryString"
+                                    [ngStyle]="{
                   'margin-right': company.contactAgreementStatus !== null && company.contactAgreementStatusText !== '-' ? '0' : '12%'
                 }"
-                                        [pTooltip]="company.contactAgreementStatusText"
-                                        [tooltipDisabled]="
+                                    [pTooltip]="company.contactAgreementStatusText"
+                                    [tooltipDisabled]="
                   contactAgreementStatusText.clientWidth >= contactAgreementStatusText.scrollWidth
                 "
-                                        class="text-ellipsis"
-                                        tooltipPosition="top"
-                                    ></span>
-                                    <small *ngIf="company.agreementDate && company.contactAgreementStatus">
-                                        {{withinTwentyFourHours(company.agreementDate) <= 24 ? (
-                                        'לפני '
-                                        +
-                                        withinTwentyFourHoursMin(company.agreementDate) +
+                                    class="text-ellipsis"
+                                    tooltipPosition="top"
+                                ></span>
+                                <small *ngIf="company.agreementDate && company.contactAgreementStatus">
+                                    {{withinTwentyFourHours(company.agreementDate) <= 24 ? (
+                                    'לפני '
+                                    +
+                                    withinTwentyFourHoursMin(company.agreementDate) +
 
-                                        (withinTwentyFourHours(company.agreementDate) >= 1 ? ' שעות' :
-                                            ' דקות')
-                                    ) : '' + (company.agreementDate | date: 'dd/MM/yy')}}
-                                    </small>
-                                </div>
-                                <div>
-                                    <img
-                                            *ngIf="!company.canAddBillingItems || !!!company.authorized"
-                                            [src]="'/assets/images/hasAllTheProducts.png'"
-                                            style=" display: block;cursor: default;"
-                                    />
+                                    (withinTwentyFourHours(company.agreementDate) >= 1 ? ' שעות' :
+                                        ' דקות')
+                                ) : '' + (company.agreementDate | date: 'dd/MM/yy')}}
+                                </small>
+                            </div>
+                            <div>
 
-                                    <img
-                                            (click)="addContact($event, company, true)"
-                                            *ngIf="company.canAddBillingItems && !company.agreementDate && !!company.authorized"
-                                            [src]="'/assets/images/hasNotAllTheProducts.png'"
-                                            style=" display: block; cursor: pointer;"
-                                    />
-                                    <img
-                                            (click)="storageService.localStorageSetter('companyId_selectProduct',company.companyId)"
-                                            *ngIf="company.canAddBillingItems && company.agreementDate && !!company.authorized"
-                                            [routerLinkActiveOptions]="{ exact: true }"
-                                            [routerLink]="['./companyProducts/addProducts']"
-                                            [src]="'/assets/images/hasNotAllTheProducts.png'"
-                                            queryParamsHandling="merge"
-                                            routerLinkActive="active"
-                                            style=" display: block; cursor: pointer;"
-                                    />
-                                </div>
+                                <mat-icon
+                                        *ngIf="!company.canAddBillingItems"
+                                        style="height: 33px; width: 33px; margin-top: 5px;display: block;cursor: default;"
+                                        svgIcon="productExists"
+                                ></mat-icon>
+
+                                <img
+                                        *ngIf="!!!company.authorized"
+                                        [src]="'/assets/images/hasAllTheProducts.png'"
+                                        style=" display: block;cursor: default;"
+                                />
+
+                                <!--                                    <img-->
+                                <!--                                            (click)="addContact($event, company, true)"-->
+                                <!--                                            *ngIf="company.canAddBillingItems && !company.agreementDate && !!company.authorized"-->
+                                <!--                                            [src]="'/assets/images/hasNotAllTheProducts.png'"-->
+                                <!--                                            style=" display: block; cursor: pointer;"-->
+                                <!--                                    />-->
+
+
+                                <mat-icon
+                                        (click)="addContact($event, company, true)"
+                                        *ngIf="company.canAddBillingItems && !company.agreementDate && !!company.authorized"
+                                        style=" display: block; cursor: pointer; margin-top: 5px;height: 33px; width: 33px; "
+                                        svgIcon="addProduct"
+                                ></mat-icon>
+                                <!--                                    <img-->
+                                <!--                                            (click)="storageService.localStorageSetter('companyId_selectProduct',company.companyId)"-->
+                                <!--                                            *ngIf="company.canAddBillingItems && company.agreementDate && !!company.authorized"-->
+                                <!--                                            [routerLinkActiveOptions]="{ exact: true }"-->
+                                <!--                                            [routerLink]="['./companyProducts/addProducts']"-->
+                                <!--                                            [src]="'/assets/images/hasNotAllTheProducts.png'"-->
+                                <!--                                            queryParamsHandling="merge"-->
+                                <!--                                            routerLinkActive="active"-->
+                                <!--                                            style=" display: block; cursor: pointer;"-->
+                                <!--                                    />-->
+
+
+                                <mat-icon
+                                        (click)="storageService.localStorageSetter('companyId_selectProduct',company.companyId)"
+                                        *ngIf="company.canAddBillingItems && company.agreementDate && !!company.authorized"
+                                        [routerLinkActiveOptions]="{ exact: true }"
+                                        [routerLink]="['./companyProducts/addProducts']"
+                                        queryParamsHandling="merge"
+                                        routerLinkActive="active"
+                                        style=" display: block; cursor: pointer; margin-top: 5px;height: 33px; width: 33px; "
+                                        svgIcon="addProduct"
+                                ></mat-icon>
                             </div>
                         </div>
-                    </cdk-virtual-scroll-viewport>
+                    </div>
+
                 </ng-scrollbar>
 
 
@@ -3075,9 +3142,8 @@
                             #plist_subjectsForCompany
                             (onChange)="op.hide()"
                             [dataKey]="'subjectId'"
-                            name="subject"
-
                             [formControlName]="'subject'"
+
                             [listStyle]="{ 'max-height': '200px', width: '237px' }"
                             [optionLabel]="'subjectName'"
                             [options]="
@@ -3085,6 +3151,7 @@
                   ? subjectsForCompany
                   : subjectsForCompanyWhatsApp
               "
+                            name="subject"
                         >
                             <ng-template let-subjects pTemplate="item">
                                 <div>

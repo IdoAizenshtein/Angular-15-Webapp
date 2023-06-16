@@ -1,14 +1,4 @@
-import {
-    ApplicationRef,
-    Component,
-    EventEmitter,
-    Input,
-    OnDestroy,
-    OnInit,
-    Output,
-    Renderer2,
-    ViewEncapsulation
-} from '@angular/core';
+import {ApplicationRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output, Renderer2, ViewEncapsulation} from '@angular/core';
 import {DomSanitizer} from '@angular/platform-browser';
 import {UserService} from '@app/core/user.service';
 import {SharedComponent} from '@app/shared/component/shared.component';
@@ -23,15 +13,7 @@ import {MatLegacySnackBar as MatSnackBar} from '@angular/material/legacy-snack-b
 import {OcrService} from '@app/accountants/companies/shared/ocr.service';
 import {ReloadServices} from '@app/shared/services/reload.services';
 import {filter, map, startWith, takeUntil} from 'rxjs/operators';
-import {
-    AbstractControl,
-    FormArray,
-    FormBuilder,
-    FormControl,
-    ValidationErrors,
-    ValidatorFn,
-    Validators
-} from '@angular/forms';
+import {AbstractControl, FormArray, FormBuilder, FormControl, ValidationErrors, ValidatorFn, Validators} from '@angular/forms';
 
 import {Subject, Subscription} from 'rxjs';
 import {ValidatorsFactory} from '@app/shared/component/foreign-credentials/validators';
@@ -106,6 +88,32 @@ export class ContactsComponent
     override reload() {
         console.log('reload child');
         this.ngOnInit();
+    }
+
+    isContactValid() {
+        if (this.isModal) {
+            if (this.arr) {
+                const arr = this.arr;
+                // this.contacts = this.childContactsComponent.contacts;
+                if (arr && arr.controls && arr.controls.length) {
+                    return arr.controls.some((contact, idx) => {
+                        const isEqu =
+                            Object.keys(contact.value).length &&
+                            Object.keys(contact.value).every((key) => {
+                                if (key === 'joinApp') {
+                                    return contact.value[key] === false;
+                                } else {
+                                    return (contact.value[key] === null || contact.value[key] === '');
+                                }
+                            });
+                        return (!contact.valid && contact.touched && !isEqu);
+                    });
+                }
+            }
+            return false;
+        } else {
+            return true;
+        }
     }
 
     ngOnInit(): void {
@@ -876,6 +884,7 @@ export class ContactsComponent
         // ));
         // this.activeRow = this.arr.controls.length - 1;
     }
+
     withinTwentyFourHours(dateTime: any) {
         return Math.floor(Math.abs(dateTime - new Date().getTime()) / 36e5);
     }
@@ -888,6 +897,7 @@ export class ContactsComponent
             return Math.floor((Math.abs(dateTime - new Date().getTime()) / 36e5) * 60);
         }
     }
+
     deleteContact(index: number, contact: any) {
         this.activeRow = null;
         this.activeRowClick();
@@ -912,8 +922,8 @@ export class ContactsComponent
                 // this.arr.removeAt(index);
                 const value = this.arr.value;
                 while (this.arr.length - 1 > index) {
-                    const center = this.arr.controls[index+ 1].value;
-                    this.arr.controls[index+1].patchValue(this.arr.controls[index].value);
+                    const center = this.arr.controls[index + 1].value;
+                    this.arr.controls[index + 1].patchValue(this.arr.controls[index].value);
                     this.arr.controls[index].patchValue(center);
                     index++;
                 }
@@ -932,8 +942,8 @@ export class ContactsComponent
             // this.arr.removeAt(index);
             const value = this.arr.value;
             while (this.arr.length - 1 > index) {
-                const center = this.arr.controls[index+ 1].value;
-                this.arr.controls[index+1].patchValue(this.arr.controls[index].value);
+                const center = this.arr.controls[index + 1].value;
+                this.arr.controls[index + 1].patchValue(this.arr.controls[index].value);
                 this.arr.controls[index].patchValue(center);
                 index++;
             }
@@ -948,8 +958,8 @@ export class ContactsComponent
         // this.arr.removeAt(index);
         const value = this.arr.value;
         while (this.arr.length - 1 > index) {
-            const center = this.arr.controls[index+ 1].value;
-            this.arr.controls[index+1].patchValue(this.arr.controls[index].value);
+            const center = this.arr.controls[index + 1].value;
+            this.arr.controls[index + 1].patchValue(this.arr.controls[index].value);
             this.arr.controls[index].patchValue(center);
             index++;
         }
@@ -1015,9 +1025,9 @@ export class ContactsComponent
                 .sendLandingPageMessages(companyContactIdList)
                 .subscribe(() => {
                     this.userService.appData.submitAlertContact = true;
-                    setTimeout(()=>{
+                    setTimeout(() => {
                         this.userService.appData.submitAlertContact = false;
-                    }, 3000)
+                    }, 3000);
                 });
         }
     }
@@ -1115,17 +1125,17 @@ export class ContactsComponent
             ])
             .subscribe(() => {
                 this.userService.appData.submitAlertContact = true;
-                setTimeout(()=>{
+                setTimeout(() => {
                     this.userService.appData.submitAlertContact = false;
-                }, 3000)
+                }, 3000);
             });
-        setTimeout(()=>{
+        setTimeout(() => {
             this.updateContact(
                 this.authorizedSignerContactModal.contact,
                 this.authorizedSignerContactModal.i
             );
             this.authorizedSignerContactModal = false;
-        }, 1000)
+        }, 1000);
     }
 
     ngOnDestroy(): void {

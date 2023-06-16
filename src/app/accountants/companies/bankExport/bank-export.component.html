@@ -1,4 +1,9 @@
-<div>
+<div style="
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-left: 40px;
+">
     <h2 class="titlePage withLink" style="align-items: flex-start">
         <i>יצוא בנק/אשראי</i>
         <i class="splitBig"></i>
@@ -32,12 +37,6 @@
             </div>
         </div>
     </h2>
-</div>
-
-<div
-        class="filterRow"
-        style="margin-top: 10px; margin-bottom: 5px; justify-content: flex-end"
->
     <button
             [routerLinkActiveOptions]="{ exact: true }"
             [routerLink]="['/accountants/companies/companyProducts/addProducts']"
@@ -48,6 +47,7 @@
         הוספת מוצר
     </button>
 </div>
+
 
 <ng-container
         *ngIf="!showExportPage"
@@ -77,7 +77,7 @@
 <ng-container
         *ngIf="!!showExportPage"
 >
-    <div style="display: flex">
+    <div style="display: flex;justify-content: space-between;">
         <p
                 (click)="copyText('')"
                 style="
@@ -98,6 +98,18 @@
 
             נתיב הקובץ לחשבשבת
         </p>
+
+        <div *ngIf="this.userService.appData.isAdmin && synced !== null" class="synced">
+            <p>
+                אקספורטר
+                <strong>
+                    {{synced === true ? 'מסונכרן' : synced === false ? 'לא מסונכרן' : 'מסונכרן חלקית'}}
+                </strong>
+            </p>
+            <button (click)="show_unsynced_companies = true" *ngIf="synced !== true && synced !== false">
+                לפירוט
+            </button>
+        </div>
     </div>
     <div
             class="filterRow"
@@ -394,17 +406,16 @@ color: #FFFFFF;">
                                             align-self: center;
                                             margin-left: 32px;"
                                 >
-                            </div>
-
-                            <div *ngIf="activeCompany && !!activeCompany.authorized">
-                                <img (click)="exportCompany(activeCompany)"
-                                     [matTooltip]="
-                         'יצוא'
-                        "
-                                     matTooltipClass="breakLineTooltip"
-                                     matTooltipPosition="above"
-                                     src="/assets/images/activeCompanyExport.png"
-                                     style="cursor: pointer">
+                                <div *ngIf="activeCompany && !!activeCompany.authorized && !activeCompany.folderPlus"
+                                     style="cursor: pointer;
+                                                margin-right: auto;
+                                                margin-left: 27px;">
+                                    <img (click)="exportCompany(activeCompany)"
+                                         [matTooltip]="'יצוא'"
+                                         matTooltipClass="breakLineTooltip"
+                                         matTooltipPosition="above"
+                                         src="/assets/images/activeCompanyExport.png">
+                                </div>
                             </div>
                         </div>
                         <div class="companiesList">
@@ -430,7 +441,7 @@ color: #FFFFFF;">
                                             <!--                                            tooltipMoreData.show($event) "-->
                                             <li #transDesc
                                                 (click)="setActiveCompany(company)"
-                                                [class.isActive] = "company.companyHp === activeCompany.companyHp"
+                                                [class.isActive]="company.companyHp === activeCompany.companyHp"
                                                 style="position: relative">
                                                 {{userService?.appData?.hideCompanyName ? company.companyHp : company.companyName}}
 
@@ -605,17 +616,17 @@ cursor: pointer;
                                                     <p
                                                             *ngIf="company.currencyString"
                                                             class="titleBankCard"
+                                                            matTooltip="{{currencyTooltipText(company)}}"
+                                                            matTooltipClass="izuCurrencyTooltip"
+                                                            matTooltipDisabled="{{company.currencyId === 1}}"
+                                                            matTooltipHideDelay="0"
+                                                            matTooltipPosition="above"
+                                                            matTooltipShowDelay="0"
                                                             style="
                               margin-right: 5px;
                               direction: ltr;
                               text-align: left;
                             "
-                                                            matTooltip="{{currencyTooltipText(company)}}"
-                                                            matTooltipClass="izuCurrencyTooltip"
-                                                            matTooltipHideDelay="0"
-                                                            matTooltipPosition="above"
-                                                            matTooltipShowDelay="0"
-                                                            matTooltipDisabled="{{company.currencyId === 1}}"
                                                     >
                                                         {{ company.currencyString }}
                                                     </p>
@@ -654,7 +665,7 @@ cursor: pointer;
                                                  src="/assets/images/ccardTransMatchPeulot.png"
                                                  style="margin-right: auto; align-self: center; cursor: pointer;">
                                         </div>
-                                        <div>
+                                        <div style="display: flex; flex-direction: row">
                                             <div
                                                 #transDesc
                                                 [innerHTML]="
@@ -668,6 +679,10 @@ cursor: pointer;
                                                 class="text-ellipsis left-space"
                                                 style="padding-right: 17px"
                                             ></div>
+                                            <img (click)="hashBankPopup(company, activeCompany)"
+                                                 *ngIf="this.userService.appData.isAdmin && company.izuCustId && company.izuCustId !== 'לא משוייך כרטיס'"
+                                                 src="/assets/images/HashBankTableIcon.png"
+                                                 style="cursor: pointer; margin-right: 45px;">
                                         </div>
                                         <div>
                                             <app-dropdown-wrap
@@ -682,10 +697,10 @@ cursor: pointer;
                                                 [filter]="true"
                                                 [highlight]="(company.izuCustPlaceHolder || company.izuCustIdSrc) | highlight: queryExportString"
                                                 [options]="
-                                                company.companyCustomerDetailsExport
-            ? company.companyCustomerDetailsExport.banksCardsExport
-            : []
-        "
+                                                    company.companyCustomerDetailsExport
+                ? company.companyCustomerDetailsExport.banksCardsExport
+                : []
+            "
                                                 [placeholder]="company.izuCustPlaceHolder || company.izuCustIdSrc"
                                                 [scrollHeight]="'135px'"
                                                 [style]="{'width': '100%'}"
@@ -700,23 +715,23 @@ cursor: pointer;
                                                 styleClass="contactList_showNewCompaniesPage"
                                             >
                                                 <ng-template let-item pTemplate="selectedItem">
-          <span
-              #spanElement
-              [innerHTML]="item.cartisName | highlight: queryExportString"
-              [pTooltip]="item.cartisName"
-              [tooltipDisabled]="
-              spanElement.offsetWidth >= spanElement.scrollWidth"
-              style="
-              vertical-align: middle;
-              display: block;
-              text-align:right;
-              white-space: nowrap;
-              overflow: hidden;
-              text-overflow: ellipsis;
-            "
+              <span
+                  #spanElement
+                  [innerHTML]="item.cartisName | highlight: queryExportString"
+                  [pTooltip]="item.cartisName"
+                  [tooltipDisabled]="
+                  spanElement.offsetWidth >= spanElement.scrollWidth"
+                  style="
+                  vertical-align: middle;
+                  display: block;
+                  text-align:right;
+                  white-space: nowrap;
+                  overflow: hidden;
+                  text-overflow: ellipsis;
+                "
 
-              tooltipPosition="top"
-          ></span>
+                  tooltipPosition="top"
+              ></span>
                                                 </ng-template>
                                                 <ng-template let-item pTemplate="item">
                                                     <div *ngIf="item.title" class="p-helper-clearfix"
@@ -726,11 +741,11 @@ cursor: pointer;
                                                     <div *ngIf="!item.title"
                                                          [class.bottom9]="item.isLastHistory"
                                                          [ngStyle]="
-              company['izuCustIdSrc'] === item.custId ||
-              isExistCustId(item.custId, activeCompany.companyId)
-                ? { opacity: '0.4', cursor: 'default' }
-                : ''
-            "
+                  company['izuCustIdSrc'] === item.custId ||
+                  isExistCustId(item.custId, activeCompany.companyId)
+                    ? { opacity: '0.4', cursor: 'default' }
+                    : ''
+                "
                                                          class="p-helper-clearfix"
                                                          style="flex-flow: column"
                                                     >
@@ -742,39 +757,39 @@ cursor: pointer;
                                                             </div>
                                                         </div>
                                                         <div *ngIf="
-                company['izuCustIdSrc'] === item.custId ||
-                isExistCustId(item.custId, activeCompany.companyId)
-              "
+                    company['izuCustIdSrc'] === item.custId ||
+                    isExistCustId(item.custId, activeCompany.companyId)
+                  "
                                                              style="font-size: 12px">
-                        <span
+                            <span
 
-                                class="text-ellipsis secondary"
-                        >
+                                    class="text-ellipsis secondary"
+                            >
 
-                                הכרטיס מוגדר ככרטיס הנה”ח
+                                    הכרטיס מוגדר ככרטיס הנה”ח
 
-						</span>
+                            </span>
                                                         </div>
                                                         <div
                                                                 *ngIf="item.isLastHistory"
                                                                 style="
-                height: 1px;
-                background: #cacaca;
-                padding: 0;
-                position: absolute;
-                bottom: 0px;
-                right: 0;
-                left: 0;
-                z-index: 999;
-              "
+                    height: 1px;
+                    background: #cacaca;
+                    padding: 0;
+                    position: absolute;
+                    bottom: 0px;
+                    right: 0;
+                    left: 0;
+                    z-index: 999;
+                  "
                                                         ></div>
                                                     </div>
                                                 </ng-template>
                                                 <ng-template pTemplate="empty">
                                                     <div style="
-    padding: 3px 4px 7px 0px;
-    font-weight: 600;
-">
+        padding: 3px 4px 7px 0px;
+        font-weight: 600;
+    ">
                                                         <div *ngIf="loaderGetList"
                                                              class="loaderPercent"
                                                              style="background: transparent;opacity: 1;height: 35px;position: static;"
@@ -784,10 +799,10 @@ cursor: pointer;
 
                                                         <div *ngIf="!loaderGetList"
                                                              class="p-helper-clearfix" style="display: block;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    margin: 0px 14px !important;">
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin: 0px 14px !important;">
                                                             לא נמצאו תוצאות
                                                         </div>
                                                     </div>
@@ -795,10 +810,10 @@ cursor: pointer;
                                                 <ng-template pTemplate="emptyfilter">
                                                     <div
                                                             class="p-helper-clearfix" style="display: block;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    margin: 0px 14px !important;">
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin: 0px 14px !important;">
                                                         לא נמצאו תוצאות
                                                     </div>
                                                 </ng-template>
@@ -806,34 +821,13 @@ cursor: pointer;
                                         </div>
                                         <div>
                                             <div #balanceLastUpdateDate
-                                                 *ngIf="company.lastExportTransDesc"
-                                                 [innerHTML]="
-                        (company.lastExportTransDate | date: 'dd/MM/yy') +
-                          ' ' +
-                          company.lastExportTransDesc | highlight: queryExportString
-                      "
-                                                 [pTooltip]="(company.lastExportTransDate | date: 'dd/MM/yy') +' ' +company.lastExportTransDesc"
-                                                 [tooltipDisabled]="
-                      balanceLastUpdateDate.clientWidth >= balanceLastUpdateDate.scrollWidth
-                    "
+                                                 *ngIf="company.lastExportTransDate"
+                                                 [innerHTML]="(company.lastExportTransDate | date: 'dd/MM/yy')"
                                                  class="text-ellipsis"
                                                  style="width: -webkit-fill-available;margin-left: 15px;"
                                             ></div>
                                             <div class="text-ellipsis"
                                                  style="display: flex; width: -webkit-fill-available;">
-                                                <img
-                                                        *ngIf="company.lastExportTransDesc"
-                                                        [matTooltip]="
-                'הנתון האחרון שיוצא -'
-                +
-                '\n' +
-               (company.lastExportDate | date: 'dd/MM/yyyy') + ' ' + company.lastExportTransDesc
-              "
-                                                        matTooltipClass="breakLineTooltip"
-                                                        matTooltipPosition="below"
-                                                        src="/assets/images/lastExportUserDesc.png"
-                                                        style="cursor: pointer; margin-left: 3px"
-                                                />
                                                 <small
                                                         [innerHTML]="
                           company.lastExportUserDesc | highlight: queryExportString
@@ -844,7 +838,7 @@ cursor: pointer;
                                         </div>
                                         <div>
                                             <div *ngIf="company.lastExportStatus !== 'OTHER_SOURCE_DATA' && company.lastExportStatus !== 'TECHNICAL_PROBLEM' && company.lastExportStatus !== 'FAIL'"
-                                            style="display: flex; flex-direction: column">
+                                                 style="display: flex; flex-direction: column">
                                                 <div [class]="company.lastExportStatus">
                                                     <i></i>
 
@@ -994,7 +988,7 @@ cursor: pointer;
                                                     <!--                                                    (mouseover)="tooltipMoreData.show($event, targetTooltip)"-->
                                                     <div
 
-                                                            [innerHTML]="((userService?.appData?.hideCompanyName ? '' : (company.companyName + ' ')) + company.companyHp) | highlight: queryExportString">
+                                                            [innerHTML]="(userService?.appData?.hideCompanyName ? company.companyHp : company.companyName) | highlight: queryExportString">
                                                     </div>
                                                     <!--                                                    <p-overlayPanel-->
                                                     <!--                                                        #tooltipMoreData-->
@@ -1025,6 +1019,18 @@ cursor: pointer;
                                                     <!--                                                        </div>-->
                                                     <!--                                                    </p-overlayPanel>-->
                                                 </div>
+                                                <img *ngIf="!!company?.codeKuletIssue"
+                                                     matTooltip="לא הוגדר לחברה
+                                                         שם משתמש בחשבשבת"
+                                                     matTooltipClass="folderPlusIssueToolTip"
+                                                     matTooltipHideDelay="0"
+                                                     matTooltipPosition="above"
+                                                     matTooltipShowDelay="0"
+                                                     src="/assets/images/balanceERP.png"
+                                                     style="margin-right: auto;
+                                                                position: relative;
+                                                                margin-left: 20px;"
+                                                >
                                             </li>
                                         </ng-container>
                                     </ul>
@@ -1137,17 +1143,17 @@ cursor: pointer;
                                                         <p
                                                                 *ngIf="company.currencyString"
                                                                 class="titleBankCard"
+                                                                matTooltip="{{currencyTooltipText(company)}}"
+                                                                matTooltipClass="izuCurrencyTooltip"
+                                                                matTooltipDisabled="{{company.currencyId === 1}}"
+                                                                matTooltipHideDelay="0"
+                                                                matTooltipPosition="above"
+                                                                matTooltipShowDelay="0"
                                                                 style="
                               margin-right: 5px;
                               direction: ltr;
                               text-align: left;
                             "
-                                                                matTooltip="{{currencyTooltipText(company)}}"
-                                                                matTooltipClass="izuCurrencyTooltip"
-                                                                matTooltipHideDelay="0"
-                                                                matTooltipPosition="above"
-                                                                matTooltipShowDelay="0"
-                                                                matTooltipDisabled="{{company.currencyId === 1}}"
                                                         >
                                                             {{ company.currencyString }}
                                                         </p>
@@ -1181,13 +1187,13 @@ cursor: pointer;
                                                         </app-token-status-view>
                                                     </p>
                                                 </div>
-                                                    <img (click)="ccardTransMatchPeulot(company.companyAccountId)"
-                                                         *ngIf="this.userService.appData.isAdmin && company.companyAccountId &&
+                                                <img (click)="ccardTransMatchPeulot(company.companyAccountId)"
+                                                     *ngIf="this.userService.appData.isAdmin && company.companyAccountId &&
                                                                 (company.creditCardId || company.creditCardMatahId)"
-                                                         style="margin-right: auto; align-self: center; cursor: pointer;"
-                                                         src="/assets/images/ccardTransMatchPeulot.png">
+                                                     src="/assets/images/ccardTransMatchPeulot.png"
+                                                     style="margin-right: auto; align-self: center; cursor: pointer;">
                                             </div>
-                                            <div>
+                                            <div style="display: flex; flex-direction: row">
                                                 <div
                                                     #transDesc
                                                     [innerHTML]="
@@ -1201,6 +1207,10 @@ cursor: pointer;
                                                     class="text-ellipsis left-space"
                                                     style="padding-right: 17px"
                                                 ></div>
+                                                <img (click)="hashBankPopup(company, companyParent)"
+                                                     *ngIf="this.userService.appData.isAdmin && company.izuCustId && company.izuCustId !== 'לא משוייך כרטיס'"
+                                                     src="/assets/images/HashBankTableIcon.png"
+                                                     style="cursor: pointer; margin-right: 45px;">
                                             </div>
                                             <div>
                                                 <app-dropdown-wrap
@@ -1339,34 +1349,13 @@ cursor: pointer;
                                             </div>
                                             <div>
                                                 <div #balanceLastUpdateDate
-                                                     *ngIf="company.lastExportTransDesc"
-                                                     [innerHTML]="
-                        ((company.lastExportTransDate | date: 'dd/MM/yy') +
-                          ' ' +
-                          company.lastExportTransDesc) | highlight: queryExportString
-                      "
-                                                     [pTooltip]="(company.lastExportTransDate | date: 'dd/MM/yy') +' ' +company.lastExportTransDesc"
-                                                     [tooltipDisabled]="
-                      balanceLastUpdateDate.clientWidth >= balanceLastUpdateDate.scrollWidth
-                    "
+                                                     *ngIf="company.lastExportTransDate"
+                                                     [innerHTML]="(company.lastExportTransDate | date: 'dd/MM/yy')"
                                                      class="text-ellipsis"
                                                      style="width: -webkit-fill-available;margin-left: 15px;"
                                                 ></div>
                                                 <div class="text-ellipsis"
                                                      style="display: flex; width: -webkit-fill-available;">
-                                                    <img
-                                                            *ngIf="company.lastExportTransDesc"
-                                                            [matTooltip]="
-                'הנתון האחרון שיוצא -'
-                +
-                '\n' +
-               (company.lastExportDate | date: 'dd/MM/yyyy') + ' ' + company.lastExportTransDesc
-              "
-                                                            matTooltipClass="breakLineTooltip"
-                                                            matTooltipPosition="below"
-                                                            src="/assets/images/lastExportUserDesc.png"
-                                                            style="cursor: pointer; margin-left: 3px"
-                                                    />
                                                     <small
                                                             [innerHTML]="
                           company.lastExportUserDesc | highlight: queryExportString
@@ -5432,11 +5421,11 @@ showPopupSpecialCharacters
         </p>
 
         <p style="text-align:center;font-size: 20px;line-height: 33px;">
-        על מנת לקשר את כרטיס הנה״ח הנ״ל לחשבון
+            על מנת לקשר את כרטיס הנה״ח הנ״ל לחשבון
             <br/>
-תקנו את שם הכרטיס בחשבשבת
+            תקנו את שם הכרטיס בחשבשבת
             <br/>
-   וחזרו ל-bizibox לביצוע קישור כרטיס מחדש
+            וחזרו ל-bizibox לביצוע קישור כרטיס מחדש
         </p>
 
 
@@ -5795,52 +5784,6 @@ color: #022258;">
                                 </p>
                                 <h3>
                                     {{
-                                    exportPopupType.hashBankData
-                                        ? (exportPopupType.hashBankData.date | date: 'd.M.yy')
-                                        : ''
-                                    }}
-                                </h3>
-                            </div>
-                            <div class="line"></div>
-                            <div [matTooltip]="exportPopupType.hashBankData ? exportPopupType.hashBankData.name : ''"
-                                 matTooltipClass="folderPlusIssueToolTip"
-                                 matTooltipHideDelay="0"
-                                 matTooltipPosition="above"
-                                 matTooltipShowDelay="0">
-                                <h2>
-                                    פעולה אחרונה
-                                    <br>
-                                    ב-bizibox
-                                </h2>
-                            </div>
-                        </li>
-                        <li [matTooltip]="exportPopupType.hashBankData ? exportPopupType.hashBankData.name : ''"
-                            matTooltipClass="folderPlusIssueToolTip"
-                            matTooltipHideDelay="0"
-                            matTooltipPosition="above"
-                            matTooltipShowDelay="0">
-                            <div>
-                                <p>
-                                    יתרה
-                                </p>
-                                <h1>
-                                    {{
-                                    exportPopupType.hashBankData
-                                        ? (exportPopupType.hashBankData.balance | sum: false)
-                                        : '-'
-                                    }}
-                                </h1>
-                            </div>
-                        </li>
-                    </ul>
-                    <ul class="wide">
-                        <li>
-                            <div>
-                                <p>
-                                    תאריך
-                                </p>
-                                <h3>
-                                    {{
                                     exportPopupType.biziboxTransData
                                         ? (exportPopupType.biziboxTransData.date | date: 'd.M.yy')
                                         : ''
@@ -5854,9 +5797,9 @@ color: #022258;">
                                  matTooltipPosition="above"
                                  matTooltipShowDelay="0">
                                 <h2>
-                                    פעולה ראשונה
+                                    פעולה אחרונה
                                     <br>
-                                    בחשבשבת
+                                    ב-bizibox
                                 </h2>
                             </div>
                         </li>
@@ -5879,20 +5822,66 @@ color: #022258;">
                             </div>
                         </li>
                     </ul>
-                    <ul class="narrow">
+                    <ul class="wide">
                         <li>
-                            <p>
-                                פער
-                            </p>
-                            <p style="display: inline-block; direction: ltr">
-                                {{
-                                exportPopupType.balanceDifference !== null
-                                    ? '+' + (exportPopupType.balanceDifference | sum: false:true: false)
-                                    : '-'
-                                }}
-                            </p>
+                            <div>
+                                <p>
+                                    תאריך
+                                </p>
+                                <h3>
+                                    {{
+                                    exportPopupType.hashBankData
+                                        ? (exportPopupType.hashBankData.date | date: 'd.M.yy')
+                                        : ''
+                                    }}
+                                </h3>
+                            </div>
+                            <div class="line"></div>
+                            <div [matTooltip]="exportPopupType.hashBankData ? exportPopupType.hashBankData.name : ''"
+                                 matTooltipClass="folderPlusIssueToolTip"
+                                 matTooltipHideDelay="0"
+                                 matTooltipPosition="above"
+                                 matTooltipShowDelay="0">
+                                <h2>
+                                    פעולה אחרונה
+                                    <br>
+                                    בחשבשבת
+                                </h2>
+                            </div>
+                        </li>
+                        <li [matTooltip]="exportPopupType.hashBankData ? exportPopupType.hashBankData.name : ''"
+                            matTooltipClass="folderPlusIssueToolTip"
+                            matTooltipHideDelay="0"
+                            matTooltipPosition="above"
+                            matTooltipShowDelay="0">
+                            <div>
+                                <p>
+                                    יתרה
+                                </p>
+                                <h1>
+                                    {{
+                                    exportPopupType.hashBankData
+                                        ? (exportPopupType.hashBankData.balance | sum: false)
+                                        : '-'
+                                    }}
+                                </h1>
+                            </div>
                         </li>
                     </ul>
+<!--                    <ul class="narrow">-->
+<!--                        <li>-->
+<!--                            <p>-->
+<!--                                פער-->
+<!--                            </p>-->
+<!--                            <p style="display: inline-block; direction: ltr">-->
+<!--                                {{-->
+<!--                                exportPopupType.balanceDifference !== null-->
+<!--                                    ? '+' + (exportPopupType.balanceDifference | sum: false:true: false)-->
+<!--                                    : '-'-->
+<!--                                }}-->
+<!--                            </p>-->
+<!--                        </li>-->
+<!--                    </ul>-->
 
                 </div>
             </div>
@@ -8156,3 +8145,211 @@ box-shadow: inset 0px 0px 7.6px rgba(0, 0, 0, 0.1);"
         </div>
     </p-dialog>
 </ng-container>
+
+<ng-container *ngIf="hashBankDetails">
+    <p-dialog (onHide)="hashBankDetails = false"
+              (visibleChange)="hashBankDetails = false"
+              [draggable]="false"
+              [modal]="true"
+              [resizable]="false"
+              [visible]="(hashBankDetails)"
+              appendTo="body"
+              styleClass="hashBankPopup">
+        <p-header>
+            <h1>
+                {{ userService?.appData?.hideCompanyName ? companyForHashBankPopup.companyHp : companyForHashBankPopup.companyName }}
+                - פרטי חשבנק - תנועות לכרטיס הנה"ח {{ companyForHashBankPopup.izuCustId }}
+                בחשבון {{ companyForHashBankPopup.nickname }}
+            </h1>
+        </p-header>
+
+        <div class="table" style="display: flex; flex-flow: column nowrap; height: 100%;">
+            <div #header class="header">
+                <div [pTooltip]="'ASMACHTA'"
+                     tooltipPosition="top">
+                    אסמכתא
+                </div>
+                <div [pTooltip]="'TRANS_DATE'"
+                     tooltipPosition="top">
+                    תאריך תנועה
+                </div>
+                <div [pTooltip]="'DETAILS'"
+                     tooltipPosition="top">
+                    תיאור תנועה
+                </div>
+                <div [pTooltip]="'TOTAL'"
+                     tooltipPosition="top">
+                    חובה
+                </div>
+                <div [pTooltip]="'TOTAL'"
+                     tooltipPosition="top">
+                    זכות
+                </div>
+                <div [pTooltip]="'BALANCE'"
+                     tooltipPosition="top">
+                    יתרה
+                </div>
+                <div [pTooltip]="'UNIQUE_ID'"
+                     tooltipPosition="top">
+                    ערך ייחודי
+                </div>
+                <div [pTooltip]="'RECONNO'"
+                     tooltipPosition="top">
+                    מספר התאמה
+                </div>
+                <div [pTooltip]="'IND_DELETED'"
+                     tooltipPosition="top">
+                    האם מחוק
+                </div>
+                <div [pTooltip]="'DATE_CREATED'"
+                     tooltipPosition="top">
+                    תאריך יצירה
+                </div>
+                <div [pTooltip]="'DATE_LAST_MODIFIED'"
+                     tooltipPosition="top">
+                    תאריך שינוי אחרון
+                </div>
+                <div [pTooltip]="'LAST_JOB_ID'"
+                     tooltipPosition="top">
+                    ג'וב אחרון
+                </div>
+                <div [pTooltip]="'LAST_TASK_ID'"
+                     tooltipPosition="top">
+                    טאסק אחרון
+                </div>
+                <div>
+                    קיים בביזיבוקס?
+                </div>
+            </div>
+            <ng-scrollbar class="custom-scrollbar"
+                          style="height: 653px"
+                          thumbClass="scrollbar-thumb"
+                          trackClass="scrollbar">
+                <div
+                        class="body" style="width: 1498px;">
+                    <div *ngFor="let row of hashBankDetails.content; let i = index" class="row">
+                        <div>
+                            {{ row.asmachta !== null ? row.asmachta : '' }}
+                        </div>
+                        <div>
+                            {{ row.transDate !== null ? (row.transDate | date: 'dd/MM/yy') : '' }}
+                        </div>
+                        <div>
+                            {{ row.details !== null ? row.details : '' }}
+                        </div>
+                        <div style="direction: ltr; color: red">
+                            {{ row.total !== null && row.hova !== null && row.hova === 1 ? row.total : '' }}
+                        </div>
+                        <div style="direction: ltr; color: limegreen">
+                            {{ row.total !== null && row.hova !== null && row.hova === 0 ? row.total : '' }}
+                        </div>
+                        <div style="direction: ltr">
+                            {{ row.balance !== null ? row.balance : '' }}
+                        </div>
+                        <div>
+                            {{ row.uniqueId !== null ? row.uniqueId : '' }}
+                        </div>
+                        <div>
+                            {{ row.reconno !== null ? row.reconno : '' }}
+                        </div>
+                        <div>
+                            {{ row.deleted ? 'כן' : 'לא' }}
+                        </div>
+                        <div>
+                            {{ row.dateCreated !== null ? (row.dateCreated | date: 'dd/MM/yy') : '' }}
+                        </div>
+                        <div>
+                            {{ row.dateLastModified !== null ? (row.dateLastModified | date: 'dd/MM/yy') : '' }}
+                        </div>
+                        <div>
+                            {{ row.lastJobId !== null ? row.lastJobId : '' }}
+                        </div>
+                        <div>
+                            {{ row.lastTaskId !== null ? row.lastTaskId : '' }}
+                        </div>
+                        <div>
+                            {{ row.existsInBizibox ? 'כן' : 'לא' }}
+                        </div>
+                    </div>
+                </div>
+            </ng-scrollbar>
+            <div>
+                <app-paginator
+                        (onPageChange)="paginateHashBankPopup($event, activeCompany.companyId)"
+                        [alwaysShow]="false"
+                        [rows]="hashBankDetails?.size"
+                        [totalRecords]="hashBankDetails?.totalElements">
+                </app-paginator>
+            </div>
+        </div>
+    </p-dialog>
+</ng-container>
+<ng-container *ngIf="show_unsynced_companies">
+    <p-dialog (onHide)="show_unsynced_companies = false"
+              (visibleChange)="show_unsynced_companies = false"
+              [draggable]="false"
+              [modal]="true"
+              [resizable]="false"
+              [visible]="(show_unsynced_companies)"
+              appendTo="body"
+              styleClass="show_unsynced_companies">
+        <p-header>
+            <h1>
+                סטטוס אקספורטר - סנכרון חלקי
+            </h1>
+        </p-header>
+
+        <p class="title">
+            פרוט חברות בסטטוס סנכרון חלקי לאקספורטר
+        </p>
+        <div id="wrap">
+            <div class="table">
+                <div #header class="header">
+                    <div>
+                        שם חברה
+                    </div>
+                    <div>
+                        DB_NAME
+                    </div>
+                    <div>
+                        תאריך
+                    </div>
+                    <div>
+                        אקספורטר אחרון
+                    </div>
+                </div>
+                <ng-container
+                        *ngIf="synced && synced.length">
+                    <div style="height: 418px;position: relative;z-index: 2;">
+                        <ng-scrollbar
+                                class="custom-scrollbar"
+                                thumbClass="scrollbar-thumb"
+                                track="all"
+                                trackClass="scrollbar">
+                            <cdk-virtual-scroll-viewport itemSize="38" scrollViewport>
+                                <div *cdkVirtualFor="let company of synced;"
+                                     class="row">
+                                    <div>
+                                        {{ company.companyName || '' }}
+                                    </div>
+                                    <div>
+                                        {{  company.dbName || '' }}
+                                    </div>
+                                    <div>
+                                        {{ company.dataReceiveDate !== null ? (company.dataReceiveDate | date: 'dd/MM/yy HH:mm') : '' }}
+                                    </div>
+                                    <div>
+                                        {{ company.lastExporterId || '' }}
+                                    </div>
+                                </div>
+                            </cdk-virtual-scroll-viewport>
+                        </ng-scrollbar>
+                    </div>
+                </ng-container>
+            </div>
+        </div>
+    </p-dialog>
+</ng-container>
+
+
+

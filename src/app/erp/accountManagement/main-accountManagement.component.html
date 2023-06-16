@@ -77,8 +77,8 @@
                         <div class="title-accGr">
                             <div style="display: flex">
                                 <div *ngIf="!userService.appData?.hideCompanyName"
-                                        [class.leftSpace]="accGr.companyHp !== null"
-                                        [innerHTML]="accGr.companyName | highlight: queryString"
+                                     [class.leftSpace]="accGr.companyHp !== null"
+                                     [innerHTML]="accGr.companyName | highlight: queryString"
                                 ></div>
                                 <div [innerHTML]="accGr.companyHp ? accGr.companyHp : ''"></div>
                             </div>
@@ -122,7 +122,7 @@
                       "
                                         />
                                     </div>
-                                    <div >
+                                    <div>
                                         <div style="display: flex">
                                             <p
                                                     [innerHTML]="
@@ -174,12 +174,12 @@
 
                                         <p *ngIf="row.tokenStatus" class="small erpUpdateToken">
                                             <app-token-status-view
-                                                    #tokenStatusView
-                                                    (creationSuccess)="getAccountsForStation()"
-                                                    [accFromBank]="accFromBank"
-                                                    [companyId]="accGr.companyId"
-                                                    [is_station]="userService.appData.station_id"
-                                                    [status]="{
+                                                #tokenStatusView
+                                                (creationSuccess)="getAccountsForStation()"
+                                                [accFromBank]="accFromBank"
+                                                [companyId]="accGr.companyId"
+                                                [is_station]="userService.appData.station_id"
+                                                [status]="{
                           token: row.token,
                           tokenNickname: row.accountNickname,
                           setDefAcc: row.associatedCompanyAccountId,
@@ -312,9 +312,9 @@
                         <!--                                </p>-->
                         <!--                            </div>-->
                         <!--                        </li>-->
-<!--                        &&  tooltipEditFile.tokenStatus === 'UP_TO_DATE'-->
+                        <!--                        &&  tooltipEditFile.tokenStatus === 'UP_TO_DATE'-->
                         <li (click)="onUpdateCredentialsClick(tooltipEditFile);panelEdit.hide()"
-                        *ngIf="tooltipEditFile && tooltipEditFile.poalimBeasakim">
+                            *ngIf="tooltipEditFile && tooltipEditFile.poalimBeasakim">
                             <div
                                     class="p-helper-clearfix"
                                     style="display: flex; display: -ms-flexbox"
@@ -335,7 +335,7 @@
                     -ms-flex: 85;
                   "
                                 >
-                             עדכון פרטי זיהוי
+                                    עדכון פרטי זיהוי
                                 </p>
                             </div>
                         </li>
@@ -588,18 +588,18 @@
                                         </p>
                                         <p-radioButton
                                                 (onClick)="reloadSelf()"
-                                                formControlName="vms"
                                                 [label]="'SMS'"
                                                 [value]="false"
+                                                formControlName="vms"
                                                 name="vms"
                                         >
                                         </p-radioButton>
                                         <span style="padding: 0px 6px"></span>
                                         <p-radioButton
                                                 (onClick)="reloadSelf()"
-                                                formControlName="vms"
                                                 [label]="'הודעה קולית'"
                                                 [value]="true"
+                                                formControlName="vms"
                                                 name="vms"
                                         >
                                         </p-radioButton>
@@ -2853,22 +2853,26 @@
                                 }}
                             </h3>
                         </div>
-                        <div class="border"></div>
-                        <div>
-                            <p>יתרת כרטיס מהנה”ח</p>
-                            <h3 class="red">
-                                <img
-                                        src="/assets/images/balanceERP.png"
-                                        style="margin-right: 5px"
-                                />
 
-                                {{
-                                userService.appData.station_params.balance
-                                    ? (userService.appData.station_params.balance | sum: true)
-                                    : '-'
-                                }}
-                            </h3>
-                        </div>
+                        <ng-container
+                                *ngIf="(userService.appData.station_params.balance !== '0' && userService.appData.station_params.balance !== 0)">
+                            <div class="border"></div>
+                            <div>
+                                <p>יתרת כרטיס מהנה”ח</p>
+                                <h3 class="red">
+                                    <img
+                                            src="/assets/images/balanceERP.png"
+                                            style="margin-right: 5px"
+                                    />
+
+                                    {{
+                                    userService.appData.station_params.balance
+                                        ? (userService.appData.station_params.balance | sum: true)
+                                        : '-'
+                                    }}
+                                </h3>
+                            </div>
+                        </ng-container>
                     </div>
                 </div>
 
@@ -2980,7 +2984,7 @@
         </p-dropdown>
 
         <ul
-                [hidden]="!screenPopupType.dateFrom?.value"
+                [hidden]="!screenPopupType.dateFrom?.value || userService.appData.station_params.balance === '0'"
                 class="balanceDifferenceRadio"
                 style="margin-top: -30px"
         >

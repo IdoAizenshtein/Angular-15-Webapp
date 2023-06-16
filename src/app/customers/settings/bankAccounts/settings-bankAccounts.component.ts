@@ -335,25 +335,51 @@ export class SettingsBankAccountsComponent
                     for (const property in arrayGr) {
                         // console.log(`${property}: ${arrayGr[property]}`)
                         const objAcc = arrayGr[property][0];
-                        // @ts-ignore
-                        const newObj: any = {
-                            token: objAcc.token,
-                            tokenStatus:
-                                objAcc.token === '88e6c85e-b914-4928-8436-47e86dddd3a4' ||
-                                objAcc.token === '88e6c85e-b914-4928-8436-47e86dddd3a5'
-                                    ? 'VALID'
-                                    : null,
-                            tokenNickname: this.translate.instant('banks.' + objAcc.bankId),
-                            isFromAccount: true,
-                            websiteTargetTypeId: objAcc.bankId,
-                            screenPasswordUpdateCount: null,
-                            dateCreated: objAcc.dateCreated,
-                            tokenTargetType: 'ACCOUNT',
-                            hasPrivs: true,
-                            companyAccountId: objAcc.companyAccountId,
-                            anotherCompanyExist: false
-                        };
-                        responseTkn.push(newObj);
+                        if(objAcc.token){
+                            // @ts-ignore
+                            const newObj: any = {
+                                token: objAcc.token,
+                                tokenStatus:
+                                    objAcc.token === '88e6c85e-b914-4928-8436-47e86dddd3a4' ||
+                                    objAcc.token === '88e6c85e-b914-4928-8436-47e86dddd3a5'
+                                        ? 'VALID'
+                                        : null,
+                                tokenNickname: this.translate.instant('banks.' + objAcc.bankId),
+                                isFromAccount: true,
+                                websiteTargetTypeId: objAcc.bankId,
+                                screenPasswordUpdateCount: null,
+                                dateCreated: objAcc.dateCreated,
+                                tokenTargetType: 'ACCOUNT',
+                                hasPrivs: true,
+                                companyAccountId: objAcc.companyAccountId,
+                                anotherCompanyExist: false
+                            };
+                            responseTkn.push(newObj);
+                        }else{
+                            const arrayGrByBankId = groupBy('bankId')(arrayGr[property]);
+
+                            for (const propertySecond in arrayGrByBankId) {
+                                const objAccSecond = arrayGrByBankId[propertySecond][0];
+                                const newObjSecond: any = {
+                                    token: objAccSecond.token,
+                                    tokenStatus:
+                                        objAccSecond.token === '88e6c85e-b914-4928-8436-47e86dddd3a4' ||
+                                        objAccSecond.token === '88e6c85e-b914-4928-8436-47e86dddd3a5'
+                                            ? 'VALID'
+                                            : null,
+                                    tokenNickname: this.translate.instant('banks.' + objAccSecond.bankId),
+                                    isFromAccount: true,
+                                    websiteTargetTypeId: objAccSecond.bankId,
+                                    screenPasswordUpdateCount: null,
+                                    dateCreated: objAccSecond.dateCreated,
+                                    tokenTargetType: 'ACCOUNT',
+                                    hasPrivs: true,
+                                    companyAccountId: objAccSecond.companyAccountId,
+                                    anotherCompanyExist: false
+                                };
+                                responseTkn.push(newObjSecond);
+                            }
+                        }
                     }
                 } else if (responseTkn && responseTkn.length && accs && accs.length) {
                     const allAccWithoutTknMatch = accs.filter((acc: any) =>
@@ -374,25 +400,51 @@ export class SettingsBankAccountsComponent
                         for (const property in arrayGr) {
                             // console.log(`${property}: ${arrayGr[property]}`)
                             const objAcc = arrayGr[property][0];
-                            // @ts-ignore
-                            const newObj: any = {
-                                token: objAcc.token,
-                                tokenStatus:
-                                    objAcc.token === '88e6c85e-b914-4928-8436-47e86dddd3a4' ||
-                                    objAcc.token === '88e6c85e-b914-4928-8436-47e86dddd3a5'
-                                        ? 'VALID'
-                                        : null,
-                                tokenNickname: this.translate.instant('banks.' + objAcc.bankId),
-                                isFromAccount: true,
-                                websiteTargetTypeId: objAcc.bankId,
-                                screenPasswordUpdateCount: null,
-                                dateCreated: objAcc.dateCreated,
-                                tokenTargetType: 'ACCOUNT',
-                                hasPrivs: true,
-                                companyAccountId: objAcc.companyAccountId,
-                                anotherCompanyExist: false
-                            };
-                            responseTkn.push(newObj);
+                            if(objAcc.token){
+                                // @ts-ignore
+                                const newObj: any = {
+                                    token: objAcc.token,
+                                    tokenStatus:
+                                        objAcc.token === '88e6c85e-b914-4928-8436-47e86dddd3a4' ||
+                                        objAcc.token === '88e6c85e-b914-4928-8436-47e86dddd3a5'
+                                            ? 'VALID'
+                                            : null,
+                                    tokenNickname: this.translate.instant('banks.' + objAcc.bankId),
+                                    isFromAccount: true,
+                                    websiteTargetTypeId: objAcc.bankId,
+                                    screenPasswordUpdateCount: null,
+                                    dateCreated: objAcc.dateCreated,
+                                    tokenTargetType: 'ACCOUNT',
+                                    hasPrivs: true,
+                                    companyAccountId: objAcc.companyAccountId,
+                                    anotherCompanyExist: false
+                                };
+                                responseTkn.push(newObj);
+                            }else{
+                                const arrayGrByBankId = groupBy('bankId')(arrayGr[property]);
+
+                                for (const propertySecond in arrayGrByBankId) {
+                                    const objAccSecond = arrayGrByBankId[propertySecond][0];
+                                    const newObjSecond: any = {
+                                        token: objAccSecond.token,
+                                        tokenStatus:
+                                            objAccSecond.token === '88e6c85e-b914-4928-8436-47e86dddd3a4' ||
+                                            objAccSecond.token === '88e6c85e-b914-4928-8436-47e86dddd3a5'
+                                                ? 'VALID'
+                                                : null,
+                                        tokenNickname: this.translate.instant('banks.' + objAccSecond.bankId),
+                                        isFromAccount: true,
+                                        websiteTargetTypeId: objAccSecond.bankId,
+                                        screenPasswordUpdateCount: null,
+                                        dateCreated: objAccSecond.dateCreated,
+                                        tokenTargetType: 'ACCOUNT',
+                                        hasPrivs: true,
+                                        companyAccountId: objAccSecond.companyAccountId,
+                                        anotherCompanyExist: false
+                                    };
+                                    responseTkn.push(newObjSecond);
+                                }
+                            }
                         }
                     }
                 }
@@ -401,13 +453,14 @@ export class SettingsBankAccountsComponent
                 } else {
                     return responseTkn.map((tknSt: any) => {
                         if (!(tknSt.token in this.groupExpanded)) {
-                            this.groupExpanded[tknSt.token] = this.groupExpanded.all;
+                            this.groupExpanded[(tknSt.token + '_' + tknSt.websiteTargetTypeId)] = this.groupExpanded.all;
                         }
 
                         return {
                             id: tknSt.token,
+                            key: (tknSt.token + '_' + tknSt.websiteTargetTypeId),
                             status: tknSt,
-                            children: accs.filter((acc: any) => acc.token === tknSt.token)
+                            children: accs.filter((acc: any) => (acc.token + '_' + acc.bankId) === (tknSt.token + '_' + tknSt.websiteTargetTypeId))
                         } as ByTokenGroup;
                     });
                 }
@@ -610,6 +663,7 @@ export class SettingsBankAccountsComponent
 
 export class ByTokenGroup {
     id: string;
+    key: string;
     status: TokenStatusResponse;
     children: Array<any>;
 }
